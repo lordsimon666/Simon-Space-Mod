@@ -85,6 +85,7 @@ public final class ShipPalette {
             case BUSSARD_RED -> ModBlocks.BUSSARD_RED.get().defaultBlockState();
             case HULL_AZTEC -> ModBlocks.HULL_AZTEC.get().defaultBlockState();
             case TORPEDO_LAUNCHER -> ModBlocks.TORPEDO_LAUNCHER.get().defaultBlockState();
+            case IMPULSE_ENGINE -> ModBlocks.IMPULSE_ENGINE.get().defaultBlockState();
             case IRON_BARS -> Blocks.IRON_BARS.defaultBlockState()
                 .setValue(CrossCollisionBlock.NORTH, EnterpriseBlueprint.bar(cellCode, Direction.NORTH))
                 .setValue(CrossCollisionBlock.EAST, EnterpriseBlueprint.bar(cellCode, Direction.EAST))

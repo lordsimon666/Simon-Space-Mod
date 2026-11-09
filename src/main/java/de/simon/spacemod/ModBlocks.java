@@ -67,6 +67,7 @@ public final class ModBlocks {
     public static final RegistryObject<Block> DEFLECTOR_DISH_BLUE = block("deflector_dish_blue", Block::new, glowing(metal(MapColor.COLOR_BLUE), 14));
     public static final RegistryObject<Block> BUSSARD_RED = block("bussard_red",
         p -> new GlowParticleBlock(p, GlowParticleBlock.Kind.BUSSARD), glowing(metal(MapColor.COLOR_RED), 15));
+    public static final RegistryObject<Block> IMPULSE_ENGINE = block("impulse_engine", Block::new, glowing(metal(MapColor.COLOR_RED), 13));
     public static final RegistryObject<Block> TORPEDO_LAUNCHER = block("torpedo_launcher", Block::new, glowing(metal(MapColor.COLOR_ORANGE), 9));
     public static final RegistryObject<Block> BRIDGE_RAILING_GRAY = block("bridge_railing_gray", RailingBlock::new,
         metal(MapColor.COLOR_GRAY).noOcclusion());

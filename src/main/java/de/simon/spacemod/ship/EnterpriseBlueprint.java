@@ -71,17 +71,19 @@ public final class EnterpriseBlueprint {
         this.k = Math.max(scale, 9.5 / 15.0);
 
         // Maße in Metern: Originalserie / Refit (NCC-1701-A)
-        eR = (refit ? 17 : 15) * k;
+        eR = (refit ? 14 : 15) * k;
         eY = 1 + eR;
-        sMid = eY + eR + (refit ? 18 : 20) * s;
+        sMid = eY + eR + (refit ? 14 : 20) * s;
         sR = (refit ? 70 : 63.5) * s;
         sCx = 1 + sR;
-        eXf = (refit ? 135 : 118) * s;
-        eXr = (refit ? 268 : 245) * s;
+        // Refit: Sekundärhülle weiter vorne (Deflektor fast unter der Untertasse)
+        eXf = (refit ? 108 : 118) * s;
+        eXr = (refit ? 232 : 245) * s;
         nR = Math.max((refit ? 6.5 : 7) * s, 2.6);
-        nZ = Math.max((refit ? 46 : 42) * s, eR + nR + 6);
-        nY = sMid + (refit ? 4 : 8) * s;
-        nX0 = (refit ? 172 : 150) * s;
+        // Refit: Gondeln höher über der Untertasse und enger zusammen
+        nZ = Math.max((refit ? 36 : 42) * s, eR + nR + 6);
+        nY = sMid + (refit ? 32 : 8) * s;
+        nX0 = (refit ? 140 : 150) * s;
         nX1 = (refit ? 305 : 289) * s;
 
         bridgeFloor = (int) Math.floor(saucerTop(0));
@@ -230,9 +232,10 @@ public final class EnterpriseBlueprint {
         double f = (x - eXf) / (eXr - eXf);
         if (f < 0 || f > 1) return -1;
         if (refit) {
-            if (f < 0.1) return eR * (0.85 + 0.15 * f / 0.1);
-            if (f < 0.55) return eR;
-            return eR * (1 - 0.45 * (f - 0.55) / 0.45);
+            // bauchige Front, kurzer zylindrischer Teil, starke Verjüngung nach hinten
+            if (f < 0.15) return eR * (0.72 + 0.28 * Math.sin(f / 0.15 * Math.PI / 2));
+            if (f < 0.45) return eR;
+            return eR * (1 - 0.55 * Math.pow((f - 0.45) / 0.55, 1.3));
         }
         if (f < 0.12) return eR * (0.8 + 0.2 * f / 0.12);
         if (f < 0.6) return eR;
@@ -270,22 +273,23 @@ public final class EnterpriseBlueprint {
         if (dx * dx + (y - domeY) * (y - domeY) + (double) z * z <= domeR * domeR && y < saucerBottom(0) + 1) return SENSOR;
 
         // Hals ("Dorsal"): schräge Verbindung zwischen Untertasse und Sekundärhülle
-        double neckTopX = sCx + (refit ? 34 : 30) * s, neckTopY = saucerBottom((refit ? 34 : 30) * s) + 1;
-        double neckBotX = eXf + (refit ? 36 : 30) * s, neckBotY = eY + eR * 0.7;
+        double neckTopX = sCx + 30 * s, neckTopY = saucerBottom(30 * s) + 1;
+        double neckBotX = eXf + (refit ? 22 : 30) * s, neckBotY = eY + eR * 0.7;
         if (y >= neckBotY && y <= neckTopY) {
             double t = (neckTopY - y) / (neckTopY - neckBotY);
             double xc = neckTopX + t * (neckBotX - neckTopX);
-            double chord = Math.max(4, (refit ? 15 : 13) * s);
-            double w = Math.max(1.5, (refit ? 5.5 : 4) * s * (1 - 0.25 * t));
+            double chord = Math.max(4, 13 * s);
+            double w = Math.max(1.5, (refit ? 5 : 4) * s * (1 - 0.25 * t));
             if (Math.abs(x - xc) <= chord && Math.abs(z) <= w) return NECK;
         }
 
         // Deflektorschüssel + Antenne
         double rho = Math.sqrt((y - eY) * (y - eY) + (double) z * z);
-        double dishR = eR * 0.7;
+        double dishR = eR * (refit ? 0.6 : 0.7);
         double dishDepth = refit ? 1 : Math.max(1, 3 * s);
         if (rho <= dishR && x < eXf && x >= eXf - 1 - dishDepth * (rho / dishR)) return DISH;
         if (!refit && rho <= Math.max(0.5, s) && x < eXf && x >= eXf - Math.max(4, 10 * s)) return ANTENNA;
+        if (refit && rho > dishR && rho <= eR * 0.72 && x >= eXf - 1 && x < eXf + 1) return ANTENNA; // Rahmen um die Schüssel
 
         // Sekundärhülle mit Shuttlehangar
         double er = secondaryRadius(x);
@@ -298,16 +302,16 @@ public final class EnterpriseBlueprint {
             // Refit: kantigere Gondel (abgerundetes Rechteck, schmaler als hoch)
             ? nR * Math.pow(Math.pow(Math.abs(az - nZ) / (0.75 * nR), 4) + Math.pow(Math.abs(y - nY) / nR, 4), 0.25)
             : Math.sqrt((az - nZ) * (az - nZ) + (y - nY) * (y - nY));
-        if (nr > 0 && nd <= nr) return x < nX0 + nR * 0.9 ? BUSSARD : NACELLE;
+        if (nr > 0 && nd <= nr) return !refit && x < nX0 + nR * 0.9 ? BUSSARD : NACELLE;
 
-        double p0z = refit ? eR * 0.6 : 0, p0y = eY + eR * (refit ? 0.2 : 0.5), p1z = nZ, p1y = nY;
+        double p0z = refit ? eR * 0.5 : 0, p0y = eY + eR * (refit ? 0.4 : 0.5), p1z = nZ, p1y = nY;
         double lz = p1z - p0z, ly = p1y - p0y, len = Math.sqrt(lz * lz + ly * ly);
         double t = ((az - p0z) * lz + (y - p0y) * ly) / (len * len);
         if (t >= 0 && t <= 1) {
             double perp = Math.abs((az - p0z) * ly - (y - p0y) * lz) / len;
-            double xc = refit ? (232 + 22 * t) * s : (212 + 10 * t) * s;
+            double xc = refit ? (198 + 16 * t) * s : (212 + 10 * t) * s;
             double chord = Math.max(2.5, ((refit ? 11 : 12) - (refit ? 2 : 3) * t) * s);
-            if (perp <= Math.max(1.0, 1.6 * s) && Math.abs(x - xc) <= chord) return PYLON;
+            if (perp <= Math.max(1.0, (refit ? 2.8 : 1.6) * s) && Math.abs(x - xc) <= chord) return PYLON;
         }
         return NONE;
     }
@@ -373,6 +377,9 @@ public final class EnterpriseBlueprint {
                                         || Math.abs(r - 0.32 * sR) < 0.5;
                                     if (ring) st = panel;
                                     if (refit && aztec(r, Math.atan2(z, dx))) st = ShipPart.HULL_AZTEC;
+                                    // Refit: rot leuchtende Impulstriebwerke hinten am erhöhten Aufbau
+                                    if (refit && dx > 0 && Math.abs(z) <= 8 * s && Math.abs(r - 24 * s) < 1.3 && openSide)
+                                        st = ShipPart.IMPULSE_ENGINE;
                                 }
                             }
                             case BRIDGE -> st = y >= bridgeFloor + 6 ? panel : plating;
@@ -395,7 +402,11 @@ public final class EnterpriseBlueprint {
                             case NACELLE -> {
                                 boolean inner = Math.abs(z) < nZ - nR * 0.4;
                                 boolean mid = Math.abs(y - nY) <= Math.max(1, nR * 0.35);
+                                boolean side = Math.abs(Math.abs(z) - nZ) > nR * 0.45;
                                 if (x > nX1 - 2) st = dark;
+                                else if (refit && side && Math.abs(y - nY) <= nR * 0.45 && x >= nX0 + nR * 0.7 && x <= nX0 + nR * 2.4)
+                                    st = bussard; // Refit: rötliche ovale Bussard-Fenster seitlich vorne
+                                else if (refit && x < nX0 + nR * 2.6) st = plating; // graue Frontkappe
                                 else if ((inner || refit) && mid && x < nX1 - (refit ? 9 : 6) * s) st = grille; // Refit: Gitter beidseitig
                                 else if (refit && aztecXY(x, y)) st = ShipPart.HULL_AZTEC;
                                 else if (Math.floorMod(x, 10) == 0) st = panel;
@@ -596,7 +607,7 @@ public final class EnterpriseBlueprint {
         for (int side : new int[] {1, -1}) {
             // Gondeln: Text vorne, danach roter Streifen auf Mittelhöhe
             int ny = (int) Math.round(nY);
-            int textFront = (int) Math.round(nX0 + nR * 1.5);
+            int textFront = (int) Math.round(nX0 + nR * (refit ? 3.2 : 1.5)); // Refit: hinter den Bussard-Fenstern
             int start = side > 0 ? textFront + reg : textFront;
             sideText(regText, start, ny + 2, side);
             for (int x = textFront + reg + 3; x < nX1 - 6 * s; x++) markSide(x, ny, side, ShipPart.HULL_PENNANT);
@@ -765,7 +776,7 @@ public final class EnterpriseBlueprint {
 
     /** Maschinenraum (19 x 11 m, zwei Ebenen) mit Warpkern in der Sekundärhülle. */
     private BlockPos buildEngineering() {
-        double f0 = eXf + 0.12 * (eXr - eXf), f1 = eXf + 0.6 * (eXr - eXf);
+        double f0 = eXf + (refit ? 0.15 : 0.12) * (eXr - eXf), f1 = eXf + (refit ? 0.45 : 0.6) * (eXr - eXf);
         int x0 = (int) Math.round((f0 + f1) / 2);
         int yF = (int) Math.round(eY) - 3;
         room(x0 - 10, x0 + 10, yF, yF + 7, -6, 6);

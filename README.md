@@ -11,14 +11,16 @@ Befehl in die Welt setzt – wahlweise die **NCC-1701** (Originalserie) oder die
 ```
 
 * Ohne Schiffsangabe wird die **NCC-1701** gebaut, z.B. `/enterprise spawn full`.
-* `/enterprise spawn ncc-1701-a full` baut die **NCC-1701-A** in Originalgröße (308 x 145 x 79 Blöcke).
+* `/enterprise spawn ncc-1701-a full` baut die **NCC-1701-A** in Originalgröße (308 x 145 x 85 Blöcke).
 
 ### NCC-1701-A (Refit)
 
-Etwas größer als das Original (ca. 305 m), mit blau leuchtender, eingelassener Deflektorschüssel,
-kantigeren Warpgondeln mit blauen Leuchtstreifen an beiden Seiten und roten Bussard-Kollektoren,
-nach hinten gepfeilten Pylonen, dickerem Hals mit zwei Photonentorpedo-Werfern, „Aztec“-Plattenmuster
-auf der Hülle und Kennung „NCC-1701-A“. Die Brücke hat graues Geländer und blaue Lichtleisten statt
+Etwas länger als das Original (ca. 305 m). Die kurze, bauchige Sekundärhülle sitzt weit vorne, die
+große blau leuchtende Deflektorschüssel (mit Rahmen) liegt fast unter der Untertasse, der Hals ist
+kurz und dick und trägt zwei Photonentorpedo-Werfer. Die langen, kantigen Warpgondeln stehen hoch
+über der Untertasse, mit grauen Frontkappen, rötlichen ovalen Bussard-Fenstern an den Seiten und
+blauen Leuchtstreifen; die Pylonen sind nach hinten gepfeilt. Dazu rot leuchtende Impulstriebwerke
+hinten am Aufbau der Untertasse, „Aztec“-Plattenmuster auf der Hülle und Kennung „NCC-1701-A“. Die Brücke hat graues Geländer und blaue Lichtleisten statt
 Rot. Decks, Räume und Turbolifte sind wie bei der NCC-1701 aufgebaut.
 
 | Variante              | Hülle         | Größe (L x B x H)    | Brücke / Maschinenraum / Transporterraum |
@@ -102,7 +104,7 @@ E = Eisenbarren        G = Goldbarren
 F = roter Farbstoff, P = Enderperle, R = Redstone
 ```
 
-## Neue Blöcke (61)
+## Neue Blöcke (62)
 
 * **Hülle**: Hüllenpanzerung (+ Stufe), Hüllenplatte, dunkle Hüllenplatte, Hüllenfenster,
   Kennungsmarkierung (+ Stufe), roter Zierstreifen, Positionslicht rot/grün, Deflektorschüssel,
@@ -117,7 +119,7 @@ F = roter Farbstoff, P = Enderperle, R = Redstone
 * **Krankenstation**: Biobett (2 Blöcke lang, wird wie ein Bett gesetzt), Diagnosemonitor (sitzt in
   der Wand), Untersuchungstisch, Medizinschrank, Krankenstations-Wand und -Boden
 * **Refit (NCC-1701-A)**: Refit-Hüllenplatte (Aztec), blaue Deflektorschüssel, roter
-  Bussard-Kollektor, Photonentorpedo-Werfer, graues Brückengeländer, blaue Lichtleiste
+  Bussard-Kollektor, Photonentorpedo-Werfer, Impulstriebwerk, graues Brückengeländer, blaue Lichtleiste
 * **Allgemein**: Deckboden, Korridorwand, Deckenverkleidung, Deckenleuchte, Maschinenraum-Konsole,
   Warpkern, Plasmaleitung
 

@@ -72,7 +72,8 @@ public enum ShipPart {
     HULL_AZTEC(0xC4CCD4),
     TORPEDO_LAUNCHER(0xFF6020),
     BRIDGE_RAILING_GRAY(0x8A8E96),
-    BRIDGE_TRIM_BLUE(0x4080E0);
+    BRIDGE_TRIM_BLUE(0x4080E0),
+    IMPULSE_ENGINE(0xFF3020);
 
     /** Farbe für Vorschaubilder. */
     public final int color;

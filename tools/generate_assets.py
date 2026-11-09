@@ -863,6 +863,22 @@ def tex_torpedo():
     return img
 
 
+def tex_impulse():
+    img = new((0, 0, 0))
+    px = img.load()
+    for x in range(16):
+        for y in range(16):
+            glow = 1 - abs(y - 7.5) / 8
+            px[x, y] = (255, clamp(40 + 120 * glow * glow), clamp(20 + 40 * glow), 255)
+        px[x, 0] = (80, 80, 86, 255)
+        px[x, 15] = (80, 80, 86, 255)
+    for y in range(16):
+        if y % 5 == 0:
+            for x in range(16):
+                px[x, y] = shade(px[x, y], -60)
+    return img
+
+
 def tex_railing_gray():
     return noise(new((150, 154, 162)), 5, 82)
 
@@ -924,6 +940,7 @@ TEXTURES = {
     "deflector_dish_blue": tex_dish_blue,
     "bussard_red": tex_bussard_red,
     "torpedo_launcher": tex_torpedo,
+    "impulse_engine": tex_impulse,
     "bridge_railing_gray": tex_railing_gray,
     "bridge_trim_blue": tex_trim_blue,
     "sickbay_floor": tex_sickbay_floor,
@@ -968,7 +985,7 @@ def b(name):
     return f"{MODID}:block/{name}"
 
 
-SIMPLE = ["hull_aztec", "deflector_dish_blue", "bussard_red", "torpedo_launcher", "bridge_trim_blue", "sickbay_wall", "sickbay_floor", "cargo_container", "bridge_wall", "bridge_trim", "turbolift_frame", "transporter_wall", "transporter_platform",
+SIMPLE = ["impulse_engine", "hull_aztec", "deflector_dish_blue", "bussard_red", "torpedo_launcher", "bridge_trim_blue", "sickbay_wall", "sickbay_floor", "cargo_container", "bridge_wall", "bridge_trim", "turbolift_frame", "transporter_wall", "transporter_platform",
           "transporter_energizer", "transporter_emitter", "nav_light_red", "nav_light_green", "hull_pennant",
           "hull_plating", "hull_panel", "hull_dark", "hull_window", "hull_marking", "deflector_dish",
           "bussard_collector", "nacelle_grille", "deck_floor", "bridge_deck", "corridor_wall",
@@ -1280,6 +1297,7 @@ NAMES = {
     "deflector_dish_blue": ("Deflektorschüssel (Refit, blau)", "Deflector Dish (Refit, Blue)"),
     "bussard_red": ("Bussard-Kollektor (Refit, rot)", "Bussard Collector (Refit, Red)"),
     "torpedo_launcher": ("Photonentorpedo-Werfer", "Photon Torpedo Launcher"),
+    "impulse_engine": ("Impulstriebwerk", "Impulse Engine"),
     "bridge_railing_gray": ("Brückengeländer (Refit, grau)", "Bridge Railing (Refit, Gray)"),
     "bridge_trim_blue": ("Blaue Lichtleiste (Refit)", "Blue Light Strip (Refit)"),
     "sickbay_floor": ("Krankenstations-Boden", "Sickbay Floor"),
