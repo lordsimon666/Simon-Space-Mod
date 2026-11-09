@@ -90,6 +90,8 @@ public final class EnterpriseBlueprint {
         buildShape();
         skinAndDecks();
         registryLettering();
+        hullDetails();
+        smoothSaucer();
         buildBridge();
         BlockPos eng = buildEngineering();
         BlockPos transporter = buildTransporterRoom();
@@ -114,8 +116,17 @@ public final class EnterpriseBlueprint {
     }
 
     private void set(int x, int y, int z, ShipPart part, Direction facing) {
+        set(x, y, z, part, facing, 0);
+    }
+
+    /** @param variant 0–3: Variante (Farbe/Anzeige) bzw. Halbstufe (0 = unten, 1 = oben) */
+    private void set(int x, int y, int z, ShipPart part, Direction facing, int variant) {
         if (!inBounds(x, y, z)) return;
-        cell[idx(x, y, z)] = (short) ((part.ordinal() + 1) | (facing.get2DDataValue() << 6));
+        cell[idx(x, y, z)] = (short) ((part.ordinal() + 1) | (facing.get2DDataValue() << 6) | ((variant & 3) << 8));
+    }
+
+    public static int variant(int code) {
+        return (code >> 8) & 3;
     }
 
     /** @return Bauteil der Zelle oder {@code null}, wenn dort nichts gesetzt wird */
@@ -316,12 +327,10 @@ public final class EnterpriseBlueprint {
                                 } else if (c == SENSOR) {
                                     st = panel;
                                 } else {
-                                    // Radiale Linien und Ringe der Untertassen-Oberseite
-                                    double theta = Math.atan2(z, dx);
-                                    boolean radial = Math.abs(Math.sin(4 * theta)) * r < 0.7 && r > 24 * s;
-                                    boolean ring = Math.abs(r - 0.55 * sR) < 0.5 || Math.abs(r - 0.82 * sR) < 0.5;
-                                    if (radial || ring) st = dark;
-                                    else if (Math.floorMod((int) Math.floor(r / 7), 2) == 1) st = panel;
+                                    // dezente Plattenringe wie beim Original
+                                    boolean ring = Math.abs(r - 0.55 * sR) < 0.5 || Math.abs(r - 0.82 * sR) < 0.5
+                                        || Math.abs(r - 0.32 * sR) < 0.5;
+                                    if (ring) st = panel;
                                 }
                             }
                             case BRIDGE -> st = y >= bridgeFloor + 6 ? panel : plating;
@@ -376,37 +385,81 @@ public final class EnterpriseBlueprint {
                 }
     }
 
-    /** "NCC-1701" auf der Oberseite der Untertassensektion. */
-    private void registryLettering() {
-        String[][] glyphs = {
-            {"1001", "1101", "1011", "1001", "1001"}, // N
-            {"0111", "1000", "1000", "1000", "0111"}, // C
-            {"0111", "1000", "1000", "1000", "0111"}, // C
-            {"000", "000", "111", "000", "000"},      // -
-            {"010", "110", "010", "010", "111"},      // 1
-            {"1111", "0001", "0010", "0100", "0100"}, // 7
-            {"0110", "1001", "1001", "1001", "0110"}, // 0
-            {"010", "110", "010", "010", "111"},      // 1
-        };
-        int px = s >= 0.75 ? 2 : 1;
-        int width = 0;
-        for (String[] g : glyphs) width += g[0].length() + 1;
-        width -= 1;
-        int startZ = -(width * px) / 2;
-        int startX = (int) Math.round(sCx - sR * 0.62);
-        ShipPart mark = ShipPart.HULL_MARKING;
+    // ---- Schriften (Zeilen von oben nach unten) ----
+    private static final java.util.Map<Character, String[]> FONT5x7 = new java.util.HashMap<>();
+    private static final java.util.Map<Character, String[]> FONT3x5 = new java.util.HashMap<>();
+    static {
+        FONT5x7.put('N', new String[] {"10001", "11001", "10101", "10011", "10001", "10001", "10001"});
+        FONT5x7.put('C', new String[] {"01110", "10001", "10000", "10000", "10000", "10001", "01110"});
+        FONT5x7.put('-', new String[] {"000", "000", "000", "111", "000", "000", "000"});
+        FONT5x7.put('1', new String[] {"00100", "01100", "00100", "00100", "00100", "00100", "01110"});
+        FONT5x7.put('7', new String[] {"11111", "00001", "00010", "00100", "01000", "01000", "01000"});
+        FONT5x7.put('0', new String[] {"01110", "10001", "10011", "10101", "11001", "10001", "01110"});
+        FONT3x5.put('N', new String[] {"111", "101", "101", "101", "101"});
+        FONT3x5.put('C', new String[] {"111", "100", "100", "100", "111"});
+        FONT3x5.put('-', new String[] {"00", "00", "11", "00", "00"});
+        FONT3x5.put('1', new String[] {"010", "110", "010", "010", "111"});
+        FONT3x5.put('7', new String[] {"111", "001", "010", "010", "010"});
+        FONT3x5.put('0', new String[] {"111", "101", "101", "101", "111"});
+        FONT3x5.put('U', new String[] {"101", "101", "101", "101", "111"});
+        FONT3x5.put('S', new String[] {"111", "100", "111", "001", "111"});
+        FONT3x5.put('E', new String[] {"111", "100", "110", "100", "111"});
+        FONT3x5.put('T', new String[] {"111", "010", "010", "010", "010"});
+        FONT3x5.put('R', new String[] {"110", "101", "110", "101", "101"});
+        FONT3x5.put('P', new String[] {"110", "101", "110", "100", "100"});
+        FONT3x5.put('I', new String[] {"111", "010", "010", "010", "111"});
+        FONT3x5.put('.', new String[] {"0", "0", "0", "0", "1"});
+        FONT3x5.put(' ', new String[] {"0", "0", "0", "0", "0"});
+    }
 
+    private static int textWidth(String text, java.util.Map<Character, String[]> font) {
+        int w = 0;
+        for (char ch : text.toCharArray()) w += font.get(ch)[0].length() + 1;
+        return w - 1;
+    }
+
+    /**
+     * Kennung auf der Oberseite der Untertasse, lesbar von vorne (Buchstaben-Oberkante zeigt nach achtern),
+     * wie beim Original: "U.S.S. ENTERPRISE" vor der Brücke, darunter groß "NCC-1701".
+     */
+    private void registryLettering() {
+        boolean big = s >= 0.75;
+        var font = big ? FONT5x7 : FONT3x5;
+        int px = big ? 2 : 1;
+        String reg = "NCC-1701";
+        int h = font.get('N').length;
+        int w = textWidth(reg, font);
+        int xCenter = (int) Math.round(sCx - sR * (big ? 0.6 : 0.62));
+        int xTop = xCenter + h * px / 2;
+        int zLeft = w * px / 2;
         int col = 0;
-        for (String[] g : glyphs) {
-            for (int row = 0; row < 5; row++)
-                for (int c = 0; c < g[row].length(); c++) {
-                    if (g[row].charAt(c) != '1') continue;
-                    for (int ax = 0; ax < px; ax++)
-                        for (int az = 0; az < px; az++)
-                            markTop(startX + row * px + ax, startZ + (col + c) * px + az, mark);
-                }
+        for (char ch : reg.toCharArray()) {
+            String[] g = font.get(ch);
+            drawGlyphTop(g, xTop, zLeft - col * px, px);
             col += g[0].length() + 1;
         }
+        if (!big) return;
+        // "U.S.S. ENTERPRISE" gerade darüber (zwischen Brücke und Kennung)
+        String name = "U.S.S. ENTERPRISE";
+        int nameTop = xTop + 4 + 5;
+        int nz = textWidth(name, FONT3x5) / 2;
+        int c2 = 0;
+        for (char ch : name.toCharArray()) {
+            String[] g = FONT3x5.get(ch);
+            drawGlyphTop(g, nameTop, nz - c2, 1);
+            c2 += g[0].length() + 1;
+        }
+    }
+
+    /** Zeichnet ein Zeichen auf die Oberseite: Zeile 0 bei xTop (achtern), Spalten Richtung Backbord (-z). */
+    private void drawGlyphTop(String[] g, int xTop, int zLeft, int px) {
+        for (int row = 0; row < g.length; row++)
+            for (int c = 0; c < g[row].length(); c++) {
+                if (g[row].charAt(c) != '1') continue;
+                for (int ax = 0; ax < px; ax++)
+                    for (int az = 0; az < px; az++)
+                        markTop(xTop - row * px - ax, zLeft - c * px - az, ShipPart.HULL_MARKING);
+            }
     }
 
     private void markTop(int x, int z, ShipPart mark) {
@@ -419,61 +472,155 @@ public final class EnterpriseBlueprint {
         }
     }
 
+    /** Färbt die äußerste Hüllenzelle an (x, y) auf der gewählten Seite (+1 Steuerbord, -1 Backbord). */
+    private void markSide(int x, int y, int side, ShipPart part) {
+        for (int k = zOffset; k >= 0; k--) {
+            int z = k * side;
+            if (!inBounds(x, y, z)) continue;
+            int i = idx(x, y, z);
+            if (comp[i] == NONE) continue;
+            if (hull[i]) set(x, y, z, part);
+            return;
+        }
+    }
+
+    /** Schreibt Text auf eine Seitenfläche. Lesbar von außen: Steuerbord läuft der Text Richtung Bug. */
+    private void sideText(String text, int xStart, int yTop, int side) {
+        int col = 0;
+        for (char ch : text.toCharArray()) {
+            String[] g = FONT3x5.get(ch);
+            for (int row = 0; row < g.length; row++)
+                for (int c = 0; c < g[row].length(); c++)
+                    if (g[row].charAt(c) == '1') markSide(xStart - side * (col + c), yTop - row, side, ShipPart.HULL_MARKING);
+            col += g[0].length() + 1;
+        }
+    }
+
+    /** Kennung + rote Zierstreifen an Gondeln und Sekundärhülle, Positionslichter. */
+    private void hullDetails() {
+        int reg = textWidth("NCC-1701", FONT3x5);
+        for (int side : new int[] {1, -1}) {
+            // Gondeln: Text vorne, danach roter Streifen auf Mittelhöhe
+            int ny = (int) Math.round(nY);
+            int textFront = (int) Math.round(nX0 + nR * 1.5);
+            int start = side > 0 ? textFront + reg : textFront;
+            sideText("NCC-1701", start, ny + 2, side);
+            for (int x = textFront + reg + 3; x < nX1 - 6 * s; x++) markSide(x, ny, side, ShipPart.HULL_PENNANT);
+            // Sekundärhülle: Text vor dem Pylon, roter Streifen darunter
+            int ey = (int) Math.round(eY + eR * 0.25);
+            int ex = (int) Math.round(eXf + 0.5 * (eXr - eXf));
+            sideText("NCC-1701", side > 0 ? ex + reg : ex, ey + 2, side);
+            for (int x = (int) Math.round(eXf + 0.15 * (eXr - eXf)); x < ex + reg + 2; x++) markSide(x, ey - 5, side, ShipPart.HULL_PENNANT);
+        }
+        // Positionslichter am Untertassenrand: Backbord rot, Steuerbord grün
+        int mx = (int) Math.round(sCx), my = (int) Math.round(sMid);
+        markSide(mx, my, -1, ShipPart.NAV_LIGHT_RED);
+        markSide(mx, my, 1, ShipPart.NAV_LIGHT_GREEN);
+        markSide(mx + 1, my, -1, ShipPart.NAV_LIGHT_RED);
+        markSide(mx + 1, my, 1, ShipPart.NAV_LIGHT_GREEN);
+    }
+
+    /** Glättet Ober- und Unterseite der Untertasse mit Halbstufen. */
+    private void smoothSaucer() {
+        for (int x = 0; x < sizeX; x++)
+            for (int z = -zOffset; z <= zOffset; z++) {
+                double dx = x - sCx;
+                double r = Math.sqrt(dx * dx + (double) z * z);
+                if (r > sR || r <= 10) continue;
+                double top = saucerTop(r);
+                int yt = (int) Math.floor(top);
+                if (top - yt >= 0.5 && compAt(x, yt, z) == SAUCER && compAt(x, yt + 1, z) == NONE) {
+                    ShipPart below = get(x, yt, z);
+                    set(x, yt + 1, z, below == ShipPart.HULL_MARKING ? ShipPart.HULL_MARKING_SLAB : ShipPart.HULL_PLATING_SLAB,
+                        Direction.NORTH, 0);
+                }
+                double bot = saucerBottom(r);
+                int yb = (int) Math.ceil(bot);
+                if (yb - bot >= 0.5 && compAt(x, yb, z) == SAUCER && compAt(x, yb - 1, z) == NONE) {
+                    set(x, yb - 1, z, ShipPart.HULL_PLATING_SLAB, Direction.NORTH, 1);
+                }
+            }
+    }
+
     // =====================================================================================
     //  Räume in Originalgröße
     // =====================================================================================
 
-    /** Kommandobrücke: rund, Ø 15 m, Hauptbildschirm vorne, Sessel in der Mitte, Stationen ringsum. */
+    /**
+     * Kommandobrücke nach dem Vorbild der Originalserie (Ø 15 m): Kommandomulde mit Sessel und
+     * Steuerkonsole, rotes Geländer, erhöhter Außenring mit Stationen und Wandmonitoren,
+     * roter Abschlussstreifen, Hauptbildschirm vorne, zwei Turbolift-Türen hinten.
+     */
     private void buildBridge() {
         int cx = (int) Math.round(sCx);
         int yb = bridgeFloor;
         ShipPart air = ShipPart.AIR;
-        ShipPart floor = ShipPart.DECK_FLOOR;
-        ShipPart ringFloor = ShipPart.BRIDGE_DECK;
-        ShipPart wall = ShipPart.CORRIDOR_WALL;
+        ShipPart carpet = ShipPart.BRIDGE_DECK;
         ShipPart light = ShipPart.CEILING_LIGHT;
-        ShipPart console = ShipPart.BRIDGE_CONSOLE;
-        ShipPart lcars = ShipPart.LCARS_PANEL;
-        ShipPart screen = ShipPart.VIEWSCREEN;
-        ShipPart rail = ShipPart.IRON_BARS;
 
         for (int dx = -10; dx <= 10; dx++)
             for (int dz = -10; dz <= 10; dz++) {
                 double r = Math.sqrt(dx * dx + dz * dz);
                 int x = cx + dx;
+                boolean front = dx < 0 && Math.abs(dz) <= 3;
+                boolean aft = dx > 0 && Math.abs(dz) <= 3;
                 if (r <= 7.5) {
-                    set(x, yb, dz, floor);
+                    set(x, yb, dz, carpet);
                     for (int y = yb + 1; y <= yb + 5; y++) set(x, y, dz, air);
-                    set(x, yb + 6, dz, r < 2.5 ? light : (Math.abs(r - 5.5) < 0.5 ? light : ShipPart.CEILING_PANEL));
-                    if (r > 4.6) set(x, yb + 1, dz, ringFloor); // erhöhter Außenring
-                    else if (r > 3.9 && !(dx < 0 && Math.abs(dz) <= 1) && !(dx > 0 && Math.abs(dz) <= 1)) {
-                        set(x, yb + 2, dz, rail); // Geländer zur Mittelgrube
+                    set(x, yb + 6, dz, r < 1.5 || Math.abs(r - 3.5) < 0.5 ? light : ShipPart.CEILING_PANEL);
+                    boolean gap = Math.abs(dz) <= 1; // Durchgänge vorne und hinten
+                    if (r > 5.2) {
+                        set(x, yb + 1, dz, carpet); // erhöhter Außenring
+                    } else if (r > 4.2) {
+                        if (gap) {
+                            set(x, yb + 1, dz, ShipPart.STEP_SLAB, Direction.NORTH, 0); // Stufe
+                        } else {
+                            set(x, yb + 1, dz, ShipPart.HULL_MARKING); // schwarze Stufenkante
+                            set(x, yb + 2, dz, ShipPart.BRIDGE_RAILING);
+                        }
+                    }
+                    // Stationen am Außenrand des Rings
+                    if (r > 6.5 && !front && !aft) {
+                        int variant = Math.floorMod((int) Math.round(Math.atan2(dz, dx) * 3), 4);
+                        set(x, yb + 2, dz, ShipPart.BRIDGE_STATION, inwardFacing(dx, dz), variant);
                     }
                 } else if (r <= 10) {
-                    // Innenwand: Stationen + LCARS-Anzeigen, Blickrichtung zur Mitte (Außenhülle bleibt)
+                    // Wand (die Außenhülle bleibt erhalten)
                     if (!isInterior(x, yb + 2, dz)) continue;
-                    Direction in = inwardFacing(dx, dz);
-                    boolean front = dx < 0 && Math.abs(dz) <= 3;
-                    boolean aft = dx > 0 && Math.abs(dz) <= 3;
-                    for (int y = yb; y <= yb + 5; y++) if (isInterior(x, y, dz)) set(x, y, dz, wall);
-                    if (r <= 8.5 && !front && !aft) {
-                        set(x, yb + 2, dz, console, in);
-                        set(x, yb + 3, dz, lcars, in);
-                        set(x, yb + 4, dz, lcars, in);
+                    for (int y = yb; y <= yb + 5; y++) if (isInterior(x, y, dz)) set(x, y, dz, ShipPart.BRIDGE_WALL);
+                    if (r <= 8.5) {
+                        set(x, yb + 5, dz, ShipPart.BRIDGE_TRIM);
+                        if (!front && !aft) {
+                            int variant = Math.floorMod((int) Math.round(Math.atan2(dz, dx) * 5), 4);
+                            set(x, yb + 3, dz, ShipPart.BRIDGE_MONITOR, inwardFacing(dx, dz), variant);
+                        }
                     }
                 }
             }
-        // Hauptbildschirm vorne (5 x 3)
-        for (int dz = -2; dz <= 2; dz++)
+        // Hauptbildschirm vorne (7 x 3) mit Rahmen
+        for (int dz = -3; dz <= 3; dz++)
             for (int y = yb + 2; y <= yb + 4; y++)
-                set(cx - 8, y, dz, screen, Direction.SOUTH);
-        // Steuer- und Navigationskonsole
-        set(cx - 3, yb + 1, -1, console, Direction.NORTH);
-        set(cx - 3, yb + 1, 1, console, Direction.NORTH);
-        set(cx - 3, yb + 1, 0, lcars, Direction.NORTH);
+                set(cx - 8, y, dz, ShipPart.VIEWSCREEN, Direction.SOUTH);
+        // Steuer-/Navigationskonsole mit zwei Stühlen
+        for (int dz = -1; dz <= 1; dz++) set(cx - 3, yb + 1, dz, ShipPart.HELM_CONSOLE, Direction.SOUTH);
+        set(cx - 2, yb + 1, -1, ShipPart.STATION_CHAIR, Direction.NORTH);
+        set(cx - 2, yb + 1, 1, ShipPart.STATION_CHAIR, Direction.NORTH);
         // Kommandantensessel
-        set(cx, yb + 1, 0, ShipPart.CAPTAINS_CHAIR, Direction.NORTH);
-        bridgeSpawn = new BlockPos(cx + 1, yb + 1, 0);
+        set(cx + 1, yb + 1, 0, ShipPart.CAPTAINS_CHAIR, Direction.NORTH);
+        // Stühle an Wissenschafts- und Kommunikationsstation
+        set(cx + 4, yb + 2, 5, ShipPart.STATION_CHAIR, Direction.EAST);
+        set(cx + 4, yb + 2, -5, ShipPart.STATION_CHAIR, Direction.WEST);
+        // Turbolift-Türen mit leuchtendem Rahmen
+        for (int side : new int[] {-1, 1}) {
+            int z = 2 * side;
+            set(cx + 8, yb + 3, z, ShipPart.TURBOLIFT_DOOR, Direction.NORTH);
+            for (int dz : new int[] {-1, 1}) {
+                set(cx + 8, yb + 2, z + dz, ShipPart.TURBOLIFT_FRAME);
+                set(cx + 8, yb + 3, z + dz, ShipPart.TURBOLIFT_FRAME);
+            }
+            set(cx + 8, yb + 4, z, ShipPart.TURBOLIFT_FRAME);
+        }
+        bridgeSpawn = new BlockPos(cx + 2, yb + 1, 0);
     }
 
     private static Direction inwardFacing(int dx, int dz) {
@@ -487,7 +634,10 @@ public final class EnterpriseBlueprint {
 
     /** Hohler Raum mit Wänden, Boden und Decke; die Außenhülle bleibt erhalten. */
     private void room(int x0, int x1, int y0, int y1, int z0, int z1) {
-        ShipPart wall = ShipPart.CORRIDOR_WALL;
+        room(x0, x1, y0, y1, z0, z1, ShipPart.CORRIDOR_WALL);
+    }
+
+    private void room(int x0, int x1, int y0, int y1, int z0, int z1, ShipPart wall) {
         ShipPart floor = ShipPart.DECK_FLOOR;
         ShipPart air = ShipPart.AIR;
         for (int x = x0; x <= x1; x++)
@@ -575,26 +725,46 @@ public final class EnterpriseBlueprint {
         return lift;
     }
 
-    /** Transporterraum (9 x 9 m) mit sechs Plattformen in der Untertassensektion. */
+    /**
+     * Transporterraum nach dem Vorbild der Originalserie: lila Wände, erhöhte rote Plattform mit
+     * Stufe und sechs Transporterfeldern, grün schimmernde Energiewand mit Säulen dahinter,
+     * Strahler an der Decke und die Bedienkonsole davor.
+     */
     private BlockPos buildTransporterRoom() {
-        for (int off = 14; off <= sR * 0.7; off += 2) {
+        for (int off = 9; off <= sR * 0.7; off++) {
             int xt = (int) Math.round(sCx + off);
-            for (int f = sizeY - 6; f > 0; f--) {
+            for (int f = sizeY - 7; f > 0; f--) {
                 // Nur der begehbare Innenraum muss im Schiff liegen, Boden/Decke/Wände dürfen Hülle sein
-                if (!boxInterior(xt - 4, xt + 4, f + 1, f + 3, -4, 4)) continue;
-                room(xt - 5, xt + 5, f, f + 4, -5, 5);
-                ShipPart pad = ShipPart.TRANSPORTER_PAD;
-                ShipPart light = ShipPart.CEILING_LIGHT;
-                for (int px : new int[] {xt + 1, xt + 3})
-                    for (int pz : new int[] {-2, 0, 2}) {
-                        set(px, f + 1, pz, pad);
-                        set(px, f + 4, pz, light); // auch wenn die Decke Außenhülle ist
+                if (!boxInterior(xt - 4, xt + 4, f + 1, f + 4, -4, 4)) continue;
+                room(xt - 5, xt + 5, f, f + 5, -5, 5, ShipPart.TRANSPORTER_WALL);
+                // Plattform (abgerundet) mit Stufe davor
+                for (int x = xt; x <= xt + 4; x++)
+                    for (int z = -4; z <= 4; z++) {
+                        double d = Math.sqrt(Math.pow(x - (xt + 4), 2) * 0.6 + z * z);
+                        if (d <= 4.6) set(x, f + 1, z, ShipPart.TRANSPORTER_PLATFORM);
+                        else if (d <= 5.6) set(x, f + 1, z, ShipPart.STEP_SLAB, Direction.NORTH, 0);
                     }
-                set(xt - 3, f + 1, 0, ShipPart.BRIDGE_CONSOLE, Direction.NORTH);
-                set(xt - 3, f + 1, 1, ShipPart.LCARS_PANEL, Direction.NORTH);
-                set(xt - 3, f + 4, 0, light);
+                for (int z = -3; z <= 3; z++) if (get(xt - 1, f + 1, z) == ShipPart.AIR) set(xt - 1, f + 1, z, ShipPart.STEP_SLAB, Direction.NORTH, 0);
+                // Sechs Transporterfelder: hinten drei, vorne drei versetzt
+                int[][] pads = {{xt + 3, -2}, {xt + 3, 0}, {xt + 3, 2}, {xt + 1, -2}, {xt + 1, 0}, {xt + 1, 2}};
+                for (int[] pd : pads) {
+                    set(pd[0], f + 2, pd[1], ShipPart.TRANSPORTER_PAD);
+                    set(pd[0], f + 5, pd[1], ShipPart.TRANSPORTER_EMITTER); // Strahler in der Decke
+                }
+                // Energiewand mit Säulen an der Rückwand
+                for (int z = -4; z <= 4; z++)
+                    for (int y = f + 2; y <= f + 4; y++) {
+                        boolean pillar = Math.floorMod(z, 3) == 2 || Math.abs(z) == 4;
+                        set(xt + 5, y, z, pillar ? ShipPart.TRANSPORTER_PILLAR : ShipPart.TRANSPORTER_ENERGIZER);
+                    }
+                // Bedienkonsole vor der Plattform, Bediener schaut nach achtern
+                set(xt - 3, f + 1, 0, ShipPart.TRANSPORTER_CONSOLE, Direction.NORTH);
+                set(xt - 3, f + 5, 0, ShipPart.CEILING_LIGHT);
+                set(xt - 1, f + 5, -3, ShipPart.CEILING_LIGHT);
+                set(xt - 1, f + 5, 3, ShipPart.CEILING_LIGHT);
                 BlockPos lift = new BlockPos(xt - 5, f + 1, -3);
                 set(lift.getX(), lift.getY(), lift.getZ(), ShipPart.TURBOLIFT, Direction.SOUTH);
+                set(lift.getX(), lift.getY() + 1, lift.getZ(), ShipPart.TURBOLIFT_DOOR, Direction.SOUTH);
                 return lift;
             }
         }
@@ -628,17 +798,20 @@ public final class EnterpriseBlueprint {
         for (int x = 0; x < sizeX; x++)
             for (int y = 0; y < sizeY; y++)
                 for (int z = -zOffset; z <= zOffset; z++) {
-                    if (get(x, y, z) != ShipPart.IRON_BARS) continue;
+                    ShipPart self = get(x, y, z);
+                    if (self != ShipPart.IRON_BARS && self != ShipPart.BRIDGE_RAILING) continue;
                     int code = cell[idx(x, y, z)];
-                    if (connects(get(x - 1, y, z))) code |= 1 << (8 + Direction.NORTH.get2DDataValue());
-                    if (connects(get(x + 1, y, z))) code |= 1 << (8 + Direction.SOUTH.get2DDataValue());
-                    if (connects(get(x, y, z + 1))) code |= 1 << (8 + Direction.EAST.get2DDataValue());
-                    if (connects(get(x, y, z - 1))) code |= 1 << (8 + Direction.WEST.get2DDataValue());
+                    code &= 0xFF; // Varianten-Bits löschen, hier stehen die Verbindungen
+                    if (connects(self, get(x - 1, y, z))) code |= 1 << (8 + Direction.NORTH.get2DDataValue());
+                    if (connects(self, get(x + 1, y, z))) code |= 1 << (8 + Direction.SOUTH.get2DDataValue());
+                    if (connects(self, get(x, y, z + 1))) code |= 1 << (8 + Direction.EAST.get2DDataValue());
+                    if (connects(self, get(x, y, z - 1))) code |= 1 << (8 + Direction.WEST.get2DDataValue());
                     cell[idx(x, y, z)] = (short) code;
                 }
     }
 
-    private static boolean connects(ShipPart n) {
+    private static boolean connects(ShipPart self, ShipPart n) {
+        if (self == ShipPart.BRIDGE_RAILING) return n == ShipPart.BRIDGE_RAILING;
         return n != null && n != ShipPart.AIR && n != ShipPart.LADDER && n != ShipPart.CAPTAINS_CHAIR
             && n != ShipPart.TRANSPORTER_PAD;
     }

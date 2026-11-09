@@ -3,6 +3,11 @@ package de.simon.spacemod;
 import de.simon.spacemod.block.CaptainsChairBlock;
 import de.simon.spacemod.block.FacingBlock;
 import de.simon.spacemod.block.GlowParticleBlock;
+import de.simon.spacemod.block.RailingBlock;
+import de.simon.spacemod.block.ShapedFacingBlock;
+import de.simon.spacemod.block.VariantFacingBlock;
+import net.minecraft.world.level.block.SlabBlock;
+import net.minecraft.world.phys.shapes.Shapes;
 import de.simon.spacemod.block.TransporterPadBlock;
 import de.simon.spacemod.block.TurboliftBlock;
 import de.simon.spacemod.block.TurboliftBlockEntity;
@@ -49,6 +54,42 @@ public final class ModBlocks {
     public static final RegistryObject<Block> BUSSARD_COLLECTOR = block("bussard_collector",
         p -> new GlowParticleBlock(p, GlowParticleBlock.Kind.BUSSARD), glowing(metal(MapColor.COLOR_RED), 15));
     public static final RegistryObject<Block> NACELLE_GRILLE = block("nacelle_grille", Block::new, glowing(metal(MapColor.COLOR_LIGHT_BLUE), 14));
+
+    public static final RegistryObject<Block> HULL_PLATING_SLAB = block("hull_plating_slab", SlabBlock::new, metal(MapColor.QUARTZ));
+    public static final RegistryObject<Block> HULL_MARKING_SLAB = block("hull_marking_slab", SlabBlock::new, metal(MapColor.COLOR_BLACK));
+    public static final RegistryObject<Block> HULL_PENNANT = block("hull_pennant", Block::new, metal(MapColor.COLOR_RED));
+    public static final RegistryObject<Block> NAV_LIGHT_RED = block("nav_light_red", Block::new, glowing(glass(MapColor.COLOR_RED), 12));
+    public static final RegistryObject<Block> NAV_LIGHT_GREEN = block("nav_light_green", Block::new, glowing(glass(MapColor.COLOR_GREEN), 12));
+
+    // --- Brücke ---
+    public static final RegistryObject<Block> BRIDGE_WALL = block("bridge_wall", Block::new, metal(MapColor.COLOR_LIGHT_GRAY));
+    public static final RegistryObject<Block> BRIDGE_TRIM = block("bridge_trim", Block::new, glowing(metal(MapColor.COLOR_RED), 4));
+    public static final RegistryObject<Block> BRIDGE_STATION = block("bridge_station",
+        p -> new VariantFacingBlock(p, Shapes.or(Block.box(0, 0, 0, 16, 10, 16), Block.box(0, 10, 6, 16, 14, 16))),
+        glowing(metal(MapColor.COLOR_BLACK), 9).noOcclusion());
+    public static final RegistryObject<Block> BRIDGE_MONITOR = block("bridge_monitor", VariantFacingBlock::new, glowing(metal(MapColor.COLOR_GRAY), 8));
+    public static final RegistryObject<Block> BRIDGE_RAILING = block("bridge_railing", RailingBlock::new,
+        metal(MapColor.COLOR_RED).noOcclusion());
+    public static final RegistryObject<Block> STATION_CHAIR = block("station_chair",
+        p -> new ShapedFacingBlock(p, Shapes.or(Block.box(6, 0, 6, 10, 7, 10), Block.box(3, 7, 3, 13, 9, 13), Block.box(3, 9, 11, 13, 20, 14))),
+        metal(MapColor.COLOR_LIGHT_BLUE).noOcclusion());
+    public static final RegistryObject<Block> HELM_CONSOLE = block("helm_console",
+        p -> new ShapedFacingBlock(p, Block.box(0, 0, 2, 16, 12, 14)), glowing(metal(MapColor.COLOR_RED), 7).noOcclusion());
+    public static final RegistryObject<Block> TURBOLIFT_DOOR = block("turbolift_door", FacingBlock::new, metal(MapColor.COLOR_RED));
+    public static final RegistryObject<Block> TURBOLIFT_FRAME = block("turbolift_frame", Block::new, glowing(metal(MapColor.COLOR_ORANGE), 10));
+    public static final RegistryObject<Block> STEP_SLAB = block("step_slab", SlabBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(1.5F, 6F).sound(SoundType.WOOL));
+
+    // --- Transporterraum ---
+    public static final RegistryObject<Block> TRANSPORTER_WALL = block("transporter_wall", Block::new, metal(MapColor.COLOR_PURPLE));
+    public static final RegistryObject<Block> TRANSPORTER_PLATFORM = block("transporter_platform", Block::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_RED).strength(1.5F, 6F).sound(SoundType.WOOL));
+    public static final RegistryObject<Block> TRANSPORTER_ENERGIZER = block("transporter_energizer",
+        p -> new GlowParticleBlock(p, GlowParticleBlock.Kind.ENERGIZER), glowing(glass(MapColor.COLOR_GREEN), 11));
+    public static final RegistryObject<Block> TRANSPORTER_PILLAR = block("transporter_pillar", Block::new, glowing(metal(MapColor.COLOR_GRAY), 5));
+    public static final RegistryObject<Block> TRANSPORTER_EMITTER = block("transporter_emitter", Block::new, glowing(glass(MapColor.COLOR_RED), 13));
+    public static final RegistryObject<Block> TRANSPORTER_CONSOLE = block("transporter_console",
+        p -> new ShapedFacingBlock(p, Block.box(1, 0, 1, 15, 14, 15)), glowing(metal(MapColor.COLOR_RED), 7).noOcclusion());
 
     // --- Innenausstattung ---
     public static final RegistryObject<Block> DECK_FLOOR = block("deck_floor", Block::new,

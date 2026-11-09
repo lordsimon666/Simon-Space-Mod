@@ -405,6 +405,258 @@ def tex_communicator():
     return img
 
 
+def tex_bussard_orange():
+    img = new((0, 0, 0))
+    px = img.load()
+    for x in range(16):
+        for y in range(16):
+            d = math.hypot(x - 7.5, y - 7.5)
+            a = math.atan2(y - 7.5, x - 7.5)
+            swirl = (math.sin(a * 4 + d * 1.1) + 1) / 2
+            core = max(0.0, 1 - d / 9)
+            px[x, y] = (255, clamp(110 + 90 * core + 40 * swirl), clamp(30 + 80 * core * swirl), 255)
+    return img
+
+
+def tex_gray_carpet():
+    return noise(new((92, 94, 98)), 7, 30)
+
+
+def tex_bridge_wall():
+    img = noise(new((170, 172, 176)), 3, 31)
+    px = img.load()
+    for i in range(16):
+        px[i, 15] = shade(px[i, 15], -25)
+        px[15, i] = shade(px[15, i], -12)
+    return img
+
+
+def tex_bridge_trim():
+    img = noise(new((196, 30, 32)), 5, 32)
+    px = img.load()
+    for i in range(16):
+        px[i, 0] = (120, 16, 18, 255)
+        px[i, 15] = (120, 16, 18, 255)
+    return img
+
+
+STATION_LIGHTS = [(255, 120, 200), (110, 255, 150), (240, 240, 255), (255, 170, 80)]
+
+
+def tex_station_front(v):
+    img = new((26, 26, 30))
+    px = img.load()
+    c = STATION_LIGHTS[v]
+    for x in range(16):
+        for y in range(16):
+            if y < 4:
+                px[x, y] = (18, 18, 20, 255)          # schwarze Pultkante
+            elif y == 4:
+                px[x, y] = (200, 30, 32, 255)         # rote Linie
+            elif 7 <= y <= 13 and 1 <= x <= 14:
+                g = 0.75 + 0.25 * ((x + y) % 3 == 0)
+                px[x, y] = tuple(clamp(ch * g) for ch in c) + (255,)
+            else:
+                px[x, y] = (150, 152, 156, 255)
+    return img
+
+
+def tex_station_top(v):
+    img = new((16, 16, 18))
+    rnd = random.Random(40 + v)
+    px = img.load()
+    for _ in range(26):
+        x, y = rnd.randrange(1, 15), rnd.randrange(2, 15)
+        px[x, y] = rnd.choice(TOS_BUTTONS) + (255,)
+    # kleiner Bildschirm hinten
+    for x in range(4, 12):
+        for y in range(0, 2):
+            px[x, y] = [(40, 200, 120), (230, 160, 40), (90, 120, 255), (220, 60, 60)][v] + (255,)
+    return img
+
+
+MONITOR_IMAGES = ["planet", "grid", "stars", "graph"]
+
+
+def tex_monitor(v):
+    img = tex_bridge_wall()
+    px = img.load()
+    for x in range(1, 15):
+        for y in range(2, 13):
+            frame = x in (1, 14) or y in (2, 12)
+            px[x, y] = (110, 130, 175, 255) if frame else (6, 6, 12, 255)
+    rnd = random.Random(50 + v)
+    kind = MONITOR_IMAGES[v]
+    for x in range(2, 14):
+        for y in range(3, 12):
+            if kind == "planet":
+                d = math.hypot(x - 7, y - 7.5)
+                if d < 3.5:
+                    px[x, y] = (clamp(200 - d * 20), clamp(80 - d * 10), 40, 255)
+            elif kind == "grid":
+                if x % 3 == 0 or y % 3 == 0:
+                    px[x, y] = (200, 170, 60, 255)
+            elif kind == "graph":
+                if abs((y - 7) - 3 * math.sin(x / 2)) < 0.8:
+                    px[x, y] = (255, 120, 60, 255)
+    if kind in ("stars", "planet"):
+        for _ in range(8):
+            x, y = rnd.randrange(2, 14), rnd.randrange(3, 12)
+            if px[x, y][:3] == (6, 6, 12):
+                px[x, y] = (230, 230, 255, 255)
+    if kind == "stars":
+        for i in range(2, 14):
+            px[i, 3 + (i * 8) // 12] = (200, 200, 230, 255)
+    return img
+
+
+def tex_railing():
+    img = noise(new((205, 34, 36)), 6, 33)
+    return img
+
+
+def tex_trim_black():
+    return noise(new((24, 24, 26)), 3, 34)
+
+
+def tex_chair_blue():
+    return noise(new((150, 170, 225)), 5, 35)
+
+
+def tex_white():
+    return noise(new((225, 225, 222)), 3, 36)
+
+
+def tex_helm_top():
+    img = new((16, 16, 18))
+    rnd = random.Random(37)
+    px = img.load()
+    for _ in range(30):
+        x, y = rnd.randrange(1, 15), rnd.randrange(1, 15)
+        px[x, y] = rnd.choice(TOS_BUTTONS) + (255,)
+    for x in range(5, 11):
+        for y in range(5, 10):
+            px[x, y] = (40, 46, 50, 255)  # Astrogator-Schirm
+    return img
+
+
+def tex_turbolift_door_lower():
+    img = new((190, 40, 38))
+    px = img.load()
+    for x in range(16):
+        for y in range(16):
+            v = 1 if (x * 3 + y * 5) % 7 == 0 else 0
+            px[x, y] = (clamp(195 - 20 * v), 42, 40, 255)
+            if x in (7, 8):
+                px[x, y] = (90, 20, 20, 255)
+    return img
+
+
+def tex_turbolift_frame():
+    img = new((240, 160, 70))
+    px = img.load()
+    for x in range(16):
+        for y in range(16):
+            if (x + y) % 2 == 0 and x % 2 == 0:
+                px[x, y] = (255, 210, 130, 255)
+            if x in (0, 15):
+                px[x, y] = (120, 120, 124, 255)
+    return img
+
+
+def tex_transporter_wall():
+    return noise(new((168, 128, 210)), 3, 38)
+
+
+def tex_transporter_platform():
+    return noise(new((150, 28, 40)), 6, 39)
+
+
+def tex_energizer():
+    img = new((0, 0, 0))
+    px = img.load()
+    for x in range(16):
+        for y in range(16):
+            v = (math.sin(x * 0.9 + math.sin(y * 0.7) * 2.5) + 1) / 2
+            px[x, y] = (clamp(40 + 80 * v), clamp(150 + 100 * v), clamp(60 + 60 * v), 255)
+    return img
+
+
+def tex_pillar():
+    img = new((60, 60, 66))
+    px = img.load()
+    for y in range(16):
+        for x in range(6, 10):
+            px[x, y] = (190, 190, 200, 255)
+        if y % 4 == 1:
+            px[7, y] = (255, 240, 180, 255)
+            px[8, y] = (255, 240, 180, 255)
+    return img
+
+
+def tex_emitter():
+    img = new((150, 150, 158))
+    px = img.load()
+    for x in range(16):
+        for y in range(16):
+            d = math.hypot(x - 7.5, y - 7.5)
+            if d < 7:
+                px[x, y] = (40, 40, 44, 255)
+            if 4.5 < d < 6.5:
+                px[x, y] = (255, 70, 60, 255)
+            if d < 2:
+                px[x, y] = (255, 220, 200, 255)
+    return img
+
+
+def tex_transporter_console_top():
+    img = new((200, 34, 36))
+    rnd = random.Random(41)
+    px = img.load()
+    for x in range(2, 7):
+        for y in range(3, 12):
+            px[x, y] = (20, 20, 22, 255)
+    for x in range(8, 14):
+        for y in range(9, 13):
+            px[x, y] = (230, 200, 90, 255)
+    for _ in range(14):
+        x, y = rnd.randrange(8, 15), rnd.randrange(1, 8)
+        px[x, y] = rnd.choice([(255, 200, 40), (255, 255, 255), (60, 220, 60)]) + (255,)
+    return img
+
+
+def tex_pad_disk():
+    img = new((150, 28, 40))  # Plattform-Rot in den Ecken
+    px = img.load()
+    for x in range(16):
+        for y in range(16):
+            d = math.hypot(x - 7.5, y - 7.5)
+            if d < 7.6:
+                px[x, y] = (200, 200, 208, 255)
+            if 5.5 < d < 6.4:
+                px[x, y] = (120, 120, 130, 255)
+            if d < 2.5:
+                px[x, y] = (255, 250, 210, 255)
+    return img
+
+
+def tex_nav(c):
+    img = new(c)
+    px = img.load()
+    for x in range(16):
+        for y in range(16):
+            d = math.hypot(x - 7.5, y - 7.5)
+            if d < 4:
+                px[x, y] = (255, 255, 255, 255)
+            elif d < 7:
+                px[x, y] = tuple(clamp(ch + 40) for ch in c) + (255,)
+    return img
+
+
+def tex_pennant():
+    return noise(new((176, 36, 36)), 4, 42)
+
+
 TEXTURES = {
     "hull_plating": tex_hull_plating,
     "hull_panel": tex_hull_panel,
@@ -412,10 +664,32 @@ TEXTURES = {
     "hull_window": tex_hull_window,
     "hull_marking": tex_hull_marking,
     "deflector_dish": tex_deflector,
-    "bussard_collector": tex_bussard,
+    "bussard_collector": tex_bussard_orange,
     "nacelle_grille": tex_nacelle_grille,
     "deck_floor": tex_deck_floor,
-    "bridge_deck": tex_bridge_deck,
+    "bridge_deck": tex_gray_carpet,
+    "bridge_wall": tex_bridge_wall,
+    "bridge_trim": tex_bridge_trim,
+    "bridge_railing": tex_railing,
+    "trim_black": tex_trim_black,
+    "chair_blue": tex_chair_blue,
+    "chair_white": tex_white,
+    "helm_top": tex_helm_top,
+    "turbolift_door_lower": tex_turbolift_door_lower,
+    "turbolift_frame": tex_turbolift_frame,
+    "transporter_wall": tex_transporter_wall,
+    "transporter_platform": tex_transporter_platform,
+    "transporter_energizer": tex_energizer,
+    "transporter_pillar": tex_pillar,
+    "transporter_emitter": tex_emitter,
+    "transporter_console_top": tex_transporter_console_top,
+    "transporter_pad_disk": tex_pad_disk,
+    "nav_light_red": lambda: tex_nav((210, 20, 20)),
+    "nav_light_green": lambda: tex_nav((20, 200, 50)),
+    "hull_pennant": tex_pennant,
+    **{f"bridge_station_front_{v}": (lambda v=v: tex_station_front(v)) for v in range(4)},
+    **{f"bridge_station_top_{v}": (lambda v=v: tex_station_top(v)) for v in range(4)},
+    **{f"bridge_monitor_{v}": (lambda v=v: tex_monitor(v)) for v in range(4)},
     "corridor_wall": tex_corridor_wall,
     "ceiling_light": tex_ceiling_light,
     "ceiling_panel": tex_ceiling_panel,
@@ -434,7 +708,7 @@ TEXTURES = {
     "plasma_conduit": tex_plasma_conduit,
     "transporter_pad_top": tex_transporter_pad_top,
     "transporter_pad_side": tex_transporter_pad_side,
-    "turbolift_front": tex_turbolift_front,
+    "turbolift_front": tex_turbolift_door_lower,
     "item/communicator": tex_communicator,
 }
 
@@ -447,7 +721,9 @@ def b(name):
     return f"{MODID}:block/{name}"
 
 
-SIMPLE = ["hull_plating", "hull_panel", "hull_dark", "hull_window", "hull_marking", "deflector_dish",
+SIMPLE = ["bridge_wall", "bridge_trim", "turbolift_frame", "transporter_wall", "transporter_platform",
+          "transporter_energizer", "transporter_emitter", "nav_light_red", "nav_light_green", "hull_pennant",
+          "hull_plating", "hull_panel", "hull_dark", "hull_window", "hull_marking", "deflector_dish",
           "bussard_collector", "nacelle_grille", "deck_floor", "bridge_deck", "corridor_wall",
           "ceiling_light", "ceiling_panel", "plasma_conduit"]
 
@@ -464,6 +740,11 @@ FACING = {
     "turbolift": {"parent": "minecraft:block/orientable",
                   "textures": {"front": b("turbolift_front"), "side": b("hull_panel"), "top": b("hull_panel")}},
     "captains_chair": None,  # eigenes Modell, siehe unten
+    "turbolift_door": {"parent": "minecraft:block/orientable",
+                       "textures": {"front": b("turbolift_door_lower"), "side": b("bridge_wall"), "top": b("bridge_wall")}},
+    "station_chair": None,
+    "helm_console": None,
+    "transporter_console": None,
 }
 
 
@@ -471,33 +752,154 @@ def box(fr, to, tex):
     return {"from": fr, "to": to, "faces": {f: {"texture": tex} for f in ["north", "south", "east", "west", "up", "down"]}}
 
 
+def el(fr, to, faces):
+    return {"from": fr, "to": to, "faces": {f: {"texture": t} for f, t in faces.items()}}
+
+
+def all6(t):
+    return {f: t for f in ["north", "south", "east", "west", "up", "down"]}
+
+
 CHAIR = {
     "parent": "minecraft:block/block",
-    "textures": {"particle": b("chair_metal"), "seat": b("chair_seat"), "metal": b("chair_metal"), "panel": b("chair_panel")},
+    "textures": {"particle": b("chair_white"), "seat": b("chair_seat"), "white": b("chair_white"),
+                 "metal": b("chair_metal"), "panel": b("chair_panel")},
     "elements": [
-        box([5, 0, 5], [11, 1, 11], "#metal"),           # Fuß
-        box([7, 1, 7], [9, 6, 9], "#metal"),             # Säule
-        box([2, 6, 2], [14, 9, 14], "#seat"),            # Sitz
-        box([2, 9, 12], [14, 20, 15], "#seat"),          # Rückenlehne (Rückseite = Süden)
-        box([0, 9, 3], [2, 12, 14], "#metal"),           # Armlehne links
-        box([14, 9, 3], [16, 12, 14], "#metal"),         # Armlehne rechts
-        {"from": [0, 12, 3], "to": [2, 12.5, 9], "faces": {"up": {"texture": "#panel"}, "north": {"texture": "#metal"}}},
-        {"from": [14, 12, 3], "to": [16, 12.5, 9], "faces": {"up": {"texture": "#panel"}, "north": {"texture": "#metal"}}},
+        el([2, 0, 2], [14, 3, 14], all6("#white")),             # weißer Sockel
+        el([5, 3, 5], [11, 7, 11], all6("#metal")),             # Säule
+        el([3, 7, 3], [13, 10, 13], all6("#seat")),             # Sitz
+        el([3, 10, 12], [13, 21, 15], all6("#seat")),           # Rückenlehne (Süden)
+        el([0, 7, 2], [3, 13, 13], all6("#white")),             # Armlehne links
+        el([13, 7, 2], [16, 13, 13], all6("#white")),           # Armlehne rechts
+        el([0, 13, 2], [3, 13.5, 8], {"up": "#panel", "north": "#metal"}),
+        el([13, 13, 2], [16, 13.5, 8], {"up": "#panel", "north": "#metal"}),
     ],
 }
 
+STATION_CHAIR = {
+    "parent": "minecraft:block/block",
+    "textures": {"particle": b("chair_blue"), "blue": b("chair_blue"), "seat": b("chair_seat"), "metal": b("chair_metal")},
+    "elements": [
+        el([4, 0, 4], [12, 1, 12], all6("#metal")),
+        el([7, 1, 7], [9, 7, 9], all6("#metal")),
+        el([3, 7, 3], [13, 9, 13], {"up": "#seat", "down": "#blue", "north": "#blue", "south": "#blue", "east": "#blue", "west": "#blue"}),
+        el([3, 9, 11], [13, 20, 14], {"north": "#seat", "south": "#seat", "east": "#blue", "west": "#blue", "up": "#blue", "down": "#blue"}),
+    ],
+}
+
+HELM = {
+    "parent": "minecraft:block/block",
+    "textures": {"particle": b("bridge_railing"), "red": b("bridge_railing"), "top": b("helm_top"), "black": b("trim_black")},
+    "elements": [
+        el([1, 0, 4], [15, 9, 13], all6("#red")),
+        el([0, 9, 2], [16, 11, 14], {"up": "#top", "down": "#black", "north": "#black", "south": "#black", "east": "#black", "west": "#black"}),
+        el([6, 11, 7], [10, 13, 10], all6("#black")),           # Astrogator-Haube
+    ],
+}
+
+TRANSPORTER_CONSOLE = {
+    "parent": "minecraft:block/block",
+    "textures": {"particle": b("transporter_console_top"), "top": b("transporter_console_top"),
+                 "gray": b("console_side"), "red": b("bridge_railing")},
+    "elements": [
+        el([5, 0, 3], [11, 1, 13], all6("#gray")),
+        el([6, 1, 6], [10, 9, 10], all6("#gray")),              # Ständer
+        {"from": [1, 9, 2], "to": [15, 12, 14],
+         "rotation": {"origin": [8, 10, 8], "axis": "x", "angle": 22.5},
+         "faces": {"up": {"texture": "#top"}, "down": {"texture": "#gray"}, "north": {"texture": "#red"},
+                   "south": {"texture": "#red"}, "east": {"texture": "#red"}, "west": {"texture": "#red"}}},
+    ],
+}
+
+
+def station_model(v):
+    return {
+        "parent": "minecraft:block/block",
+        "textures": {"particle": b("console_side"), "front": b(f"bridge_station_front_{v}"),
+                     "top": b(f"bridge_station_top_{v}"), "side": b("console_side"), "black": b("trim_black")},
+        "elements": [
+            {"from": [0, 0, 0], "to": [16, 10, 16],
+             "faces": {"north": {"texture": "#front", "uv": [0, 0, 16, 16]}, "south": {"texture": "#side"},
+                       "east": {"texture": "#side"}, "west": {"texture": "#side"},
+                       "up": {"texture": "#black"}, "down": {"texture": "#side"}}},
+            {"from": [0, 10, 5], "to": [16, 13, 16],
+             "rotation": {"origin": [8, 10, 8], "axis": "x", "angle": -22.5},
+             "faces": {"up": {"texture": "#top"}, "north": {"texture": "#black"}, "south": {"texture": "#black"},
+                       "east": {"texture": "#black"}, "west": {"texture": "#black"}, "down": {"texture": "#black"}}},
+        ],
+    }
+
+
+def monitor_model(v):
+    return {"parent": "minecraft:block/orientable",
+            "textures": {"front": b(f"bridge_monitor_{v}"), "side": b("bridge_wall"), "top": b("bridge_wall")}}
+
+
+RAIL_POST = {
+    "parent": "minecraft:block/block",
+    "ambientocclusion": False,
+    "textures": {"particle": b("bridge_railing"), "red": b("bridge_railing"), "black": b("trim_black")},
+    "elements": [
+        el([7.25, 0, 7.25], [8.75, 12, 8.75], all6("#black")),
+        el([6.5, 12, 6.5], [9.5, 14.5, 9.5], all6("#red")),
+    ],
+}
+
+RAIL_SIDE = {
+    "parent": "minecraft:block/block",
+    "ambientocclusion": False,
+    "textures": {"particle": b("bridge_railing"), "red": b("bridge_railing"), "black": b("trim_black")},
+    "elements": [
+        el([6.5, 12, 0], [9.5, 14.5, 8], all6("#red")),
+    ],
+}
+
+
+def railing_blockstate():
+    parts = [{"apply": {"model": b("bridge_railing_post")}}]
+    for d, y in (("north", 0), ("east", 90), ("south", 180), ("west", 270)):
+        m = {"model": b("bridge_railing_side")}
+        if y:
+            m["y"] = y
+        parts.append({"apply": m, "when": {d: "true"}})
+    return {"multipart": parts}
+
+
+def variant_facing_blockstate(name):
+    rot = {"north": 0, "east": 90, "south": 180, "west": 270}
+    variants = {}
+    for d, r in rot.items():
+        for v in range(4):
+            m = {"model": b(f"{name}_{v}")}
+            if r:
+                m["y"] = r
+            variants[f"facing={d},variant={v}"] = m
+    return {"variants": variants}
+
+
+def slab_assets(name, tex):
+    write_json(os.path.join(ASSETS, "models", "block", name + ".json"),
+               {"parent": "minecraft:block/slab", "textures": {"bottom": b(tex), "top": b(tex), "side": b(tex)}})
+    write_json(os.path.join(ASSETS, "models", "block", name + "_top.json"),
+               {"parent": "minecraft:block/slab_top", "textures": {"bottom": b(tex), "top": b(tex), "side": b(tex)}})
+    write_json(os.path.join(ASSETS, "blockstates", name + ".json"), {"variants": {
+        "type=bottom": {"model": b(name)}, "type=top": {"model": b(name + "_top")}, "type=double": {"model": b(tex)}}})
+    write_json(os.path.join(ASSETS, "items", name + ".json"), item_def(b(name)))
+    write_json(os.path.join(DATA, "loot_table", "blocks", name + ".json"), loot(name))
+
+
 PAD = {
     "parent": "minecraft:block/block",
-    "textures": {"particle": b("transporter_pad_side"), "top": b("transporter_pad_top"), "side": b("transporter_pad_side")},
+    "textures": {"particle": b("transporter_pad_side"), "top": b("transporter_pad_disk"), "side": b("transporter_pad_side")},
     "elements": [{
-        "from": [0, 0, 0], "to": [16, 3, 16],
+        "from": [0, 0, 0], "to": [16, 1, 16],
         "faces": {
             "up": {"texture": "#top"},
             "down": {"texture": "#side"},
-            "north": {"texture": "#side", "uv": [0, 13, 16, 16]},
-            "south": {"texture": "#side", "uv": [0, 13, 16, 16]},
-            "east": {"texture": "#side", "uv": [0, 13, 16, 16]},
-            "west": {"texture": "#side", "uv": [0, 13, 16, 16]},
+            "north": {"texture": "#side", "uv": [0, 15, 16, 16]},
+            "south": {"texture": "#side", "uv": [0, 15, 16, 16]},
+            "east": {"texture": "#side", "uv": [0, 15, 16, 16]},
+            "west": {"texture": "#side", "uv": [0, 15, 16, 16]},
         },
     }],
 }
@@ -525,8 +927,29 @@ NAMES = {
     "captains_chair": ("Kommandantensessel", "Captain's Chair"),
     "warp_core": ("Warpkern", "Warp Core"),
     "plasma_conduit": ("Plasmaleitung", "Plasma Conduit"),
-    "transporter_pad": ("Transporterplattform", "Transporter Pad"),
+    "transporter_pad": ("Transporterfeld", "Transporter Pad"),
     "turbolift": ("Turbolift", "Turbolift"),
+    "hull_plating_slab": ("Hüllenpanzerungs-Stufe", "Hull Plating Slab"),
+    "hull_marking_slab": ("Kennungsmarkierungs-Stufe", "Registry Marking Slab"),
+    "hull_pennant": ("Roter Zierstreifen", "Red Pennant Stripe"),
+    "nav_light_red": ("Positionslicht (rot)", "Navigation Light (Red)"),
+    "nav_light_green": ("Positionslicht (grün)", "Navigation Light (Green)"),
+    "bridge_wall": ("Brückenwand", "Bridge Wall"),
+    "bridge_trim": ("Roter Brücken-Abschlussstreifen", "Red Bridge Trim"),
+    "bridge_station": ("Brückenstation", "Bridge Station"),
+    "bridge_monitor": ("Brückenmonitor", "Bridge Monitor"),
+    "bridge_railing": ("Brückengeländer", "Bridge Railing"),
+    "station_chair": ("Stationsstuhl", "Station Chair"),
+    "helm_console": ("Steuerkonsole", "Helm Console"),
+    "turbolift_door": ("Turbolift-Tür", "Turbolift Door"),
+    "turbolift_frame": ("Turbolift-Rahmen", "Turbolift Frame"),
+    "step_slab": ("Stufe", "Step"),
+    "transporter_wall": ("Transporterraum-Wand", "Transporter Room Wall"),
+    "transporter_platform": ("Transporterplattform-Boden", "Transporter Platform Floor"),
+    "transporter_energizer": ("Transporter-Energiewand", "Transporter Energizer"),
+    "transporter_pillar": ("Transporter-Säule", "Transporter Pillar"),
+    "transporter_emitter": ("Transporter-Strahler", "Transporter Emitter"),
+    "transporter_console": ("Transporterkonsole", "Transporter Console"),
 }
 
 
@@ -556,10 +979,15 @@ def main():
         save(fn(), name)
 
     models = {}
+    models_extra = []
     for name in SIMPLE:
         models[name] = {"parent": "minecraft:block/cube_all", "textures": {"all": b(name)}}
+    custom = {"captains_chair": CHAIR, "station_chair": STATION_CHAIR, "helm_console": HELM,
+              "transporter_console": TRANSPORTER_CONSOLE}
     for name, model in FACING.items():
-        models[name] = model if model else CHAIR
+        models[name] = model if model else custom[name]
+    models["transporter_pillar"] = {"parent": "minecraft:block/cube_column",
+                                    "textures": {"end": b("trim_black"), "side": b("transporter_pillar")}}
     models["transporter_pad"] = PAD
     models["warp_core"] = WARP_CORE
 
@@ -572,6 +1000,31 @@ def main():
         write_json(os.path.join(ASSETS, "items", name + ".json"), item_def(b(name)))
         write_json(os.path.join(DATA, "loot_table", "blocks", name + ".json"), loot(name))
 
+    # Blöcke mit Varianten (Stationen, Monitore)
+    for name, fn in (("bridge_station", station_model), ("bridge_monitor", monitor_model)):
+        for v in range(4):
+            write_json(os.path.join(ASSETS, "models", "block", f"{name}_{v}.json"), fn(v))
+        write_json(os.path.join(ASSETS, "blockstates", name + ".json"), variant_facing_blockstate(name))
+        write_json(os.path.join(ASSETS, "items", name + ".json"), item_def(b(f"{name}_0")))
+        write_json(os.path.join(DATA, "loot_table", "blocks", name + ".json"), loot(name))
+        models_extra.append(name)
+    # Geländer (verbindet sich wie Eisengitter)
+    write_json(os.path.join(ASSETS, "models", "block", "bridge_railing_post.json"), RAIL_POST)
+    write_json(os.path.join(ASSETS, "models", "block", "bridge_railing_side.json"), RAIL_SIDE)
+    write_json(os.path.join(ASSETS, "models", "block", "bridge_railing_inventory.json"),
+               {"parent": "minecraft:block/block", "textures": RAIL_SIDE["textures"],
+                "elements": RAIL_POST["elements"] + RAIL_SIDE["elements"]})
+    write_json(os.path.join(ASSETS, "blockstates", "bridge_railing.json"), railing_blockstate())
+    write_json(os.path.join(ASSETS, "items", "bridge_railing.json"), item_def(b("bridge_railing_inventory")))
+    write_json(os.path.join(DATA, "loot_table", "blocks", "bridge_railing.json"), loot("bridge_railing"))
+    models_extra.append("bridge_railing")
+    # Halbstufen
+    for name, tex in (("hull_plating_slab", "hull_plating"), ("hull_marking_slab", "hull_marking"), ("step_slab", "trim_black")):
+        slab_assets(name, tex)
+        models_extra.append(name)
+    write_json(os.path.join(ASSETS, "models", "block", "trim_black.json"),
+               {"parent": "minecraft:block/cube_all", "textures": {"all": b("trim_black")}})
+
     # Kommunikator (Item)
     write_json(os.path.join(ASSETS, "models", "item", "communicator.json"),
                {"parent": "minecraft:item/generated", "textures": {"layer0": f"{MODID}:item/communicator"}})
@@ -579,7 +1032,7 @@ def main():
 
     # Mit der Spitzhacke abbaubar
     write_json(os.path.join(ROOT, "data", "minecraft", "tags", "block", "mineable", "pickaxe.json"),
-               {"values": [f"{MODID}:{n}" for n in models]})
+               {"values": [f"{MODID}:{n}" for n in list(models) + models_extra]})
 
     de = {f"block.{MODID}.{k}": v[0] for k, v in NAMES.items()}
     en = {f"block.{MODID}.{k}": v[1] for k, v in NAMES.items()}

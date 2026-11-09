@@ -1,0 +1,43 @@
+{
+  "parent": "minecraft:block/block",
+  "ambientocclusion": false,
+  "textures": {
+    "particle": "simonspacemod:block/bridge_railing",
+    "red": "simonspacemod:block/bridge_railing",
+    "black": "simonspacemod:block/trim_black"
+  },
+  "elements": [
+    {
+      "from": [
+        6.5,
+        12,
+        0
+      ],
+      "to": [
+        9.5,
+        14.5,
+        8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#red"
+        },
+        "south": {
+          "texture": "#red"
+        },
+        "east": {
+          "texture": "#red"
+        },
+        "west": {
+          "texture": "#red"
+        },
+        "up": {
+          "texture": "#red"
+        },
+        "down": {
+          "texture": "#red"
+        }
+      }
+    }
+  ]
+}

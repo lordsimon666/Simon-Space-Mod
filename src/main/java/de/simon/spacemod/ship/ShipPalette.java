@@ -5,6 +5,9 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CrossCollisionBlock;
 import net.minecraft.world.level.block.LadderBlock;
+import net.minecraft.world.level.block.SlabBlock;
+import net.minecraft.world.level.block.state.properties.SlabType;
+import de.simon.spacemod.block.VariantFacingBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
@@ -40,15 +43,50 @@ public final class ShipPalette {
             case TRANSPORTER_PAD -> ModBlocks.TRANSPORTER_PAD.get().defaultBlockState();
             case TURBOLIFT -> ModBlocks.TURBOLIFT.get().defaultBlockState();
             case LADDER -> Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING, facing);
+            case HULL_PLATING_SLAB -> slab(ModBlocks.HULL_PLATING_SLAB.get().defaultBlockState(), cellCode);
+            case HULL_MARKING_SLAB -> slab(ModBlocks.HULL_MARKING_SLAB.get().defaultBlockState(), cellCode);
+            case STEP_SLAB -> slab(ModBlocks.STEP_SLAB.get().defaultBlockState(), cellCode);
+            case HULL_PENNANT -> ModBlocks.HULL_PENNANT.get().defaultBlockState();
+            case NAV_LIGHT_RED -> ModBlocks.NAV_LIGHT_RED.get().defaultBlockState();
+            case NAV_LIGHT_GREEN -> ModBlocks.NAV_LIGHT_GREEN.get().defaultBlockState();
+            case BRIDGE_WALL -> ModBlocks.BRIDGE_WALL.get().defaultBlockState();
+            case BRIDGE_TRIM -> ModBlocks.BRIDGE_TRIM.get().defaultBlockState();
+            case BRIDGE_STATION -> ModBlocks.BRIDGE_STATION.get().defaultBlockState()
+                .setValue(VariantFacingBlock.VARIANT, EnterpriseBlueprint.variant(cellCode));
+            case BRIDGE_MONITOR -> ModBlocks.BRIDGE_MONITOR.get().defaultBlockState()
+                .setValue(VariantFacingBlock.VARIANT, EnterpriseBlueprint.variant(cellCode));
+            case STATION_CHAIR -> ModBlocks.STATION_CHAIR.get().defaultBlockState();
+            case HELM_CONSOLE -> ModBlocks.HELM_CONSOLE.get().defaultBlockState();
+            case TURBOLIFT_DOOR -> ModBlocks.TURBOLIFT_DOOR.get().defaultBlockState();
+            case TURBOLIFT_FRAME -> ModBlocks.TURBOLIFT_FRAME.get().defaultBlockState();
+            case TRANSPORTER_WALL -> ModBlocks.TRANSPORTER_WALL.get().defaultBlockState();
+            case TRANSPORTER_PLATFORM -> ModBlocks.TRANSPORTER_PLATFORM.get().defaultBlockState();
+            case TRANSPORTER_ENERGIZER -> ModBlocks.TRANSPORTER_ENERGIZER.get().defaultBlockState();
+            case TRANSPORTER_PILLAR -> ModBlocks.TRANSPORTER_PILLAR.get().defaultBlockState();
+            case TRANSPORTER_EMITTER -> ModBlocks.TRANSPORTER_EMITTER.get().defaultBlockState();
+            case TRANSPORTER_CONSOLE -> ModBlocks.TRANSPORTER_CONSOLE.get().defaultBlockState();
+            case BRIDGE_RAILING -> bars(ModBlocks.BRIDGE_RAILING.get().defaultBlockState(), cellCode);
             case IRON_BARS -> Blocks.IRON_BARS.defaultBlockState()
                 .setValue(CrossCollisionBlock.NORTH, EnterpriseBlueprint.bar(cellCode, Direction.NORTH))
                 .setValue(CrossCollisionBlock.EAST, EnterpriseBlueprint.bar(cellCode, Direction.EAST))
                 .setValue(CrossCollisionBlock.SOUTH, EnterpriseBlueprint.bar(cellCode, Direction.SOUTH))
                 .setValue(CrossCollisionBlock.WEST, EnterpriseBlueprint.bar(cellCode, Direction.WEST));
         };
-        if (st.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
+        if (st.hasProperty(BlockStateProperties.HORIZONTAL_FACING) && part != ShipPart.LADDER) {
             st = st.setValue(BlockStateProperties.HORIZONTAL_FACING, facing);
         }
         return st;
+    }
+
+    private static BlockState slab(BlockState st, int code) {
+        return st.setValue(SlabBlock.TYPE, EnterpriseBlueprint.variant(code) == 1 ? SlabType.TOP : SlabType.BOTTOM);
+    }
+
+    private static BlockState bars(BlockState st, int code) {
+        return st
+            .setValue(CrossCollisionBlock.NORTH, EnterpriseBlueprint.bar(code, Direction.NORTH))
+            .setValue(CrossCollisionBlock.EAST, EnterpriseBlueprint.bar(code, Direction.EAST))
+            .setValue(CrossCollisionBlock.SOUTH, EnterpriseBlueprint.bar(code, Direction.SOUTH))
+            .setValue(CrossCollisionBlock.WEST, EnterpriseBlueprint.bar(code, Direction.WEST));
     }
 }

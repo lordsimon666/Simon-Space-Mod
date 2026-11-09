@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "simonspacemod:block/step_slab"
+    },
+    "type=top": {
+      "model": "simonspacemod:block/step_slab_top"
+    },
+    "type=double": {
+      "model": "simonspacemod:block/trim_black"
+    }
+  }
+}

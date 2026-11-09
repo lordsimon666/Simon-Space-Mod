@@ -36,29 +36,42 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
 
 ## Was im Schiff ist
 
-* **Brücke** (Ø 15 m): Hauptbildschirm, Kommandantensessel, Steuer-/Navigationskonsole,
-  Stationen mit LCARS-Anzeigen, erhöhter roter Außenring mit Geländer, zwei Turbolifte.
+* **Außen**: Untertasse mit Halbstufen geglättet, Kennung „U.S.S. ENTERPRISE“ und groß „NCC-1701“
+  (lesbar von vorne wie beim Original), „NCC-1701“ und rote Zierstreifen an Gondeln und
+  Sekundärhülle, orange glühende Bussard-Kollektoren, Positionslichter (Backbord rot,
+  Steuerbord grün), Fensterreihen, Deflektorschüssel, Shuttlehangar.
+* **Brücke** (Ø 15 m) nach dem Vorbild der Originalserie: graue Wände mit Monitoren und rotem
+  Abschlussstreifen, Stationen mit schrägem Pult und farbig leuchtender Front, rotes Geländer
+  um die Kommandomulde, Kommandantensessel auf weißem Sockel, rot-schwarze Steuerkonsole mit
+  zwei Stühlen, Hauptbildschirm (7 x 3), zwei rote Turbolift-Türen mit leuchtendem Rahmen.
 * **Maschinenraum** (19 x 11 m, zwei Ebenen): Warpkern vom Boden bis durch die Decke,
   Plasmaleitungen im Boden, Konsolen, Galerie mit Leitern, Turbolift.
-* **Transporterraum** (9 x 9 m): sechs Transporterplattformen, Bedienkonsole, Deckenlichter, Turbolift.
-* Decks mit Deckenlichtern und Ringkorridoren in Untertassen- und Sekundärhülle, Fensterreihen,
-  Shuttlehangar, Deflektorschüssel, Bussard-Kollektoren, Warpgondeln mit Gittern und die
-  Kennung „NCC-1701“ auf der Untertasse.
+* **Transporterraum**: lila Wände, erhöhte rote Plattform mit Stufe und sechs Transporterfeldern,
+  grün schimmernde Energiewand mit Säulen, Strahler in der Decke, rot-graue Bedienkonsole, Turbolift.
+* Decks mit Deckenlichtern und Ringkorridoren in Untertassen- und Sekundärhülle.
 
 ### Funktionen
 
 * **Turbolift**: Rechtsklick fährt zum verbundenen Deck (Brücke ↔ Maschinenraum, Brücke ↔ Transporterraum).
-* **Transporterplattform**: Rechtsklick beamt dich auf den Boden unter dem Schiff.
+* **Transporterfeld**: Rechtsklick beamt dich auf den Boden unter dem Schiff.
   Hast du keinen Kommunikator dabei, bekommst du einen.
-* **Kommunikator**: Rechtsklick beamt dich zurück auf die zuletzt benutzte Plattform.
+* **Kommunikator**: Rechtsklick beamt dich zurück auf das zuletzt benutzte Transporterfeld.
+* **Brückenstation / Brückenmonitor**: Rechtsklick schaltet zwischen 4 Varianten (Farbe bzw. Anzeige) um.
 
-## Neue Blöcke (22)
+## Neue Blöcke (43)
 
-Hüllenpanzerung, Hüllenplatte, dunkle Hüllenplatte, Hüllenfenster (leuchtet), Kennungsmarkierung,
-Deflektorschüssel, Bussard-Kollektor, Warpgondel-Gitter, Deckboden, Brückenboden, Korridorwand,
-Deckenleuchte, Deckenverkleidung, Brückenkonsole, Maschinenraum-Konsole, LCARS-Anzeige, Hauptbildschirm,
-Kommandantensessel, Warpkern, Plasmaleitung, Transporterplattform, Turbolift – plus das Item
-Kommunikator. Alles ist im Kreativ-Tab „Simon Space Mod“ zu finden.
+* **Hülle**: Hüllenpanzerung (+ Stufe), Hüllenplatte, dunkle Hüllenplatte, Hüllenfenster,
+  Kennungsmarkierung (+ Stufe), roter Zierstreifen, Positionslicht rot/grün, Deflektorschüssel,
+  Bussard-Kollektor, Warpgondel-Gitter
+* **Brücke**: Brückenwand, roter Abschlussstreifen, Brückenstation, Brückenmonitor, Brückengeländer,
+  Brückenboden, Stufe, Kommandantensessel, Stationsstuhl, Steuerkonsole, Hauptbildschirm,
+  Brückenkonsole, LCARS-Anzeige, Turbolift, Turbolift-Tür, Turbolift-Rahmen
+* **Transporterraum**: Transporterraum-Wand, Transporterplattform-Boden, Transporterfeld,
+  Transporter-Energiewand, Transporter-Säule, Transporter-Strahler, Transporterkonsole
+* **Allgemein**: Deckboden, Korridorwand, Deckenverkleidung, Deckenleuchte, Maschinenraum-Konsole,
+  Warpkern, Plasmaleitung
+
+Dazu das Item Kommunikator. Alles ist im Kreativ-Tab „Simon Space Mod“ zu finden.
 
 ## Bauen
 

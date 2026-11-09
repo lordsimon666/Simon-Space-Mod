@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "simonspacemod:block/hull_marking_slab"
+    },
+    "type=top": {
+      "model": "simonspacemod:block/hull_marking_slab_top"
+    },
+    "type=double": {
+      "model": "simonspacemod:block/hull_marking"
+    }
+  }
+}

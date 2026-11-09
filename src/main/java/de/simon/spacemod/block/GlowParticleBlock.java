@@ -11,7 +11,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 /** Leuchtender Block mit Partikeln (Warpkern, Bussard-Kollektor). */
 public class GlowParticleBlock extends Block {
-    public enum Kind { WARP_CORE, BUSSARD }
+    public enum Kind { WARP_CORE, BUSSARD, ENERGIZER }
 
     private final Kind kind;
 
@@ -36,6 +36,12 @@ public class GlowParticleBlock extends Block {
                 level.addParticle(ParticleTypes.ELECTRIC_SPARK,
                     pos.getX() + random.nextDouble(), pos.getY() + random.nextDouble(), pos.getZ() + random.nextDouble(),
                     0, 0.05, 0);
+            }
+        } else if (kind == Kind.ENERGIZER) {
+            if (random.nextInt(4) == 0) {
+                level.addParticle(ParticleTypes.HAPPY_VILLAGER,
+                    pos.getX() + random.nextDouble(), pos.getY() + random.nextDouble(), pos.getZ() + random.nextDouble(),
+                    0, 0.02, 0);
             }
         } else if (random.nextInt(6) == 0) {
             level.addParticle(ParticleTypes.GLOW,

@@ -1,5 +1,15 @@
 {
   "values": [
+    "simonspacemod:bridge_wall",
+    "simonspacemod:bridge_trim",
+    "simonspacemod:turbolift_frame",
+    "simonspacemod:transporter_wall",
+    "simonspacemod:transporter_platform",
+    "simonspacemod:transporter_energizer",
+    "simonspacemod:transporter_emitter",
+    "simonspacemod:nav_light_red",
+    "simonspacemod:nav_light_green",
+    "simonspacemod:hull_pennant",
     "simonspacemod:hull_plating",
     "simonspacemod:hull_panel",
     "simonspacemod:hull_dark",
@@ -20,7 +30,18 @@
     "simonspacemod:viewscreen",
     "simonspacemod:turbolift",
     "simonspacemod:captains_chair",
+    "simonspacemod:turbolift_door",
+    "simonspacemod:station_chair",
+    "simonspacemod:helm_console",
+    "simonspacemod:transporter_console",
+    "simonspacemod:transporter_pillar",
     "simonspacemod:transporter_pad",
-    "simonspacemod:warp_core"
+    "simonspacemod:warp_core",
+    "simonspacemod:bridge_station",
+    "simonspacemod:bridge_monitor",
+    "simonspacemod:bridge_railing",
+    "simonspacemod:hull_plating_slab",
+    "simonspacemod:hull_marking_slab",
+    "simonspacemod:step_slab"
   ]
 }
