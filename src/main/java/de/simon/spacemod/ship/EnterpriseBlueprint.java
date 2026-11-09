@@ -2587,7 +2587,8 @@ public final class EnterpriseBlueprint {
                     if (p == ShipPart.CORRIDOR_WALL || p == ShipPart.TRANSPORTER_WALL) set(x, y, z, ShipPart.ENT_WALL);
                     else if (p == ShipPart.DECK_FLOOR) set(x, y, z, ShipPart.DECK_PLATE);
                     else if (p == ShipPart.STATION_CHAIR) set(x, y, z, ShipPart.ENT_CHAIR, d);
-                    else if (p == ShipPart.BRIDGE_STATION || p == ShipPart.ENGINEERING_CONSOLE) set(x, y, z, ShipPart.ENT_CONSOLE, d);
+                    else if (p == ShipPart.BRIDGE_STATION || p == ShipPart.ENGINEERING_CONSOLE || p == ShipPart.LCARS_PANEL)
+                        set(x, y, z, ShipPart.ENT_CONSOLE, d); // LCARS gibt es erst ab dem 24. Jahrhundert
                 }
     }
 
