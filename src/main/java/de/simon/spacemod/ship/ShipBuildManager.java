@@ -59,6 +59,11 @@ public final class ShipBuildManager {
         return CompletableFuture.supplyAsync(() -> new EnterpriseBlueprint(design, scale));
     }
 
+    /** Wird gerade noch ein Schiff gebaut? */
+    public static boolean busy() {
+        return !JOBS.isEmpty();
+    }
+
     public static void start(EnterpriseBlueprint bp, Placement placement, Consumer<Job> onDone) {
         JOBS.add(new Job(bp, placement, onDone));
     }

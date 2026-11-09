@@ -1061,6 +1061,179 @@ def tex_trim_blue():
     return img
 
 
+# ---------------------------------------------------------------------------------------------
+#  Next Generation (NCC-1701-C, -D, -E)
+# ---------------------------------------------------------------------------------------------
+
+
+def tex_tng_carpet():
+    img = noise(new((96, 90, 104)), 7, 200)
+    px = img.load()
+    rnd = random.Random(201)
+    for _ in range(10):
+        px[rnd.randrange(16), rnd.randrange(16)] = (120, 96, 80, 255)
+    return img
+
+
+def tex_tng_wall():
+    img = noise(new((214, 198, 166)), 3, 202)
+    px = img.load()
+    for x in range(16):
+        px[x, 0] = (170, 152, 124, 255)
+        px[x, 11] = (186, 168, 138, 255)
+        px[x, 12] = (232, 220, 196, 255)
+    for y in range(16):
+        px[15, y] = (180, 162, 134, 255)
+    return img
+
+
+def tex_tng_console_top():
+    img = new((10, 10, 16))
+    px = img.load()
+    rnd = random.Random(203)
+    for x in range(1, 15):
+        px[x, 2] = LCARS[0] + (255,)
+        px[x, 3] = LCARS[0] + (255,)
+    for row in (6, 8, 10, 12):
+        x = 1
+        while x < 15:
+            w = rnd.randint(2, 4)
+            c = rnd.choice(LCARS)
+            for i in range(x, min(15, x + w)):
+                px[i, row] = c + (255,)
+            x += w + 1
+    return img
+
+
+def tex_chair_brown():
+    return noise(new((112, 74, 54)), 6, 204)
+
+
+def tex_chair_dark():
+    return noise(new((54, 52, 58)), 4, 205)
+
+
+def tex_warp_core_tng():
+    img = new((30, 60, 200))
+    px = img.load()
+    for y in range(16):
+        glow = 0.5 + 0.5 * math.sin(y / 16 * math.pi * 2)
+        for x in range(16):
+            edge = abs(x - 7.5) / 8
+            px[x, y] = (clamp(60 + 120 * glow - 60 * edge), clamp(110 + 120 * glow - 60 * edge), clamp(255 - 40 * edge), 255)
+        if y % 8 == 0:
+            for x in range(16):
+                px[x, y] = (70, 72, 80, 255)
+    for y in range(16):
+        px[0, y] = (60, 62, 70, 255)
+        px[15, y] = (60, 62, 70, 255)
+    return img
+
+
+def tex_warp_core_tng_top():
+    img = new((60, 62, 70))
+    px = img.load()
+    for x in range(16):
+        for y in range(16):
+            if math.hypot(x - 7.5, y - 7.5) < 5:
+                px[x, y] = (120, 180, 255, 255)
+    return img
+
+
+def msd_strip():
+    """Master Systems Display: Querschnitt der Galaxy-Klasse auf 64 x 16 Pixeln (vier Kacheln)."""
+    img = Image.new("RGBA", (64, 16), (4, 6, 20, 255))
+    px = img.load()
+    for x in range(64):
+        px[x, 0] = LCARS[0] + (255,)
+        px[x, 15] = LCARS[2] + (255,)
+    blue, white = (90, 150, 255, 255), (220, 230, 255, 255)
+    for x in range(2, 62):
+        # Untertasse (vorne, flach), Hals, Unterrumpf, Gondel oben
+        if x < 26:
+            top, bot = 5, 7 + (1 if 6 < x < 22 else 0)
+            for y in range(top, bot + 1):
+                px[x, y] = blue
+            px[x, top] = white
+        if 24 <= x < 30:
+            for y in range(7, 10):
+                px[x, y] = blue
+        if 26 <= x < 56:
+            for y in range(9, 13 - (1 if x > 50 else 0)):
+                px[x, y] = blue
+            px[x, 9] = white
+        if 34 <= x < 62:
+            px[x, 4] = white
+            px[x, 5] = blue
+            px[x, 6] = blue
+    for x in (8, 16, 36, 44):
+        for y in range(5, 13):
+            if px[x, y] == blue:
+                px[x, y] = (255, 160, 60, 255)
+    return img
+
+
+def tex_msd(v):
+    return msd_strip().crop((v * 16, 0, v * 16 + 16, 16))
+
+
+def tex_situation_top():
+    img = new((8, 8, 14))
+    px = img.load()
+    for x in range(16):
+        px[x, 0] = LCARS[1] + (255,)
+        px[x, 15] = LCARS[1] + (255,)
+    for x in range(2, 14):
+        for y in range(4, 12):
+            if (x - 8) ** 2 / 30 + (y - 8) ** 2 / 10 < 1:
+                px[x, y] = (60, 110, 220, 255)
+    px[8, 8] = (255, 160, 60, 255)
+    return img
+
+
+def tex_holodeck_grid():
+    img = new((14, 14, 14))
+    px = img.load()
+    for i in range(16):
+        px[i, 0] = (235, 200, 40, 255)
+        px[0, i] = (235, 200, 40, 255)
+    return img
+
+
+def tex_force_field():
+    img = Image.new("RGBA", (16, 16), (90, 160, 255, 80))
+    px = img.load()
+    for x in range(16):
+        for y in range(16):
+            if (x + y) % 5 == 0:
+                px[x, y] = (150, 200, 255, 130)
+    return img
+
+
+def tex_star_map():
+    img = new((3, 4, 14))
+    px = img.load()
+    rnd = random.Random(206)
+    for x in range(16):
+        for y in range(16):
+            neb = math.sin(x * 0.5) * math.cos(y * 0.4)
+            if neb > 0.5:
+                px[x, y] = (40, 20, 70, 255)
+    for _ in range(14):
+        px[rnd.randrange(16), rnd.randrange(16)] = rnd.choice([(255, 255, 255), (200, 220, 255), (255, 230, 180)]) + (255,)
+    return img
+
+
+def tex_bar_counter():
+    img = noise(new((70, 50, 80)), 4, 207)
+    px = img.load()
+    for x in range(16):
+        px[x, 0] = (200, 190, 220, 255)
+        px[x, 1] = (150, 140, 170, 255)
+        px[x, 8] = (120, 160, 255, 255)
+    return img
+
+
 TEXTURES = {
     "hull_plating": tex_hull_plating,
     "hull_panel": tex_hull_panel,
@@ -1155,6 +1328,19 @@ TEXTURES = {
     "transporter_pad_side": tex_transporter_pad_side,
     "turbolift_front": tex_turbolift_door_lower,
     "item/communicator": tex_communicator,
+    "tng_carpet": tex_tng_carpet,
+    "tng_wall": tex_tng_wall,
+    "tng_console_top": tex_tng_console_top,
+    "chair_brown": tex_chair_brown,
+    "chair_dark": tex_chair_dark,
+    "warp_core_tng": tex_warp_core_tng,
+    "warp_core_tng_top": tex_warp_core_tng_top,
+    **{f"msd_display_{v}": (lambda v=v: tex_msd(v)) for v in range(4)},
+    "situation_top": tex_situation_top,
+    "holodeck_grid": tex_holodeck_grid,
+    "force_field": tex_force_field,
+    "star_map": tex_star_map,
+    "bar_counter": tex_bar_counter,
 }
 
 # ---------------------------------------------------------------------------------------------
@@ -1166,7 +1352,7 @@ def b(name):
     return f"{MODID}:block/{name}"
 
 
-SIMPLE = ["light_pillar", "hull_teal", "bussard_blue", "bridge_trim_cream", "bridge_carpet_teal", "deck_plate", "bridge_wall_dark", "impulse_engine", "hull_aztec", "deflector_dish_blue", "bussard_red", "torpedo_launcher", "bridge_trim_blue", "sickbay_wall", "sickbay_floor", "cargo_container", "bridge_wall", "bridge_trim", "turbolift_frame", "transporter_wall", "transporter_platform",
+SIMPLE = ["tng_carpet", "tng_wall", "holodeck_grid", "star_map", "bar_counter", "light_pillar", "hull_teal", "bussard_blue", "bridge_trim_cream", "bridge_carpet_teal", "deck_plate", "bridge_wall_dark", "impulse_engine", "hull_aztec", "deflector_dish_blue", "bussard_red", "torpedo_launcher", "bridge_trim_blue", "sickbay_wall", "sickbay_floor", "cargo_container", "bridge_wall", "bridge_trim", "turbolift_frame", "transporter_wall", "transporter_platform",
           "transporter_energizer", "transporter_emitter", "nav_light_red", "nav_light_green", "hull_pennant",
           "hull_plating", "hull_panel", "hull_dark", "hull_window", "hull_marking", "deflector_dish",
           "bussard_collector", "nacelle_grille", "deck_floor", "bridge_deck", "corridor_wall",
@@ -1201,6 +1387,9 @@ FACING = {
                         "textures": {"front": b("cabinet_front"), "side": b("sickbay_wall"), "top": b("sickbay_wall")}},
     "crew_bed": None,
     "crew_desk": None,
+    "tng_console": None,
+    "tng_chair": None,
+    "captains_chair_tng": None,
 }
 
 
@@ -1365,6 +1554,24 @@ def ex_display_model(v):
             "textures": {"front": b(f"excelsior_display_{v}"), "side": b("bridge_wall_dark"), "top": b("bridge_wall_dark")}}
 
 
+def tng_console_model():
+    m = json.loads(json.dumps(station_model(0)))
+    m["textures"].update({"particle": b("chair_dark"), "front": b("lcars_panel"), "top": b("tng_console_top"),
+                          "side": b("chair_dark"), "black": b("chair_dark")})
+    return m
+
+
+def msd_model(v):
+    return {"parent": "minecraft:block/orientable",
+            "textures": {"front": b(f"msd_display_{v}"), "side": b("tng_wall"), "top": b("tng_wall")}}
+
+
+SITUATION_TABLE = furniture({"top": b("situation_top"), "side": b("chair_dark")}, [
+    el([0, 0, 1], [16, 12, 15], all6("#side")),
+    el([0, 12, 0], [16, 14, 16], {"up": "#top", "down": "#side", "north": "#side", "south": "#side", "east": "#side", "west": "#side"}),
+])
+
+
 def monitor_model(v):
     return {"parent": "minecraft:block/orientable",
             "textures": {"front": b(f"bridge_monitor_{v}"), "side": b("bridge_wall"), "top": b("bridge_wall")}}
@@ -1518,6 +1725,18 @@ NAMES = {
     "crew_desk": ("Schreibtisch", "Crew Desk"),
     "cargo_container": ("Frachtcontainer", "Cargo Container"),
     "mess_table": ("Messetisch", "Mess Table"),
+    "tng_carpet": ("Teppichboden (Next Generation)", "Carpet (Next Generation)"),
+    "tng_wall": ("Wandverkleidung (Next Generation)", "Wall Panel (Next Generation)"),
+    "tng_console": ("LCARS-Konsole", "LCARS Console"),
+    "tng_chair": ("Sessel (Next Generation)", "Chair (Next Generation)"),
+    "captains_chair_tng": ("Kommandantensessel (Next Generation)", "Captain's Chair (Next Generation)"),
+    "warp_core_tng": ("Warpkern (Next Generation)", "Warp Core (Next Generation)"),
+    "msd_display": ("Master Systems Display", "Master Systems Display"),
+    "situation_table": ("Lagetisch (Maschinenraum)", "Situation Table (Engineering)"),
+    "holodeck_grid": ("Holodeck-Gitter", "Holodeck Grid"),
+    "force_field": ("Kraftfeld", "Force Field"),
+    "star_map": ("Sternenkarte", "Star Map"),
+    "bar_counter": ("Bartresen (Ten Forward)", "Bar Counter (Ten Forward)"),
 }
 
 
@@ -1555,6 +1774,9 @@ def main():
               "biobed_monitor": BIOBED_MONITOR, "exam_table": EXAM_TABLE,
               "captains_chair_teal": dict(CHAIR, textures=dict(CHAIR["textures"], seat=b("chair_teal"), white=b("helm_gray"), particle=b("chair_teal"))),
               "station_chair_teal": dict(STATION_CHAIR, textures=dict(STATION_CHAIR["textures"], blue=b("helm_gray"), seat=b("chair_teal"), particle=b("chair_teal"))),
+              "tng_console": tng_console_model(),
+              "tng_chair": dict(STATION_CHAIR, textures=dict(STATION_CHAIR["textures"], blue=b("chair_dark"), seat=b("chair_brown"), particle=b("chair_brown"))),
+              "captains_chair_tng": dict(CHAIR, textures=dict(CHAIR["textures"], seat=b("chair_brown"), white=b("chair_dark"), particle=b("chair_brown"))),
               "helm_console_gray": dict(HELM, textures={"particle": b("helm_gray"), "red": b("helm_gray"), "top": b("helm_gray_top"), "black": b("bridge_wall_dark")})}
     for name, model in FACING.items():
         models[name] = model if model else custom[name]
@@ -1565,6 +1787,9 @@ def main():
                                     "textures": {"end": b("trim_black"), "side": b("transporter_pillar")}}
     models["transporter_pad"] = PAD
     models["warp_core"] = WARP_CORE
+    models["warp_core_tng"] = {"parent": "minecraft:block/cube_column", "textures": {"end": b("warp_core_tng_top"), "side": b("warp_core_tng")}}
+    models["situation_table"] = SITUATION_TABLE
+    models["force_field"] = {"parent": "minecraft:block/cube_all", "render_type": "minecraft:translucent", "textures": {"all": b("force_field")}}
 
     for name, model in models.items():
         write_json(os.path.join(ASSETS, "models", "block", name + ".json"), model)
@@ -1577,7 +1802,8 @@ def main():
 
     # Blöcke mit Varianten (Stationen, Monitore)
     for name, fn in (("bridge_station", station_model), ("bridge_monitor", monitor_model),
-                     ("excelsior_console", ex_console_model), ("excelsior_display", ex_display_model)):
+                     ("excelsior_console", ex_console_model), ("excelsior_display", ex_display_model),
+                     ("msd_display", msd_model)):
         for v in range(4):
             write_json(os.path.join(ASSETS, "models", "block", f"{name}_{v}.json"), fn(v))
         write_json(os.path.join(ASSETS, "blockstates", name + ".json"), variant_facing_blockstate(name))

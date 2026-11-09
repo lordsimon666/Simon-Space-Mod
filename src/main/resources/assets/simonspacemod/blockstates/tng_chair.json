@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "simonspacemod:block/tng_chair"
+    },
+    "facing=east": {
+      "model": "simonspacemod:block/tng_chair",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "simonspacemod:block/tng_chair",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "simonspacemod:block/tng_chair",
+      "y": 270
+    }
+  }
+}

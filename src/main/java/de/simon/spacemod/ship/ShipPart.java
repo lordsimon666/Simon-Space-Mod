@@ -88,7 +88,26 @@ public enum ShipPart {
     CAPTAINS_CHAIR_TEAL(0x2C6A70),
     STATION_CHAIR_TEAL(0x3A7A80),
     TURBOLIFT_DOOR_TEAL(0x1E4448),
-    HELM_CONSOLE_GRAY(0x8A8C90);
+    HELM_CONSOLE_GRAY(0x8A8C90),
+    // Next Generation (NCC-1701-C, -D, -E)
+    TNG_CARPET(0x6A6470),
+    TNG_WALL(0xD8C8A8),
+    TNG_CONSOLE(0x1A1A22),
+    TNG_CHAIR(0x6A4A3A),
+    CAPTAINS_CHAIR_TNG(0x7A5038),
+    WARP_CORE_TNG(0x4070FF),
+    MSD_DISPLAY(0x203060),
+    SITUATION_TABLE(0x282C40),
+    HOLODECK_GRID(0x101010),
+    FORCE_FIELD(0x60A0FF),
+    STAR_MAP(0x060818),
+    BAR_COUNTER(0x4A3050),
+    VIEWPORT(0xA0C8E0),
+    // Arboretum (Vanilla-Blöcke); FLOWER: Variante = Pflanzenart
+    GRASS(0x5A9A3A),
+    FLOWER(0xE04040),
+    LEAVES(0x3A7A2A),
+    TREE_LOG(0x6A5030);
 
     /** Farbe für Vorschaubilder. */
     public final int color;

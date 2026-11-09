@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "simonspacemod:block/tng_console"
+    },
+    "facing=east": {
+      "model": "simonspacemod:block/tng_console",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "simonspacemod:block/tng_console",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "simonspacemod:block/tng_console",
+      "y": 270
+    }
+  }
+}

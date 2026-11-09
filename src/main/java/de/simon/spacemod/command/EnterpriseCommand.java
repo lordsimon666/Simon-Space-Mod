@@ -24,7 +24,7 @@ import net.minecraftforge.event.RegisterCommandsEvent;
 import org.jspecify.annotations.Nullable;
 
 /**
- * {@code /enterprise spawn [ncc-1701|ncc-1701-a] [full|compact|mini|scale <faktor>] [position] [north|east|south|west]}
+ * {@code /enterprise spawn [ncc-1701|ncc-1701-a|-b|-c|-d|-e] [full|compact|mini|scale <faktor>] [position] [north|east|south|west]}
  *
  * <ul>
  *   <li>{@code full}    – Originalgröße 1:1 (289 x 127 x ~72 Blöcke)</li>

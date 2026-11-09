@@ -97,6 +97,30 @@ public final class ModBlocks {
     public static final RegistryObject<Block> HELM_CONSOLE_GRAY = block("helm_console_gray",
         p -> new ShapedFacingBlock(p, Block.box(0, 0, 2, 16, 12, 14)), glowing(metal(MapColor.COLOR_LIGHT_GRAY), 6).noOcclusion());
 
+    // --- Next Generation (NCC-1701-C, -D, -E) ---
+    public static final RegistryObject<Block> TNG_CARPET = block("tng_carpet", Block::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GRAY).strength(1.5F, 6F).sound(SoundType.WOOL));
+    public static final RegistryObject<Block> TNG_WALL = block("tng_wall", Block::new, metal(MapColor.SAND));
+    public static final RegistryObject<Block> TNG_CONSOLE = block("tng_console",
+        p -> new ShapedFacingBlock(p, Shapes.or(Block.box(0, 0, 0, 16, 10, 16), Block.box(0, 10, 6, 16, 14, 16))),
+        glowing(metal(MapColor.COLOR_BLACK), 9).noOcclusion());
+    public static final RegistryObject<Block> TNG_CHAIR = block("tng_chair",
+        p -> new ShapedFacingBlock(p, Shapes.or(Block.box(6, 0, 6, 10, 7, 10), Block.box(3, 7, 3, 13, 9, 13), Block.box(3, 9, 11, 13, 20, 14))),
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BROWN).strength(1.5F).sound(SoundType.WOOL).noOcclusion());
+    public static final RegistryObject<Block> CAPTAINS_CHAIR_TNG = block("captains_chair_tng", CaptainsChairBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BROWN).strength(1.5F).sound(SoundType.WOOL).noOcclusion());
+    public static final RegistryObject<Block> WARP_CORE_TNG = block("warp_core_tng",
+        p -> new GlowParticleBlock(p, GlowParticleBlock.Kind.WARP_CORE), glowing(glass(MapColor.COLOR_BLUE), 15));
+    public static final RegistryObject<Block> MSD_DISPLAY = block("msd_display", VariantFacingBlock::new, glowing(metal(MapColor.COLOR_BLACK), 10));
+    public static final RegistryObject<Block> SITUATION_TABLE = block("situation_table",
+        p -> new ShapedBlock(p, Block.box(0, 0, 0, 16, 14, 16)), glowing(metal(MapColor.COLOR_BLACK), 8).noOcclusion());
+    public static final RegistryObject<Block> HOLODECK_GRID = block("holodeck_grid", Block::new, glowing(metal(MapColor.COLOR_BLACK), 6));
+    public static final RegistryObject<Block> FORCE_FIELD = block("force_field", Block::new,
+        glowing(glass(MapColor.COLOR_LIGHT_BLUE), 10).noOcclusion()
+            .isViewBlocking((_, _, _) -> false).isSuffocating((_, _, _) -> false));
+    public static final RegistryObject<Block> STAR_MAP = block("star_map", Block::new, glowing(metal(MapColor.COLOR_BLACK), 7));
+    public static final RegistryObject<Block> BAR_COUNTER = block("bar_counter", Block::new, glowing(metal(MapColor.COLOR_PURPLE), 6));
+
     // --- Brücke ---
     public static final RegistryObject<Block> BRIDGE_WALL = block("bridge_wall", Block::new, metal(MapColor.COLOR_LIGHT_GRAY));
     public static final RegistryObject<Block> BRIDGE_TRIM = block("bridge_trim", Block::new, glowing(metal(MapColor.COLOR_RED), 4));

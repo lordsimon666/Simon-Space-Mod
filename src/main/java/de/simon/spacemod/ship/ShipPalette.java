@@ -5,6 +5,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CrossCollisionBlock;
 import net.minecraft.world.level.block.LadderBlock;
+import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.state.properties.SlabType;
 import de.simon.spacemod.block.VariantFacingBlock;
@@ -102,6 +103,29 @@ public final class ShipPalette {
             case STATION_CHAIR_TEAL -> ModBlocks.STATION_CHAIR_TEAL.get().defaultBlockState();
             case TURBOLIFT_DOOR_TEAL -> ModBlocks.TURBOLIFT_DOOR_TEAL.get().defaultBlockState();
             case HELM_CONSOLE_GRAY -> ModBlocks.HELM_CONSOLE_GRAY.get().defaultBlockState();
+            case TNG_CARPET -> ModBlocks.TNG_CARPET.get().defaultBlockState();
+            case TNG_WALL -> ModBlocks.TNG_WALL.get().defaultBlockState();
+            case TNG_CONSOLE -> ModBlocks.TNG_CONSOLE.get().defaultBlockState();
+            case TNG_CHAIR -> ModBlocks.TNG_CHAIR.get().defaultBlockState();
+            case CAPTAINS_CHAIR_TNG -> ModBlocks.CAPTAINS_CHAIR_TNG.get().defaultBlockState();
+            case WARP_CORE_TNG -> ModBlocks.WARP_CORE_TNG.get().defaultBlockState();
+            case MSD_DISPLAY -> ModBlocks.MSD_DISPLAY.get().defaultBlockState()
+                .setValue(VariantFacingBlock.VARIANT, EnterpriseBlueprint.variant(cellCode));
+            case SITUATION_TABLE -> ModBlocks.SITUATION_TABLE.get().defaultBlockState();
+            case HOLODECK_GRID -> ModBlocks.HOLODECK_GRID.get().defaultBlockState();
+            case FORCE_FIELD -> ModBlocks.FORCE_FIELD.get().defaultBlockState();
+            case STAR_MAP -> ModBlocks.STAR_MAP.get().defaultBlockState();
+            case BAR_COUNTER -> ModBlocks.BAR_COUNTER.get().defaultBlockState();
+            case VIEWPORT -> Blocks.GLASS.defaultBlockState();
+            case GRASS -> Blocks.MOSS_BLOCK.defaultBlockState();
+            case FLOWER -> switch (EnterpriseBlueprint.variant(cellCode)) {
+                case 0 -> Blocks.POPPY.defaultBlockState();
+                case 1 -> Blocks.DANDELION.defaultBlockState();
+                case 2 -> Blocks.BLUE_ORCHID.defaultBlockState();
+                default -> Blocks.FERN.defaultBlockState();
+            };
+            case LEAVES -> Blocks.AZALEA_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT, true);
+            case TREE_LOG -> Blocks.BIRCH_LOG.defaultBlockState();
             case IRON_BARS -> Blocks.IRON_BARS.defaultBlockState()
                 .setValue(CrossCollisionBlock.NORTH, EnterpriseBlueprint.bar(cellCode, Direction.NORTH))
                 .setValue(CrossCollisionBlock.EAST, EnterpriseBlueprint.bar(cellCode, Direction.EAST))

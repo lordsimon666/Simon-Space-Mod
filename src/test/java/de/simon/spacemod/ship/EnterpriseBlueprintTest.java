@@ -19,7 +19,10 @@ class EnterpriseBlueprintTest {
     @ParameterizedTest
     @CsvSource({"NCC_1701,0.4", "NCC_1701,0.5", "NCC_1701,0.75", "NCC_1701,1.0",
                 "NCC_1701_A,0.4", "NCC_1701_A,0.5", "NCC_1701_A,0.75", "NCC_1701_A,1.0",
-                "NCC_1701_B,0.4", "NCC_1701_B,0.5", "NCC_1701_B,0.75", "NCC_1701_B,1.0"})
+                "NCC_1701_B,0.4", "NCC_1701_B,0.5", "NCC_1701_B,0.75", "NCC_1701_B,1.0",
+                "NCC_1701_C,0.4", "NCC_1701_C,0.75", "NCC_1701_C,1.0",
+                "NCC_1701_D,0.4", "NCC_1701_D,0.75", "NCC_1701_D,1.0",
+                "NCC_1701_E,0.4", "NCC_1701_E,0.75", "NCC_1701_E,1.0"})
     void blueprintIsConsistent(ShipDesign design, double scale) throws Exception {
         EnterpriseBlueprint bp = new EnterpriseBlueprint(design, scale);
         Map<ShipPart, Integer> counts = new EnumMap<>(ShipPart.class);
@@ -31,13 +34,15 @@ class EnterpriseBlueprintTest {
         assertTrue(bp.sizeY < 384 - 64, "zu hoch: " + bp.sizeY);
 
         // Wichtige Räume vorhanden
-        assertTrue(counts.getOrDefault(ShipPart.CAPTAINS_CHAIR, 0) + counts.getOrDefault(ShipPart.CAPTAINS_CHAIR_TEAL, 0) >= 1);
-        assertEquals(21, counts.get(ShipPart.VIEWSCREEN));
+        assertTrue(counts.getOrDefault(ShipPart.CAPTAINS_CHAIR, 0) + counts.getOrDefault(ShipPart.CAPTAINS_CHAIR_TEAL, 0)
+            + counts.getOrDefault(ShipPart.CAPTAINS_CHAIR_TNG, 0) >= 1);
+        assertEquals(design.tng ? 44 : 21, counts.get(ShipPart.VIEWSCREEN));
         assertTrue(counts.getOrDefault(ShipPart.BRIDGE_RAILING, 0) + counts.getOrDefault(ShipPart.BRIDGE_RAILING_GRAY, 0)
-            + counts.getOrDefault(ShipPart.BRIDGE_RAILING_WOOD, 0) > 20, "Geländer fehlt");
-        assertTrue(counts.getOrDefault(ShipPart.BRIDGE_STATION, 0) + counts.getOrDefault(ShipPart.EXCELSIOR_CONSOLE, 0) > 10, "Stationen fehlen");
+            + counts.getOrDefault(ShipPart.BRIDGE_RAILING_WOOD, 0) > (design.tng ? 8 : 20), "Geländer fehlt");
+        assertTrue(counts.getOrDefault(ShipPart.BRIDGE_STATION, 0) + counts.getOrDefault(ShipPart.EXCELSIOR_CONSOLE, 0)
+            + counts.getOrDefault(ShipPart.TNG_CONSOLE, 0) > 10, "Stationen fehlen");
         assertTrue(counts.getOrDefault(ShipPart.TRANSPORTER_ENERGIZER, 0) > 0, "Energiewand fehlt");
-        assertTrue(counts.getOrDefault(ShipPart.WARP_CORE, 0) >= 30, "Warpkern fehlt");
+        assertTrue(counts.getOrDefault(design.tng ? ShipPart.WARP_CORE_TNG : ShipPart.WARP_CORE, 0) >= 30, "Warpkern fehlt");
         assertEquals(6, counts.get(ShipPart.TRANSPORTER_PAD), "Transporterraum fehlt");
         // Turbolift-Halte: mindestens Brücke, Maschinenraum, Transporterraum; in Originalgröße alle Decks
         assertTrue(bp.liftStops.size() >= 3, "zu wenige Turbolift-Halte");
@@ -49,7 +54,7 @@ class EnterpriseBlueprintTest {
             BlockPos p = stop.pos();
             assertTrue(names.add(stop.name()), "doppelter Deckname " + stop.name());
             assertEquals(ShipPart.TURBOLIFT, bp.get(p.getX(), p.getY(), p.getZ()), "kein Panel bei " + p + " (" + stop.name() + ")");
-            BlockPos stand = localStep(p, EnterpriseBlueprint.facing(codeAt(bp, p)));
+            BlockPos stand = localStep(p, EnterpriseBlueprint.facing(bp.codeAt(p.getX(), p.getY(), p.getZ())));
             assertStandable(bp, stand, "Turbolift " + stop.name());
         }
         System.out.println("Decks: " + bp.liftStops.stream().map(EnterpriseBlueprint.LiftStop::name).toList());
@@ -60,6 +65,15 @@ class EnterpriseBlueprintTest {
             assertTrue(counts.getOrDefault(ShipPart.HULL_TEAL, 0) > 0, "petrolfarbene Akzente fehlen");
             assertTrue(counts.getOrDefault(ShipPart.IMPULSE_ENGINE, 0) > 0, "Impulstriebwerke fehlen");
             assertTrue(counts.getOrDefault(ShipPart.DEFLECTOR_DISH_BLUE, 0) > 0, "blaue Deflektorschüssel fehlt");
+        }
+        if (design.tng) {
+            assertTrue(counts.getOrDefault(ShipPart.HULL_AZTEC, 0) > 0, "Aztec-Muster fehlt");
+            assertTrue(counts.getOrDefault(ShipPart.BUSSARD_RED, 0) > 0, "rote Bussard-Kollektoren fehlen");
+            assertTrue(counts.getOrDefault(ShipPart.TNG_CHAIR, 0) >= 4, "TNG-Brücke fehlt");
+            if (scale >= 0.75) {
+                assertTrue(counts.getOrDefault(ShipPart.HOLODECK_GRID, 0) > 0, "Holodecks fehlen");
+                assertTrue(counts.getOrDefault(ShipPart.MSD_DISPLAY, 0) == 21, "Master Systems Display fehlt");
+            }
         }
         if (design.refit) {
             assertTrue(counts.getOrDefault(ShipPart.DEFLECTOR_DISH_BLUE, 0) > 0, "blaue Deflektorschüssel fehlt");
@@ -77,14 +91,6 @@ class EnterpriseBlueprintTest {
             case WEST -> p.offset(0, 0, -1);
             default -> p;
         };
-    }
-
-    private static int codeAt(EnterpriseBlueprint bp, BlockPos p) {
-        int[] found = {0};
-        bp.forEach((x, y, z, code) -> {
-            if (x == p.getX() && y == p.getY() && z == p.getZ()) found[0] = code;
-        });
-        return found[0];
     }
 
     private static void assertStandable(EnterpriseBlueprint bp, BlockPos p, String what) {
@@ -129,6 +135,19 @@ class EnterpriseBlueprintTest {
                     }
                 }
         ImageIO.write(side, "png", new File(dir, "side_" + tag + ".png"));
+
+        // Vorderansicht (vom Bug aus, vorderster Block)
+        BufferedImage front = new BufferedImage(bp.sizeZ * px, bp.sizeY * px, BufferedImage.TYPE_INT_RGB);
+        for (int z = -bp.zOffset; z <= bp.zOffset; z++)
+            for (int y = 0; y < bp.sizeY; y++)
+                for (int x = 0; x < bp.sizeX; x++) {
+                    ShipPart p = bp.get(x, y, z);
+                    if (p != null && p != ShipPart.AIR) {
+                        fill(front, z + bp.zOffset, bp.sizeY - 1 - y, px, shadeByHeight(p.color, bp.sizeX - x, bp.sizeX));
+                        break;
+                    }
+                }
+        ImageIO.write(front, "png", new File(dir, "front_" + tag + ".png"));
 
         // Längsschnitt durch die Mittelachse (z = 0) – zeigt Innenräume
         BufferedImage cut = new BufferedImage(bp.sizeX * px, bp.sizeY * px, BufferedImage.TYPE_INT_RGB);

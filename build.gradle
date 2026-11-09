@@ -61,6 +61,7 @@ dependencies {
 
 tasks.named('test', Test) {
     useJUnitPlatform()
+    maxHeapSize = '4g'
     // Vorschaubilder des Schiffs landen in build/ship-preview
     systemProperty 'ship.preview.dir', layout.buildDirectory.dir('ship-preview').get().asFile.absolutePath
 }

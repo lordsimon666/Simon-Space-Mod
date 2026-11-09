@@ -2,18 +2,54 @@
 
 Forge-Mod für **Minecraft 26.2** (Forge 65.1.x, Java 25), die die **USS Enterprise** mit einem
 Befehl in die Welt setzt – wahlweise die **NCC-1701** (Originalserie), die **NCC-1701-A**
-(Refit aus den Kinofilmen) oder die **NCC-1701-B** (Excelsior-Klasse).
+(Refit aus den Kinofilmen), die **NCC-1701-B** (Excelsior-Klasse) oder eine der Enterprises aus
+„The Next Generation“: **NCC-1701-C** (Ambassador), **NCC-1701-D** (Galaxy) und **NCC-1701-E** (Sovereign).
 
 ## Befehl
 
 ```
-/enterprise spawn [ncc-1701|ncc-1701-a|ncc-1701-b] [full|compact|mini|scale <faktor>] [x y z] [north|east|south|west]
+/enterprise spawn [ncc-1701|ncc-1701-a|ncc-1701-b|ncc-1701-c|ncc-1701-d|ncc-1701-e] [full|compact|mini|scale <faktor>] [x y z] [north|east|south|west]
 ```
 
 * Ohne Schiffsangabe wird die **NCC-1701** gebaut, z.B. `/enterprise spawn full`.
 * `/enterprise spawn ncc-1701-a full` baut die **NCC-1701-A** in Originalgröße (308 x 145 x 85 Blöcke).
 
 * `/enterprise spawn ncc-1701-b full` baut die **NCC-1701-B** in Originalgröße (469 x 186 x 84 Blöcke).
+* `/enterprise spawn ncc-1701-c full` – **NCC-1701-C**, 528 x 329 x 137 Blöcke
+* `/enterprise spawn ncc-1701-d full` – **NCC-1701-D**, 645 x 467 x 146 Blöcke
+* `/enterprise spawn ncc-1701-e full` – **NCC-1701-E**, 687 x 241 x 82 Blöcke
+
+### NCC-1701-C, -D und -E (Next Generation)
+
+Rumpf aus 3D-Modellen in echter Länge (526 m, 642 m, 685 m). Die Untertasse der D ist oval (breiter
+als lang), die der E lang gestreckt – Decks, Ringkorridore, Räume und Kennung folgen dieser Form.
+Außen: „Aztec“-Plattenmuster, rote Bussard-Kuppeln, blaue Warpgitter, rote Impulstriebwerke,
+Deflektorschüssel (D kupferfarben, C und E blau), riesige Kennung „NCC-1701-D“ usw. auf der
+Untertasse und seitlich am Unterrumpf.
+
+Innen nach Deckplänen und Bildern aus der Serie bzw. den Filmen:
+
+* **Brücke** (Ø 21 m) im Stil der Galaxy-Klasse: großer Hauptbildschirm (11 x 4), Ops- und
+  Conn-Konsole davor, Kommandantensessel mit den Sitzen von Erstem Offizier (rechts) und Counselor
+  (links), dahinter das hufeisenförmige Holzgeländer mit der Taktikstation auf der erhöhten Ebene,
+  Wissenschafts- und Technikstationen mit LCARS-Anzeigen an der Rückwand, zwei Turbolifte hinten.
+  Die C hat dunkle Wände (wie die umgebaute Kampfbrücke im Film „Yesterday's Enterprise“).
+* **Untertasse**: alle 20 m ein weiterer Ringkorridor, Räume dazwischen; jedes Deck mit Turbolift.
+  * Deck 2: **Beobachtungslounge** (Konferenztisch, Wandbildschirm) und **Bereitschaftsraum** des
+    Captains (Schreibtisch, Sofa, Aquarium)
+  * Deck 3: **Krankenstation** und Transporterraum
+  * Deck 4: **Holodecks** (schwarz mit gelbem Gitter, Bedienfeld an der Tür)
+  * Deck 5: **Arboretum** (Moos, Blumen, Farne, kleine Bäume)
+  * Deck 6: **Stellare Kartographie** (Sternenkarte rundum, Steuerpult in der Mitte)
+  * Deck 7: Sicherheit mit **Arrestzellen** (Kraftfelder, Pritschen, Wachpult)
+  * Deck 8: **Schule** (Klassenzimmer mit Pulten und Wandtafel)
+  * Deck 9: Gesellschaftsräume, Deck 10–11: Frachträume, darunter Quartiere
+  * **Ten Forward** auf dem Deck am vorderen Rand: Bar mit geschwungenem Tresen, Tische mit Sesseln
+    und Panoramafenster aus Glas
+  * Quartiere mit Bett, Schreibtisch und Sitzecke
+* **Maschinenraum**: blau pulsierender Warpkern, Master Systems Display (Schiffsquerschnitt) an der
+  Rückwand, Lagetisch vor dem Kern, LCARS-Konsolen, Galerie
+* Beige Wände und Teppichboden in allen Gängen.
 
 ### NCC-1701-B (Excelsior-Klasse)
 
@@ -122,7 +158,7 @@ E = Eisenbarren        G = Goldbarren
 F = roter Farbstoff, P = Enderperle, R = Redstone
 ```
 
-## Neue Blöcke (76)
+## Neue Blöcke (88)
 
 * **Hülle**: Hüllenpanzerung (+ Stufe), Hüllenplatte, dunkle Hüllenplatte, Hüllenfenster,
   Kennungsmarkierung (+ Stufe), roter Zierstreifen, Positionslicht rot/grün, Deflektorschüssel,
@@ -142,6 +178,9 @@ F = roter Farbstoff, P = Enderperle, R = Redstone
   cremefarbene Lichtleiste, petrolfarbener Teppich, Riffelblech-Boden, dunkle Brückenwand,
   Excelsior-Konsole, Excelsior-Wandbildschirm, Lichtsäule, Kommandantensessel, Stationsstuhl,
   Turbolift-Tür und Steuerkonsole im Excelsior-Stil
+* **Next Generation (C, D, E)**: Teppichboden, Wandverkleidung, LCARS-Konsole, Sessel,
+  Kommandantensessel, Warpkern (blau), Master Systems Display, Lagetisch, Holodeck-Gitter,
+  Kraftfeld (durchsichtig), Sternenkarte, Bartresen
 * **Allgemein**: Deckboden, Korridorwand, Deckenverkleidung, Deckenleuchte, Maschinenraum-Konsole,
   Warpkern, Plasmaleitung
 
@@ -149,9 +188,9 @@ Dazu das Item Kommunikator. Alles ist im Kreativ-Tab „Simon Space Mod“ zu fi
 
 ## Außenform aus echten 3D-Modellen
 
-Die Außenhülle aller drei Schiffe stammt aus 3D-Modellen und ist dadurch sehr genau. Das Werkzeug
+Die Außenhülle aller sechs Schiffe stammt aus 3D-Modellen und ist dadurch sehr genau. Das Werkzeug
 `tools/voxelize_stl.py` rechnet ein STL-Modell auf die echte Schiffslänge in Blöcken um
-(NCC-1701: 289, NCC-1701-A: 305, NCC-1701-B: 467) und füllt das Innere. Die Ergebnisse liegen in
+(NCC-1701: 289, -A: 305, -B: 467, -C: 526, -D: 643, -E: 685) und füllt das Innere. Die Ergebnisse liegen in
 `src/main/resources/ships/`. Beim Bauen vermisst die Mod die Form automatisch (Untertasse, Gondeln,
 Unterrumpf) und erzeugt daraus Decks, Räume, Brücke, Maschinenraum, Farben und Beschriftung.
 Fehlt ein Modell, wird die eingebaute, berechnete Form verwendet.
@@ -161,6 +200,18 @@ Thingiverse #1423364 (Spiegel: archive.org/details/thingiverse-1423364), Lizenz
 **CC BY-NC 4.0** (https://creativecommons.org/licenses/by-nc/4.0/) – Namensnennung, nicht kommerziell.
 Die Modelle wurden in Blockraster umgewandelt. Deshalb darf auch diese Mod nur nicht-kommerziell
 verwendet werden.
+
+### Quellen für die Räume der C, D und E
+
+* Deckpläne der Galaxy-Klasse (nach den Sternbach-Blueprints):
+  https://ussenterprise1701.blogspot.com/p/saucer-deck-layout.html und
+  https://ussenterprise1701.blogspot.com/p/stardrive-section-deck-layout.html
+* https://en.wikipedia.org/wiki/USS_Enterprise_(NCC-1701-D)
+* https://forgottentrek.com/the-next-generation/the-unseen-enterprise-d/
+* Brücke der E: https://forgottentrek.com/designing-the-enterprise-e-bridge/
+* Beobachtungslounge: https://www.usswolff.com/wiki/index.php/Observation_Lounge
+* Enterprise-C / Ambassador-Klasse: https://memory-alpha.fandom.com/wiki/Ambassador_class,
+  https://www.ex-astris-scientia.org/observations/yesterdaysenterprise.htm
 
 ## Bauen
 
