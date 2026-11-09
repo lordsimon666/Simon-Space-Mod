@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "simonspacemod:block/biobed"
+    },
+    "facing=east": {
+      "model": "simonspacemod:block/biobed",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "simonspacemod:block/biobed",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "simonspacemod:block/biobed",
+      "y": 270
+    }
+  }
+}

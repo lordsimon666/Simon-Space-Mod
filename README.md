@@ -49,18 +49,46 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
   Plasmaleitungen im Boden, Konsolen, Galerie mit Leitern, Turbolift.
 * **Transporterraum**: lila Wände, erhöhte rote Plattform mit Stufe und sechs Transporterfeldern,
   grün schimmernde Energiewand mit Säulen, Strahler in der Decke, rot-graue Bedienkonsole, Turbolift.
-* Decks mit Deckenlichtern und Ringkorridoren in Untertassen- und Sekundärhülle.
+* **Alle Decks (ab Größe 0,75, voll ausgebaut in 1:1)** – jedes Deck mit Turbolift-Halt:
+  * Untertasse: runder Vorraum mit Turbolift in der Mitte, vier Gänge, Ringkorridor, acht große
+    Innenräume und 24 Quartiere am Rand (mit Fenstern).
+    * Deck 2: **Besprechungsraum** wie in der Serie (langer Konferenztisch mit dreiseitigem
+      Bildschirm), Büro des Captains, Offiziersquartiere
+    * Deck 3: **Krankenstation** mit Biobetten, Transporterraum, Labore
+    * Deck 4: Messe und Freizeitraum
+    * Deck 5: Wissenschaftslabore, Deck 6: Mannschaftsquartiere
+  * Sekundärhülle: Mittelgang mit Turbolift vorne, Räume links und rechts (Frachträume,
+    Quartiere, Labore, Lager), dazu Maschinenraum und Shuttlehangar.
+  * In der Größe 1:1 gibt es 13 Turbolift-Halte (Brücke, 5 Decks in der Untertasse,
+    6 in der Sekundärhülle, Maschinenraum).
 
 ### Funktionen
 
-* **Turbolift**: Rechtsklick fährt zum ausgewählten Deck, **Schleichen + Rechtsklick** wählt ein
-  anderes Deck. Von der Brücke geht es zum Maschinenraum oder Transporterraum, von dort zurück zur Brücke.
+* **Turbolift**: Rechtsklick öffnet das Turbolift-Menü mit allen Decks des Netzes (von oben nach
+  unten sortiert). Ein Klick auf ein Deck fährt dorthin. Im Menü kann man dem Lift einen
+  **Decknamen** geben und ihn einem **Netz** zuordnen („Speichern“).
+* **Eigene Turbolifte**: Jeder gesetzte Turbolift-Block meldet sich automatisch an (Netz
+  „Standard“, Name „Deck Y=…“). Alle Lifte mit demselben Netznamen in derselben Dimension sind
+  verbunden – so baust du Fahrstühle in eigenen Schiffen und Basen. Mit unterschiedlichen Netznamen
+  bleiben getrennte Basen getrennt. Jede gespawnte Enterprise hat ihr eigenes Netz
+  („NCC-1701 x/z“). Ausgestiegen wird auf der Seite, in die die Vorderseite des Blocks zeigt.
 * **Transporterfeld**: Rechtsklick beamt dich auf den Boden unter dem Schiff.
   Hast du keinen Kommunikator dabei, bekommst du einen.
 * **Kommunikator**: Rechtsklick beamt dich zurück auf das zuletzt benutzte Transporterfeld.
 * **Brückenstation / Brückenmonitor**: Rechtsklick schaltet zwischen 4 Varianten (Farbe bzw. Anzeige) um.
 
-## Neue Blöcke (43)
+### Rezepte (Überlebensmodus)
+
+```
+Turbolift (2x)        Kommunikator
+E = Eisenbarren        G = Goldbarren
+ E F E                    G
+ E P E                  E P E
+ E R E                  E R E
+F = roter Farbstoff, P = Enderperle, R = Redstone
+```
+
+## Neue Blöcke (50)
 
 * **Hülle**: Hüllenpanzerung (+ Stufe), Hüllenplatte, dunkle Hüllenplatte, Hüllenfenster,
   Kennungsmarkierung (+ Stufe), roter Zierstreifen, Positionslicht rot/grün, Deflektorschüssel,
@@ -70,6 +98,8 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
   Brückenkonsole, LCARS-Anzeige, Turbolift, Turbolift-Tür, Turbolift-Rahmen
 * **Transporterraum**: Transporterraum-Wand, Transporterplattform-Boden, Transporterfeld,
   Transporter-Energiewand, Transporter-Säule, Transporter-Strahler, Transporterkonsole
+* **Möbel**: Konferenztisch, dreiseitiger Tischbildschirm, Biobett, Koje, Schreibtisch,
+  Frachtcontainer, Messetisch
 * **Allgemein**: Deckboden, Korridorwand, Deckenverkleidung, Deckenleuchte, Maschinenraum-Konsole,
   Warpkern, Plasmaleitung
 
@@ -97,7 +127,9 @@ Die fertige Mod liegt dann in `build/libs/simonspacemod-1.0.0.jar` und kommt in 
 | `ship/ShipPart.java`, `ship/ShipPalette.java` | Abstrakte Bauteile → echte Blöcke |
 | `ship/ShipBuildManager.java` | Asynchrone Berechnung + Platzierung über mehrere Ticks |
 | `command/EnterpriseCommand.java` | Der `/enterprise`-Befehl |
-| `ModBlocks.java`, `block/`, `item/` | Neue Blöcke, Block-Entity des Turbolifts, Kommunikator |
+| `ModBlocks.java`, `block/`, `item/` | Neue Blöcke und Kommunikator |
+| `turbolift/` | Turbolift-Netz (gespeichert pro Welt), Menü, Netzwerkpaket zum Umbenennen |
+| `client/` | Turbolift-Bildschirm |
 
 *Star Trek und USS Enterprise sind Marken von Paramount. Dies ist ein inoffizielles Fan-Projekt
 für den privaten Gebrauch.*

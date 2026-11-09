@@ -1,27 +1,24 @@
 package de.simon.spacemod.block;
 
 import com.mojang.serialization.MapCodec;
+import de.simon.spacemod.turbolift.TurboliftBlockHelper;
+import de.simon.spacemod.turbolift.TurboliftData;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
-import org.jspecify.annotations.Nullable;
 
 /**
- * Turbolift: Rechtsklick fährt zum ausgewählten Deck, Schleichen + Rechtsklick wählt ein anderes Deck
- * (z.B. von der Brücke zum Maschinenraum oder Transporterraum).
+ * Turbolift: Rechtsklick öffnet die Deckauswahl. Alle Turbolifte mit demselben Netznamen sind
+ * verbunden – auch selbst gebaute in eigenen Schiffen oder Basen. Die Vorderseite zeigt zum Ausstieg.
  */
-public class TurboliftBlock extends FacingBlock implements EntityBlock {
+public class TurboliftBlock extends FacingBlock {
     public static final MapCodec<TurboliftBlock> CODEC = simpleCodec(TurboliftBlock::new);
 
     public TurboliftBlock(BlockBehaviour.Properties properties) {
@@ -34,31 +31,22 @@ public class TurboliftBlock extends FacingBlock implements EntityBlock {
     }
 
     @Override
-    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new TurboliftBlockEntity(pos, state);
+    protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+        super.onPlace(state, level, pos, oldState, movedByPiston);
+        if (level instanceof ServerLevel server && !oldState.is(this)) TurboliftData.get(server).register(pos);
+    }
+
+    @Override
+    protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
+        super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
+        if (!level.getBlockState(pos).is(this)) TurboliftData.get(level).remove(pos);
     }
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (!(level instanceof ServerLevel server) || !(player instanceof ServerPlayer sp)) {
-            return InteractionResult.SUCCESS;
+        if (level instanceof ServerLevel server && player instanceof ServerPlayer sp) {
+            TurboliftBlockHelper.openMenu(sp, server, pos);
         }
-        if (!(level.getBlockEntity(pos) instanceof TurboliftBlockEntity be) || be.getSelected() == null) {
-            sp.sendOverlayMessage(Component.translatable("message.simonspacemod.turbolift.unlinked"));
-            return InteractionResult.CONSUME;
-        }
-        // Schleichen + Rechtsklick: anderes Deck wählen
-        if (sp.isShiftKeyDown()) {
-            TurboliftBlockEntity.Destination next = be.cycle();
-            sp.sendOverlayMessage(Component.translatable("message.simonspacemod.turbolift.selected", Component.translatable(next.key())));
-            return InteractionResult.CONSUME;
-        }
-        TurboliftBlockEntity.Destination dest = be.getSelected();
-        BlockState targetState = server.getBlockState(dest.pos());
-        Direction out = targetState.hasProperty(FACING) ? targetState.getValue(FACING) : Direction.NORTH;
-        BlockPos stand = dest.pos().relative(out);
-        Beam.teleport(sp, server, stand.getX() + 0.5, stand.getY(), stand.getZ() + 0.5, out.toYRot());
-        sp.sendOverlayMessage(Component.translatable("message.simonspacemod.turbolift.arrived", Component.translatable(dest.key())));
-        return InteractionResult.CONSUME;
+        return InteractionResult.SUCCESS;
     }
 }

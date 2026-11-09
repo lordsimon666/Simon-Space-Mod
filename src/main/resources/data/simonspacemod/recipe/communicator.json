@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": "minecraft:gold_ingot",
+    "I": "minecraft:iron_ingot",
+    "R": "minecraft:redstone",
+    "E": "minecraft:ender_pearl"
+  },
+  "pattern": [
+    " G ",
+    "IEI",
+    "IRI"
+  ],
+  "result": {
+    "id": "simonspacemod:communicator"
+  }
+}

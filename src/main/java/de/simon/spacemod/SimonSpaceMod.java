@@ -2,9 +2,12 @@ package de.simon.spacemod;
 
 import de.simon.spacemod.command.EnterpriseCommand;
 import de.simon.spacemod.ship.ShipBuildManager;
+import de.simon.spacemod.turbolift.TurboliftNetwork;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.loading.FMLLoader;
 
 /** Simon Space Mod – bringt die USS Enterprise NCC-1701 nach Minecraft. */
 @Mod(SimonSpaceMod.MODID)
@@ -12,8 +15,13 @@ public final class SimonSpaceMod {
     public static final String MODID = "simonspacemod";
 
     public SimonSpaceMod(FMLJavaModLoadingContext context) {
-        ModBlocks.register(context.getModBusGroup());
+        var modBus = context.getModBusGroup();
+        ModBlocks.register(modBus);
+        TurboliftNetwork.init();
         RegisterCommandsEvent.BUS.addListener(EnterpriseCommand::onRegisterCommands);
         ShipBuildManager.init();
+        if (FMLLoader.getDist().isClient()) {
+            FMLClientSetupEvent.getBus(modBus).addListener(de.simon.spacemod.client.ClientSetup::onClientSetup);
+        }
     }
 }

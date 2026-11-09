@@ -1,7 +1,8 @@
 package de.simon.spacemod.ship;
 
 import de.simon.spacemod.SimonSpaceMod;
-import de.simon.spacemod.block.TurboliftBlockEntity;
+import de.simon.spacemod.ModBlocks;
+import de.simon.spacemod.turbolift.TurboliftData;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -122,16 +123,16 @@ public final class ShipBuildManager {
         }
 
         void finish() {
+            // Alle Turbolifte des Schiffs in ein eigenes Netz eintragen und benennen
             ServerLevel level = placement.level();
-            java.util.Set<BlockPos> cleared = new java.util.HashSet<>();
-            for (EnterpriseBlueprint.TurboLink link : blueprint.turboLinks) {
-                BlockPos from = placement.toWorld(blueprint, link.from().getX(), link.from().getY(), link.from().getZ());
-                BlockPos to = placement.toWorld(blueprint, link.to().getX(), link.to().getY(), link.to().getZ());
-                if (level.getBlockEntity(from) instanceof TurboliftBlockEntity be) {
-                    if (cleared.add(from)) be.clearDestinations();
-                    be.addDestination(to, link.destinationKey());
+            TurboliftData data = TurboliftData.get(level);
+            String network = "NCC-1701 " + placement.origin().getX() + "/" + placement.origin().getZ();
+            for (EnterpriseBlueprint.LiftStop stop : blueprint.liftStops) {
+                BlockPos pos = placement.toWorld(blueprint, stop.pos().getX(), stop.pos().getY(), stop.pos().getZ());
+                if (level.getBlockState(pos).is(ModBlocks.TURBOLIFT.get())) {
+                    data.set(pos, stop.name(), network);
                 } else {
-                    LOGGER.warn("[{}] Turbolift bei {} hat kein Block-Entity", SimonSpaceMod.MODID, from);
+                    LOGGER.warn("[{}] Turbolift bei {} fehlt", SimonSpaceMod.MODID, pos);
                 }
             }
             onDone.accept(this);

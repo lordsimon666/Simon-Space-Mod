@@ -4,17 +4,19 @@ import de.simon.spacemod.block.CaptainsChairBlock;
 import de.simon.spacemod.block.FacingBlock;
 import de.simon.spacemod.block.GlowParticleBlock;
 import de.simon.spacemod.block.RailingBlock;
+import de.simon.spacemod.block.ShapedBlock;
 import de.simon.spacemod.block.ShapedFacingBlock;
 import de.simon.spacemod.block.VariantFacingBlock;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.phys.shapes.Shapes;
 import de.simon.spacemod.block.TransporterPadBlock;
 import de.simon.spacemod.block.TurboliftBlock;
-import de.simon.spacemod.block.TurboliftBlockEntity;
+import de.simon.spacemod.turbolift.TurboliftMenu;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraftforge.common.extensions.IForgeMenuType;
 import de.simon.spacemod.item.CommunicatorItem;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Function;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -24,7 +26,6 @@ import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraftforge.eventbus.api.bus.BusGroup;
@@ -32,14 +33,13 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
-/** Alle Blöcke, Items und Block-Entities der Mod. */
+/** Alle Blöcke, Items und Menüs der Mod. */
 public final class ModBlocks {
     private ModBlocks() {}
 
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, SimonSpaceMod.MODID);
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, SimonSpaceMod.MODID);
-    public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES =
-        DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, SimonSpaceMod.MODID);
+    public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, SimonSpaceMod.MODID);
     public static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, SimonSpaceMod.MODID);
 
     private static final List<RegistryObject<? extends Item>> TAB_ITEMS = new ArrayList<>();
@@ -91,6 +91,22 @@ public final class ModBlocks {
     public static final RegistryObject<Block> TRANSPORTER_CONSOLE = block("transporter_console",
         p -> new ShapedFacingBlock(p, Block.box(1, 0, 1, 15, 14, 15)), glowing(metal(MapColor.COLOR_RED), 7).noOcclusion());
 
+    // --- Möbel für die Decks ---
+    public static final RegistryObject<Block> CONFERENCE_TABLE = block("conference_table",
+        p -> new ShapedBlock(p, Block.box(0, 0, 0, 16, 14, 16)), metal(MapColor.COLOR_BLACK).noOcclusion());
+    public static final RegistryObject<Block> TABLE_VIEWER = block("table_viewer",
+        p -> new ShapedBlock(p, Block.box(4, 0, 4, 12, 9, 12)), glowing(metal(MapColor.COLOR_GRAY), 6).noOcclusion());
+    public static final RegistryObject<Block> BIOBED = block("biobed",
+        p -> new ShapedFacingBlock(p, Block.box(1, 0, 1, 15, 10, 15)), glowing(metal(MapColor.SNOW), 5).noOcclusion());
+    public static final RegistryObject<Block> CREW_BED = block("crew_bed",
+        p -> new ShapedFacingBlock(p, Block.box(0, 0, 0, 16, 9, 16)),
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLUE).strength(1F).sound(SoundType.WOOL).noOcclusion());
+    public static final RegistryObject<Block> CREW_DESK = block("crew_desk",
+        p -> new ShapedFacingBlock(p, Block.box(0, 0, 0, 16, 14, 16)), glowing(metal(MapColor.COLOR_GRAY), 4).noOcclusion());
+    public static final RegistryObject<Block> CARGO_CONTAINER = block("cargo_container", Block::new, metal(MapColor.COLOR_YELLOW));
+    public static final RegistryObject<Block> MESS_TABLE = block("mess_table",
+        p -> new ShapedBlock(p, Block.box(1, 0, 1, 15, 14, 15)), metal(MapColor.SNOW).noOcclusion());
+
     // --- Innenausstattung ---
     public static final RegistryObject<Block> DECK_FLOOR = block("deck_floor", Block::new,
         BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GRAY).strength(1.5F, 6F).sound(SoundType.WOOL));
@@ -115,9 +131,9 @@ public final class ModBlocks {
         () -> new CommunicatorItem(new Item.Properties().setId(ITEMS.key("communicator")).stacksTo(1)));
     static { TAB_ITEMS.add(COMMUNICATOR); }
 
-    // --- Block-Entities ---
-    public static final RegistryObject<BlockEntityType<TurboliftBlockEntity>> TURBOLIFT_BE = BLOCK_ENTITIES.register("turbolift",
-        () -> new BlockEntityType<>(TurboliftBlockEntity::new, Set.of(TURBOLIFT.get())));
+    // --- Menüs ---
+    public static final RegistryObject<MenuType<TurboliftMenu>> TURBOLIFT_MENU = MENUS.register("turbolift",
+        () -> IForgeMenuType.create(TurboliftMenu::new));
 
     public static final RegistryObject<CreativeModeTab> TAB = TABS.register("space", () -> CreativeModeTab.builder()
         .withTabsBefore(CreativeModeTabs.SPAWN_EGGS)
@@ -129,7 +145,7 @@ public final class ModBlocks {
     public static void register(BusGroup modBus) {
         BLOCKS.register(modBus);
         ITEMS.register(modBus);
-        BLOCK_ENTITIES.register(modBus);
+        MENUS.register(modBus);
         TABS.register(modBus);
     }
 

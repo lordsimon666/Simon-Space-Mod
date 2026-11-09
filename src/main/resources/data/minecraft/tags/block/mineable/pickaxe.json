@@ -1,5 +1,6 @@
 {
   "values": [
+    "simonspacemod:cargo_container",
     "simonspacemod:bridge_wall",
     "simonspacemod:bridge_trim",
     "simonspacemod:turbolift_frame",
@@ -34,6 +35,12 @@
     "simonspacemod:station_chair",
     "simonspacemod:helm_console",
     "simonspacemod:transporter_console",
+    "simonspacemod:biobed",
+    "simonspacemod:crew_bed",
+    "simonspacemod:crew_desk",
+    "simonspacemod:conference_table",
+    "simonspacemod:table_viewer",
+    "simonspacemod:mess_table",
     "simonspacemod:transporter_pillar",
     "simonspacemod:transporter_pad",
     "simonspacemod:warp_core",

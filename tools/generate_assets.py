@@ -657,6 +657,83 @@ def tex_pennant():
     return noise(new((176, 36, 36)), 4, 42)
 
 
+def tex_table_top():
+    img = noise(new((34, 34, 40)), 3, 60)
+    px = img.load()
+    for i in range(16):
+        px[i, 0] = (70, 70, 80, 255)
+        px[i, 15] = (70, 70, 80, 255)
+    return img
+
+
+def tex_viewer_screen():
+    img = new((50, 54, 64))
+    px = img.load()
+    for x in range(2, 14):
+        for y in range(2, 13):
+            px[x, y] = (8, 10, 20, 255)
+    for x in range(3, 13):
+        px[x, 6 + int(2 * math.sin(x))] = (90, 220, 255, 255)
+    for x in range(3, 13, 3):
+        px[x, 11] = (255, 170, 60, 255)
+    return img
+
+
+def tex_bio_white():
+    return noise(new((232, 232, 238)), 3, 61)
+
+
+def tex_bio_pad():
+    return noise(new((120, 140, 190)), 4, 62)
+
+
+def tex_bio_monitor():
+    img = new((30, 30, 36))
+    px = img.load()
+    for x in range(1, 15):
+        px[x, 4 + (2 if x % 5 == 2 else 0)] = (80, 255, 120, 255)
+        px[x, 9] = (255, 80, 80, 255) if x < 9 else (60, 60, 70, 255)
+        px[x, 12] = (255, 220, 80, 255) if x < 12 else (60, 60, 70, 255)
+    return img
+
+
+def tex_blanket():
+    img = noise(new((70, 90, 150)), 5, 63)
+    px = img.load()
+    for x in range(16):
+        px[x, 7] = (200, 60, 50, 255)
+    return img
+
+
+def tex_pillow():
+    return noise(new((236, 236, 236)), 2, 64)
+
+
+def tex_desk_top():
+    img = noise(new((88, 88, 96)), 3, 65)
+    return img
+
+
+def tex_cargo():
+    img = noise(new((140, 136, 120)), 5, 66)
+    px = img.load()
+    for i in range(16):
+        for e in (0, 15):
+            px[i, e] = (90, 88, 80, 255)
+            px[e, i] = (90, 88, 80, 255)
+        if i % 4 < 2:
+            px[i, 2] = (230, 190, 40, 255)
+            px[i, 13] = (230, 190, 40, 255)
+    for x in range(5, 11):
+        for y in range(6, 10):
+            px[x, y] = (240, 240, 230, 255)
+    return img
+
+
+def tex_mess_top():
+    return noise(new((215, 215, 212)), 3, 67)
+
+
 TEXTURES = {
     "hull_plating": tex_hull_plating,
     "hull_panel": tex_hull_panel,
@@ -687,6 +764,16 @@ TEXTURES = {
     "nav_light_red": lambda: tex_nav((210, 20, 20)),
     "nav_light_green": lambda: tex_nav((20, 200, 50)),
     "hull_pennant": tex_pennant,
+    "table_top": tex_table_top,
+    "viewer_screen": tex_viewer_screen,
+    "bio_white": tex_bio_white,
+    "bio_pad": tex_bio_pad,
+    "bio_monitor": tex_bio_monitor,
+    "blanket": tex_blanket,
+    "pillow": tex_pillow,
+    "desk_top": tex_desk_top,
+    "cargo_container": tex_cargo,
+    "mess_top": tex_mess_top,
     **{f"bridge_station_front_{v}": (lambda v=v: tex_station_front(v)) for v in range(4)},
     **{f"bridge_station_top_{v}": (lambda v=v: tex_station_top(v)) for v in range(4)},
     **{f"bridge_monitor_{v}": (lambda v=v: tex_monitor(v)) for v in range(4)},
@@ -721,7 +808,7 @@ def b(name):
     return f"{MODID}:block/{name}"
 
 
-SIMPLE = ["bridge_wall", "bridge_trim", "turbolift_frame", "transporter_wall", "transporter_platform",
+SIMPLE = ["cargo_container", "bridge_wall", "bridge_trim", "turbolift_frame", "transporter_wall", "transporter_platform",
           "transporter_energizer", "transporter_emitter", "nav_light_red", "nav_light_green", "hull_pennant",
           "hull_plating", "hull_panel", "hull_dark", "hull_window", "hull_marking", "deflector_dish",
           "bussard_collector", "nacelle_grille", "deck_floor", "bridge_deck", "corridor_wall",
@@ -745,6 +832,9 @@ FACING = {
     "station_chair": None,
     "helm_console": None,
     "transporter_console": None,
+    "biobed": None,
+    "crew_bed": None,
+    "crew_desk": None,
 }
 
 
@@ -810,6 +900,49 @@ TRANSPORTER_CONSOLE = {
                    "south": {"texture": "#red"}, "east": {"texture": "#red"}, "west": {"texture": "#red"}}},
     ],
 }
+
+
+def furniture(textures, elements):
+    t = dict(textures)
+    t.setdefault("particle", next(iter(textures.values())))
+    return {"parent": "minecraft:block/block", "textures": t, "elements": elements}
+
+
+CONFERENCE_TABLE = furniture({"top": b("table_top"), "metal": b("chair_metal")}, [
+    el([0, 12, 0], [16, 14, 16], all6("#top")),
+    el([6, 0, 6], [10, 12, 10], all6("#metal")),
+])
+
+TABLE_VIEWER = furniture({"screen": b("viewer_screen"), "metal": b("chair_metal")}, [
+    el([6, 0, 6], [10, 2, 10], all6("#metal")),
+    el([4, 2, 4], [12, 9, 12], {"north": "#screen", "south": "#screen", "east": "#screen", "west": "#screen",
+                                "up": "#metal", "down": "#metal"}),
+])
+
+BIOBED = furniture({"white": b("bio_white"), "pad": b("bio_pad"), "monitor": b("bio_monitor")}, [
+    el([2, 0, 1], [14, 7, 15], all6("#white")),
+    el([1, 7, 1], [15, 9, 15], {"up": "#pad", "down": "#white", "north": "#white", "south": "#white", "east": "#white", "west": "#white"}),
+    el([1, 9, 13], [15, 16, 15], {"north": "#monitor", "south": "#white", "east": "#white", "west": "#white", "up": "#white", "down": "#white"}),
+])
+
+CREW_BED = furniture({"frame": b("chair_metal"), "blanket": b("blanket"), "pillow": b("pillow")}, [
+    el([0, 0, 0], [16, 5, 16], all6("#frame")),
+    el([0, 5, 0], [16, 8, 11], {"up": "#blanket", "north": "#blanket", "east": "#blanket", "west": "#blanket", "south": "#blanket", "down": "#frame"}),
+    el([1, 5, 11], [15, 9, 16], all6("#pillow")),
+])
+
+CREW_DESK = furniture({"top": b("desk_top"), "metal": b("chair_metal"), "screen": b("viewer_screen")}, [
+    el([0, 12, 0], [16, 14, 16], all6("#top")),
+    el([0, 0, 1], [2, 12, 15], all6("#metal")),
+    el([14, 0, 1], [16, 12, 15], all6("#metal")),
+    el([4, 14, 11], [12, 20, 13], {"north": "#screen", "south": "#metal", "east": "#metal", "west": "#metal", "up": "#metal", "down": "#metal"}),
+])
+
+MESS_TABLE = furniture({"top": b("mess_top"), "metal": b("chair_metal")}, [
+    el([1, 12, 1], [15, 14, 15], all6("#top")),
+    el([6, 0, 6], [10, 12, 10], all6("#metal")),
+    el([4, 0, 4], [12, 1, 12], all6("#metal")),
+])
 
 
 def station_model(v):
@@ -950,6 +1083,13 @@ NAMES = {
     "transporter_pillar": ("Transporter-Säule", "Transporter Pillar"),
     "transporter_emitter": ("Transporter-Strahler", "Transporter Emitter"),
     "transporter_console": ("Transporterkonsole", "Transporter Console"),
+    "conference_table": ("Konferenztisch", "Conference Table"),
+    "table_viewer": ("Dreiseitiger Tischbildschirm", "Three-Sided Table Viewer"),
+    "biobed": ("Biobett", "Biobed"),
+    "crew_bed": ("Koje", "Crew Bunk"),
+    "crew_desk": ("Schreibtisch", "Crew Desk"),
+    "cargo_container": ("Frachtcontainer", "Cargo Container"),
+    "mess_table": ("Messetisch", "Mess Table"),
 }
 
 
@@ -983,9 +1123,12 @@ def main():
     for name in SIMPLE:
         models[name] = {"parent": "minecraft:block/cube_all", "textures": {"all": b(name)}}
     custom = {"captains_chair": CHAIR, "station_chair": STATION_CHAIR, "helm_console": HELM,
-              "transporter_console": TRANSPORTER_CONSOLE}
+              "transporter_console": TRANSPORTER_CONSOLE, "biobed": BIOBED, "crew_bed": CREW_BED, "crew_desk": CREW_DESK}
     for name, model in FACING.items():
         models[name] = model if model else custom[name]
+    models["conference_table"] = CONFERENCE_TABLE
+    models["table_viewer"] = TABLE_VIEWER
+    models["mess_table"] = MESS_TABLE
     models["transporter_pillar"] = {"parent": "minecraft:block/cube_column",
                                     "textures": {"end": b("trim_black"), "side": b("transporter_pillar")}}
     models["transporter_pad"] = PAD
@@ -1034,17 +1177,31 @@ def main():
     write_json(os.path.join(ROOT, "data", "minecraft", "tags", "block", "mineable", "pickaxe.json"),
                {"values": [f"{MODID}:{n}" for n in list(models) + models_extra]})
 
+    # Rezepte (Überlebensmodus): Turbolift und Kommunikator
+    write_json(os.path.join(DATA, "recipe", "turbolift.json"), {
+        "type": "minecraft:crafting_shaped", "category": "redstone",
+        "key": {"I": "minecraft:iron_ingot", "R": "minecraft:redstone", "E": "minecraft:ender_pearl", "D": "minecraft:red_dye"},
+        "pattern": ["IDI", "IEI", "IRI"],
+        "result": {"id": f"{MODID}:turbolift", "count": 2}})
+    write_json(os.path.join(DATA, "recipe", "communicator.json"), {
+        "type": "minecraft:crafting_shaped", "category": "misc",
+        "key": {"G": "minecraft:gold_ingot", "I": "minecraft:iron_ingot", "R": "minecraft:redstone", "E": "minecraft:ender_pearl"},
+        "pattern": [" G ", "IEI", "IRI"],
+        "result": {"id": f"{MODID}:communicator"}})
+
     de = {f"block.{MODID}.{k}": v[0] for k, v in NAMES.items()}
     en = {f"block.{MODID}.{k}": v[1] for k, v in NAMES.items()}
     de.update({
         f"item.{MODID}.communicator": "Kommunikator",
         f"itemGroup.{MODID}.space": "Simon Space Mod",
-        f"deck.{MODID}.bridge": "Brücke",
-        f"deck.{MODID}.engineering": "Maschinenraum",
-        f"deck.{MODID}.transporter": "Transporterraum",
         f"message.{MODID}.turbolift.arrived": "Turbolift: %s",
-        f"message.{MODID}.turbolift.selected": "Turbolift-Ziel: %s (Rechtsklick zum Fahren)",
-        f"message.{MODID}.turbolift.unlinked": "Dieser Turbolift ist mit keinem Deck verbunden.",
+        f"message.{MODID}.turbolift.gone": "Dieser Turbolift existiert nicht mehr.",
+        f"gui.{MODID}.turbolift": "Turbolift",
+        f"gui.{MODID}.turbolift.name": "Deckname",
+        f"gui.{MODID}.turbolift.network": "Netz",
+        f"gui.{MODID}.turbolift.save": "Speichern",
+        f"gui.{MODID}.turbolift.choose": "Deck wählen (%s Halte):",
+        f"gui.{MODID}.turbolift.here": "%s (hier)",
         f"message.{MODID}.transporter.energize": "Energie! Beamen Sie mit dem Kommunikator zurück.",
         f"message.{MODID}.transporter.no_ground": "Kein Boden unter dem Schiff gefunden.",
         f"message.{MODID}.communicator.no_pad": "Keine Transporterplattform gespeichert.",
@@ -1059,12 +1216,14 @@ def main():
     en.update({
         f"item.{MODID}.communicator": "Communicator",
         f"itemGroup.{MODID}.space": "Simon Space Mod",
-        f"deck.{MODID}.bridge": "Bridge",
-        f"deck.{MODID}.engineering": "Engineering",
-        f"deck.{MODID}.transporter": "Transporter Room",
         f"message.{MODID}.turbolift.arrived": "Turbolift: %s",
-        f"message.{MODID}.turbolift.selected": "Turbolift destination: %s (right-click to go)",
-        f"message.{MODID}.turbolift.unlinked": "This turbolift is not linked to any deck.",
+        f"message.{MODID}.turbolift.gone": "This turbolift no longer exists.",
+        f"gui.{MODID}.turbolift": "Turbolift",
+        f"gui.{MODID}.turbolift.name": "Deck name",
+        f"gui.{MODID}.turbolift.network": "Network",
+        f"gui.{MODID}.turbolift.save": "Save",
+        f"gui.{MODID}.turbolift.choose": "Choose deck (%s stops):",
+        f"gui.{MODID}.turbolift.here": "%s (here)",
         f"message.{MODID}.transporter.energize": "Energize! Use the communicator to beam back up.",
         f"message.{MODID}.transporter.no_ground": "No ground found below the ship.",
         f"message.{MODID}.communicator.no_pad": "No transporter pad stored.",

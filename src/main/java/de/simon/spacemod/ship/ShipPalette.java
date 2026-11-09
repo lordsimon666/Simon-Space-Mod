@@ -65,6 +65,13 @@ public final class ShipPalette {
             case TRANSPORTER_PILLAR -> ModBlocks.TRANSPORTER_PILLAR.get().defaultBlockState();
             case TRANSPORTER_EMITTER -> ModBlocks.TRANSPORTER_EMITTER.get().defaultBlockState();
             case TRANSPORTER_CONSOLE -> ModBlocks.TRANSPORTER_CONSOLE.get().defaultBlockState();
+            case CONFERENCE_TABLE -> ModBlocks.CONFERENCE_TABLE.get().defaultBlockState();
+            case TABLE_VIEWER -> ModBlocks.TABLE_VIEWER.get().defaultBlockState();
+            case BIOBED -> ModBlocks.BIOBED.get().defaultBlockState();
+            case CREW_BED -> ModBlocks.CREW_BED.get().defaultBlockState();
+            case CREW_DESK -> ModBlocks.CREW_DESK.get().defaultBlockState();
+            case CARGO_CONTAINER -> ModBlocks.CARGO_CONTAINER.get().defaultBlockState();
+            case MESS_TABLE -> ModBlocks.MESS_TABLE.get().defaultBlockState();
             case BRIDGE_RAILING -> bars(ModBlocks.BRIDGE_RAILING.get().defaultBlockState(), cellCode);
             case IRON_BARS -> Blocks.IRON_BARS.defaultBlockState()
                 .setValue(CrossCollisionBlock.NORTH, EnterpriseBlueprint.bar(cellCode, Direction.NORTH))

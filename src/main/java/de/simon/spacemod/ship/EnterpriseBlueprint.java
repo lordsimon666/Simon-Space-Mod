@@ -40,11 +40,12 @@ public final class EnterpriseBlueprint {
     private final short[] cell;
 
     /** Turbolift-Verbindungen in lokalen Koordinaten. */
-    public final List<TurboLink> turboLinks = new ArrayList<>();
+    public final List<LiftStop> liftStops = new ArrayList<>();
     /** Position (lokal) vor dem Kommandantensessel, für den Teleport zur Brücke. */
     public BlockPos bridgeSpawn = BlockPos.ZERO;
 
-    public record TurboLink(BlockPos from, BlockPos to, String destinationKey) {}
+    /** Ein Turbolift-Halt (lokale Position des Panels + Deckname). */
+    public record LiftStop(BlockPos pos, String name) {}
 
     // ---- Abgeleitete Geometrie (in Blöcken) ----
     private final double s;          // Hüllen-Skalierung
@@ -92,9 +93,14 @@ public final class EnterpriseBlueprint {
         registryLettering();
         hullDetails();
         smoothSaucer();
+        boolean fullDecks = s >= 0.75;
+        if (fullDecks) {
+            layoutSaucerDecks();
+            layoutSecondaryDecks();
+        }
         buildBridge();
         BlockPos eng = buildEngineering();
-        BlockPos transporter = buildTransporterRoom();
+        BlockPos transporter = buildTransporterRoom(fullDecks);
         linkTurbolifts(eng, transporter);
         connectBars();
     }
@@ -774,45 +780,66 @@ public final class EnterpriseBlueprint {
      * Stufe und sechs Transporterfeldern, grün schimmernde Energiewand mit Säulen dahinter,
      * Strahler an der Decke und die Bedienkonsole davor.
      */
-    private BlockPos buildTransporterRoom() {
+    private BlockPos buildTransporterRoom(boolean fullDecks) {
+        if (fullDecks) {
+            // Fester Platz auf Deck 3 im hinteren Innenraum (Steuerbord), Tür zum hinteren Gang
+            int f = bridgeFloor - 2 * DECK_HEIGHT;
+            int xt = (int) Math.round(sCx + 15), zc = 8;
+            if (boxInterior(xt - 4, xt + 4, f + 1, f + 3, zc - 4, zc + 4)) {
+                transporterRoomAt(xt, zc, f, false);
+                for (int y = f + 1; y <= f + 2; y++)
+                    for (int z = zc - 6; z <= zc - 5; z++) set(xt - 2, y, z, ShipPart.AIR);
+                return null;
+            }
+        }
         for (int off = 9; off <= sR * 0.7; off++) {
             int xt = (int) Math.round(sCx + off);
             for (int f = sizeY - 7; f > 0; f--) {
                 // Nur der begehbare Innenraum muss im Schiff liegen, Boden/Decke/Wände dürfen Hülle sein
-                if (!boxInterior(xt - 4, xt + 4, f + 1, f + 4, -4, 4)) continue;
-                room(xt - 5, xt + 5, f, f + 5, -5, 5, ShipPart.TRANSPORTER_WALL);
-                // Plattform (abgerundet) mit Stufe davor
-                for (int x = xt; x <= xt + 4; x++)
-                    for (int z = -4; z <= 4; z++) {
-                        double d = Math.sqrt(Math.pow(x - (xt + 4), 2) * 0.6 + z * z);
-                        if (d <= 4.6) set(x, f + 1, z, ShipPart.TRANSPORTER_PLATFORM);
-                        else if (d <= 5.6) set(x, f + 1, z, ShipPart.STEP_SLAB, Direction.NORTH, 0);
-                    }
-                for (int z = -3; z <= 3; z++) if (get(xt - 1, f + 1, z) == ShipPart.AIR) set(xt - 1, f + 1, z, ShipPart.STEP_SLAB, Direction.NORTH, 0);
-                // Sechs Transporterfelder: hinten drei, vorne drei versetzt
-                int[][] pads = {{xt + 3, -2}, {xt + 3, 0}, {xt + 3, 2}, {xt + 1, -2}, {xt + 1, 0}, {xt + 1, 2}};
-                for (int[] pd : pads) {
-                    set(pd[0], f + 2, pd[1], ShipPart.TRANSPORTER_PAD);
-                    set(pd[0], f + 5, pd[1], ShipPart.TRANSPORTER_EMITTER); // Strahler in der Decke
-                }
-                // Energiewand mit Säulen an der Rückwand
-                for (int z = -4; z <= 4; z++)
-                    for (int y = f + 2; y <= f + 4; y++) {
-                        boolean pillar = Math.floorMod(z, 3) == 2 || Math.abs(z) == 4;
-                        set(xt + 5, y, z, pillar ? ShipPart.TRANSPORTER_PILLAR : ShipPart.TRANSPORTER_ENERGIZER);
-                    }
-                // Bedienkonsole vor der Plattform, Bediener schaut nach achtern
-                set(xt - 3, f + 1, 0, ShipPart.TRANSPORTER_CONSOLE, Direction.NORTH);
-                set(xt - 3, f + 5, 0, ShipPart.CEILING_LIGHT);
-                set(xt - 1, f + 5, -3, ShipPart.CEILING_LIGHT);
-                set(xt - 1, f + 5, 3, ShipPart.CEILING_LIGHT);
-                BlockPos lift = new BlockPos(xt - 5, f + 1, -3);
-                set(lift.getX(), lift.getY(), lift.getZ(), ShipPart.TURBOLIFT, Direction.SOUTH);
-                set(lift.getX(), lift.getY() + 1, lift.getZ(), ShipPart.TURBOLIFT_DOOR, Direction.SOUTH);
-                return lift;
+                if (!boxInterior(xt - 4, xt + 4, f + 1, f + 3, -4, 4)) continue;
+                return transporterRoomAt(xt, 0, f, true);
             }
         }
         return null;
+    }
+
+    /**
+     * Transporterraum (11 x 11 außen, genau ein Deck hoch) nach dem Vorbild der Originalserie.
+     * @return Position des eigenen Turbolifts oder {@code null}
+     */
+    private BlockPos transporterRoomAt(int xt, int zc, int f, boolean withLift) {
+        room(xt - 5, xt + 5, f, f + 4, zc - 5, zc + 5, ShipPart.TRANSPORTER_WALL);
+        // Plattform (abgerundet) mit Stufe davor
+        for (int x = xt; x <= xt + 4; x++)
+            for (int dz = -4; dz <= 4; dz++) {
+                double d = Math.sqrt(Math.pow(x - (xt + 4), 2) * 0.6 + dz * dz);
+                if (d <= 4.6) set(x, f + 1, zc + dz, ShipPart.TRANSPORTER_PLATFORM);
+                else if (d <= 5.6) set(x, f + 1, zc + dz, ShipPart.STEP_SLAB, Direction.NORTH, 0);
+            }
+        for (int dz = -3; dz <= 3; dz++)
+            if (get(xt - 1, f + 1, zc + dz) == ShipPart.AIR) set(xt - 1, f + 1, zc + dz, ShipPart.STEP_SLAB, Direction.NORTH, 0);
+        // Sechs Transporterfelder mit Strahlern in der Decke
+        int[][] pads = {{xt + 3, -2}, {xt + 3, 0}, {xt + 3, 2}, {xt + 1, -2}, {xt + 1, 0}, {xt + 1, 2}};
+        for (int[] pd : pads) {
+            set(pd[0], f + 2, zc + pd[1], ShipPart.TRANSPORTER_PAD);
+            set(pd[0], f + 4, zc + pd[1], ShipPart.TRANSPORTER_EMITTER);
+        }
+        // Energiewand mit Säulen an der Rückwand
+        for (int dz = -4; dz <= 4; dz++)
+            for (int y = f + 2; y <= f + 3; y++) {
+                boolean pillar = Math.floorMod(dz, 3) == 2 || Math.abs(dz) == 4;
+                set(xt + 5, y, zc + dz, pillar ? ShipPart.TRANSPORTER_PILLAR : ShipPart.TRANSPORTER_ENERGIZER);
+            }
+        // Bedienkonsole vor der Plattform, Bediener schaut nach achtern
+        set(xt - 3, f + 1, zc, ShipPart.TRANSPORTER_CONSOLE, Direction.NORTH);
+        set(xt - 3, f + 4, zc, ShipPart.CEILING_LIGHT);
+        set(xt - 1, f + 4, zc - 3, ShipPart.CEILING_LIGHT);
+        set(xt - 1, f + 4, zc + 3, ShipPart.CEILING_LIGHT);
+        if (!withLift) return null;
+        BlockPos lift = new BlockPos(xt - 5, f + 1, zc - 3);
+        set(lift.getX(), lift.getY(), lift.getZ(), ShipPart.TURBOLIFT, Direction.SOUTH);
+        set(lift.getX(), lift.getY() + 1, lift.getZ(), ShipPart.TURBOLIFT_DOOR, Direction.SOUTH);
+        return lift;
     }
 
     private boolean boxInterior(int x0, int x1, int y0, int y1, int z0, int z1) {
@@ -823,16 +850,338 @@ public final class EnterpriseBlueprint {
         return true;
     }
 
-    /** Ein Turbolift auf der Brücke mit zwei Zielen; Maschinenraum und Transporterraum fahren zur Brücke. */
+    private int deckNumber(int floorY) {
+        return Math.round((bridgeFloor - floorY) / (float) DECK_HEIGHT) + 1;
+    }
+
+    /** Turbolift-Halte für Brücke, Maschinenraum und Transporterraum (die Decks tragen sich selbst ein). */
     private void linkTurbolifts(BlockPos engineering, BlockPos transporter) {
         BlockPos bridge = bridgeTurbolift();
         set(bridge.getX(), bridge.getY(), bridge.getZ(), ShipPart.TURBOLIFT, Direction.NORTH);
-        turboLinks.add(new TurboLink(bridge, engineering, "deck.simonspacemod.engineering"));
-        turboLinks.add(new TurboLink(engineering, bridge, "deck.simonspacemod.bridge"));
+        liftStops.add(new LiftStop(bridge, "Deck 1 – Brücke"));
+        liftStops.add(new LiftStop(engineering, "Deck " + deckNumber(engineering.getY() - 1) + " – Maschinenraum"));
         if (transporter != null) {
-            turboLinks.add(new TurboLink(bridge, transporter, "deck.simonspacemod.transporter"));
-            turboLinks.add(new TurboLink(transporter, bridge, "deck.simonspacemod.bridge"));
+            liftStops.add(new LiftStop(transporter, "Deck " + deckNumber(transporter.getY() - 1) + " – Transporterraum"));
         }
+        // In Originalgröße liegt der Transporterraum auf Deck 3 und ist über den Deck-Lift erreichbar
+        for (int i = 0; i < liftStops.size(); i++)
+            if (liftStops.get(i).name().startsWith("Deck 3 – Krankenstation") && transporter == null)
+                liftStops.set(i, new LiftStop(liftStops.get(i).pos(), "Deck 3 – Krankenstation, Transporter"));
+    }
+
+    // =====================================================================================
+    //  Decks mit Räumen (Originalgröße)
+    // =====================================================================================
+
+    private enum RoomType { QUARTERS, BRIEFING, READY_ROOM, SICKBAY, LAB, MESS, REC, STORAGE, CARGO }
+
+    /** Ringsektor-Raum auf einem Deck der Untertasse. Winkel: 0 = Bug, positiv Richtung Steuerbord. */
+    private record Room(double rIn, double rOut, double a0, double a1, RoomType type) {}
+
+    private double angle(int x, int z) {
+        return Math.atan2(z, -(x - sCx));
+    }
+
+    private static double angDiff(double a, double b) {
+        double d = a - b;
+        while (d > Math.PI) d -= 2 * Math.PI;
+        while (d < -Math.PI) d += 2 * Math.PI;
+        return d;
+    }
+
+    private boolean deckCell(int x, int y, int z) {
+        byte c = compAt(x, y, z);
+        return (c == SAUCER || c == SENSOR || c == BRIDGE) && isInterior(x, y, z);
+    }
+
+    /**
+     * Alle Decks der Untertasse: Turbolift im Vorraum in der Mitte, vier Gänge, Ringkorridor,
+     * acht große Innenräume (Besprechungsraum, Krankenstation, Messe, Labore …) und Quartiere außen.
+     */
+    private void layoutSaucerDecks() {
+        int cx = (int) Math.round(sCx);
+        double rc = 0.42 * sR; // Ringkorridor
+        for (int f = bridgeFloor - DECK_HEIGHT; f > 0; f -= DECK_HEIGHT) {
+            boolean ok = true;
+            for (int y = f + 1; y <= f + 3; y++) ok &= deckCell(cx, y, 0) && deckCell(cx + 6, y, 0);
+            if (!ok) continue;
+            int deck = deckNumber(f);
+            int index = deck - 2; // 0 = erstes Deck unter der Brücke
+            RoomType[] inner = innerRooms(index);
+            String deckName = saucerDeckName(index, f);
+
+            // Räume definieren
+            List<Room> rooms = new ArrayList<>();
+            for (int i = 0; i < 8; i++) {
+                double a0 = -Math.PI + i * Math.PI / 4, a1 = a0 + Math.PI / 4;
+                rooms.add(new Room(5.5, rc - 1.5, a0, a1, inner[i]));
+            }
+            for (int i = 0; i < 24; i++) {
+                double a0 = -Math.PI + i * Math.PI / 12, a1 = a0 + Math.PI / 12;
+                rooms.add(new Room(rc + 1.5, sR, a0, a1, RoomType.QUARTERS));
+            }
+
+            // Wände, Gänge und Türen
+            for (int x = cx - (int) sR; x <= cx + (int) sR; x++)
+                for (int z = -(int) sR; z <= (int) sR; z++) {
+                    double dx = x - sCx, r = Math.sqrt(dx * dx + (double) z * z);
+                    if (r > sR) continue;
+                    double a = angle(x, z);
+                    for (int y = f + 1; y <= f + 3; y++) {
+                        if (!deckCell(x, y, z)) continue;
+                        set(x, y, z, saucerDeckCell(x, y, z, r, a, f, rc));
+                    }
+                    if (isInterior(x, f, z)) set(x, f, z, ShipPart.DECK_FLOOR);
+                    // Deckenlichter im Raster
+                    if (Math.floorMod(x, 5) == 0 && Math.floorMod(z, 5) == 0 && get(x, f + 3, z) == ShipPart.AIR
+                        && deckCell(x, f + 3, z) && compAt(x, f + 4, z) != NONE) set(x, f + 3, z, ShipPart.CEILING_LIGHT);
+                }
+            // Vorraum mit Turbolift in der Mitte
+            set(cx, f + 1, 0, ShipPart.TURBOLIFT, Direction.SOUTH);
+            set(cx, f + 2, 0, ShipPart.TURBOLIFT_DOOR, Direction.SOUTH);
+            set(cx, f + 3, 0, ShipPart.TURBOLIFT_FRAME);
+            set(cx, f + 1, -1, ShipPart.TURBOLIFT_FRAME);
+            set(cx, f + 2, -1, ShipPart.TURBOLIFT_FRAME);
+            set(cx, f + 1, 1, ShipPart.TURBOLIFT_FRAME);
+            set(cx, f + 2, 1, ShipPart.TURBOLIFT_FRAME);
+            for (int y = f + 1; y <= f + 3; y++) set(cx - 1, y, 0, ShipPart.TURBOLIFT_FRAME); // Rückseite des Schachts
+            liftStops.add(new LiftStop(new BlockPos(cx, f + 1, 0), "Deck " + deck + " – " + deckName));
+
+            for (Room room : rooms) furnish(room, f);
+        }
+    }
+
+    private ShipPart saucerDeckCell(int x, int y, int z, double r, double a, int f, double rc) {
+        ShipPart wall = ShipPart.CORRIDOR_WALL;
+        boolean doorHeight = y <= f + 2;
+        double perpX = Math.abs(z);                    // Abstand zur Längsachse
+        double perpZ = Math.abs(x - sCx);              // Abstand zur Querachse
+        boolean onAxis = perpX <= 1.2 || perpZ <= 1.2;
+        if (r <= 4.5) return ShipPart.AIR;                                     // Vorraum
+        if (r <= 5.5) return onAxis ? ShipPart.AIR : wall;                     // Wand um den Vorraum
+        if (Math.abs(r - rc) <= 1.0) return ShipPart.AIR;                      // Ringkorridor
+        if (r < rc && onAxis) return ShipPart.AIR;                             // Gänge
+        if (r < rc && (Math.abs(perpX - 2) < 0.6 || Math.abs(perpZ - 2) < 0.6)) {
+            // Gangwände, mit einer Tür in jeden Innenraum nahe dem Vorraum
+            boolean door = doorHeight && Math.abs(Math.max(perpX, perpZ) - 9) <= 1.0;
+            return door ? ShipPart.AIR : wall;
+        }
+        boolean innerZone = r < rc;
+        double ringWall = innerZone ? rc - 1.5 : rc + 1.5;
+        double sector = innerZone ? Math.PI / 4 : Math.PI / 12;
+        double mid = (Math.floor((a + Math.PI) / sector) + 0.5) * sector - Math.PI;
+        if (Math.abs(r - ringWall) < 0.6) {
+            boolean door = Math.abs(angDiff(a, mid) * r) <= 1.0 && doorHeight;
+            return door ? ShipPart.AIR : wall;
+        }
+        // Trennwände zwischen den Räumen
+        double toBoundary = Math.abs(angDiff(a, mid)) - sector / 2;
+        if (Math.abs(toBoundary * r) < 0.55) return wall;
+        return ShipPart.AIR;
+    }
+
+    private static RoomType[] innerRooms(int index) {
+        RoomType S = RoomType.STORAGE, L = RoomType.LAB, Q = RoomType.QUARTERS;
+        return switch (index) {
+            case 0 -> new RoomType[] {Q, Q, RoomType.READY_ROOM, RoomType.BRIEFING, RoomType.BRIEFING, Q, Q, Q};
+            case 1 -> new RoomType[] {L, S, L, RoomType.SICKBAY, RoomType.SICKBAY, L, S, L};
+            case 2 -> new RoomType[] {RoomType.REC, RoomType.REC, RoomType.MESS, RoomType.MESS, RoomType.MESS, RoomType.MESS, RoomType.REC, RoomType.REC};
+            case 3 -> new RoomType[] {L, L, L, L, L, L, L, L};
+            default -> new RoomType[] {S, S, Q, Q, Q, Q, S, S};
+        };
+    }
+
+    private String saucerDeckName(int index, int f) {
+        return switch (index) {
+            case 0 -> "Besprechungsraum";
+            case 1 -> "Krankenstation";
+            case 2 -> "Messe & Freizeitraum";
+            case 3 -> "Wissenschaftslabore";
+            default -> deckCell((int) Math.round(sCx), f - 3, 0) ? "Mannschaftsquartiere" : "Lager & Sensoren";
+        };
+    }
+
+    /** Liefert die freien Bodenzellen (Luft über Boden) eines Raums. */
+    private List<int[]> roomCells(Room room, int f) {
+        List<int[]> cells = new ArrayList<>();
+        int cx = (int) Math.round(sCx);
+        int rr = (int) Math.ceil(Math.min(room.rOut(), sR));
+        for (int x = cx - rr; x <= cx + rr; x++)
+            for (int z = -rr; z <= rr; z++) {
+                double r = Math.hypot(x - sCx, z);
+                if (r <= room.rIn() + 0.6 || r >= room.rOut() - 0.6) continue;
+                double a = angle(x, z);
+                double d0 = angDiff(a, room.a0()), d1 = angDiff(room.a1(), a);
+                if (d0 * r < 0.8 || d1 * r < 0.8) continue;
+                if (get(x, f + 1, z) == ShipPart.AIR && get(x, f + 2, z) == ShipPart.AIR && deckCell(x, f + 1, z)) cells.add(new int[] {x, z});
+            }
+        return cells;
+    }
+
+    private Direction towards(int x, int z, double tx, double tz) {
+        double dx = tx - x, dz = tz - z;
+        if (Math.abs(dx) >= Math.abs(dz)) return dx < 0 ? Direction.NORTH : Direction.SOUTH;
+        return dz < 0 ? Direction.WEST : Direction.EAST;
+    }
+
+    private boolean free(int x, int y, int z) {
+        return get(x, y, z) == ShipPart.AIR && get(x, y + 1, z) == ShipPart.AIR;
+    }
+
+    /** Möbliert einen Raum je nach Typ. */
+    private void furnish(Room room, int f) {
+        List<int[]> cells = roomCells(room, f);
+        if (cells.size() < 6) return;
+        double am = (room.a0() + room.a1()) / 2;
+        int y = f + 1;
+        // Schwerpunkt
+        double sx = 0, sz = 0;
+        for (int[] c : cells) { sx += c[0]; sz += c[1]; }
+        int gx = (int) Math.round(sx / cells.size()), gz = (int) Math.round(sz / cells.size());
+        double rOutUse = Math.min(room.rOut(), sR);
+        // jede Kabine bekommt mindestens eine Deckenlampe in der Mitte
+        if (get(gx, f + 3, gz) == ShipPart.AIR && deckCell(gx, f + 3, gz)) set(gx, f + 3, gz, ShipPart.CEILING_LIGHT);
+        switch (room.type()) {
+            case QUARTERS -> {
+                // Bett an der Außenseite, Schreibtisch mit Stuhl innen
+                int[] bed = nearest(cells, sCx - (rOutUse - 3) * Math.cos(am), (rOutUse - 3) * Math.sin(am));
+                int[] desk = nearest(cells, sCx - (room.rIn() + 2.5) * Math.cos(am), (room.rIn() + 2.5) * Math.sin(am) + 1.5);
+                if (bed != null) set(bed[0], y, bed[1], ShipPart.CREW_BED, towards(bed[0], bed[1], gx, gz));
+                if (desk != null && (bed == null || desk[0] != bed[0] || desk[1] != bed[1])) {
+                    Direction d = towards(desk[0], desk[1], sCx - rOutUse * Math.cos(am), rOutUse * Math.sin(am)).getOpposite();
+                    set(desk[0], y, desk[1], ShipPart.CREW_DESK, d);
+                    int chx = desk[0] + (d == Direction.NORTH ? -1 : d == Direction.SOUTH ? 1 : 0);
+                    int chz = desk[1] + (d == Direction.WEST ? -1 : d == Direction.EAST ? 1 : 0);
+                    if (free(chx, y, chz)) set(chx, y, chz, ShipPart.STATION_CHAIR, d.getOpposite());
+                }
+            }
+            case BRIEFING -> {
+                // Langer Konferenztisch mit dreiseitigem Bildschirm in der Mitte (wie in der Serie)
+                for (int dx = -3; dx <= 3; dx++)
+                    for (int dz = 0; dz <= 1; dz++)
+                        if (free(gx + dx, y, gz + dz)) set(gx + dx, y, gz + dz, ShipPart.CONFERENCE_TABLE);
+                if (get(gx, y, gz) == ShipPart.CONFERENCE_TABLE) set(gx, y + 1, gz, ShipPart.TABLE_VIEWER);
+                for (int dx = -3; dx <= 3; dx += 2) {
+                    if (free(gx + dx, y, gz - 1)) set(gx + dx, y, gz - 1, ShipPart.STATION_CHAIR, Direction.EAST);
+                    if (free(gx + dx, y, gz + 2)) set(gx + dx, y, gz + 2, ShipPart.STATION_CHAIR, Direction.WEST);
+                }
+                if (free(gx - 4, y, gz)) set(gx - 4, y, gz, ShipPart.STATION_CHAIR, Direction.SOUTH);
+                if (free(gx + 4, y, gz + 1)) set(gx + 4, y, gz + 1, ShipPart.STATION_CHAIR, Direction.NORTH);
+            }
+            case READY_ROOM -> {
+                if (free(gx, y, gz)) set(gx, y, gz, ShipPart.CREW_DESK, Direction.SOUTH);
+                if (free(gx + 1, y, gz)) set(gx + 1, y, gz, ShipPart.CAPTAINS_CHAIR, Direction.NORTH);
+                if (free(gx, y, gz + 2)) set(gx, y, gz + 2, ShipPart.LCARS_PANEL, Direction.WEST);
+            }
+            case SICKBAY -> {
+                for (int[] c : cells)
+                    if (Math.floorMod(c[0], 3) == 0 && Math.floorMod(c[1], 4) == 0 && free(c[0], y, c[1]) && free(c[0] + 1, y, c[1]))
+                        set(c[0], y, c[1], ShipPart.BIOBED, Direction.SOUTH);
+            }
+            case MESS, REC -> {
+                for (int[] c : cells) {
+                    if (Math.floorMod(c[0], 4) != 0 || Math.floorMod(c[1], 4) != 0 || !free(c[0], y, c[1])) continue;
+                    if (!free(c[0] - 1, y, c[1]) || !free(c[0] + 1, y, c[1])) continue;
+                    set(c[0], y, c[1], ShipPart.MESS_TABLE);
+                    set(c[0] - 1, y, c[1], ShipPart.STATION_CHAIR, Direction.SOUTH);
+                    set(c[0] + 1, y, c[1], ShipPart.STATION_CHAIR, Direction.NORTH);
+                }
+                if (room.type() == RoomType.REC && free(gx, y, gz)) set(gx, y, gz, ShipPart.LCARS_PANEL, Direction.NORTH);
+            }
+            case LAB -> {
+                for (int[] c : cells)
+                    if (Math.floorMod(c[0], 3) == 0 && Math.floorMod(c[1], 5) == 0 && free(c[0], y, c[1]))
+                        set(c[0], y, c[1], Math.floorMod(c[0] + c[1], 2) == 0 ? ShipPart.ENGINEERING_CONSOLE : ShipPart.BRIDGE_STATION,
+                            Direction.SOUTH, Math.floorMod(c[0] * 7 + c[1], 4));
+            }
+            case STORAGE, CARGO -> {
+                for (int[] c : cells) {
+                    if (Math.floorMod(c[0], 3) == 0 || Math.floorMod(c[1], 4) == 0 || !free(c[0], y, c[1])) continue;
+                    if (Math.hypot(c[0] - sCx, c[1]) > Math.min(room.rOut(), sR) - 3.5) continue; // Platz an der Tür
+                    set(c[0], y, c[1], ShipPart.CARGO_CONTAINER);
+                    if (Math.floorMod(c[0] * 31 + c[1] * 17, 3) != 0 && get(c[0], y + 1, c[1]) == ShipPart.AIR) set(c[0], y + 1, c[1], ShipPart.CARGO_CONTAINER);
+                }
+            }
+        }
+    }
+
+    private static int[] nearest(List<int[]> cells, double tx, double tz) {
+        int[] best = null;
+        double bd = Double.MAX_VALUE;
+        for (int[] c : cells) {
+            double d = (c[0] - tx) * (c[0] - tx) + (c[1] - tz) * (c[1] - tz);
+            if (d < bd) { bd = d; best = c; }
+        }
+        return best;
+    }
+
+    /** Decks der Sekundärhülle: Mittelgang mit Turbolift vorne, Räume links und rechts. */
+    private void layoutSecondaryDecks() {
+        int xs = (int) Math.round(eXf + 0.13 * (eXr - eXf));
+        int xe = (int) Math.round(eXr - 22 * s) - 1;
+        String[] names = {"Frachtraum", "Quartiere", "Labore", "Lager"};
+        for (int f = bridgeFloor - DECK_HEIGHT; f > 0; f -= DECK_HEIGHT) {
+            if (compAt(xs, f + 1, 0) != SECONDARY) continue;
+            boolean ok = true;
+            for (int y = f + 1; y <= f + 3; y++) ok &= isInterior(xs, y, 0) && isInterior(xs + 1, y, 0);
+            if (!ok) continue;
+            int deck = deckNumber(f);
+            RoomType type = switch (Math.floorMod(deck, 4)) {
+                case 0 -> RoomType.CARGO;
+                case 1 -> RoomType.QUARTERS;
+                case 2 -> RoomType.LAB;
+                default -> RoomType.STORAGE;
+            };
+            for (int x = xs; x <= xe; x++)
+                for (int z = -zOffset; z <= zOffset; z++) {
+                    if (compAt(x, f + 1, z) != SECONDARY) continue;
+                    for (int y = f + 1; y <= f + 3; y++) {
+                        if (!isInterior(x, y, z) || compAt(x, y, z) != SECONDARY) continue;
+                        int az = Math.abs(z);
+                        ShipPart st = ShipPart.AIR;
+                        boolean doorPos = Math.floorMod(x - xs, 8) == 4 && y <= f + 2;
+                        if (az == 2 && !doorPos) st = ShipPart.CORRIDOR_WALL;
+                        else if (az > 2 && Math.floorMod(x - xs, 8) == 0) st = ShipPart.CORRIDOR_WALL;
+                        set(x, y, z, st);
+                    }
+                    if (Math.floorMod(x, 4) == 0 && Math.floorMod(z, 4) == 0 && get(x, f + 3, z) == ShipPart.AIR
+                        && isInterior(x, f + 4, z)) set(x, f + 3, z, ShipPart.CEILING_LIGHT);
+                }
+            // Räume möblieren (Zellen links/rechts des Gangs, zwischen den Trennwänden)
+            for (int x0 = xs; x0 < xe; x0 += 8)
+                for (int side : new int[] {-1, 1}) furnishSecondaryRoom(type, x0, side, f);
+            set(xs, f + 1, 0, ShipPart.TURBOLIFT, Direction.SOUTH);
+            set(xs, f + 2, 0, ShipPart.TURBOLIFT_DOOR, Direction.SOUTH);
+            liftStops.add(new LiftStop(new BlockPos(xs, f + 1, 0), "Deck " + deck + " – " + names[Math.floorMod(deck, 4)]));
+        }
+    }
+
+    private void furnishSecondaryRoom(RoomType type, int x0, int side, int f) {
+        int y = f + 1;
+        for (int x = x0 + 1; x < x0 + 8; x++)
+            for (int az = 3; az <= zOffset; az++) {
+                int z = az * side;
+                if (!free(x, y, z) || !isInterior(x, y, z) || compAt(x, y, z) != SECONDARY) continue;
+                boolean nearDoor = Math.abs(x - (x0 + 4)) <= 1 && az <= 4;
+                if (nearDoor) continue;
+                switch (type) {
+                    case CARGO, STORAGE -> {
+                        if (Math.floorMod(x, 3) != 0 && az >= 5) {
+                            set(x, y, z, ShipPart.CARGO_CONTAINER);
+                            if (type == RoomType.CARGO && free(x, y + 1, z) && isInterior(x, y + 1, z)) set(x, y + 1, z, ShipPart.CARGO_CONTAINER);
+                        }
+                    }
+                    case QUARTERS -> {
+                        if (x == x0 + 2 && az == 5) set(x, y, z, ShipPart.CREW_BED, side > 0 ? Direction.WEST : Direction.EAST);
+                        if (x == x0 + 6 && az == 5) set(x, y, z, ShipPart.CREW_DESK, side > 0 ? Direction.WEST : Direction.EAST);
+                    }
+                    case LAB -> {
+                        if (az == 5 && Math.floorMod(x, 2) == 0)
+                            set(x, y, z, ShipPart.ENGINEERING_CONSOLE, side > 0 ? Direction.WEST : Direction.EAST);
+                    }
+                    default -> {}
+                }
+            }
     }
 
     /** Setzt die Verbindungen von Gittern (Geländer), damit sie nicht als einzelne Pfosten erscheinen. */
