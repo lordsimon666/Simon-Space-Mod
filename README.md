@@ -126,7 +126,12 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
       mit Biobetten an der Wand, Diagnosemonitoren darüber und Untersuchungstisch, Einzelzimmer
       für Patienten und das Büro des Doktors; außerdem Transporterraum und Labore
     * Deck 4: Messe und Freizeitraum
-    * Deck 5: Wissenschaftslabore, Deck 6: Mannschaftsquartiere
+    * Deck 5: Wissenschaftslabore und **Arrestzellen** („Brig“) mit Kraftfeld wie in der Originalserie
+    * Deck 6: Mannschaftsquartiere
+  * Nur NCC-1701-A (wie in den Kinofilmen): **Freizeitdeck** mit großer Bildwand und Sitzreihen,
+    **Offiziers-Lounge** hinten am Rand der Untertasse mit Panoramafenstern, **Arboretum**,
+    waagerechter **Intermix-Schacht** im Maschinenraum
+  * Nur NCC-1701-B: **Master Systems Display** an der Rückwand der Brücke (wie in „Treffen der Generationen“)
   * Sekundärhülle: Mittelgang mit Turbolift vorne, Räume links und rechts (Frachträume,
     Quartiere, Labore, Lager), dazu Maschinenraum und Shuttlehangar.
   * In der Größe 1:1 gibt es 13 Turbolift-Halte (Brücke, 5 Decks in der Untertasse,

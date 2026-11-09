@@ -1329,6 +1329,9 @@ public final class EnterpriseBlueprint {
         // Stationsstühle an Wissenschaft und Kommunikation
         set(cx + 4, yb + 2, 5, ShipPart.STATION_CHAIR_TEAL, Direction.EAST);
         set(cx + 4, yb + 2, -5, ShipPart.STATION_CHAIR_TEAL, Direction.WEST);
+        // Master Systems Display an der Rückwand (wie auf der Brücke der B in "Treffen der Generationen")
+        for (int dz = -4; dz <= -2; dz++)
+            for (int y = yb + 3; y <= yb + 4; y++) set(cx + 8, y, dz, ShipPart.MSD_DISPLAY, Direction.NORTH, dz + 5);
         // Turbolift mit dunkler Tür, Lichtsäulen als Rahmen
         BlockPos lift = bridgeTurbolift();
         set(lift.getX(), yb + 3, lift.getZ(), ShipPart.TURBOLIFT_DOOR_TEAL, Direction.NORTH);
@@ -1492,6 +1495,10 @@ public final class EnterpriseBlueprint {
             set(x, yF + 4, -3, rail);
             set(x, yF + 4, 3, rail);
         }
+        if (refit) {
+            // Refit: waagerechter Intermix-Schacht unter der Decke nach achtern
+            for (int x = x0 + 1; x <= x0 + 9; x++) set(x, yF + 6, 0, core);
+        }
         // Leitern zur Galerie (am Heckende)
         for (int y = yF + 1; y <= yF + 4; y++) {
             set(x0 + 9, y, -4, ShipPart.LADDER, Direction.NORTH);
@@ -1636,7 +1643,9 @@ public final class EnterpriseBlueprint {
     private enum RoomType {
         QUARTERS, BRIEFING, READY_ROOM, SICKBAY, LAB, MESS, REC, STORAGE, CARGO,
         // Next Generation
-        TEN_FORWARD, HOLODECK, ARBORETUM, CARTOGRAPHY, BRIG, CLASSROOM
+        TEN_FORWARD, HOLODECK, ARBORETUM, CARTOGRAPHY, BRIG, CLASSROOM,
+        // Refit (Kinofilme)
+        REC_DECK, LOUNGE
     }
 
     /** Ringsektor-Raum auf einem Deck der Untertasse. Winkel: 0 = Bug, positiv Richtung Steuerbord. */
@@ -1698,9 +1707,9 @@ public final class EnterpriseBlueprint {
             int deck = deckNumber(f);
             int index = deck - 2; // 0 = erstes Deck unter der Brücke
             // Ten Forward liegt auf dem Deck, das vorne bis an den Rand der Untertasse reicht
-            boolean tenForward = tng && sMid >= f + 1 && sMid < f + 1 + DECK_HEIGHT;
-            List<Band> bands = deckBands(index, rings, tenForward);
-            String deckName = saucerDeckName(index, f) + (tenForward ? ", Ten Forward" : "");
+            boolean rim = sMid >= f + 1 && sMid < f + 1 + DECK_HEIGHT;
+            List<Band> bands = deckBands(index, rings, rim);
+            String deckName = saucerDeckName(index, f) + (rim && tng ? ", Ten Forward" : rim && refit ? ", Offiziers-Lounge" : "");
 
             // Wände, Gänge und Türen
             for (int x = cx - rx; x <= cx + rx; x++)
@@ -1734,7 +1743,8 @@ public final class EnterpriseBlueprint {
     }
 
     /** Räume eines Decks, Ring für Ring von innen nach außen. */
-    private List<Band> deckBands(int index, double[] rings, boolean tenForward) {
+    private List<Band> deckBands(int index, double[] rings, boolean rim) {
+        boolean tenForward = tng && rim;
         List<Band> bands = new ArrayList<>();
         int last = rings.length;
         for (int b = 0; b <= last; b++) {
@@ -1750,6 +1760,8 @@ public final class EnterpriseBlueprint {
             if (b == 0) {
                 RoomType[] inner = tng ? tngInnerRooms(index) : innerRooms(index);
                 for (int i = 0; i < n; i++) type[i] = inner[i * 8 / n];
+                // Refit: das Freizeitdeck vorne über zwei Sektoren
+                for (int i = 0; i + 1 < n; i++) if (type[i] == RoomType.REC_DECK && type[i + 1] == RoomType.REC_DECK) group[i + 1] = group[i];
                 if (tng && (index == 2 || index == 4)) // Holodecks und Kartographie: je zwei Sektoren
                     for (int i = 0; i + 1 < n; i += 2) if (type[i] == type[i + 1] && type[i] != RoomType.LAB) group[i + 1] = i;
             } else if (tng && b == 1 && index == 2) {
@@ -1760,6 +1772,11 @@ public final class EnterpriseBlueprint {
                 for (int i = n / 2 - 2; i < n / 2 + 2; i++) { type[i] = RoomType.ARBORETUM; group[i] = n / 2 - 2; }
             } else if (tng && b < last && index == 1) {
                 for (int i = 0; i < n; i++) type[i] = RoomType.LAB;
+            }
+            if (refit && rim && b == last) {
+                // Offiziers-Lounge der Kinofilme: hinten an der Untertasse mit großen Fenstern
+                int k = Math.max(2, n / 8);
+                for (int i = 0; i < k; i++) { type[i] = RoomType.LOUNGE; group[i] = 0; }
             }
             if (tenForward && b == last) {
                 // Ten Forward: großer Raum vorne am Rand mit Panoramafenstern (ca. 70°)
@@ -1816,13 +1833,22 @@ public final class EnterpriseBlueprint {
         return ShipPart.AIR;
     }
 
-    private static RoomType[] innerRooms(int index) {
-        RoomType S = RoomType.STORAGE, L = RoomType.LAB, Q = RoomType.QUARTERS;
+    /**
+     * Innenräume der Decks von NCC-1701, -A und -B (Sektoren ab dem Heck über Backbord, Bug, Steuerbord).
+     * Refit: Freizeitdeck mit großem Bildschirm und Arboretum wie in "Star Trek: Der Film".
+     * Alle: Arrestzellen ("Brig") mit Kraftfeld wie in der Originalserie.
+     */
+    private RoomType[] innerRooms(int index) {
+        RoomType S = RoomType.STORAGE, L = RoomType.LAB, Q = RoomType.QUARTERS, B = RoomType.BRIG;
         return switch (index) {
             case 0 -> new RoomType[] {Q, Q, RoomType.READY_ROOM, RoomType.BRIEFING, RoomType.BRIEFING, Q, Q, Q};
             case 1 -> new RoomType[] {L, S, L, RoomType.SICKBAY, RoomType.SICKBAY, L, S, L};
-            case 2 -> new RoomType[] {RoomType.REC, RoomType.REC, RoomType.MESS, RoomType.MESS, RoomType.MESS, RoomType.MESS, RoomType.REC, RoomType.REC};
-            case 3 -> new RoomType[] {L, L, L, L, L, L, L, L};
+            case 2 -> refit
+                ? new RoomType[] {RoomType.REC, RoomType.REC, RoomType.MESS, RoomType.REC_DECK, RoomType.REC_DECK, RoomType.MESS, RoomType.REC, RoomType.REC}
+                : new RoomType[] {RoomType.REC, RoomType.REC, RoomType.MESS, RoomType.MESS, RoomType.MESS, RoomType.MESS, RoomType.REC, RoomType.REC};
+            case 3 -> refit
+                ? new RoomType[] {B, L, RoomType.ARBORETUM, L, L, RoomType.ARBORETUM, L, B}
+                : new RoomType[] {B, L, L, L, L, L, L, B};
             default -> new RoomType[] {S, S, Q, Q, Q, Q, S, S};
         };
     }
@@ -1866,8 +1892,8 @@ public final class EnterpriseBlueprint {
         return switch (index) {
             case 0 -> "Besprechungsraum";
             case 1 -> "Krankenstation";
-            case 2 -> "Messe & Freizeitraum";
-            case 3 -> "Wissenschaftslabore";
+            case 2 -> refit ? "Freizeitdeck & Messe" : "Messe & Freizeitraum";
+            case 3 -> refit ? "Labore, Arboretum, Arrestzellen" : "Wissenschaftslabore, Arrestzellen";
             default -> deeper ? "Mannschaftsquartiere" : "Lager & Sensoren";
         };
     }
@@ -2052,6 +2078,33 @@ public final class EnterpriseBlueprint {
                 }
             }
             case BRIG -> buildBrig(room, cells, f);
+            case REC_DECK -> {
+                // Freizeitdeck (Star Trek: Der Film): große Bildwand mit Bildern früherer Schiffe an der
+                // Außenwand, davor Sitzreihen
+                Direction face = towards(gx, gz, polX(rOutUse, am), polZ(rOutUse, am));
+                for (int[] c : cells)
+                    for (int[] d : NEIGHBORS4)
+                        for (int wy = f + 1; wy <= f + 3; wy++) {
+                            int wx = c[0] + d[0], wz = c[1] + d[1];
+                            if (get(wx, wy, wz) == ShipPart.CORRIDOR_WALL && rad(wx, wz) > rOutUse - 1.5)
+                                set(wx, wy, wz, ShipPart.BRIDGE_MONITOR, towards(wx, wz, gx, gz), Math.floorMod(wx + wz + wy, 4));
+                        }
+                for (int[] c : cells) {
+                    double r = rad(c[0], c[1]);
+                    if (r < rOutUse - 4 && Math.floorMod((int) Math.round(r), 3) == 0 && Math.floorMod(c[0] + c[1], 2) == 0 && free(c[0], y, c[1]))
+                        set(c[0], y, c[1], ShipPart.STATION_CHAIR, face);
+                }
+            }
+            case LOUNGE -> {
+                // Offiziers-Lounge: Panoramafenster, Sitzgruppen
+                for (int[] c : cells)
+                    if (Math.floorMod(c[0], 4) == 0 && Math.floorMod(c[1], 4) == 0 && free(c[0], y, c[1]) && free(c[0] - 1, y, c[1]) && free(c[0] + 1, y, c[1])) {
+                        set(c[0], y, c[1], ShipPart.MESS_TABLE);
+                        set(c[0] - 1, y, c[1], ShipPart.STATION_CHAIR, Direction.SOUTH);
+                        set(c[0] + 1, y, c[1], ShipPart.STATION_CHAIR, Direction.NORTH);
+                    }
+                windows(cells, f);
+            }
             case CLASSROOM -> {
                 // Pulte in Reihen, Blick zur Wandtafel (LCARS) an der Innenseite
                 Direction face = towards(gx, gz, polX(room.rIn(), am), polZ(room.rIn(), am));
@@ -2090,7 +2143,11 @@ public final class EnterpriseBlueprint {
                 set(c[0] + 1, y, c[1], ShipPart.TNG_CHAIR, Direction.NORTH);
             }
         }
-        // Panoramafenster: Außenhülle neben dem Raum durch Glas ersetzen
+        windows(cells, f);
+    }
+
+    /** Panoramafenster: Außenhülle neben den Raumzellen durch Glas ersetzen. */
+    private void windows(List<int[]> cells, int f) {
         for (int[] c : cells)
             for (int[] d : NEIGHBORS4)
                 for (int wy = f + 1; wy <= f + 3; wy++) {
@@ -2129,7 +2186,7 @@ public final class EnterpriseBlueprint {
         }
         double rd = doorOut ? rOut - 2.5 : room.rIn() + 2.5;
         int[] desk = nearest(cells, polX(rd, am + 2.5 / rd), polZ(rd, am + 2.5 / rd));
-        if (desk != null && free(desk[0], y, desk[1])) set(desk[0], y, desk[1], ShipPart.TNG_CONSOLE, towards(desk[0], desk[1], polX(rOut, am), polZ(rOut, am)).getOpposite());
+        if (desk != null && free(desk[0], y, desk[1])) set(desk[0], y, desk[1], tng ? ShipPart.TNG_CONSOLE : ShipPart.ENGINEERING_CONSOLE, towards(desk[0], desk[1], polX(rOut, am), polZ(rOut, am)).getOpposite());
     }
 
     /** Biobett (2 Blöcke): Kopfende an der Wand, Fußende in Richtung {@code foot}, Monitor in der Wand darüber. */
