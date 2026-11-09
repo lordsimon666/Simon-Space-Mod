@@ -226,7 +226,7 @@ public final class ModBlocks {
     /** Unsichtbarer Sitz für die Stühle. */
     public static final RegistryObject<EntityType<SeatEntity>> SEAT = ENTITIES.register("seat",
         () -> EntityType.Builder.<SeatEntity>of(SeatEntity::new, MobCategory.MISC).sized(0.001F, 0.001F)
-            .noSummon().noSave().clientTrackingRange(10).build(ENTITIES.key("seat")));
+            .noSummon().clientTrackingRange(10).build(ENTITIES.key("seat")));
 
     // --- Menüs ---
     public static final RegistryObject<MenuType<TurboliftMenu>> TURBOLIFT_MENU = MENUS.register("turbolift",
