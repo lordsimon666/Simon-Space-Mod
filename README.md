@@ -1,17 +1,29 @@
 # Simon Space Mod
 
 Forge-Mod für **Minecraft 26.2** (Forge 65.1.x, Java 25), die die **USS Enterprise** mit einem
-Befehl in die Welt setzt – wahlweise die **NCC-1701** (Originalserie) oder die **NCC-1701-A**
-(Refit aus den Kinofilmen).
+Befehl in die Welt setzt – wahlweise die **NCC-1701** (Originalserie), die **NCC-1701-A**
+(Refit aus den Kinofilmen) oder die **NCC-1701-B** (Excelsior-Klasse).
 
 ## Befehl
 
 ```
-/enterprise spawn [ncc-1701|ncc-1701-a] [full|compact|mini|scale <faktor>] [x y z] [north|east|south|west]
+/enterprise spawn [ncc-1701|ncc-1701-a|ncc-1701-b] [full|compact|mini|scale <faktor>] [x y z] [north|east|south|west]
 ```
 
 * Ohne Schiffsangabe wird die **NCC-1701** gebaut, z.B. `/enterprise spawn full`.
 * `/enterprise spawn ncc-1701-a full` baut die **NCC-1701-A** in Originalgröße (308 x 145 x 85 Blöcke).
+
+* `/enterprise spawn ncc-1701-b full` baut die **NCC-1701-B** in Originalgröße (470 x 155 x 75 Blöcke).
+
+### NCC-1701-B (Excelsior-Klasse)
+
+467 m lang: große flache Untertasse mit dunklem petrolfarbenem Ring, langer erhöhter Rücken mit
+petrolfarbenen Streifen von der Brücke nach achtern, breites Impulsdeck mit roten Impulstriebwerken
+am Heck, die B-typischen Impulsausleger hinten auf der Untertasse, breite elliptische Maschinensektion
+direkt unter der Untertasse mit geripptem Verbindungsteil, blauer Deflektorschüssel, Shuttlehangar
+und Heckflossen, lange dünne Gondeln mit blau leuchtender Spitze an kurzen Pylonen. Die Brücke ist im
+Excelsior-Stil: dunkle Wände, Riffelblech, petrolfarbener Teppich in der Kommandomulde,
+Holzgeländer und cremefarbene Lichtleisten. Decks, Räume und Turbolifte wie bei den anderen Schiffen.
 
 ### NCC-1701-A (Refit)
 
@@ -104,7 +116,7 @@ E = Eisenbarren        G = Goldbarren
 F = roter Farbstoff, P = Enderperle, R = Redstone
 ```
 
-## Neue Blöcke (62)
+## Neue Blöcke (69)
 
 * **Hülle**: Hüllenpanzerung (+ Stufe), Hüllenplatte, dunkle Hüllenplatte, Hüllenfenster,
   Kennungsmarkierung (+ Stufe), roter Zierstreifen, Positionslicht rot/grün, Deflektorschüssel,
@@ -120,6 +132,8 @@ F = roter Farbstoff, P = Enderperle, R = Redstone
   der Wand), Untersuchungstisch, Medizinschrank, Krankenstations-Wand und -Boden
 * **Refit (NCC-1701-A)**: Refit-Hüllenplatte (Aztec), blaue Deflektorschüssel, roter
   Bussard-Kollektor, Photonentorpedo-Werfer, Impulstriebwerk, graues Brückengeländer, blaue Lichtleiste
+* **Excelsior (NCC-1701-B)**: petrolfarbene Hüllenplatte, blauer Bussard-Kollektor, Holz-Brückengeländer,
+  cremefarbene Lichtleiste, petrolfarbener Teppich, Riffelblech-Boden, dunkle Brückenwand
 * **Allgemein**: Deckboden, Korridorwand, Deckenverkleidung, Deckenleuchte, Maschinenraum-Konsole,
   Warpkern, Plasmaleitung
 

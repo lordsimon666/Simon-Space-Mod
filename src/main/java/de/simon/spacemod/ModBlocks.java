@@ -73,6 +73,18 @@ public final class ModBlocks {
         metal(MapColor.COLOR_GRAY).noOcclusion());
     public static final RegistryObject<Block> BRIDGE_TRIM_BLUE = block("bridge_trim_blue", Block::new, glowing(metal(MapColor.COLOR_BLUE), 8));
 
+    // --- Excelsior (NCC-1701-B) ---
+    public static final RegistryObject<Block> HULL_TEAL = block("hull_teal", Block::new, metal(MapColor.COLOR_CYAN));
+    public static final RegistryObject<Block> BUSSARD_BLUE = block("bussard_blue",
+        p -> new GlowParticleBlock(p, GlowParticleBlock.Kind.BUSSARD), glowing(metal(MapColor.COLOR_LIGHT_BLUE), 15));
+    public static final RegistryObject<Block> BRIDGE_RAILING_WOOD = block("bridge_railing_wood", RailingBlock::new,
+        metal(MapColor.COLOR_BROWN).noOcclusion());
+    public static final RegistryObject<Block> BRIDGE_TRIM_CREAM = block("bridge_trim_cream", Block::new, glowing(metal(MapColor.SAND), 10));
+    public static final RegistryObject<Block> BRIDGE_CARPET_TEAL = block("bridge_carpet_teal", Block::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_CYAN).strength(1.5F, 6F).sound(SoundType.WOOL));
+    public static final RegistryObject<Block> DECK_PLATE = block("deck_plate", Block::new, metal(MapColor.COLOR_GRAY));
+    public static final RegistryObject<Block> BRIDGE_WALL_DARK = block("bridge_wall_dark", Block::new, metal(MapColor.COLOR_BLACK));
+
     // --- Brücke ---
     public static final RegistryObject<Block> BRIDGE_WALL = block("bridge_wall", Block::new, metal(MapColor.COLOR_LIGHT_GRAY));
     public static final RegistryObject<Block> BRIDGE_TRIM = block("bridge_trim", Block::new, glowing(metal(MapColor.COLOR_RED), 4));

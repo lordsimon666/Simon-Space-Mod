@@ -18,7 +18,8 @@ class EnterpriseBlueprintTest {
 
     @ParameterizedTest
     @CsvSource({"NCC_1701,0.4", "NCC_1701,0.5", "NCC_1701,0.75", "NCC_1701,1.0",
-                "NCC_1701_A,0.4", "NCC_1701_A,0.5", "NCC_1701_A,0.75", "NCC_1701_A,1.0"})
+                "NCC_1701_A,0.4", "NCC_1701_A,0.5", "NCC_1701_A,0.75", "NCC_1701_A,1.0",
+                "NCC_1701_B,0.4", "NCC_1701_B,0.5", "NCC_1701_B,0.75", "NCC_1701_B,1.0"})
     void blueprintIsConsistent(ShipDesign design, double scale) throws Exception {
         EnterpriseBlueprint bp = new EnterpriseBlueprint(design, scale);
         Map<ShipPart, Integer> counts = new EnumMap<>(ShipPart.class);
@@ -32,7 +33,8 @@ class EnterpriseBlueprintTest {
         // Wichtige Räume vorhanden
         assertTrue(counts.get(ShipPart.CAPTAINS_CHAIR) >= 1);
         assertEquals(21, counts.get(ShipPart.VIEWSCREEN));
-        assertTrue(counts.getOrDefault(ShipPart.BRIDGE_RAILING, 0) + counts.getOrDefault(ShipPart.BRIDGE_RAILING_GRAY, 0) > 20, "Geländer fehlt");
+        assertTrue(counts.getOrDefault(ShipPart.BRIDGE_RAILING, 0) + counts.getOrDefault(ShipPart.BRIDGE_RAILING_GRAY, 0)
+            + counts.getOrDefault(ShipPart.BRIDGE_RAILING_WOOD, 0) > 20, "Geländer fehlt");
         assertTrue(counts.getOrDefault(ShipPart.BRIDGE_STATION, 0) > 10, "Stationen fehlen");
         assertTrue(counts.getOrDefault(ShipPart.TRANSPORTER_ENERGIZER, 0) > 0, "Energiewand fehlt");
         assertTrue(counts.getOrDefault(ShipPart.WARP_CORE, 0) >= 30, "Warpkern fehlt");
@@ -54,6 +56,11 @@ class EnterpriseBlueprintTest {
         assertStandable(bp, bp.bridgeSpawn, "Brücke");
 
         render(bp, scale);
+        if (design.excelsior) {
+            assertTrue(counts.getOrDefault(ShipPart.HULL_TEAL, 0) > 0, "petrolfarbene Akzente fehlen");
+            assertTrue(counts.getOrDefault(ShipPart.IMPULSE_ENGINE, 0) > 0, "Impulstriebwerke fehlen");
+            assertTrue(counts.getOrDefault(ShipPart.DEFLECTOR_DISH_BLUE, 0) > 0, "blaue Deflektorschüssel fehlt");
+        }
         if (design.refit) {
             assertTrue(counts.getOrDefault(ShipPart.DEFLECTOR_DISH_BLUE, 0) > 0, "blaue Deflektorschüssel fehlt");
             assertTrue(counts.getOrDefault(ShipPart.TORPEDO_LAUNCHER, 0) > 0, "Torpedowerfer fehlen");

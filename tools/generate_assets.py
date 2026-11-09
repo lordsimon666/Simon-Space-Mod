@@ -879,6 +879,68 @@ def tex_impulse():
     return img
 
 
+def tex_hull_teal():
+    img = noise(new((42, 104, 112)), 4, 90)
+    px = img.load()
+    for i in range(16):
+        px[i, 0] = shade(px[i, 0], -15)
+    return img
+
+
+def tex_bussard_blue():
+    img = new((0, 0, 0))
+    px = img.load()
+    for x in range(16):
+        for y in range(16):
+            d = math.hypot(x - 7.5, y - 7.5)
+            glow = max(0.0, 1 - d / 10)
+            px[x, y] = (clamp(80 + 150 * glow), clamp(170 + 85 * glow), 255, 255)
+    return img
+
+
+def tex_railing_wood():
+    img = noise(new((122, 74, 42)), 6, 91)
+    px = img.load()
+    for y in range(16):
+        if y % 4 == 1:
+            for x in range(16):
+                px[x, y] = shade(px[x, y], -18)
+    return img
+
+
+def tex_trim_cream():
+    img = new((240, 224, 176))
+    px = img.load()
+    for x in range(16):
+        for y in range(16):
+            if y % 4 == 3:
+                px[x, y] = (110, 100, 80, 255)  # Lamellen wie an den Säulen der Excelsior-Brücke
+    return img
+
+
+def tex_carpet_teal():
+    return noise(new((44, 90, 96)), 6, 92)
+
+
+def tex_deck_plate():
+    img = noise(new((106, 108, 112)), 3, 93)
+    px = img.load()
+    for x in range(16):
+        for y in range(16):
+            if (x + 2 * y) % 8 == 0 or (x - 2 * y) % 8 == 4:
+                px[x, y] = (150, 152, 156, 255)  # Riffelblech
+    return img
+
+
+def tex_wall_dark():
+    img = noise(new((58, 60, 66)), 3, 94)
+    px = img.load()
+    for y in range(16):
+        px[0, y] = (40, 42, 46, 255)
+        px[15, y] = (80, 82, 88, 255)
+    return img
+
+
 def tex_railing_gray():
     return noise(new((150, 154, 162)), 5, 82)
 
@@ -943,6 +1005,13 @@ TEXTURES = {
     "impulse_engine": tex_impulse,
     "bridge_railing_gray": tex_railing_gray,
     "bridge_trim_blue": tex_trim_blue,
+    "hull_teal": tex_hull_teal,
+    "bussard_blue": tex_bussard_blue,
+    "bridge_railing_wood": tex_railing_wood,
+    "bridge_trim_cream": tex_trim_cream,
+    "bridge_carpet_teal": tex_carpet_teal,
+    "deck_plate": tex_deck_plate,
+    "bridge_wall_dark": tex_wall_dark,
     "sickbay_floor": tex_sickbay_floor,
     "bio_mattress": tex_bio_mattress,
     "bio_body": tex_bio_body,
@@ -985,7 +1054,7 @@ def b(name):
     return f"{MODID}:block/{name}"
 
 
-SIMPLE = ["impulse_engine", "hull_aztec", "deflector_dish_blue", "bussard_red", "torpedo_launcher", "bridge_trim_blue", "sickbay_wall", "sickbay_floor", "cargo_container", "bridge_wall", "bridge_trim", "turbolift_frame", "transporter_wall", "transporter_platform",
+SIMPLE = ["hull_teal", "bussard_blue", "bridge_trim_cream", "bridge_carpet_teal", "deck_plate", "bridge_wall_dark", "impulse_engine", "hull_aztec", "deflector_dish_blue", "bussard_red", "torpedo_launcher", "bridge_trim_blue", "sickbay_wall", "sickbay_floor", "cargo_container", "bridge_wall", "bridge_trim", "turbolift_frame", "transporter_wall", "transporter_platform",
           "transporter_energizer", "transporter_emitter", "nav_light_red", "nav_light_green", "hull_pennant",
           "hull_plating", "hull_panel", "hull_dark", "hull_window", "hull_marking", "deflector_dish",
           "bussard_collector", "nacelle_grille", "deck_floor", "bridge_deck", "corridor_wall",
@@ -1298,6 +1367,13 @@ NAMES = {
     "bussard_red": ("Bussard-Kollektor (Refit, rot)", "Bussard Collector (Refit, Red)"),
     "torpedo_launcher": ("Photonentorpedo-Werfer", "Photon Torpedo Launcher"),
     "impulse_engine": ("Impulstriebwerk", "Impulse Engine"),
+    "hull_teal": ("Petrolfarbene Hüllenplatte (Excelsior)", "Teal Hull Panel (Excelsior)"),
+    "bussard_blue": ("Bussard-Kollektor (Excelsior, blau)", "Bussard Collector (Excelsior, Blue)"),
+    "bridge_railing_wood": ("Brückengeländer (Excelsior, Holz)", "Bridge Railing (Excelsior, Wood)"),
+    "bridge_trim_cream": ("Cremefarbene Lichtleiste (Excelsior)", "Cream Light Strip (Excelsior)"),
+    "bridge_carpet_teal": ("Petrolfarbener Teppich (Excelsior)", "Teal Carpet (Excelsior)"),
+    "deck_plate": ("Riffelblech-Boden", "Diamond Plate Floor"),
+    "bridge_wall_dark": ("Dunkle Brückenwand (Excelsior)", "Dark Bridge Wall (Excelsior)"),
     "bridge_railing_gray": ("Brückengeländer (Refit, grau)", "Bridge Railing (Refit, Gray)"),
     "bridge_trim_blue": ("Blaue Lichtleiste (Refit)", "Blue Light Strip (Refit)"),
     "sickbay_floor": ("Krankenstations-Boden", "Sickbay Floor"),
@@ -1368,7 +1444,7 @@ def main():
         write_json(os.path.join(DATA, "loot_table", "blocks", name + ".json"), loot(name))
         models_extra.append(name)
     # Geländer (verbindet sich wie Eisengitter): rot (Originalserie) und grau (Refit)
-    for rail in ("bridge_railing", "bridge_railing_gray"):
+    for rail in ("bridge_railing", "bridge_railing_gray", "bridge_railing_wood"):
         tex = {"particle": b(rail), "red": b(rail), "black": b("trim_black")}
         post = dict(RAIL_POST, textures=tex)
         side = dict(RAIL_SIDE, textures=tex)

@@ -1,5 +1,11 @@
 {
   "values": [
+    "simonspacemod:hull_teal",
+    "simonspacemod:bussard_blue",
+    "simonspacemod:bridge_trim_cream",
+    "simonspacemod:bridge_carpet_teal",
+    "simonspacemod:deck_plate",
+    "simonspacemod:bridge_wall_dark",
     "simonspacemod:impulse_engine",
     "simonspacemod:hull_aztec",
     "simonspacemod:deflector_dish_blue",
@@ -58,6 +64,7 @@
     "simonspacemod:bridge_monitor",
     "simonspacemod:bridge_railing",
     "simonspacemod:bridge_railing_gray",
+    "simonspacemod:bridge_railing_wood",
     "simonspacemod:biobed",
     "simonspacemod:hull_plating_slab",
     "simonspacemod:hull_marking_slab",
