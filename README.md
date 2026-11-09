@@ -19,7 +19,7 @@ Forge-Mod für **Minecraft 26.2** (Forge 65.1.x, Java 25), die die **USS Enterpr
 * Ohne Position entsteht das Schiff vor dir, der Bug zeigt zu dir.
 * Die Position ist die Mitte des Schiffs am tiefsten Punkt, die Richtung gibt an, wohin der Bug zeigt.
 * Benötigt OP-Rechte (Level 2).
-* Gebaut wird über mehrere Ticks verteilt (max. 25 ms pro Tick), damit der Server nicht einfriert.
+* Gebaut wird über mehrere Ticks verteilt (max. 15 ms pro Tick), damit der Server nicht einfriert.
   Wenn das Schiff fertig ist, erscheint im Chat ein klickbarer Link **[Zur Brücke]**.
 
 ### Bauhöhe

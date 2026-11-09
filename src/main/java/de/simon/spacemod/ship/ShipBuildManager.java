@@ -23,7 +23,7 @@ import com.mojang.logging.LogUtils;
  */
 public final class ShipBuildManager {
     private static final Logger LOGGER = LogUtils.getLogger();
-    private static final long TICK_BUDGET_NANOS = 25_000_000L; // max. 25 ms pro Tick
+    private static final long TICK_BUDGET_NANOS = 15_000_000L; // max. 15 ms pro Tick (Licht-Updates kommen noch dazu)
     private static final List<Job> JOBS = new ArrayList<>();
 
     private ShipBuildManager() {}
@@ -116,7 +116,7 @@ public final class ShipBuildManager {
             while (cursor < positions.length) {
                 level.setBlock(mutable.set(positions[cursor]), states[cursor], Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
                 cursor++;
-                if (++n % 256 == 0 && System.nanoTime() > deadline) return false;
+                if (++n % 64 == 0 && System.nanoTime() > deadline) return false;
             }
             return true;
         }
