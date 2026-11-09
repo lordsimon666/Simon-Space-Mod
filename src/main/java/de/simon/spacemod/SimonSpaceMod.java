@@ -22,6 +22,7 @@ public final class SimonSpaceMod {
         ShipBuildManager.init();
         if (FMLLoader.getDist().isClient()) {
             FMLClientSetupEvent.getBus(modBus).addListener(de.simon.spacemod.client.ClientSetup::onClientSetup);
+            net.minecraftforge.client.event.EntityRenderersEvent.RegisterRenderers.BUS.addListener(de.simon.spacemod.client.ClientSetup::onRegisterRenderers);
         }
     }
 }
