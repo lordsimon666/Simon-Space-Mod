@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "simonspacemod:block/turbolift"
+    },
+    "facing=east": {
+      "model": "simonspacemod:block/turbolift",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "simonspacemod:block/turbolift",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "simonspacemod:block/turbolift",
+      "y": 270
+    }
+  }
+}

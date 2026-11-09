@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "simonspacemod:block/lcars_panel"
+    },
+    "facing=east": {
+      "model": "simonspacemod:block/lcars_panel",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "simonspacemod:block/lcars_panel",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "simonspacemod:block/lcars_panel",
+      "y": 270
+    }
+  }
+}

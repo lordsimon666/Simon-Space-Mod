@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "simonspacemod:block/turbolift_front",
+    "side": "simonspacemod:block/hull_panel",
+    "top": "simonspacemod:block/hull_panel"
+  }
+}

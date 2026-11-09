@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "simonspacemod:block/viewscreen"
+    },
+    "facing=east": {
+      "model": "simonspacemod:block/viewscreen",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "simonspacemod:block/viewscreen",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "simonspacemod:block/viewscreen",
+      "y": 270
+    }
+  }
+}

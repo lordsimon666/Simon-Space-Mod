@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "simonspacemod:block/viewscreen",
+    "side": "simonspacemod:block/viewscreen_side",
+    "top": "simonspacemod:block/viewscreen_side"
+  }
+}

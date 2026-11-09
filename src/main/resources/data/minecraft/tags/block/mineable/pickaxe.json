@@ -1,0 +1,25 @@
+{
+  "values": [
+    "simonspacemod:hull_plating",
+    "simonspacemod:hull_panel",
+    "simonspacemod:hull_dark",
+    "simonspacemod:hull_window",
+    "simonspacemod:hull_marking",
+    "simonspacemod:deflector_dish",
+    "simonspacemod:bussard_collector",
+    "simonspacemod:nacelle_grille",
+    "simonspacemod:deck_floor",
+    "simonspacemod:bridge_deck",
+    "simonspacemod:corridor_wall",
+    "simonspacemod:ceiling_light",
+    "simonspacemod:plasma_conduit",
+    "simonspacemod:bridge_console",
+    "simonspacemod:engineering_console",
+    "simonspacemod:lcars_panel",
+    "simonspacemod:viewscreen",
+    "simonspacemod:turbolift",
+    "simonspacemod:captains_chair",
+    "simonspacemod:transporter_pad",
+    "simonspacemod:warp_core"
+  ]
+}

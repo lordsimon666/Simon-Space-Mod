@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "simonspacemod:block/warp_core_top",
+    "side": "simonspacemod:block/warp_core"
+  }
+}

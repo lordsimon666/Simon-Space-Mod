@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "simonspacemod:block/engineering_console_front",
+    "side": "simonspacemod:block/console_side",
+    "top": "simonspacemod:block/console_side"
+  }
+}
