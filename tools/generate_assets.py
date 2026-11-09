@@ -1286,6 +1286,46 @@ def tex_decon_light():
     return img
 
 
+
+def lift_door(base, seam, accent, seed):
+    """Zweiteilige Schiebetür: Grundfarbe, dunkle Mittelfuge, farbige Akzentstreifen."""
+    img = noise(new(base), 3, seed)
+    px = img.load()
+    for y in range(16):
+        px[7, y] = seam + (255,)
+        px[8, y] = seam + (255,)
+        px[0, y] = shade(base + (255,), -40)
+        px[15, y] = shade(base + (255,), -40)
+    for x in range(1, 15):
+        if x not in (7, 8):
+            px[x, 3] = accent + (255,)
+            px[x, 12] = accent + (255,)
+    return img
+
+
+def lift_panel(door_fn, screen):
+    """Turbolift-Bedienfeld: Tür mit kleinem leuchtendem Schaltfeld."""
+    img = door_fn()
+    px = img.load()
+    for x in range(10, 14):
+        for y in range(6, 10):
+            px[x, y] = screen + (255,)
+    px[11, 7] = (255, 255, 255, 255)
+    return img
+
+
+def tex_door_nx():
+    return lift_door((104, 110, 118), (40, 44, 50), (150, 156, 164), 230)
+
+
+def tex_door_refit():
+    return lift_door((150, 156, 168), (60, 64, 74), (80, 140, 230), 231)
+
+
+def tex_door_tng():
+    return lift_door((176, 168, 148), (90, 84, 72), (140, 132, 116), 232)
+
+
 TEXTURES = {
     "hull_plating": tex_hull_plating,
     "hull_panel": tex_hull_panel,
@@ -1397,6 +1437,13 @@ TEXTURES = {
     "ent_console_top": tex_ent_console_top,
     "ent_console_front": tex_ent_console_front,
     "decon_light": tex_decon_light,
+    "turbolift_door_nx": tex_door_nx,
+    "turbolift_door_refit": tex_door_refit,
+    "turbolift_door_tng": tex_door_tng,
+    "turbolift_nx": lambda: lift_panel(tex_door_nx, (90, 170, 255)),
+    "turbolift_refit": lambda: lift_panel(tex_door_refit, (120, 190, 255)),
+    "turbolift_excelsior": lambda: lift_panel(tex_door_teal, (90, 240, 130)),
+    "turbolift_tng": lambda: lift_panel(tex_door_tng, (255, 153, 0)),
 }
 
 # ---------------------------------------------------------------------------------------------
@@ -1448,6 +1495,12 @@ FACING = {
     "captains_chair_tng": None,
     "ent_console": None,
     "ent_chair": None,
+    **{f"turbolift_{e}": {"parent": "minecraft:block/orientable",
+                          "textures": {"front": b(f"turbolift_{e}"), "side": b(side), "top": b(side)}}
+       for e, side in (("nx", "ent_wall"), ("refit", "bridge_wall"), ("excelsior", "bridge_wall_dark"), ("tng", "tng_wall"))},
+    **{f"turbolift_door_{e}": {"parent": "minecraft:block/orientable",
+                               "textures": {"front": b(f"turbolift_door_{e}"), "side": b(side), "top": b(side)}}
+       for e, side in (("nx", "ent_wall"), ("refit", "bridge_wall"), ("tng", "tng_wall"))},
     "captains_chair_nx": None,
 }
 
@@ -1808,6 +1861,13 @@ NAMES = {
     "ent_chair": ("Sitz (NX-01)", "Seat (NX-01)"),
     "captains_chair_nx": ("Kommandantensessel (NX-01)", "Captain's Chair (NX-01)"),
     "decon_light": ("Dekontaminations-Leuchte", "Decontamination Light"),
+    "turbolift_nx": ("Turbolift (NX-01)", "Turbolift (NX-01)"),
+    "turbolift_refit": ("Turbolift (Refit)", "Turbolift (Refit)"),
+    "turbolift_excelsior": ("Turbolift (Excelsior)", "Turbolift (Excelsior)"),
+    "turbolift_tng": ("Turbolift (Next Generation)", "Turbolift (Next Generation)"),
+    "turbolift_door_nx": ("Turbolift-Tür (NX-01)", "Turbolift Door (NX-01)"),
+    "turbolift_door_refit": ("Turbolift-Tür (Refit)", "Turbolift Door (Refit)"),
+    "turbolift_door_tng": ("Turbolift-Tür (Next Generation)", "Turbolift Door (Next Generation)"),
 }
 
 
@@ -1940,6 +2000,12 @@ def main():
         "key": {"I": "minecraft:iron_ingot", "R": "minecraft:redstone", "E": "minecraft:ender_pearl", "D": "minecraft:red_dye"},
         "pattern": ["IDI", "IEI", "IRI"],
         "result": {"id": f"{MODID}:turbolift", "count": 2}})
+    # Turbolift in einen anderen Stil umfärben (funktioniert genauso)
+    for e, dye in (("nx", "gray_dye"), ("refit", "light_blue_dye"), ("excelsior", "cyan_dye"), ("tng", "orange_dye")):
+        write_json(os.path.join(DATA, "recipe", f"turbolift_{e}.json"), {
+            "type": "minecraft:crafting_shapeless", "category": "redstone",
+            "ingredients": [f"{MODID}:turbolift", f"minecraft:{dye}"],
+            "result": {"id": f"{MODID}:turbolift_{e}"}})
     write_json(os.path.join(DATA, "recipe", "communicator.json"), {
         "type": "minecraft:crafting_shaped", "category": "misc",
         "key": {"G": "minecraft:gold_ingot", "I": "minecraft:iron_ingot", "R": "minecraft:redstone", "E": "minecraft:ender_pearl"},

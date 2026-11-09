@@ -25,6 +25,11 @@ public class TurboliftBlock extends FacingBlock {
         super(properties);
     }
 
+    /** Ist an dieser Stelle ein Turbolift (in einem beliebigen Stil)? */
+    public static boolean isLift(BlockState state) {
+        return state.getBlock() instanceof TurboliftBlock;
+    }
+
     @Override
     protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
         return CODEC;

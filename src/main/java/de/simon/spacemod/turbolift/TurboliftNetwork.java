@@ -33,7 +33,7 @@ public final class TurboliftNetwork {
             ServerLevel level = player.level();
             BlockPos pos = msg.pos();
             if (player.distanceToSqr(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) > 64) return;
-            if (!level.getBlockState(pos).is(ModBlocks.TURBOLIFT.get())) return;
+            if (!de.simon.spacemod.block.TurboliftBlock.isLift(level.getBlockState(pos))) return;
             TurboliftData.get(level).set(pos, msg.name(), msg.network());
             TurboliftBlockHelper.openMenu(player, level, pos); // Liste neu laden
         }

@@ -161,6 +161,7 @@ public final class EnterpriseBlueprint {
         linkTurbolifts(eng, transporter);
         if (tng) tngInterior();
         if (nx) nxInterior();
+        liftStyle();
         connectBars();
     }
 
@@ -2573,6 +2574,34 @@ public final class EnterpriseBlueprint {
                     if (p == ShipPart.CORRIDOR_WALL) set(x, y, z, ShipPart.TNG_WALL);
                     else if (p == ShipPart.DECK_FLOOR && !inEngineeringBox(x, y, z)) set(x, y, z, ShipPart.TNG_CARPET);
                 }
+    }
+
+    /** Turbolift-Panels, -Türen und -Rahmen im Stil der jeweiligen Epoche (Originalserie bleibt rot). */
+    private void liftStyle() {
+        ShipPart lift, door, frame;
+        switch (design.era) {
+            case NX -> { lift = ShipPart.TURBOLIFT_NX; door = ShipPart.TURBOLIFT_DOOR_NX; frame = ShipPart.ENT_WALL; }
+            case REFIT -> { lift = ShipPart.TURBOLIFT_REFIT; door = ShipPart.TURBOLIFT_DOOR_REFIT; frame = ShipPart.BRIDGE_TRIM_BLUE; }
+            case EXCELSIOR -> { lift = ShipPart.TURBOLIFT_EXCELSIOR; door = ShipPart.TURBOLIFT_DOOR_TEAL; frame = ShipPart.LIGHT_PILLAR; }
+            case TNG -> { lift = ShipPart.TURBOLIFT_TNG; door = ShipPart.TURBOLIFT_DOOR_TNG; frame = ShipPart.DECK_PLATE; }
+            default -> { return; }
+        }
+        for (int x = 0; x < sizeX; x++)
+            for (int y = 0; y < sizeY; y++)
+                for (int z = -zOffset; z <= zOffset; z++) {
+                    int code = codeAt(x, y, z);
+                    if (code == 0) continue;
+                    ShipPart p = part(code);
+                    if (p == ShipPart.TURBOLIFT) set(x, y, z, lift, facing(code));
+                    else if (p == ShipPart.TURBOLIFT_DOOR) set(x, y, z, door, facing(code));
+                    else if (p == ShipPart.TURBOLIFT_FRAME) set(x, y, z, frame);
+                }
+    }
+
+    /** Ist das Bauteil ein Turbolift (in irgendeinem Stil)? */
+    public static boolean isLift(ShipPart p) {
+        return p == ShipPart.TURBOLIFT || p == ShipPart.TURBOLIFT_NX || p == ShipPart.TURBOLIFT_REFIT
+            || p == ShipPart.TURBOLIFT_EXCELSIOR || p == ShipPart.TURBOLIFT_TNG;
     }
 
     /** NX-01: graue Metallwände und Gitterboden, schlichte Sitze und Konsolen. */

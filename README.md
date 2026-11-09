@@ -164,6 +164,10 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
   verbunden – so baust du Fahrstühle in eigenen Schiffen und Basen. Mit unterschiedlichen Netznamen
   bleiben getrennte Basen getrennt. Jede gespawnte Enterprise hat ihr eigenes Netz
   („NCC-1701 x/z“). Ausgestiegen wird auf der Seite, in die die Vorderseite des Blocks zeigt.
+* **Turbolift-Stile**: Jedes Schiff hat Turbolifte im Stil seiner Zeit – NX-01 graue Metalltüren,
+  Originalserie rot, Refit hellgrau mit blauen Lichtleisten, Excelsior petrolfarben mit Lichtsäulen,
+  C/D/E beige Schiebetüren. Alle Stile funktionieren gleich und lassen sich gemeinsam in einem Netz
+  verwenden. Umfärben: Turbolift + grauer / hellblauer / türkiser / oranger Farbstoff.
 * **Transporterfeld**: Rechtsklick beamt dich auf den Boden unter dem Schiff.
   Hast du keinen Kommunikator dabei, bekommst du einen.
 * **Kommunikator**: Rechtsklick beamt dich zurück auf das zuletzt benutzte Transporterfeld.
@@ -180,7 +184,7 @@ E = Eisenbarren        G = Goldbarren
 F = roter Farbstoff, P = Enderperle, R = Redstone
 ```
 
-## Neue Blöcke (93)
+## Neue Blöcke (100)
 
 * **Hülle**: Hüllenpanzerung (+ Stufe), Hüllenplatte, dunkle Hüllenplatte, Hüllenfenster,
   Kennungsmarkierung (+ Stufe), roter Zierstreifen, Positionslicht rot/grün, Deflektorschüssel,
@@ -204,6 +208,7 @@ F = roter Farbstoff, P = Enderperle, R = Redstone
   Kommandantensessel, Warpkern (blau), Master Systems Display, Lagetisch, Holodeck-Gitter,
   Kraftfeld (durchsichtig), Sternenkarte, Bartresen
 * **NX-01**: Metallwand, Konsole, Sitz, Kommandantensessel, Dekontaminations-Leuchte
+* **Turbolifte**: Turbolift und Turbolift-Tür im Stil von NX-01, Refit, Excelsior und Next Generation
 * **Allgemein**: Deckboden, Korridorwand, Deckenverkleidung, Deckenleuchte, Maschinenraum-Konsole,
   Warpkern, Plasmaleitung
 

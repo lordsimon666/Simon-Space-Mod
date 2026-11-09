@@ -54,7 +54,7 @@ class EnterpriseBlueprintTest {
         for (EnterpriseBlueprint.LiftStop stop : bp.liftStops) {
             BlockPos p = stop.pos();
             assertTrue(names.add(stop.name()), "doppelter Deckname " + stop.name());
-            assertEquals(ShipPart.TURBOLIFT, bp.get(p.getX(), p.getY(), p.getZ()), "kein Panel bei " + p + " (" + stop.name() + ")");
+            assertTrue(EnterpriseBlueprint.isLift(bp.get(p.getX(), p.getY(), p.getZ())), "kein Panel bei " + p + " (" + stop.name() + ")");
             BlockPos stand = localStep(p, EnterpriseBlueprint.facing(bp.codeAt(p.getX(), p.getY(), p.getZ())));
             assertStandable(bp, stand, "Turbolift " + stop.name());
         }

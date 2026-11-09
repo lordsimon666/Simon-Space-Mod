@@ -134,7 +134,7 @@ public final class ShipBuildManager {
             String network = blueprint.design.registry + " " + placement.origin().getX() + "/" + placement.origin().getZ();
             for (EnterpriseBlueprint.LiftStop stop : blueprint.liftStops) {
                 BlockPos pos = placement.toWorld(blueprint, stop.pos().getX(), stop.pos().getY(), stop.pos().getZ());
-                if (level.getBlockState(pos).is(ModBlocks.TURBOLIFT.get())) {
+                if (de.simon.spacemod.block.TurboliftBlock.isLift(level.getBlockState(pos))) {
                     data.set(pos, stop.name(), network);
                 } else {
                     LOGGER.warn("[{}] Turbolift bei {} fehlt", SimonSpaceMod.MODID, pos);

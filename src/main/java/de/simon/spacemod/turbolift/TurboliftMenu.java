@@ -69,7 +69,7 @@ public class TurboliftMenu extends AbstractContainerMenu {
         if (dest.pos().equals(liftPos)) return false;
         ServerLevel level = sp.level();
         BlockState target = level.getBlockState(dest.pos());
-        if (!target.is(ModBlocks.TURBOLIFT.get())) {
+        if (!de.simon.spacemod.block.TurboliftBlock.isLift(target)) {
             TurboliftData.get(level).remove(dest.pos());
             sp.sendOverlayMessage(Component.translatable("message.simonspacemod.turbolift.gone"));
             return false;
@@ -90,6 +90,6 @@ public class TurboliftMenu extends AbstractContainerMenu {
     @Override
     public boolean stillValid(Player player) {
         return player.distanceToSqr(liftPos.getX() + 0.5, liftPos.getY() + 0.5, liftPos.getZ() + 0.5) < 64
-            && player.level().getBlockState(liftPos).is(ModBlocks.TURBOLIFT.get());
+            && de.simon.spacemod.block.TurboliftBlock.isLift(player.level().getBlockState(liftPos));
     }
 }

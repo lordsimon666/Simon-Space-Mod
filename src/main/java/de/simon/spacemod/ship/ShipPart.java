@@ -113,7 +113,15 @@ public enum ShipPart {
     ENT_CONSOLE(0x2A3038),
     ENT_CHAIR(0x3A3C40),
     CAPTAINS_CHAIR_NX(0x2A2C30),
-    DECON_LIGHT(0x80C0FF);
+    DECON_LIGHT(0x80C0FF),
+    // Turbolifte im Stil der Epochen
+    TURBOLIFT_NX(0x707880),
+    TURBOLIFT_REFIT(0x8890A0),
+    TURBOLIFT_EXCELSIOR(0x2A5A60),
+    TURBOLIFT_TNG(0xA8A090),
+    TURBOLIFT_DOOR_NX(0x6A7078),
+    TURBOLIFT_DOOR_REFIT(0x9098A8),
+    TURBOLIFT_DOOR_TNG(0xB0A890);
 
     /** Farbe für Vorschaubilder. */
     public final int color;

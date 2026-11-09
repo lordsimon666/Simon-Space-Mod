@@ -203,6 +203,14 @@ public final class ModBlocks {
     public static final RegistryObject<Block> PLASMA_CONDUIT = block("plasma_conduit", Block::new, glowing(metal(MapColor.COLOR_BLUE), 10));
     public static final RegistryObject<Block> TRANSPORTER_PAD = block("transporter_pad", TransporterPadBlock::new, glowing(metal(MapColor.METAL), 9).noOcclusion());
     public static final RegistryObject<Block> TURBOLIFT = block("turbolift", TurboliftBlock::new, glowing(metal(MapColor.COLOR_YELLOW), 8));
+    // Turbolifte und Türen im Stil der anderen Schiffe (funktionieren wie der normale Turbolift)
+    public static final RegistryObject<Block> TURBOLIFT_NX = block("turbolift_nx", TurboliftBlock::new, glowing(metal(MapColor.COLOR_GRAY), 6));
+    public static final RegistryObject<Block> TURBOLIFT_REFIT = block("turbolift_refit", TurboliftBlock::new, glowing(metal(MapColor.COLOR_LIGHT_GRAY), 6));
+    public static final RegistryObject<Block> TURBOLIFT_EXCELSIOR = block("turbolift_excelsior", TurboliftBlock::new, glowing(metal(MapColor.COLOR_CYAN), 6));
+    public static final RegistryObject<Block> TURBOLIFT_TNG = block("turbolift_tng", TurboliftBlock::new, glowing(metal(MapColor.SAND), 6));
+    public static final RegistryObject<Block> TURBOLIFT_DOOR_NX = block("turbolift_door_nx", FacingBlock::new, metal(MapColor.COLOR_GRAY));
+    public static final RegistryObject<Block> TURBOLIFT_DOOR_REFIT = block("turbolift_door_refit", FacingBlock::new, metal(MapColor.COLOR_LIGHT_GRAY));
+    public static final RegistryObject<Block> TURBOLIFT_DOOR_TNG = block("turbolift_door_tng", FacingBlock::new, metal(MapColor.SAND));
 
     // --- Items ---
     public static final RegistryObject<Item> COMMUNICATOR = ITEMS.register("communicator",
