@@ -705,6 +705,19 @@ public final class EnterpriseBlueprint {
         rz = Math.max(1.5, rz);
         double rmin = Math.min(ry, rz), dmax = depth * rmin;
         double reach = Math.max(ring, Math.max(ry, rz)) + 1;
+        // Die Schüssel ist eine Scheibe auf einer senkrechten Ebene an der vordersten Stelle der
+        // Rumpffront; sie läuft nicht auf schräge Seitenflächen herum
+        List<Integer> fronts = new ArrayList<>();
+        for (int y = (int) Math.floor(cy - ry); y <= cy + ry; y++)
+            for (int z = (int) -Math.ceil(rz); z <= rz; z++) {
+                if (Math.hypot((y - cy) / ry, z / rz) > 1) continue;
+                int x = frontHull(y, z, true);
+                if (x >= 0) fronts.add(x);
+            }
+        if (fronts.isEmpty()) return;
+        java.util.Collections.sort(fronts);
+        int xp = fronts.get(fronts.size() / 2); // Ebene der Scheibe: mittlere Lage der Rumpffront
+        int maxFill = (int) Math.ceil(Math.max(2, rmin));
         int frontX = Integer.MAX_VALUE;
         for (int y = (int) Math.floor(cy - reach); y <= cy + reach; y++)
             for (int z = (int) -Math.ceil(reach); z <= reach; z++) {
@@ -712,14 +725,15 @@ public final class EnterpriseBlueprint {
                 boolean inRing = ring > 0 && e > 1 && Math.hypot(y - cy, z) <= ring;
                 if (e > 1 && !inRing) continue;
                 int x = frontHull(y, z, true);
-                if (x < 0) continue;
+                if (x < 0 || x > xp + maxFill) continue; // zu weit hinten = Seitenfläche
                 ShipPart part = inRing ? ringPart
                     : core != null && e <= inner && e > 0.5 ? core : outer;
-                // Wölbung: Blöcke vor die Hülle setzen (konkav: Rand weiter vorne, konvex: Mitte)
+                // Wölbung (konkav: Rand weiter vorne, konvex: Mitte weiter vorne)
                 int d = inRing ? (int) Math.round(concave ? dmax + 1 : dmax * 0.3)
                     : (int) Math.round(dmax * (concave ? e : 1 - e * e));
-                for (int k = 0; k <= d; k++) set(x - k, y, z, part);
-                if (Math.abs(y - cy) < 0.5 && z == 0) frontX = x - d;
+                int face = Math.min(xp, x) - d; // Vorderseite der Scheibe (mind. die Ebene)
+                for (int k = face; k <= x; k++) set(k, y, z, part);
+                if (Math.abs(y - cy) < 0.5 && z == 0) frontX = Math.min(face, x);
             }
         // Originalserie: Antenne in der Mitte der Schüssel
         if (design == ShipDesign.NCC_1701 && frontX != Integer.MAX_VALUE) {
