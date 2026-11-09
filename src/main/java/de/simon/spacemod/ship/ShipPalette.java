@@ -8,6 +8,7 @@ import net.minecraft.world.level.block.LadderBlock;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.state.properties.SlabType;
 import de.simon.spacemod.block.VariantFacingBlock;
+import de.simon.spacemod.block.BiobedBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
@@ -67,7 +68,12 @@ public final class ShipPalette {
             case TRANSPORTER_CONSOLE -> ModBlocks.TRANSPORTER_CONSOLE.get().defaultBlockState();
             case CONFERENCE_TABLE -> ModBlocks.CONFERENCE_TABLE.get().defaultBlockState();
             case TABLE_VIEWER -> ModBlocks.TABLE_VIEWER.get().defaultBlockState();
-            case BIOBED -> ModBlocks.BIOBED.get().defaultBlockState();
+            case BIOBED -> ModBlocks.BIOBED.get().defaultBlockState().setValue(BiobedBlock.HEAD, EnterpriseBlueprint.variant(cellCode) == 1);
+            case BIOBED_MONITOR -> ModBlocks.BIOBED_MONITOR.get().defaultBlockState();
+            case EXAM_TABLE -> ModBlocks.EXAM_TABLE.get().defaultBlockState();
+            case MEDICAL_CABINET -> ModBlocks.MEDICAL_CABINET.get().defaultBlockState();
+            case SICKBAY_WALL -> ModBlocks.SICKBAY_WALL.get().defaultBlockState();
+            case SICKBAY_FLOOR -> ModBlocks.SICKBAY_FLOOR.get().defaultBlockState();
             case CREW_BED -> ModBlocks.CREW_BED.get().defaultBlockState();
             case CREW_DESK -> ModBlocks.CREW_DESK.get().defaultBlockState();
             case CARGO_CONTAINER -> ModBlocks.CARGO_CONTAINER.get().defaultBlockState();

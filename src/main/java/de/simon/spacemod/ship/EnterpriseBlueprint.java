@@ -1073,11 +1073,7 @@ public final class EnterpriseBlueprint {
                 if (free(gx + 1, y, gz)) set(gx + 1, y, gz, ShipPart.CAPTAINS_CHAIR, Direction.NORTH);
                 if (free(gx, y, gz + 2)) set(gx, y, gz + 2, ShipPart.LCARS_PANEL, Direction.WEST);
             }
-            case SICKBAY -> {
-                for (int[] c : cells)
-                    if (Math.floorMod(c[0], 3) == 0 && Math.floorMod(c[1], 4) == 0 && free(c[0], y, c[1]) && free(c[0] + 1, y, c[1]))
-                        set(c[0], y, c[1], ShipPart.BIOBED, Direction.SOUTH);
-            }
+            case SICKBAY -> buildSickbay(room, f);
             case MESS, REC -> {
                 for (int[] c : cells) {
                     if (Math.floorMod(c[0], 4) != 0 || Math.floorMod(c[1], 4) != 0 || !free(c[0], y, c[1])) continue;
@@ -1102,6 +1098,125 @@ public final class EnterpriseBlueprint {
                     if (Math.floorMod(c[0] * 31 + c[1] * 17, 3) != 0 && get(c[0], y + 1, c[1]) == ShipPart.AIR) set(c[0], y + 1, c[1], ShipPart.CARGO_CONTAINER);
                 }
             }
+        }
+    }
+
+    /** Biobett (2 Blöcke): Kopfende an der Wand, Fußende in Richtung {@code foot}, Monitor in der Wand darüber. */
+    private boolean placeBiobed(int hx, int hz, Direction foot, int f) {
+        int y = f + 1;
+        int fx = hx + stepX(foot), fz = hz + stepZ(foot);
+        if (!free(hx, y, hz) || !free(fx, y, fz)) return false;
+        set(hx, y, hz, ShipPart.BIOBED, foot, 1);
+        set(fx, y, fz, ShipPart.BIOBED, foot, 0);
+        int wx = hx - stepX(foot), wz = hz - stepZ(foot);
+        ShipPart wall = get(wx, y + 1, wz);
+        if (wall == ShipPart.SICKBAY_WALL || wall == ShipPart.CORRIDOR_WALL) set(wx, y + 1, wz, ShipPart.BIOBED_MONITOR, foot);
+        return true;
+    }
+
+    /** Lokale Schrittweite (Bug = NORDEN = -X, Steuerbord = OSTEN = +Z). */
+    private static int stepX(Direction d) {
+        return d == Direction.NORTH ? -1 : d == Direction.SOUTH ? 1 : 0;
+    }
+
+    private static int stepZ(Direction d) {
+        return d == Direction.WEST ? -1 : d == Direction.EAST ? 1 : 0;
+    }
+
+    /**
+     * Krankenstation nach dem Vorbild der Originalserie: hellblaue Wände, grüner Teppich,
+     * Hauptraum mit Biobetten an der Gangwand und Untersuchungstisch, außen Einzelzimmer mit je
+     * einem Biobett (Kopfende an der Wand, Diagnosemonitor darüber) und das Büro des Doktors.
+     */
+    private void buildSickbay(Room room, int f) {
+        double span = room.a1() - room.a0();
+        double am = (room.a0() + room.a1()) / 2;
+        int side = am > 0 ? 1 : -1;            // Steuerbord- oder Backbordhälfte (Gang liegt bei z = 0)
+        double rOut = Math.min(room.rOut(), sR);
+        double rp = room.rIn() + 0.55 * (rOut - room.rIn()); // Wand zwischen Hauptraum und Einzelzimmern
+        int cx = (int) Math.round(sCx);
+        int rr = (int) Math.ceil(rOut) + 2;
+
+        // 1) Farben und Zwischenwände
+        for (int x = cx - rr; x <= cx + rr; x++)
+            for (int z = -rr; z <= rr; z++) {
+                double r = Math.hypot(x - sCx, z);
+                double a = angle(x, z);
+                double d0 = angDiff(a, room.a0()) * r, d1 = angDiff(room.a1(), a) * r;
+                if (r < room.rIn() - 1.2 || r > rOut + 1.2 || d0 < -1.6 || d1 < -1.6) continue;
+                boolean inside = r > room.rIn() + 0.6 && r < rOut - 0.6 && d0 > 0.6 && d1 > 0.6;
+                if (inside && isInterior(x, f, z)) set(x, f, z, ShipPart.SICKBAY_FLOOR);
+                for (int y = f + 1; y <= f + 3; y++) {
+                    if (!isInterior(x, y, z)) continue;
+                    ShipPart cur = get(x, y, z);
+                    if (cur == ShipPart.CORRIDOR_WALL) { set(x, y, z, ShipPart.SICKBAY_WALL); continue; }
+                    if (!inside) continue;
+                    if (cur != ShipPart.AIR && cur != ShipPart.CEILING_LIGHT) set(x, y, z, ShipPart.AIR); // alte Möbel weg
+                    boolean doorRow = y <= f + 2;
+                    if (Math.abs(r - rp) < 0.6) {
+                        // Einzelzimmer-Türen in der Mitte jedes Zimmers
+                        boolean door = false;
+                        for (int k = 0; k < 3; k++) {
+                            double mid = room.a0() + span * (k + 0.5) / 3;
+                            door |= Math.abs(angDiff(a, mid) * r) <= 0.8;
+                        }
+                        set(x, y, z, door && doorRow ? ShipPart.AIR : ShipPart.SICKBAY_WALL);
+                    } else if (r > rp) {
+                        for (int k = 1; k < 3; k++)
+                            if (Math.abs(angDiff(a, room.a0() + span * k / 3) * r) < 0.55) set(x, y, z, ShipPart.SICKBAY_WALL);
+                    }
+                }
+            }
+
+        // 2) Einzelzimmer: Bett mit dem Kopfende an der Außenwand; das Zimmer am Gang wird Büro
+        int officeK = side > 0 ? 0 : 2;
+        for (int k = 0; k < 3; k++) {
+            double mid = room.a0() + span * (k + 0.5) / 3;
+            double hr = rOut - 1.6;
+            int hx = (int) Math.round(sCx - hr * Math.cos(mid)), hz = (int) Math.round(hr * Math.sin(mid));
+            Direction foot = towards(hx, hz, sCx, 0);
+            if (k == officeK) {
+                double dr = (rp + rOut) / 2;
+                int dx = (int) Math.round(sCx - dr * Math.cos(mid)), dz = (int) Math.round(dr * Math.sin(mid));
+                if (free(dx, f + 1, dz)) {
+                    set(dx, f + 1, dz, ShipPart.CREW_DESK, foot.getOpposite());
+                    int chx = dx + stepX(foot.getOpposite()) * -1, chz = dz + stepZ(foot.getOpposite()) * -1;
+                    if (free(chx, f + 1, chz)) set(chx, f + 1, chz, ShipPart.STATION_CHAIR, foot.getOpposite());
+                }
+                int cbx = hx - stepX(foot), cbz = hz - stepZ(foot);
+                if (get(cbx, f + 2, cbz) == ShipPart.SICKBAY_WALL) set(cbx, f + 2, cbz, ShipPart.MEDICAL_CABINET, foot);
+                continue;
+            }
+            // Kopfende direkt an die Wand rücken
+            for (int t = 0; t < 3 && free(hx - stepX(foot), f + 1, hz - stepZ(foot)); t++) {
+                hx -= stepX(foot);
+                hz -= stepZ(foot);
+            }
+            placeBiobed(hx, hz, foot, f);
+        }
+
+        // 3) Hauptraum: Biobetten mit dem Kopfende an der Gangwand, Untersuchungstisch in der Mitte
+        Direction foot = side > 0 ? Direction.EAST : Direction.WEST;
+        for (int x = cx - 7; x >= cx - (int) rp + 1; x -= 3) {
+            if (Math.abs(x - (cx - 9)) <= 1) continue; // Tür vom Gang
+            int hz = side * 3;
+            double r1 = Math.hypot(x - sCx, side * 4);
+            double a1 = angle(x, side * 4);
+            boolean inRoom = r1 < rp - 1.2 && angDiff(a1, room.a0()) * r1 > 1 && angDiff(room.a1(), a1) * r1 > 1;
+            if (!inRoom) continue;
+            placeBiobed(x, hz, foot, f);
+        }
+        double wr = (room.rIn() + rp) / 2 + 1;
+        int tx = (int) Math.round(sCx - wr * Math.cos(am)), tz = (int) Math.round(wr * Math.sin(am));
+        for (int dx = 0; dx <= 1; dx++) if (free(tx - dx, f + 1, tz)) set(tx - dx, f + 1, tz, ShipPart.EXAM_TABLE, foot);
+        if (free(tx, f + 2, tz) && get(tx, f + 3, tz) == ShipPart.AIR && compAt(tx, f + 4, tz) != NONE) set(tx, f + 3, tz, ShipPart.CEILING_LIGHT);
+        // Medizinschränke an der Wand zu den Einzelzimmern
+        for (double da : new double[] {-span / 4, span / 4}) {
+            double cr = rp - 1;
+            int mx = (int) Math.round(sCx - cr * Math.cos(am + da)), mz = (int) Math.round(cr * Math.sin(am + da));
+            Direction in = towards(mx, mz, sCx, 0);
+            int wx = mx - stepX(in), wz = mz - stepZ(in);
+            if (get(wx, f + 2, wz) == ShipPart.SICKBAY_WALL) set(wx, f + 2, wz, ShipPart.MEDICAL_CABINET, in);
         }
     }
 

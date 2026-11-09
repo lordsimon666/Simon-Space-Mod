@@ -54,7 +54,9 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
     Innenräume und 24 Quartiere am Rand (mit Fenstern).
     * Deck 2: **Besprechungsraum** wie in der Serie (langer Konferenztisch mit dreiseitigem
       Bildschirm), Büro des Captains, Offiziersquartiere
-    * Deck 3: **Krankenstation** mit Biobetten, Transporterraum, Labore
+    * Deck 3: **Krankenstation** wie in der Serie (hellblaue Wände, grüner Teppich): Hauptraum
+      mit Biobetten an der Wand, Diagnosemonitoren darüber und Untersuchungstisch, Einzelzimmer
+      für Patienten und das Büro des Doktors; außerdem Transporterraum und Labore
     * Deck 4: Messe und Freizeitraum
     * Deck 5: Wissenschaftslabore, Deck 6: Mannschaftsquartiere
   * Sekundärhülle: Mittelgang mit Turbolift vorne, Räume links und rechts (Frachträume,
@@ -88,7 +90,7 @@ E = Eisenbarren        G = Goldbarren
 F = roter Farbstoff, P = Enderperle, R = Redstone
 ```
 
-## Neue Blöcke (50)
+## Neue Blöcke (55)
 
 * **Hülle**: Hüllenpanzerung (+ Stufe), Hüllenplatte, dunkle Hüllenplatte, Hüllenfenster,
   Kennungsmarkierung (+ Stufe), roter Zierstreifen, Positionslicht rot/grün, Deflektorschüssel,
@@ -98,8 +100,10 @@ F = roter Farbstoff, P = Enderperle, R = Redstone
   Brückenkonsole, LCARS-Anzeige, Turbolift, Turbolift-Tür, Turbolift-Rahmen
 * **Transporterraum**: Transporterraum-Wand, Transporterplattform-Boden, Transporterfeld,
   Transporter-Energiewand, Transporter-Säule, Transporter-Strahler, Transporterkonsole
-* **Möbel**: Konferenztisch, dreiseitiger Tischbildschirm, Biobett, Koje, Schreibtisch,
-  Frachtcontainer, Messetisch
+* **Möbel**: Konferenztisch, dreiseitiger Tischbildschirm, Koje, Schreibtisch, Frachtcontainer,
+  Messetisch
+* **Krankenstation**: Biobett (2 Blöcke lang, wird wie ein Bett gesetzt), Diagnosemonitor (sitzt in
+  der Wand), Untersuchungstisch, Medizinschrank, Krankenstations-Wand und -Boden
 * **Allgemein**: Deckboden, Korridorwand, Deckenverkleidung, Deckenleuchte, Maschinenraum-Konsole,
   Warpkern, Plasmaleitung
 

@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "simonspacemod:block/medical_cabinet"
+    },
+    "facing=east": {
+      "model": "simonspacemod:block/medical_cabinet",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "simonspacemod:block/medical_cabinet",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "simonspacemod:block/medical_cabinet",
+      "y": 270
+    }
+  }
+}

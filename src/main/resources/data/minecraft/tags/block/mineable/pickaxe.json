@@ -1,5 +1,7 @@
 {
   "values": [
+    "simonspacemod:sickbay_wall",
+    "simonspacemod:sickbay_floor",
     "simonspacemod:cargo_container",
     "simonspacemod:bridge_wall",
     "simonspacemod:bridge_trim",
@@ -35,7 +37,9 @@
     "simonspacemod:station_chair",
     "simonspacemod:helm_console",
     "simonspacemod:transporter_console",
-    "simonspacemod:biobed",
+    "simonspacemod:biobed_monitor",
+    "simonspacemod:exam_table",
+    "simonspacemod:medical_cabinet",
     "simonspacemod:crew_bed",
     "simonspacemod:crew_desk",
     "simonspacemod:conference_table",
@@ -47,6 +51,7 @@
     "simonspacemod:bridge_station",
     "simonspacemod:bridge_monitor",
     "simonspacemod:bridge_railing",
+    "simonspacemod:biobed",
     "simonspacemod:hull_plating_slab",
     "simonspacemod:hull_marking_slab",
     "simonspacemod:step_slab"

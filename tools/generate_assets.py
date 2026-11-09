@@ -734,6 +734,87 @@ def tex_mess_top():
     return noise(new((215, 215, 212)), 3, 67)
 
 
+def tex_sickbay_wall():
+    img = noise(new((150, 182, 192)), 3, 70)
+    px = img.load()
+    for i in range(16):
+        px[i, 15] = shade(px[i, 15], -18)
+    return img
+
+
+def tex_sickbay_floor():
+    return noise(new((44, 74, 58)), 6, 71)
+
+
+def tex_bio_mattress():
+    img = noise(new((176, 104, 58)), 6, 72)
+    px = img.load()
+    for x in range(16):
+        if x % 5 == 0:
+            for y in range(16):
+                px[x, y] = shade(px[x, y], -25)
+    return img
+
+
+def tex_bio_body():
+    img = noise(new((196, 196, 192)), 3, 73)
+    px = img.load()
+    for x in range(16):
+        px[x, 0] = (150, 150, 148, 255)
+    return img
+
+
+def tex_bio_screen():
+    img = new((10, 10, 14))
+    px = img.load()
+    bars = [(2, 11, (255, 80, 60)), (5, 7, (255, 200, 60)), (8, 12, (255, 80, 60)), (11, 5, (80, 255, 120)), (13, 9, (255, 200, 60))]
+    for x, h, c in bars:
+        for y in range(14 - h, 14):
+            px[x, y] = c + (255,)
+            px[x + 1, y] = tuple(clamp(ch * 0.7) for ch in c) + (255,)
+        px[x - 1, 14 - h + 2] = (240, 240, 240, 255)  # Zeiger
+    for x in range(16):
+        px[x, 0] = (70, 70, 76, 255)
+        px[x, 15] = (70, 70, 76, 255)
+    return img
+
+
+def tex_monitor_housing():
+    return noise(new((70, 72, 78)), 3, 74)
+
+
+def tex_exam_drawers():
+    img = noise(new((200, 202, 204)), 3, 75)
+    px = img.load()
+    for y in (5, 10):
+        for x in range(1, 15):
+            px[x, y] = (130, 130, 134, 255)
+    for y in (2, 7, 12):
+        for x in range(7, 9):
+            px[x, y] = (90, 90, 96, 255)
+    return img
+
+
+def tex_exam_pad():
+    return noise(new((22, 22, 24)), 3, 76)
+
+
+def tex_cabinet_front():
+    img = tex_sickbay_wall()
+    px = img.load()
+    for x in range(2, 14):
+        for y in range(2, 14):
+            px[x, y] = (210, 220, 224, 255) if (x in (2, 13) or y in (2, 13)) else (40, 50, 56, 255)
+    rnd = random.Random(77)
+    for y in (5, 9):
+        for x in range(3, 13):
+            px[x, y + 1] = (160, 170, 175, 255)
+        for _ in range(3):
+            x = rnd.randrange(3, 12)
+            px[x, y] = rnd.choice([(230, 230, 240), (255, 80, 60), (90, 200, 255)]) + (255,)
+    return img
+
+
 TEXTURES = {
     "hull_plating": tex_hull_plating,
     "hull_panel": tex_hull_panel,
@@ -774,6 +855,15 @@ TEXTURES = {
     "desk_top": tex_desk_top,
     "cargo_container": tex_cargo,
     "mess_top": tex_mess_top,
+    "sickbay_wall": tex_sickbay_wall,
+    "sickbay_floor": tex_sickbay_floor,
+    "bio_mattress": tex_bio_mattress,
+    "bio_body": tex_bio_body,
+    "bio_screen": tex_bio_screen,
+    "monitor_housing": tex_monitor_housing,
+    "exam_drawers": tex_exam_drawers,
+    "exam_pad": tex_exam_pad,
+    "cabinet_front": tex_cabinet_front,
     **{f"bridge_station_front_{v}": (lambda v=v: tex_station_front(v)) for v in range(4)},
     **{f"bridge_station_top_{v}": (lambda v=v: tex_station_top(v)) for v in range(4)},
     **{f"bridge_monitor_{v}": (lambda v=v: tex_monitor(v)) for v in range(4)},
@@ -808,7 +898,7 @@ def b(name):
     return f"{MODID}:block/{name}"
 
 
-SIMPLE = ["cargo_container", "bridge_wall", "bridge_trim", "turbolift_frame", "transporter_wall", "transporter_platform",
+SIMPLE = ["sickbay_wall", "sickbay_floor", "cargo_container", "bridge_wall", "bridge_trim", "turbolift_frame", "transporter_wall", "transporter_platform",
           "transporter_energizer", "transporter_emitter", "nav_light_red", "nav_light_green", "hull_pennant",
           "hull_plating", "hull_panel", "hull_dark", "hull_window", "hull_marking", "deflector_dish",
           "bussard_collector", "nacelle_grille", "deck_floor", "bridge_deck", "corridor_wall",
@@ -832,7 +922,10 @@ FACING = {
     "station_chair": None,
     "helm_console": None,
     "transporter_console": None,
-    "biobed": None,
+    "biobed_monitor": None,
+    "exam_table": None,
+    "medical_cabinet": {"parent": "minecraft:block/orientable",
+                        "textures": {"front": b("cabinet_front"), "side": b("sickbay_wall"), "top": b("sickbay_wall")}},
     "crew_bed": None,
     "crew_desk": None,
 }
@@ -919,10 +1012,33 @@ TABLE_VIEWER = furniture({"screen": b("viewer_screen"), "metal": b("chair_metal"
                                 "up": "#metal", "down": "#metal"}),
 ])
 
-BIOBED = furniture({"white": b("bio_white"), "pad": b("bio_pad"), "monitor": b("bio_monitor")}, [
-    el([2, 0, 1], [14, 7, 15], all6("#white")),
-    el([1, 7, 1], [15, 9, 15], {"up": "#pad", "down": "#white", "north": "#white", "south": "#white", "east": "#white", "west": "#white"}),
-    el([1, 9, 13], [15, 16, 15], {"north": "#monitor", "south": "#white", "east": "#white", "west": "#white", "up": "#white", "down": "#white"}),
+# Biobett (FACING = Richtung Fußende; im Modell zeigt das Fußende nach Norden)
+BIOBED_FOOT = furniture({"body": b("bio_body"), "mattress": b("bio_mattress"), "dark": b("monitor_housing")}, [
+    el([4, 0, 2], [12, 3, 16], all6("#dark")),                      # schräger Sockel
+    el([1, 3, 0], [15, 6, 16], all6("#body")),
+    el([1, 6, 0], [15, 8, 16], {"up": "#mattress", "north": "#mattress", "east": "#mattress", "west": "#mattress",
+                                "south": "#mattress", "down": "#body"}),
+])
+BIOBED_HEAD = furniture({"body": b("bio_body"), "mattress": b("bio_mattress"), "dark": b("monitor_housing")}, [
+    el([4, 0, 0], [12, 3, 12], all6("#dark")),
+    el([1, 3, 0], [15, 6, 16], all6("#body")),
+    el([1, 6, 0], [15, 8, 16], {"up": "#mattress", "north": "#mattress", "east": "#mattress", "west": "#mattress",
+                                "south": "#mattress", "down": "#body"}),
+    el([2, 8, 9], [14, 10, 15], all6("#mattress")),                 # Kissen am Kopfende
+    el([0, 3, 15], [16, 9, 16], all6("#body")),                     # Kopfteil an der Wand
+])
+
+# Diagnosemonitor: sitzt in der Wand, das schräge Gehäuse ragt in den Raum (Norden)
+BIOBED_MONITOR = furniture({"wall": b("sickbay_wall"), "housing": b("monitor_housing"), "screen": b("bio_screen")}, [
+    el([0, 0, 0], [16, 16, 16], all6("#wall")),
+    el([1, 3, -5], [15, 15, 0], {"north": "#screen", "east": "#housing", "west": "#housing", "up": "#housing",
+                                 "down": "#housing", "south": "#housing"}),
+])
+
+EXAM_TABLE = furniture({"drawers": b("exam_drawers"), "pad": b("exam_pad"), "body": b("bio_body")}, [
+    el([0, 0, 1], [16, 12, 15], {"north": "#drawers", "south": "#drawers", "east": "#body", "west": "#body",
+                                 "up": "#body", "down": "#body"}),
+    el([0, 12, 0], [16, 14, 16], all6("#pad")),
 ])
 
 CREW_BED = furniture({"frame": b("chair_metal"), "blanket": b("blanket"), "pillow": b("pillow")}, [
@@ -1086,6 +1202,11 @@ NAMES = {
     "conference_table": ("Konferenztisch", "Conference Table"),
     "table_viewer": ("Dreiseitiger Tischbildschirm", "Three-Sided Table Viewer"),
     "biobed": ("Biobett", "Biobed"),
+    "biobed_monitor": ("Diagnosemonitor", "Diagnostic Monitor"),
+    "exam_table": ("Untersuchungstisch", "Examination Table"),
+    "medical_cabinet": ("Medizinschrank", "Medical Cabinet"),
+    "sickbay_wall": ("Krankenstations-Wand", "Sickbay Wall"),
+    "sickbay_floor": ("Krankenstations-Boden", "Sickbay Floor"),
     "crew_bed": ("Koje", "Crew Bunk"),
     "crew_desk": ("Schreibtisch", "Crew Desk"),
     "cargo_container": ("Frachtcontainer", "Cargo Container"),
@@ -1123,7 +1244,8 @@ def main():
     for name in SIMPLE:
         models[name] = {"parent": "minecraft:block/cube_all", "textures": {"all": b(name)}}
     custom = {"captains_chair": CHAIR, "station_chair": STATION_CHAIR, "helm_console": HELM,
-              "transporter_console": TRANSPORTER_CONSOLE, "biobed": BIOBED, "crew_bed": CREW_BED, "crew_desk": CREW_DESK}
+              "transporter_console": TRANSPORTER_CONSOLE, "crew_bed": CREW_BED, "crew_desk": CREW_DESK,
+              "biobed_monitor": BIOBED_MONITOR, "exam_table": EXAM_TABLE}
     for name, model in FACING.items():
         models[name] = model if model else custom[name]
     models["conference_table"] = CONFERENCE_TABLE
@@ -1161,6 +1283,27 @@ def main():
     write_json(os.path.join(ASSETS, "items", "bridge_railing.json"), item_def(b("bridge_railing_inventory")))
     write_json(os.path.join(DATA, "loot_table", "blocks", "bridge_railing.json"), loot("bridge_railing"))
     models_extra.append("bridge_railing")
+    # Biobett (zwei Hälften)
+    write_json(os.path.join(ASSETS, "models", "block", "biobed_foot.json"), BIOBED_FOOT)
+    write_json(os.path.join(ASSETS, "models", "block", "biobed_head.json"), BIOBED_HEAD)
+    variants = {}
+    for d, r in {"north": 0, "east": 90, "south": 180, "west": 270}.items():
+        for head in ("false", "true"):
+            m = {"model": b("biobed_head" if head == "true" else "biobed_foot")}
+            if r:
+                m["y"] = r
+            variants[f"facing={d},head={head}"] = m
+    write_json(os.path.join(ASSETS, "blockstates", "biobed.json"), {"variants": variants})
+    write_json(os.path.join(ASSETS, "items", "biobed.json"), item_def(b("biobed_head")))
+    write_json(os.path.join(DATA, "loot_table", "blocks", "biobed.json"), {
+        "type": "minecraft:block",
+        "pools": [{"rolls": 1, "entries": [{"type": "minecraft:item", "name": f"{MODID}:biobed"}],
+                   "conditions": [{"condition": "minecraft:survives_explosion"},
+                                  {"condition": "minecraft:block_state_property", "block": f"{MODID}:biobed",
+                                   "properties": {"head": "false"}}]}],
+        "random_sequence": f"{MODID}:blocks/biobed"})
+    models_extra.append("biobed")
+
     # Halbstufen
     for name, tex in (("hull_plating_slab", "hull_plating"), ("hull_marking_slab", "hull_marking"), ("step_slab", "trim_black")):
         slab_assets(name, tex)

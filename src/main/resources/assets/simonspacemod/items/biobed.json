@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "simonspacemod:block/biobed"
+    "model": "simonspacemod:block/biobed_head"
   }
 }

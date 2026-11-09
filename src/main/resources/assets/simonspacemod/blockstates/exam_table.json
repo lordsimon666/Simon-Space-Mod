@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "simonspacemod:block/exam_table"
+    },
+    "facing=east": {
+      "model": "simonspacemod:block/exam_table",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "simonspacemod:block/exam_table",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "simonspacemod:block/exam_table",
+      "y": 270
+    }
+  }
+}

@@ -59,7 +59,13 @@ public enum ShipPart {
     CREW_BED(0x7080A8),
     CREW_DESK(0x585860),
     CARGO_CONTAINER(0x8A8270),
-    MESS_TABLE(0xC8C8C8);
+    MESS_TABLE(0xC8C8C8),
+    // BIOBED: Variante 0 = Fußende, 1 = Kopfende
+    BIOBED_MONITOR(0x203040),
+    EXAM_TABLE(0x9A9AA0),
+    MEDICAL_CABINET(0x88A8B0),
+    SICKBAY_WALL(0x9FB8C0),
+    SICKBAY_FLOOR(0x2F4A3A);
 
     /** Farbe für Vorschaubilder. */
     public final int color;

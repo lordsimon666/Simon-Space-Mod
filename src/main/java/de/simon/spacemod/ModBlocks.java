@@ -1,5 +1,6 @@
 package de.simon.spacemod;
 
+import de.simon.spacemod.block.BiobedBlock;
 import de.simon.spacemod.block.CaptainsChairBlock;
 import de.simon.spacemod.block.FacingBlock;
 import de.simon.spacemod.block.GlowParticleBlock;
@@ -96,8 +97,15 @@ public final class ModBlocks {
         p -> new ShapedBlock(p, Block.box(0, 0, 0, 16, 14, 16)), metal(MapColor.COLOR_BLACK).noOcclusion());
     public static final RegistryObject<Block> TABLE_VIEWER = block("table_viewer",
         p -> new ShapedBlock(p, Block.box(4, 0, 4, 12, 9, 12)), glowing(metal(MapColor.COLOR_GRAY), 6).noOcclusion());
-    public static final RegistryObject<Block> BIOBED = block("biobed",
-        p -> new ShapedFacingBlock(p, Block.box(1, 0, 1, 15, 10, 15)), glowing(metal(MapColor.SNOW), 5).noOcclusion());
+    public static final RegistryObject<Block> BIOBED = block("biobed", BiobedBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_ORANGE).strength(2F, 6F).sound(SoundType.WOOL).noOcclusion());
+    public static final RegistryObject<Block> BIOBED_MONITOR = block("biobed_monitor", FacingBlock::new, glowing(metal(MapColor.COLOR_CYAN), 7).noOcclusion());
+    public static final RegistryObject<Block> EXAM_TABLE = block("exam_table",
+        p -> new ShapedFacingBlock(p, Block.box(0, 0, 0, 16, 14, 16)), metal(MapColor.COLOR_LIGHT_GRAY).noOcclusion());
+    public static final RegistryObject<Block> MEDICAL_CABINET = block("medical_cabinet", FacingBlock::new, metal(MapColor.COLOR_CYAN));
+    public static final RegistryObject<Block> SICKBAY_WALL = block("sickbay_wall", Block::new, metal(MapColor.COLOR_CYAN));
+    public static final RegistryObject<Block> SICKBAY_FLOOR = block("sickbay_floor", Block::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GREEN).strength(1.5F, 6F).sound(SoundType.WOOL));
     public static final RegistryObject<Block> CREW_BED = block("crew_bed",
         p -> new ShapedFacingBlock(p, Block.box(0, 0, 0, 16, 9, 16)),
         BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLUE).strength(1F).sound(SoundType.WOOL).noOcclusion());

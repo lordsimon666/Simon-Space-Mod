@@ -1,18 +1,33 @@
 {
   "variants": {
-    "facing=north": {
-      "model": "simonspacemod:block/biobed"
+    "facing=north,head=false": {
+      "model": "simonspacemod:block/biobed_foot"
     },
-    "facing=east": {
-      "model": "simonspacemod:block/biobed",
+    "facing=north,head=true": {
+      "model": "simonspacemod:block/biobed_head"
+    },
+    "facing=east,head=false": {
+      "model": "simonspacemod:block/biobed_foot",
       "y": 90
     },
-    "facing=south": {
-      "model": "simonspacemod:block/biobed",
+    "facing=east,head=true": {
+      "model": "simonspacemod:block/biobed_head",
+      "y": 90
+    },
+    "facing=south,head=false": {
+      "model": "simonspacemod:block/biobed_foot",
       "y": 180
     },
-    "facing=west": {
-      "model": "simonspacemod:block/biobed",
+    "facing=south,head=true": {
+      "model": "simonspacemod:block/biobed_head",
+      "y": 180
+    },
+    "facing=west,head=false": {
+      "model": "simonspacemod:block/biobed_foot",
+      "y": 270
+    },
+    "facing=west,head=true": {
+      "model": "simonspacemod:block/biobed_head",
       "y": 270
     }
   }
