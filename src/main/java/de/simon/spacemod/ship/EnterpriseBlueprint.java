@@ -144,8 +144,7 @@ public final class EnterpriseBlueprint {
 
         buildShape();
         skinAndDecks();
-        if (tng && model != null)
-            paintDish(design == ShipDesign.NCC_1701_D ? ShipPart.DEFLECTOR_DISH : ShipPart.DEFLECTOR_DISH_BLUE);
+        if (model != null) paintDish();
         registryLettering();
         hullDetails();
         if (refit) torpedoLaunchers();
@@ -656,23 +655,79 @@ public final class EnterpriseBlueprint {
     }
 
     /** Next Generation: Deflektorschüssel als Ellipse vorne am Unterrumpf. */
-    private double dishY, dishRy, dishRz;
 
-    /** Malt die Schüssel auf die vorderste Rumpffläche (Blick von vorne) im oberen Teil des Unterrumpfs. */
-    private void paintDish(ShipPart dish) {
-        dishY = eY + (design == ShipDesign.NCC_1701_C ? 0.0 : 0.3) * eR;
-        dishRy = Math.max(1.5, 0.4 * eR);
-        dishRz = design == ShipDesign.NCC_1701_D ? 1.7 * dishRy : 1.1 * dishRy;
-        for (int y = (int) Math.floor(dishY - dishRy); y <= dishY + dishRy; y++)
-            for (int z = (int) -Math.ceil(dishRz); z <= dishRz; z++) {
-                if (Math.pow((y - dishY) / dishRy, 2) + Math.pow(z / dishRz, 2) > 1) continue;
-                for (int x = (int) Math.ceil(sCx); x < sizeX; x++) {
-                    byte c = compAt(x, y, z);
-                    if (c == NONE) continue;
-                    if ((c == SECONDARY || c == NECK) && hull[idx(x, y, z)]) set(x, y, z, dish);
-                    break;
-                }
+    /**
+     * Deflektorschüssel auf der Front des Unterrumpfs (Blick von vorne). Lage und Größe ergeben sich
+     * aus dem Querschnitt des vorderen Unterrumpfs, das Aussehen hängt vom Schiff ab:
+     * NCC-1701 große Kupferschüssel mit Antenne, -A große blaue Schüssel mit dunklem Rahmen,
+     * -B, -C, -E runde blaue Schüssel, -D breite ovale Kupferschüssel mit blau leuchtender Mitte.
+     */
+    private void paintDish() {
+        // Silhouette des Unterrumpfs von vorne gesehen: Breite je Höhe; der schmale Hals darüber
+        // zählt nicht mit (Breite unter 40 % der größten Breite)
+        int[] wz = new int[sizeY];
+        java.util.Arrays.fill(wz, -1);
+        for (int y = 0; y < sizeY; y++)
+            for (int z = -zOffset; z <= zOffset; z++)
+                if (frontHull(y, z, false) >= 0) wz[y] = Math.max(wz[y], Math.abs(z));
+        // Typische Rumpfbreite = 75-%-Wert (einzelne breite Zeilen mit Pylonen zählen nicht);
+        // der Rumpf ist der längste zusammenhängende Höhenbereich mit mind. 40 % davon
+        int[] pos = java.util.Arrays.stream(wz).filter(w -> w > 0).sorted().toArray();
+        if (pos.length == 0) return;
+        int wmax = pos[(int) (pos.length * 0.75)];
+        int ylo = 0, yhi = -1;
+        for (int y = 0; y < sizeY; ) {
+            if (wz[y] < 0.4 * wmax) { y++; continue; }
+            int y1 = y;
+            while (y1 + 1 < sizeY && wz[y1 + 1] >= 0.4 * wmax) y1++;
+            if (y1 - y > yhi - ylo) { ylo = y; yhi = y1; }
+            y = y1 + 1;
+        }
+        if (yhi < 0) return;
+        double yc = (ylo + yhi) / 2.0, hy = (yhi - ylo + 1) / 2.0, hz = wmax + 0.5, m = Math.min(hy, hz);
+        double cy = yc, ry, rz, inner = 0, ring = 0;
+        ShipPart outer = ShipPart.DEFLECTOR_DISH_BLUE, core = null;
+        switch (design) {
+            case NCC_1701 -> { ry = rz = 0.62 * m; outer = ShipPart.DEFLECTOR_DISH; }
+            case NCC_1701_A -> { ry = rz = 0.72 * m; ring = 0.84 * m; }
+            case NCC_1701_B -> ry = rz = 0.42 * m;
+            case NCC_1701_C -> ry = rz = 0.58 * m;
+            case NCC_1701_D -> { cy = yc + 0.4 * hy; ry = 0.4 * hy; rz = 0.45 * hz; outer = ShipPart.DEFLECTOR_DISH; core = ShipPart.DEFLECTOR_DISH_BLUE; inner = 0.55; }
+            case NCC_1701_E -> ry = rz = 0.5 * m;
+            default -> { return; }
+        }
+        ry = Math.max(1.5, ry);
+        rz = Math.max(1.5, rz);
+        double reach = Math.max(ring, Math.max(ry, rz)) + 1;
+        int frontX = Integer.MAX_VALUE;
+        for (int y = (int) Math.floor(cy - reach); y <= cy + reach; y++)
+            for (int z = (int) -Math.ceil(reach); z <= reach; z++) {
+                double e = Math.hypot((y - cy) / ry, z / rz);
+                boolean inRing = ring > 0 && e > 1 && Math.hypot(y - cy, z) <= ring;
+                if (e > 1 && !inRing) continue;
+                int x = frontHull(y, z, true);
+                if (x < 0) continue;
+                set(x, y, z, inRing ? ShipPart.HULL_DARK : core != null && e <= inner ? core : outer);
+                if (Math.abs(y - cy) < 0.5 && z == 0) frontX = x;
             }
+        // Originalserie: Antenne in der Mitte der Schüssel
+        if (design == ShipDesign.NCC_1701 && frontX != Integer.MAX_VALUE) {
+            int len = (int) Math.max(2, Math.round(0.5 * m));
+            for (int k = 1; k <= len; k++) set(frontX - k, (int) Math.round(cy), 0, ShipPart.HULL_DARK);
+        }
+    }
+
+    /**
+     * Vorderste Hüllenzelle des Unterrumpfs (oder Halses) bei (y, z) von vorne gesehen, sonst -1.
+     * @param pylon auch Pylon-Zellen zählen (manche Rumpffronten gelten im Modell als Pylon)
+     */
+    private int frontHull(int y, int z, boolean pylon) {
+        for (int x = (int) Math.ceil(sCx); x < sizeX; x++) {
+            byte c = compAt(x, y, z);
+            if (c == NONE) continue;
+            return (c == SECONDARY || c == NECK || (pylon && c == PYLON) || c == DISH || c == ANTENNA) && hull[idx(x, y, z)] ? x : -1;
+        }
+        return -1;
     }
 
     /** Senkrechte Heckfläche (mind. 3 Blöcke hoch) – bei der Excelsior sitzen dort die Impulstriebwerke. */
@@ -866,13 +921,6 @@ public final class EnterpriseBlueprint {
                                 : aztecHull && aztecXY(x, y + z) ? ShipPart.HULL_AZTEC
                                 : Math.floorMod(x, 6) == 0 ? panel : plating;
                             case SECONDARY -> {
-                                // Modell: Deflektorschüssel vorne am Unterrumpf
-                                if (!tng && model != null && x <= eXf + 4 * Math.max(s, 0.5) && compAt(x - 1, y, z) == NONE) {
-                                    int fx = (int) Math.min(lowTop.length - 1, Math.round(eXf) + 2);
-                                    double yc = Double.isNaN(lowTop[fx]) ? eY : (lowTop[fx] + lowBot[fx]) / 2;
-                                    double hh = Double.isNaN(lowTop[fx]) ? eR : (lowTop[fx] - lowBot[fx]) / 2;
-                                    if (Math.hypot(y - yc, z) <= Math.max(1.5, 0.65 * hh)) { st = dish; break; }
-                                }
                                 if (excelsior && compAt(x, y + 1, z) == NONE && Math.floorMod(x + Math.abs(z), 16) < 3) {
                                     st = ShipPart.HULL_TEAL; // schräge Streifen oben auf dem Unterrumpf
                                     break;
