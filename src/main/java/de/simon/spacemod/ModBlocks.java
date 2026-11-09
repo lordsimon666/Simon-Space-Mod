@@ -121,6 +121,17 @@ public final class ModBlocks {
     public static final RegistryObject<Block> STAR_MAP = block("star_map", Block::new, glowing(metal(MapColor.COLOR_BLACK), 7));
     public static final RegistryObject<Block> BAR_COUNTER = block("bar_counter", Block::new, glowing(metal(MapColor.COLOR_PURPLE), 6));
 
+    // --- NX-01 (Star Trek: Enterprise) ---
+    public static final RegistryObject<Block> ENT_WALL = block("ent_wall", Block::new, metal(MapColor.COLOR_GRAY));
+    public static final RegistryObject<Block> ENT_CONSOLE = block("ent_console",
+        p -> new ShapedFacingBlock(p, Shapes.or(Block.box(0, 0, 0, 16, 10, 16), Block.box(0, 10, 6, 16, 14, 16))),
+        glowing(metal(MapColor.COLOR_GRAY), 8).noOcclusion());
+    public static final RegistryObject<Block> ENT_CHAIR = block("ent_chair",
+        p -> new ShapedFacingBlock(p, Shapes.or(Block.box(6, 0, 6, 10, 7, 10), Block.box(3, 7, 3, 13, 9, 13), Block.box(3, 9, 11, 13, 20, 14))),
+        metal(MapColor.COLOR_GRAY).noOcclusion());
+    public static final RegistryObject<Block> CAPTAINS_CHAIR_NX = block("captains_chair_nx", CaptainsChairBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion());
+    public static final RegistryObject<Block> DECON_LIGHT = block("decon_light", Block::new, glowing(glass(MapColor.COLOR_LIGHT_BLUE), 14));
+
     // --- Brücke ---
     public static final RegistryObject<Block> BRIDGE_WALL = block("bridge_wall", Block::new, metal(MapColor.COLOR_LIGHT_GRAY));
     public static final RegistryObject<Block> BRIDGE_TRIM = block("bridge_trim", Block::new, glowing(metal(MapColor.COLOR_RED), 4));

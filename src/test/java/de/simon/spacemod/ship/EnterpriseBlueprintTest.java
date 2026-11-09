@@ -17,7 +17,8 @@ import org.junit.jupiter.params.provider.CsvSource;
 class EnterpriseBlueprintTest {
 
     @ParameterizedTest
-    @CsvSource({"NCC_1701,0.4", "NCC_1701,0.5", "NCC_1701,0.75", "NCC_1701,1.0",
+    @CsvSource({"NX_01,0.4", "NX_01,0.75", "NX_01,1.0",
+                "NCC_1701,0.4", "NCC_1701,0.5", "NCC_1701,0.75", "NCC_1701,1.0",
                 "NCC_1701_A,0.4", "NCC_1701_A,0.5", "NCC_1701_A,0.75", "NCC_1701_A,1.0",
                 "NCC_1701_B,0.4", "NCC_1701_B,0.5", "NCC_1701_B,0.75", "NCC_1701_B,1.0",
                 "NCC_1701_C,0.4", "NCC_1701_C,0.75", "NCC_1701_C,1.0",
@@ -35,18 +36,18 @@ class EnterpriseBlueprintTest {
 
         // Wichtige Räume vorhanden
         assertTrue(counts.getOrDefault(ShipPart.CAPTAINS_CHAIR, 0) + counts.getOrDefault(ShipPart.CAPTAINS_CHAIR_TEAL, 0)
-            + counts.getOrDefault(ShipPart.CAPTAINS_CHAIR_TNG, 0) >= 1);
+            + counts.getOrDefault(ShipPart.CAPTAINS_CHAIR_TNG, 0) + counts.getOrDefault(ShipPart.CAPTAINS_CHAIR_NX, 0) >= 1);
         assertEquals(design.tng ? 44 : 21, counts.get(ShipPart.VIEWSCREEN));
         assertTrue(counts.getOrDefault(ShipPart.BRIDGE_RAILING, 0) + counts.getOrDefault(ShipPart.BRIDGE_RAILING_GRAY, 0)
-            + counts.getOrDefault(ShipPart.BRIDGE_RAILING_WOOD, 0) > (design.tng ? 8 : 20), "Geländer fehlt");
+            + counts.getOrDefault(ShipPart.BRIDGE_RAILING_WOOD, 0) > (design.tng ? 8 : 20) || design.nx, "Geländer fehlt");
         assertTrue(counts.getOrDefault(ShipPart.BRIDGE_STATION, 0) + counts.getOrDefault(ShipPart.EXCELSIOR_CONSOLE, 0)
-            + counts.getOrDefault(ShipPart.TNG_CONSOLE, 0) > 10, "Stationen fehlen");
-        assertTrue(counts.getOrDefault(ShipPart.TRANSPORTER_ENERGIZER, 0) > 0, "Energiewand fehlt");
+            + counts.getOrDefault(ShipPart.TNG_CONSOLE, 0) + counts.getOrDefault(ShipPart.ENT_CONSOLE, 0) > 10, "Stationen fehlen");
+        assertTrue(counts.getOrDefault(ShipPart.TRANSPORTER_ENERGIZER, 0) > 0 || design.nx, "Energiewand fehlt");
         assertTrue(counts.getOrDefault(design.tng ? ShipPart.WARP_CORE_TNG : ShipPart.WARP_CORE, 0) >= 30, "Warpkern fehlt");
-        assertEquals(6, counts.get(ShipPart.TRANSPORTER_PAD), "Transporterraum fehlt");
+        assertEquals(design.nx ? 1 : 6, counts.get(ShipPart.TRANSPORTER_PAD), "Transporterraum fehlt");
         // Turbolift-Halte: mindestens Brücke, Maschinenraum, Transporterraum; in Originalgröße alle Decks
         assertTrue(bp.liftStops.size() >= 3, "zu wenige Turbolift-Halte");
-        if (scale >= 0.75) assertTrue(bp.liftStops.size() >= 8, "Decks fehlen: " + bp.liftStops.size());
+        if (scale >= 0.75) assertTrue(bp.liftStops.size() >= (design.nx ? 5 : 8), "Decks fehlen: " + bp.liftStops.size());
         assertTrue(counts.getOrDefault(ShipPart.BIOBED, 0) > 0 || scale < 0.75, "Krankenstation fehlt");
         assertTrue(counts.getOrDefault(ShipPart.CONFERENCE_TABLE, 0) > 0 || scale < 0.75, "Besprechungsraum fehlt");
         java.util.Set<String> names = new java.util.HashSet<>();

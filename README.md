@@ -1,23 +1,40 @@
 # Simon Space Mod
 
 Forge-Mod für **Minecraft 26.2** (Forge 65.1.x, Java 25), die die **USS Enterprise** mit einem
-Befehl in die Welt setzt – wahlweise die **NCC-1701** (Originalserie), die **NCC-1701-A**
+Befehl in die Welt setzt – wahlweise die **NX-01** („Star Trek: Enterprise“), die **NCC-1701** (Originalserie), die **NCC-1701-A**
 (Refit aus den Kinofilmen), die **NCC-1701-B** (Excelsior-Klasse) oder eine der Enterprises aus
 „The Next Generation“: **NCC-1701-C** (Ambassador), **NCC-1701-D** (Galaxy) und **NCC-1701-E** (Sovereign).
 
 ## Befehl
 
 ```
-/enterprise spawn [ncc-1701|ncc-1701-a|ncc-1701-b|ncc-1701-c|ncc-1701-d|ncc-1701-e] [full|compact|mini|scale <faktor>] [x y z] [north|east|south|west]
+/enterprise spawn [nx-01|ncc-1701|ncc-1701-a|ncc-1701-b|ncc-1701-c|ncc-1701-d|ncc-1701-e] [full|compact|mini|scale <faktor>] [x y z] [north|east|south|west]
 ```
 
 * Ohne Schiffsangabe wird die **NCC-1701** gebaut, z.B. `/enterprise spawn full`.
 * `/enterprise spawn ncc-1701-a full` baut die **NCC-1701-A** in Originalgröße (308 x 145 x 85 Blöcke).
 
 * `/enterprise spawn ncc-1701-b full` baut die **NCC-1701-B** in Originalgröße (469 x 186 x 84 Blöcke).
+* `/enterprise spawn nx-01 full` – **Enterprise NX-01**, 227 x 139 x 41 Blöcke
 * `/enterprise spawn ncc-1701-c full` – **NCC-1701-C**, 528 x 329 x 137 Blöcke
 * `/enterprise spawn ncc-1701-d full` – **NCC-1701-D**, 645 x 467 x 146 Blöcke
 * `/enterprise spawn ncc-1701-e full` – **NCC-1701-E**, 687 x 241 x 82 Blöcke
+
+### NX-01 (Star Trek: Enterprise)
+
+225 m lang, Rumpf aus dem 3D-Modell: Untertasse mit den beiden hinteren Auslegern, Gondeln auf
+schrägen Pylonen darüber, blaue Warpgitter, rote Impulstriebwerke, Kennung „NX-01“ und „ENTERPRISE“.
+Die Decks heißen wie in der Serie mit Buchstaben (A-Deck = Brücke, B-Deck, C-Deck …).
+
+* **Brücke** (ebener Boden, graues Metall): Hauptbildschirm, Steuerkonsole mit Sitz davor,
+  Kommandantensessel in der Mitte, Stationen rundum (Kommunikation Backbord, Wissenschaft
+  Steuerbord, Taktik hinten), Turbolift hinten.
+* B-Deck: Situationsraum, Bereitschaftsraum des Captains, Captain's Mess
+* C-Deck: Krankenstation und **Dekontaminationskammer** (blau leuchtend), Transporterraum mit nur
+  **einem** Transporterfeld (frühe Technik)
+* D-Deck: Messe und Sporthalle, E-Deck: Waffenkammer und Arrest, darunter Quartiere
+* **Maschinenraum** hinten in der Untertasse mit **waagerechtem Warpreaktor**
+* Graue Metallwände und Gitterböden in allen Gängen
 
 ### NCC-1701-C, -D und -E (Next Generation)
 
@@ -163,7 +180,7 @@ E = Eisenbarren        G = Goldbarren
 F = roter Farbstoff, P = Enderperle, R = Redstone
 ```
 
-## Neue Blöcke (88)
+## Neue Blöcke (93)
 
 * **Hülle**: Hüllenpanzerung (+ Stufe), Hüllenplatte, dunkle Hüllenplatte, Hüllenfenster,
   Kennungsmarkierung (+ Stufe), roter Zierstreifen, Positionslicht rot/grün, Deflektorschüssel,
@@ -186,6 +203,7 @@ F = roter Farbstoff, P = Enderperle, R = Redstone
 * **Next Generation (C, D, E)**: Teppichboden, Wandverkleidung, LCARS-Konsole, Sessel,
   Kommandantensessel, Warpkern (blau), Master Systems Display, Lagetisch, Holodeck-Gitter,
   Kraftfeld (durchsichtig), Sternenkarte, Bartresen
+* **NX-01**: Metallwand, Konsole, Sitz, Kommandantensessel, Dekontaminations-Leuchte
 * **Allgemein**: Deckboden, Korridorwand, Deckenverkleidung, Deckenleuchte, Maschinenraum-Konsole,
   Warpkern, Plasmaleitung
 
@@ -193,9 +211,9 @@ Dazu das Item Kommunikator. Alles ist im Kreativ-Tab „Simon Space Mod“ zu fi
 
 ## Außenform aus echten 3D-Modellen
 
-Die Außenhülle aller sechs Schiffe stammt aus 3D-Modellen und ist dadurch sehr genau. Das Werkzeug
+Die Außenhülle aller sieben Schiffe stammt aus 3D-Modellen und ist dadurch sehr genau. Das Werkzeug
 `tools/voxelize_stl.py` rechnet ein STL-Modell auf die echte Schiffslänge in Blöcken um
-(NCC-1701: 289, -A: 305, -B: 467, -C: 526, -D: 643, -E: 685) und füllt das Innere. Die Ergebnisse liegen in
+(NX-01: 225, NCC-1701: 289, -A: 305, -B: 467, -C: 526, -D: 643, -E: 685) und füllt das Innere. Die Ergebnisse liegen in
 `src/main/resources/ships/`. Beim Bauen vermisst die Mod die Form automatisch (Untertasse, Gondeln,
 Unterrumpf) und erzeugt daraus Decks, Räume, Brücke, Maschinenraum, Farben und Beschriftung.
 Fehlt ein Modell, wird die eingebaute, berechnete Form verwendet.

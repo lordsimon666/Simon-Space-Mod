@@ -2,6 +2,8 @@ package de.simon.spacemod.ship;
 
 /** Welche Enterprise gebaut wird. */
 public enum ShipDesign {
+    /** Enterprise NX-01, NX-Klasse aus "Star Trek: Enterprise" (225 m). */
+    NX_01("nx-01", "NX-01", Era.NX),
     /** USS Enterprise NCC-1701, Originalserie (289 m). */
     NCC_1701("ncc-1701", "NCC-1701", Era.TOS),
     /** USS Enterprise NCC-1701-A, Refit aus den Kinofilmen (305 m). */
@@ -16,7 +18,7 @@ public enum ShipDesign {
     NCC_1701_E("ncc-1701-e", "NCC-1701-E", Era.TNG);
 
     /** Bau-Epoche: bestimmt Farben, Brücke und Räume. */
-    public enum Era { TOS, REFIT, EXCELSIOR, TNG }
+    public enum Era { NX, TOS, REFIT, EXCELSIOR, TNG }
 
     /** Name im Befehl. */
     public final String id;
@@ -29,6 +31,8 @@ public enum ShipDesign {
     public final boolean excelsior;
     /** Schiff aus der Zeit von "The Next Generation" (C, D, E)? */
     public final boolean tng;
+    /** NX-01 aus "Star Trek: Enterprise" (22. Jahrhundert)? */
+    public final boolean nx;
 
     ShipDesign(String id, String registry, Era era) {
         this.id = id;
@@ -37,5 +41,6 @@ public enum ShipDesign {
         this.refit = era == Era.REFIT;
         this.excelsior = era == Era.EXCELSIOR;
         this.tng = era == Era.TNG;
+        this.nx = era == Era.NX;
     }
 }

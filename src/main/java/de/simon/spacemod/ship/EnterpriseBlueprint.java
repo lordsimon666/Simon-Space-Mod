@@ -38,6 +38,8 @@ public final class EnterpriseBlueprint {
     private final boolean excelsior;
     /** Next-Generation-Schiff (C, D, E)? */
     private final boolean tng;
+    /** NX-01 aus "Star Trek: Enterprise"? */
+    private final boolean nx;
     /** Hüllen mit Aztec-Plattenmuster (alle außer der Originalserie). */
     private final boolean aztecHull;
     /** Radius des Brückenmoduls (Originalgröße). */
@@ -95,7 +97,8 @@ public final class EnterpriseBlueprint {
         this.refit = design.refit;
         this.excelsior = design.excelsior;
         this.tng = design.tng;
-        this.aztecHull = refit || excelsior || tng;
+        this.nx = design.nx;
+        this.aztecHull = refit || excelsior || tng || nx;
         this.bR = tng ? 13 : 10;
         this.s = scale;
         this.k = Math.max(scale, 9.5 / 15.0);
@@ -157,6 +160,7 @@ public final class EnterpriseBlueprint {
         BlockPos transporter = buildTransporterRoom(fullDecks);
         linkTurbolifts(eng, transporter);
         if (tng) tngInterior();
+        if (nx) nxInterior();
         connectBars();
     }
 
@@ -563,8 +567,9 @@ public final class EnterpriseBlueprint {
         int bestX = -1, bestLo = 0, bestHi = 0;
         double bestFill = 0;
         for (int i = 0; i < n; i++) {
-            if (sArea[i] < 0.6 * maxArea || sArea[i] == 0) continue;
-            double fill = sArea[i] / (double) sBox[i];
+            if (sArea[i] < 0.25 * maxArea || sArea[i] == 0) continue;
+            // kompakt (gut gefüllter Querschnitt) und nicht zu klein
+            double fill = sArea[i] / (double) sBox[i] * Math.sqrt(sArea[i]);
             if (fill > bestFill) { bestFill = fill; bestX = i + (int) (gx * 0.6); bestLo = sLo[i]; bestHi = sHi[i]; }
         }
         if (bestX >= 0) {
@@ -682,6 +687,12 @@ public final class EnterpriseBlueprint {
 
     /** Lage des Maschinenraums: {x von, x bis, Boden, Decke}. */
     private int[] engineeringBox() {
+        if (nx) {
+            // NX-01: Maschinenraum hinten in der Untertasse zwischen den Auslegern
+            int x0 = (int) Math.round(sCx + 0.4 * sR);
+            int yF = (int) Math.round(sMid) - 4;
+            return new int[] {x0 - 10, x0 + 10, yF, yF + 7};
+        }
         double f0 = eXf + (refit || excelsior || tng ? 0.15 : 0.12) * (eXr - eXf), f1 = eXf + (refit ? 0.45 : excelsior || tng ? 0.5 : 0.6) * (eXr - eXf);
         int x0 = (int) Math.round((f0 + f1) / 2);
         int yF = (int) Math.round(eY) - 3;
@@ -704,7 +715,10 @@ public final class EnterpriseBlueprint {
         if (!ms(x, y, z)) return NONE;
         // Alles über der Unterseite gehört zur Untertasse (auch Aufbauten, die höher als das Profil sind)
         if (r <= sR + 0.5 && y >= saucerBottom(r) - 0.5) return SAUCER;
-        if (x >= nX0 - 1 && Math.abs(az - nZ) <= nW + 1.5 && Math.abs(y - nY) <= nR + 1.5)
+        // NX-01: Gondel als Ellipse, damit der Pylon darunter nicht mitgezählt wird
+        boolean inNacelle = nx ? Math.hypot((az - nZ) / (nW + 1), (y - nY) / (nR + 1)) <= 1.1
+            : Math.abs(az - nZ) <= nW + 1.5 && Math.abs(y - nY) <= nR + 1.5;
+        if (x >= nX0 - 1 && inNacelle)
             return !refit && x < nX0 + nR * 0.9 ? BUSSARD : NACELLE; // Refit: graue Kappe mit seitlichen Fenstern
         if (x >= 0 && x < lowTop.length && !Double.isNaN(lowTop[x]) && y >= lowBot[x] - 0.5 && y <= lowTop[x] + 0.5)
             return SECONDARY;
@@ -803,7 +817,7 @@ public final class EnterpriseBlueprint {
         ShipPart window = ShipPart.HULL_WINDOW;
         // Die Galaxy-Klasse (D) hat eine kupferfarbene Schüssel, C und E eine blaue
         ShipPart dish = refit || excelsior || (tng && design != ShipDesign.NCC_1701_D) ? ShipPart.DEFLECTOR_DISH_BLUE : ShipPart.DEFLECTOR_DISH;
-        ShipPart bussard = excelsior ? ShipPart.BUSSARD_BLUE : refit || tng ? ShipPart.BUSSARD_RED : ShipPart.BUSSARD_COLLECTOR;
+        ShipPart bussard = nx ? ShipPart.HULL_DARK : excelsior ? ShipPart.BUSSARD_BLUE : refit || tng ? ShipPart.BUSSARD_RED : ShipPart.BUSSARD_COLLECTOR;
         ShipPart grille = ShipPart.NACELLE_GRILLE;
         ShipPart floor = ShipPart.DECK_FLOOR;
         ShipPart light = ShipPart.CEILING_LIGHT;
@@ -839,7 +853,7 @@ public final class EnterpriseBlueprint {
                                     if (aztecHull && aztec(r, Math.atan2(z * kz, dx * kx))) st = ShipPart.HULL_AZTEC;
                                     // Excelsior: dunkler petrolfarbener Ring auf der Oberseite
                                     if (excelsior && compAt(x, y + 1, z) == NONE && r > 0.87 * sR && r < 0.93 * sR) st = ShipPart.HULL_TEAL;
-                                    if ((excelsior || tng) && model != null && rearWall(x, y, z) && y > sMid + 1) st = ShipPart.IMPULSE_ENGINE;
+                                    if ((excelsior || tng || nx) && model != null && rearWall(x, y, z) && y > sMid + 1) st = ShipPart.IMPULSE_ENGINE;
                                     if (excelsior && compAt(x, y + 1, z) == NONE && Math.abs(r - 0.56 * sR) < 0.8) st = ShipPart.HULL_PENNANT;
                                     // Refit: rot leuchtende Impulstriebwerke hinten am erhöhten Aufbau
                                     if (refit && dx > 0 && Math.abs(z) <= 8 * s && Math.abs(r - 24 * s) < 1.3 && openSide)
@@ -847,7 +861,7 @@ public final class EnterpriseBlueprint {
                                 }
                             }
                             case BRIDGE -> st = y >= bridgeFloor + 6 ? panel : plating;
-                            case NECK, PYLON -> st = (excelsior || tng) && model != null && rearWall(x, y, z) ? ShipPart.IMPULSE_ENGINE
+                            case NECK, PYLON -> st = (excelsior || tng || nx) && model != null && rearWall(x, y, z) ? ShipPart.IMPULSE_ENGINE
                                 : aztecHull && aztecXY(x, y + z) ? ShipPart.HULL_AZTEC
                                 : Math.floorMod(x, 6) == 0 ? panel : plating;
                             case SECONDARY -> {
@@ -903,7 +917,8 @@ public final class EnterpriseBlueprint {
                                     st = bussard; // Refit: rötliche ovale Bussard-Fenster seitlich vorne
                                 else if (refit && x < nX0 + nR * 2.6) st = plating; // graue Frontkappe
                                 else if (tng && x < nX0 + nR * 1.2) st = bussard; // TNG: rote Bussard-Kuppel vorne
-                                else if ((inner || refit || tng) && mid && x < nX1 - (refit ? 9 : 6) * s) st = grille; // Refit/TNG: Gitter beidseitig
+                                else if (nx && x < nX0 + nR * 0.8) st = dark; // NX: dunkle Gondelspitze
+                                else if ((inner || refit || tng || nx) && mid && x < nX1 - (refit ? 9 : 6) * s) st = grille; // Refit/TNG/NX: Gitter beidseitig
                                 else if ((refit || tng) && aztecXY(x, y)) st = ShipPart.HULL_AZTEC;
                                 else if (Math.floorMod(x, 10) == 0) st = panel;
                             }
@@ -950,6 +965,7 @@ public final class EnterpriseBlueprint {
         FONT6x9.put('A', new String[] {"001100", "010010", "100001", "100001", "111111", "100001", "100001", "100001", "100001"});
         FONT6x9.put('B', new String[] {"111110", "100001", "100001", "100001", "111110", "100001", "100001", "100001", "111110"});
         FONT6x9.put('0', new String[] {"011110", "100001", "100011", "100101", "101001", "110001", "100001", "100001", "011110"});
+        FONT6x9.put('X', new String[] {"100001", "100001", "010010", "010010", "001100", "010010", "010010", "100001", "100001"});
         FONT6x9.put('D', new String[] {"111100", "100010", "100001", "100001", "100001", "100001", "100001", "100010", "111100"});
         FONT6x9.put('E', new String[] {"111111", "100000", "100000", "100000", "111110", "100000", "100000", "100000", "111111"});
         FONT5x7.put('N', new String[] {"10001", "11001", "10101", "10011", "10001", "10001", "10001"});
@@ -966,6 +982,7 @@ public final class EnterpriseBlueprint {
         FONT3x5.put('0', new String[] {"111", "101", "101", "101", "111"});
         FONT3x5.put('A', new String[] {"010", "101", "111", "101", "101"});
         FONT3x5.put('B', new String[] {"110", "101", "110", "101", "110"});
+        FONT3x5.put('X', new String[] {"101", "101", "010", "101", "101"});
         FONT3x5.put('D', new String[] {"110", "101", "101", "101", "110"});
         FONT3x5.put('U', new String[] {"101", "101", "101", "101", "111"});
         FONT3x5.put('S', new String[] {"111", "100", "111", "001", "111"});
@@ -1034,7 +1051,7 @@ public final class EnterpriseBlueprint {
             }
         }
         // "USS ENTERPRISE" klein und gerade zwischen Brücke und Kennung, wenn genug Platz ist
-        String name = "USS ENTERPRISE";
+        String name = nx ? "ENTERPRISE" : "USS ENTERPRISE";
         int nw = textWidth(name, FONT3x5);
         double nx = 0.5 * sR;
         if (Math.hypot(nx, nw / 2.0) > ra - h * scale / 2.0 - 1 || nx - 3 < 11) return;
@@ -1140,6 +1157,12 @@ public final class EnterpriseBlueprint {
         String regText = design.registry;
         int reg = textWidth(regText, FONT3x5);
         for (int side : new int[] {1, -1}) {
+            if (nx) {
+                // NX-01: Kennung seitlich hinten am Rand der Untertasse
+                int x = (int) Math.round(sCx + 0.45 * sR);
+                sideText(regText, side > 0 ? x + reg : x, (int) Math.round(sMid) + 2, side);
+                continue;
+            }
             if (tng) {
                 // TNG: Kennung seitlich am Unterrumpf; D und E: rote Sternenflotten-Wimpel an den Gondeln
                 int ey = (int) Math.round(eY + eR * 0.25);
@@ -1249,6 +1272,10 @@ public final class EnterpriseBlueprint {
         }
         if (tng) {
             buildBridgeTng();
+            return;
+        }
+        if (nx) {
+            buildBridgeNx();
             return;
         }
         int cx = (int) Math.round(sCx);
@@ -1467,6 +1494,50 @@ public final class EnterpriseBlueprint {
         bridgeSpawn = new BlockPos(cx - 3, yb + 1, 0);
     }
 
+    /**
+     * Brücke der NX-01 (Ø 15 m, ebener Boden): grauer Metallboden und Wände, Hauptbildschirm vorne,
+     * Steuerkonsole mit Sitz davor (Mayweather), Kommandantensessel in der Mitte, Stationen rundum:
+     * Kommunikation Backbord (Hoshi), Wissenschaft Steuerbord (T'Pol), Taktik hinten Steuerbord (Reed),
+     * Turbolift hinten in der Mitte.
+     */
+    private void buildBridgeNx() {
+        int cx = (int) Math.round(sCx);
+        int yb = bridgeFloor;
+        for (int dx = -10; dx <= 10; dx++)
+            for (int dz = -10; dz <= 10; dz++) {
+                double r = Math.sqrt(dx * dx + dz * dz);
+                int x = cx + dx;
+                boolean front = dx < 0 && Math.abs(dz) <= 3;
+                boolean aft = dx > 4 && Math.abs(dz) <= 2;
+                if (r <= 7.5) {
+                    set(x, yb, dz, ShipPart.DECK_PLATE);
+                    for (int y = yb + 1; y <= yb + 5; y++) set(x, y, dz, ShipPart.AIR);
+                    set(x, yb + 6, dz, r < 2.5 || Math.abs(r - 5) < 0.5 ? ShipPart.CEILING_LIGHT : ShipPart.ENT_WALL);
+                    if (r > 6.5 && !front && !aft) set(x, yb + 1, dz, ShipPart.ENT_CONSOLE, inwardFacing(dx, dz));
+                } else if (r <= 10) {
+                    if (!isInterior(x, yb + 2, dz)) continue;
+                    for (int y = yb; y <= yb + 5; y++) if (isInterior(x, y, dz)) set(x, y, dz, ShipPart.ENT_WALL);
+                    if (r <= 8.5 && !front && !aft && Math.floorMod(dx + dz, 2) == 0)
+                        set(x, yb + 2, dz, ShipPart.ENT_CONSOLE, inwardFacing(dx, dz));
+                }
+            }
+        for (int dz = -3; dz <= 3; dz++)
+            for (int y = yb + 2; y <= yb + 4; y++) set(cx - 8, y, dz, ShipPart.VIEWSCREEN, Direction.SOUTH);
+        // Steuerkonsole mit Sitz
+        for (int dz = -1; dz <= 1; dz++) set(cx - 5, yb + 1, dz, ShipPart.ENT_CONSOLE, Direction.SOUTH);
+        set(cx - 4, yb + 1, 0, ShipPart.ENT_CHAIR, Direction.NORTH);
+        set(cx, yb + 1, 0, ShipPart.CAPTAINS_CHAIR_NX, Direction.NORTH);
+        // Sitze an Kommunikation (Backbord) und Wissenschaft (Steuerbord)
+        set(cx, yb + 1, -6, ShipPart.ENT_CHAIR, Direction.WEST);
+        set(cx, yb + 1, 6, ShipPart.ENT_CHAIR, Direction.EAST);
+        BlockPos lift = bridgeTurbolift();
+        set(lift.getX(), yb + 2, 0, ShipPart.TURBOLIFT_DOOR, Direction.NORTH);
+        for (int dz : new int[] {-1, 1})
+            for (int y = yb + 1; y <= yb + 2; y++) set(lift.getX(), y, dz, ShipPart.TURBOLIFT_FRAME);
+        set(lift.getX(), yb + 3, 0, ShipPart.TURBOLIFT_FRAME);
+        bridgeSpawn = new BlockPos(cx + 2, yb + 1, 0);
+    }
+
     private static Direction inwardFacing(int dx, int dz) {
         if (Math.abs(dx) >= Math.abs(dz)) return dx < 0 ? Direction.SOUTH : Direction.NORTH;
         return dz < 0 ? Direction.EAST : Direction.WEST;
@@ -1474,6 +1545,7 @@ public final class EnterpriseBlueprint {
 
     private BlockPos bridgeTurbolift() {
         if (tng) return new BlockPos((int) Math.round(sCx) + 9, bridgeFloor + 2, 5);
+        if (nx) return new BlockPos((int) Math.round(sCx) + 7, bridgeFloor + 1, 0);
         return new BlockPos((int) Math.round(sCx) + 8, bridgeFloor + 2, 2);
     }
 
@@ -1518,7 +1590,8 @@ public final class EnterpriseBlueprint {
         for (int x = x0 - 9; x <= x0 + 9; x++) set(x, yF, 0, conduit);
         for (int z = -5; z <= 5; z++) set(x0, yF, z, conduit);
         // Warpkern (kreuzförmiger Querschnitt) vom Boden bis durch die Decke
-        for (int y = yF - 2; y <= yF + 9; y++) {
+        // NX-01: waagerechter Warpreaktor in Längsrichtung statt senkrechtem Kern
+        for (int y = yF - 2; y <= yF + 9 && !nx; y++) {
             if (!(y >= yF && y <= yF + 7) && !isInterior(x0, y, 0)) continue;
             set(x0, y, 0, core);
             if (y > yF && y < yF + 7) {
@@ -1538,6 +1611,21 @@ public final class EnterpriseBlueprint {
             }
         }
         set(x0 - 2, yF + 1, 0, ShipPart.AIR); // Zugang
+        if (nx) {
+            for (int d = -2; d <= 2; d++)
+                for (int z : new int[] {-2, 2}) set(x0 + d, yF + 1, z, ShipPart.AIR);
+            for (int d = -1; d <= 1; d++) {
+                set(x0 - 2, yF + 1, d, ShipPart.AIR);
+                set(x0 + 2, yF + 1, d, ShipPart.AIR);
+            }
+            for (int x = x0 - 7; x <= x0 + 9; x++) {
+                set(x, yF + 3, 0, core);
+                set(x, yF + 2, 0, core);
+                set(x, yF + 4, 0, core);
+                set(x, yF + 3, 1, core);
+                set(x, yF + 3, -1, core);
+            }
+        }
         // Konsolen und Anzeigen an den Längswänden, darüber eine Galerie
         for (int x = x0 - 8; x <= x0 + 8; x++) {
             if (Math.abs(x - x0) <= 2) continue;
@@ -1644,13 +1732,15 @@ public final class EnterpriseBlueprint {
         for (int dz = -3; dz <= 3; dz++)
             if (get(xt - 1, f + 1, zc + dz) == ShipPart.AIR) set(xt - 1, f + 1, zc + dz, ShipPart.STEP_SLAB, Direction.NORTH, 0);
         // Sechs Transporterfelder mit Strahlern in der Decke
-        int[][] pads = {{xt + 3, -2}, {xt + 3, 0}, {xt + 3, 2}, {xt + 1, -2}, {xt + 1, 0}, {xt + 1, 2}};
+        // NX-01: nur ein Transporterfeld (frühe Technik, vor allem für Fracht)
+        int[][] pads = nx ? new int[][] {{xt + 2, 0}}
+            : new int[][] {{xt + 3, -2}, {xt + 3, 0}, {xt + 3, 2}, {xt + 1, -2}, {xt + 1, 0}, {xt + 1, 2}};
         for (int[] pd : pads) {
             set(pd[0], f + 2, zc + pd[1], ShipPart.TRANSPORTER_PAD);
             set(pd[0], f + 4, zc + pd[1], ShipPart.TRANSPORTER_EMITTER);
         }
-        // Energiewand mit Säulen an der Rückwand
-        for (int dz = -4; dz <= 4; dz++)
+        // Energiewand mit Säulen an der Rückwand (NX-01: nur graue Säulen)
+        for (int dz = -4; dz <= 4 && !nx; dz++)
             for (int y = f + 2; y <= f + 3; y++) {
                 boolean pillar = Math.floorMod(dz, 3) == 2 || Math.abs(dz) == 4;
                 set(xt + 5, y, zc + dz, pillar ? ShipPart.TRANSPORTER_PILLAR : ShipPart.TRANSPORTER_ENERGIZER);
@@ -1675,6 +1765,12 @@ public final class EnterpriseBlueprint {
         return true;
     }
 
+    /** Deckname: auf der NX-01 tragen die Decks Buchstaben ("A-Deck"), sonst Nummern. */
+    private String deckLabel(int deck) {
+        if (nx) return (char) ('A' + Math.max(0, Math.min(25, deck - 1))) + "-Deck";
+        return "Deck " + deck;
+    }
+
     private int deckNumber(int floorY) {
         return Math.round((bridgeFloor - floorY) / (float) DECK_HEIGHT) + 1;
     }
@@ -1683,15 +1779,15 @@ public final class EnterpriseBlueprint {
     private void linkTurbolifts(BlockPos engineering, BlockPos transporter) {
         BlockPos bridge = bridgeTurbolift();
         set(bridge.getX(), bridge.getY(), bridge.getZ(), ShipPart.TURBOLIFT, Direction.NORTH);
-        liftStops.add(new LiftStop(bridge, "Deck 1 – Brücke"));
-        liftStops.add(new LiftStop(engineering, "Deck " + deckNumber(engineering.getY() - 1) + " – Maschinenraum"));
+        liftStops.add(new LiftStop(bridge, deckLabel(1) + " – Brücke"));
+        liftStops.add(new LiftStop(engineering, deckLabel(deckNumber(engineering.getY() - 1)) + " – Maschinenraum"));
         if (transporter != null) {
-            liftStops.add(new LiftStop(transporter, "Deck " + deckNumber(transporter.getY() - 1) + " – Transporterraum"));
+            liftStops.add(new LiftStop(transporter, deckLabel(deckNumber(transporter.getY() - 1)) + " – Transporterraum"));
         }
         // In Originalgröße liegt der Transporterraum auf Deck 3 und ist über den Deck-Lift erreichbar
         for (int i = 0; i < liftStops.size(); i++)
-            if (liftStops.get(i).name().startsWith("Deck 3 – Krankenstation") && transporter == null)
-                liftStops.set(i, new LiftStop(liftStops.get(i).pos(), "Deck 3 – Krankenstation, Transporter"));
+            if (liftStops.get(i).name().startsWith(deckLabel(3) + " – Krankenstation") && transporter == null)
+                liftStops.set(i, new LiftStop(liftStops.get(i).pos(), liftStops.get(i).name() + ", Transporter"));
     }
 
     // =====================================================================================
@@ -1703,7 +1799,9 @@ public final class EnterpriseBlueprint {
         // Next Generation
         TEN_FORWARD, HOLODECK, ARBORETUM, CARTOGRAPHY, BRIG, CLASSROOM,
         // Refit (Kinofilme)
-        REC_DECK, LOUNGE
+        REC_DECK, LOUNGE,
+        // NX-01
+        DECON
     }
 
     /** Ringsektor-Raum auf einem Deck der Untertasse. Winkel: 0 = Bug, positiv Richtung Steuerbord. */
@@ -1793,7 +1891,7 @@ public final class EnterpriseBlueprint {
             set(cx, f + 1, 1, ShipPart.TURBOLIFT_FRAME);
             set(cx, f + 2, 1, ShipPart.TURBOLIFT_FRAME);
             for (int y = f + 1; y <= f + 3; y++) set(cx - 1, y, 0, ShipPart.TURBOLIFT_FRAME); // Rückseite des Schachts
-            liftStops.add(new LiftStop(new BlockPos(cx, f + 1, 0), "Deck " + deck + " – " + deckName));
+            liftStops.add(new LiftStop(new BlockPos(cx, f + 1, 0), deckLabel(deck) + " – " + deckName));
 
             for (Band band : bands)
                 for (Room room : band.rooms()) furnish(room, f);
@@ -1898,6 +1996,14 @@ public final class EnterpriseBlueprint {
      */
     private RoomType[] innerRooms(int index) {
         RoomType S = RoomType.STORAGE, L = RoomType.LAB, Q = RoomType.QUARTERS, B = RoomType.BRIG;
+        if (nx) return switch (index) {
+            // NX-01: Situationsraum, Bereitschaftsraum, Captain's Mess; Krankenstation mit Dekontamination
+            case 0 -> new RoomType[] {Q, Q, RoomType.READY_ROOM, RoomType.BRIEFING, RoomType.BRIEFING, RoomType.MESS, Q, Q};
+            case 1 -> new RoomType[] {L, RoomType.DECON, L, RoomType.SICKBAY, RoomType.SICKBAY, L, RoomType.DECON, L};
+            case 2 -> new RoomType[] {RoomType.REC, RoomType.REC, RoomType.MESS, RoomType.MESS, RoomType.MESS, RoomType.MESS, RoomType.REC, RoomType.REC};
+            case 3 -> new RoomType[] {B, S, S, L, L, S, S, B};
+            default -> new RoomType[] {S, S, Q, Q, Q, Q, S, S};
+        };
         return switch (index) {
             case 0 -> new RoomType[] {Q, Q, RoomType.READY_ROOM, RoomType.BRIEFING, RoomType.BRIEFING, Q, Q, Q};
             case 1 -> new RoomType[] {L, S, L, RoomType.SICKBAY, RoomType.SICKBAY, L, S, L};
@@ -1935,6 +2041,13 @@ public final class EnterpriseBlueprint {
 
     private String saucerDeckName(int index, int f) {
         boolean deeper = deckCell((int) Math.round(sCx), f - 3, 0);
+        if (nx) return switch (index) {
+            case 0 -> "Situationsraum, Bereitschaftsraum, Captain's Mess";
+            case 1 -> "Krankenstation, Dekontamination";
+            case 2 -> "Messe & Sporthalle";
+            case 3 -> "Waffenkammer, Arrest";
+            default -> deeper ? "Quartiere" : "Lager";
+        };
         if (tng) return switch (index) {
             case 0 -> "Beobachtungslounge, Bereitschaftsraum";
             case 1 -> "Krankenstation";
@@ -2136,6 +2249,12 @@ public final class EnterpriseBlueprint {
                 }
             }
             case BRIG -> buildBrig(room, cells, f);
+            case DECON -> {
+                // Dekontaminationskammer der NX-01: blau leuchtende Wände, Bank in der Mitte
+                recolorWalls(cells, f, ShipPart.CORRIDOR_WALL, ShipPart.DECON_LIGHT);
+                for (int[] c : cells) if (compAt(c[0], f + 4, c[1]) != NONE) set(c[0], f + 3, c[1], ShipPart.DECON_LIGHT);
+                if (free(gx, y, gz)) set(gx, y, gz, ShipPart.CREW_BED, Direction.NORTH);
+            }
             case REC_DECK -> {
                 // Freizeitdeck (Star Trek: Der Film): große Bildwand mit Bildern früherer Schiffe an der
                 // Außenwand, davor Sitzreihen
@@ -2413,7 +2532,7 @@ public final class EnterpriseBlueprint {
                 for (int side : new int[] {-1, 1}) furnishSecondaryRoom(type, x0, side, f);
             set(xs, f + 1, 0, ShipPart.TURBOLIFT, Direction.SOUTH);
             set(xs, f + 2, 0, ShipPart.TURBOLIFT_DOOR, Direction.SOUTH);
-            liftStops.add(new LiftStop(new BlockPos(xs, f + 1, 0), "Deck " + deck + " – " + names[Math.floorMod(deck, 4)]));
+            liftStops.add(new LiftStop(new BlockPos(xs, f + 1, 0), deckLabel(deck) + " – " + names[Math.floorMod(deck, 4)]));
         }
     }
 
@@ -2453,6 +2572,22 @@ public final class EnterpriseBlueprint {
                     ShipPart p = get(x, y, z);
                     if (p == ShipPart.CORRIDOR_WALL) set(x, y, z, ShipPart.TNG_WALL);
                     else if (p == ShipPart.DECK_FLOOR && !inEngineeringBox(x, y, z)) set(x, y, z, ShipPart.TNG_CARPET);
+                }
+    }
+
+    /** NX-01: graue Metallwände und Gitterboden, schlichte Sitze und Konsolen. */
+    private void nxInterior() {
+        for (int x = 0; x < sizeX; x++)
+            for (int y = 0; y < sizeY; y++)
+                for (int z = -zOffset; z <= zOffset; z++) {
+                    int code = codeAt(x, y, z);
+                    if (code == 0) continue;
+                    ShipPart p = part(code);
+                    Direction d = facing(code);
+                    if (p == ShipPart.CORRIDOR_WALL || p == ShipPart.TRANSPORTER_WALL) set(x, y, z, ShipPart.ENT_WALL);
+                    else if (p == ShipPart.DECK_FLOOR) set(x, y, z, ShipPart.DECK_PLATE);
+                    else if (p == ShipPart.STATION_CHAIR) set(x, y, z, ShipPart.ENT_CHAIR, d);
+                    else if (p == ShipPart.BRIDGE_STATION || p == ShipPart.ENGINEERING_CONSOLE) set(x, y, z, ShipPart.ENT_CONSOLE, d);
                 }
     }
 

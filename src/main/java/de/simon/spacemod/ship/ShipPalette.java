@@ -126,6 +126,11 @@ public final class ShipPalette {
             };
             case LEAVES -> Blocks.AZALEA_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT, true);
             case TREE_LOG -> Blocks.BIRCH_LOG.defaultBlockState();
+            case ENT_WALL -> ModBlocks.ENT_WALL.get().defaultBlockState();
+            case ENT_CONSOLE -> ModBlocks.ENT_CONSOLE.get().defaultBlockState();
+            case ENT_CHAIR -> ModBlocks.ENT_CHAIR.get().defaultBlockState();
+            case CAPTAINS_CHAIR_NX -> ModBlocks.CAPTAINS_CHAIR_NX.get().defaultBlockState();
+            case DECON_LIGHT -> ModBlocks.DECON_LIGHT.get().defaultBlockState();
             case IRON_BARS -> Blocks.IRON_BARS.defaultBlockState()
                 .setValue(CrossCollisionBlock.NORTH, EnterpriseBlueprint.bar(cellCode, Direction.NORTH))
                 .setValue(CrossCollisionBlock.EAST, EnterpriseBlueprint.bar(cellCode, Direction.EAST))

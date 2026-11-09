@@ -1234,6 +1234,58 @@ def tex_bar_counter():
     return img
 
 
+
+def tex_ent_wall():
+    img = noise(new((88, 94, 102)), 4, 220)
+    px = img.load()
+    for x in range(16):
+        px[x, 0] = (60, 64, 70, 255)
+        px[x, 8] = (70, 74, 82, 255)
+    for y in range(16):
+        px[0, y] = (60, 64, 70, 255)
+    for (x, y) in ((2, 2), (13, 2), (2, 13), (13, 13)):
+        px[x, y] = (130, 136, 144, 255)
+    return img
+
+
+def tex_ent_console_top():
+    img = new((30, 34, 40))
+    px = img.load()
+    rnd = random.Random(221)
+    for x in range(2, 14):
+        for y in range(2, 8):
+            px[x, y] = (20, 60, 110, 255)
+    for _ in range(12):
+        px[rnd.randrange(2, 14), rnd.randrange(2, 8)] = (150, 210, 255, 255)
+    for x in range(2, 14, 3):
+        px[x, 11] = (220, 220, 230, 255)
+        px[x, 13] = rnd.choice([(255, 170, 60), (120, 200, 255)]) + (255,)
+    return img
+
+
+def tex_ent_console_front():
+    img = new((40, 44, 50))
+    px = img.load()
+    for x in range(3, 13):
+        for y in range(3, 10):
+            px[x, y] = (30, 90, 150, 255)
+    for x in range(4, 12, 2):
+        px[x, 6] = (170, 220, 255, 255)
+    return img
+
+
+def tex_decon_light():
+    img = new((150, 210, 255))
+    px = img.load()
+    for x in range(16):
+        for y in range(16):
+            if x in (0, 15) or y in (0, 15):
+                px[x, y] = (90, 100, 110, 255)
+            elif y % 4 == 2:
+                px[x, y] = (220, 245, 255, 255)
+    return img
+
+
 TEXTURES = {
     "hull_plating": tex_hull_plating,
     "hull_panel": tex_hull_panel,
@@ -1341,6 +1393,10 @@ TEXTURES = {
     "force_field": tex_force_field,
     "star_map": tex_star_map,
     "bar_counter": tex_bar_counter,
+    "ent_wall": tex_ent_wall,
+    "ent_console_top": tex_ent_console_top,
+    "ent_console_front": tex_ent_console_front,
+    "decon_light": tex_decon_light,
 }
 
 # ---------------------------------------------------------------------------------------------
@@ -1352,7 +1408,7 @@ def b(name):
     return f"{MODID}:block/{name}"
 
 
-SIMPLE = ["tng_carpet", "tng_wall", "holodeck_grid", "star_map", "bar_counter", "light_pillar", "hull_teal", "bussard_blue", "bridge_trim_cream", "bridge_carpet_teal", "deck_plate", "bridge_wall_dark", "impulse_engine", "hull_aztec", "deflector_dish_blue", "bussard_red", "torpedo_launcher", "bridge_trim_blue", "sickbay_wall", "sickbay_floor", "cargo_container", "bridge_wall", "bridge_trim", "turbolift_frame", "transporter_wall", "transporter_platform",
+SIMPLE = ["ent_wall", "decon_light", "tng_carpet", "tng_wall", "holodeck_grid", "star_map", "bar_counter", "light_pillar", "hull_teal", "bussard_blue", "bridge_trim_cream", "bridge_carpet_teal", "deck_plate", "bridge_wall_dark", "impulse_engine", "hull_aztec", "deflector_dish_blue", "bussard_red", "torpedo_launcher", "bridge_trim_blue", "sickbay_wall", "sickbay_floor", "cargo_container", "bridge_wall", "bridge_trim", "turbolift_frame", "transporter_wall", "transporter_platform",
           "transporter_energizer", "transporter_emitter", "nav_light_red", "nav_light_green", "hull_pennant",
           "hull_plating", "hull_panel", "hull_dark", "hull_window", "hull_marking", "deflector_dish",
           "bussard_collector", "nacelle_grille", "deck_floor", "bridge_deck", "corridor_wall",
@@ -1390,6 +1446,9 @@ FACING = {
     "tng_console": None,
     "tng_chair": None,
     "captains_chair_tng": None,
+    "ent_console": None,
+    "ent_chair": None,
+    "captains_chair_nx": None,
 }
 
 
@@ -1558,6 +1617,13 @@ def tng_console_model():
     m = json.loads(json.dumps(station_model(0)))
     m["textures"].update({"particle": b("chair_dark"), "front": b("lcars_panel"), "top": b("tng_console_top"),
                           "side": b("chair_dark"), "black": b("chair_dark")})
+    return m
+
+
+def ent_console_model():
+    m = json.loads(json.dumps(station_model(0)))
+    m["textures"].update({"particle": b("ent_wall"), "front": b("ent_console_front"), "top": b("ent_console_top"),
+                          "side": b("ent_wall"), "black": b("chair_dark")})
     return m
 
 
@@ -1737,6 +1803,11 @@ NAMES = {
     "force_field": ("Kraftfeld", "Force Field"),
     "star_map": ("Sternenkarte", "Star Map"),
     "bar_counter": ("Bartresen (Ten Forward)", "Bar Counter (Ten Forward)"),
+    "ent_wall": ("Metallwand (NX-01)", "Metal Wall (NX-01)"),
+    "ent_console": ("Konsole (NX-01)", "Console (NX-01)"),
+    "ent_chair": ("Sitz (NX-01)", "Seat (NX-01)"),
+    "captains_chair_nx": ("Kommandantensessel (NX-01)", "Captain's Chair (NX-01)"),
+    "decon_light": ("Dekontaminations-Leuchte", "Decontamination Light"),
 }
 
 
@@ -1775,6 +1846,9 @@ def main():
               "captains_chair_teal": dict(CHAIR, textures=dict(CHAIR["textures"], seat=b("chair_teal"), white=b("helm_gray"), particle=b("chair_teal"))),
               "station_chair_teal": dict(STATION_CHAIR, textures=dict(STATION_CHAIR["textures"], blue=b("helm_gray"), seat=b("chair_teal"), particle=b("chair_teal"))),
               "tng_console": tng_console_model(),
+              "ent_console": ent_console_model(),
+              "ent_chair": dict(STATION_CHAIR, textures=dict(STATION_CHAIR["textures"], blue=b("ent_wall"), seat=b("chair_dark"), particle=b("chair_dark"))),
+              "captains_chair_nx": dict(CHAIR, textures=dict(CHAIR["textures"], seat=b("chair_dark"), white=b("ent_wall"), particle=b("chair_dark"))),
               "tng_chair": dict(STATION_CHAIR, textures=dict(STATION_CHAIR["textures"], blue=b("chair_dark"), seat=b("chair_brown"), particle=b("chair_brown"))),
               "captains_chair_tng": dict(CHAIR, textures=dict(CHAIR["textures"], seat=b("chair_brown"), white=b("chair_dark"), particle=b("chair_brown"))),
               "helm_console_gray": dict(HELM, textures={"particle": b("helm_gray"), "red": b("helm_gray"), "top": b("helm_gray_top"), "black": b("bridge_wall_dark")})}

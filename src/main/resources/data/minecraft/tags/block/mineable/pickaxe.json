@@ -1,5 +1,7 @@
 {
   "values": [
+    "simonspacemod:ent_wall",
+    "simonspacemod:decon_light",
     "simonspacemod:tng_carpet",
     "simonspacemod:tng_wall",
     "simonspacemod:holodeck_grid",
@@ -67,6 +69,9 @@
     "simonspacemod:tng_console",
     "simonspacemod:tng_chair",
     "simonspacemod:captains_chair_tng",
+    "simonspacemod:ent_console",
+    "simonspacemod:ent_chair",
+    "simonspacemod:captains_chair_nx",
     "simonspacemod:conference_table",
     "simonspacemod:table_viewer",
     "simonspacemod:mess_table",

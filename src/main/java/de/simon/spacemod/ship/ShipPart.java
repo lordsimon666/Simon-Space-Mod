@@ -107,7 +107,13 @@ public enum ShipPart {
     GRASS(0x5A9A3A),
     FLOWER(0xE04040),
     LEAVES(0x3A7A2A),
-    TREE_LOG(0x6A5030);
+    TREE_LOG(0x6A5030),
+    // NX-01 (Star Trek: Enterprise)
+    ENT_WALL(0x5A6068),
+    ENT_CONSOLE(0x2A3038),
+    ENT_CHAIR(0x3A3C40),
+    CAPTAINS_CHAIR_NX(0x2A2C30),
+    DECON_LIGHT(0x80C0FF);
 
     /** Farbe für Vorschaubilder. */
     public final int color;
