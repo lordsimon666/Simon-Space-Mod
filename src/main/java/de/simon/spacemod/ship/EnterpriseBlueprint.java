@@ -2584,7 +2584,7 @@ public final class EnterpriseBlueprint {
             case REFIT -> { lift = ShipPart.TURBOLIFT_REFIT; door = ShipPart.TURBOLIFT_DOOR_REFIT; frame = ShipPart.BRIDGE_TRIM_BLUE; }
             case EXCELSIOR -> { lift = ShipPart.TURBOLIFT_EXCELSIOR; door = ShipPart.TURBOLIFT_DOOR_TEAL; frame = ShipPart.LIGHT_PILLAR; }
             case TNG -> { lift = ShipPart.TURBOLIFT_TNG; door = ShipPart.TURBOLIFT_DOOR_TNG; frame = ShipPart.DECK_PLATE; }
-            default -> { return; }
+            default -> { lift = ShipPart.TURBOLIFT; door = ShipPart.TURBOLIFT_DOOR; frame = ShipPart.TURBOLIFT_FRAME; }
         }
         for (int x = 0; x < sizeX; x++)
             for (int y = 0; y < sizeY; y++)
@@ -2596,10 +2596,18 @@ public final class EnterpriseBlueprint {
                     else if (p == ShipPart.TURBOLIFT_DOOR) set(x, y, z, door, facing(code));
                     else if (p == ShipPart.TURBOLIFT_FRAME) set(x, y, z, frame);
                 }
+        // Turbolift = zwei Blöcke wie eine Tür: über jedem Bedienfeld die obere Hälfte
+        for (int x = 0; x < sizeX; x++)
+            for (int y = 0; y + 1 < sizeY; y++)
+                for (int z = -zOffset; z <= zOffset; z++) {
+                    int code = codeAt(x, y, z);
+                    if (code != 0 && part(code) == lift && variant(code) == 0) set(x, y + 1, z, lift, facing(code), 1);
+                }
     }
 
     /** Ist das Bauteil ein Turbolift (in irgendeinem Stil)? */
     public static boolean isLift(ShipPart p) {
+        // (untere Hälfte = Variante 0, das prüft der Aufrufer bei Bedarf)
         return p == ShipPart.TURBOLIFT || p == ShipPart.TURBOLIFT_NX || p == ShipPart.TURBOLIFT_REFIT
             || p == ShipPart.TURBOLIFT_EXCELSIOR || p == ShipPart.TURBOLIFT_TNG;
     }

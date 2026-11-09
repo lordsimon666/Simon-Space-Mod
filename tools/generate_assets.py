@@ -1934,6 +1934,20 @@ def main():
         write_json(os.path.join(ASSETS, "items", name + ".json"), item_def(b(name)))
         write_json(os.path.join(DATA, "loot_table", "blocks", name + ".json"), loot(name))
 
+    # Turbolifte: zwei Hälften wie eine Tür (unten Bedienfeld, oben Tür)
+    rot = {"north": 0, "east": 90, "south": 180, "west": 270}
+    for lift, door in (("turbolift", "turbolift_door"), ("turbolift_nx", "turbolift_door_nx"),
+                       ("turbolift_refit", "turbolift_door_refit"), ("turbolift_excelsior", "turbolift_door_teal"),
+                       ("turbolift_tng", "turbolift_door_tng")):
+        variants = {}
+        for d, r in rot.items():
+            for half, model in (("lower", lift), ("upper", door)):
+                m = {"model": b(model)}
+                if r:
+                    m["y"] = r
+                variants[f"facing={d},half={half}"] = m
+        write_json(os.path.join(ASSETS, "blockstates", lift + ".json"), {"variants": variants})
+
     # Blöcke mit Varianten (Stationen, Monitore)
     for name, fn in (("bridge_station", station_model), ("bridge_monitor", monitor_model),
                      ("excelsior_console", ex_console_model), ("excelsior_display", ex_display_model),

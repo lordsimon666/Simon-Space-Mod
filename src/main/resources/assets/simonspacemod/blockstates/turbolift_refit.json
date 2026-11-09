@@ -1,18 +1,33 @@
 {
   "variants": {
-    "facing=north": {
+    "facing=north,half=lower": {
       "model": "simonspacemod:block/turbolift_refit"
     },
-    "facing=east": {
+    "facing=north,half=upper": {
+      "model": "simonspacemod:block/turbolift_door_refit"
+    },
+    "facing=east,half=lower": {
       "model": "simonspacemod:block/turbolift_refit",
       "y": 90
     },
-    "facing=south": {
+    "facing=east,half=upper": {
+      "model": "simonspacemod:block/turbolift_door_refit",
+      "y": 90
+    },
+    "facing=south,half=lower": {
       "model": "simonspacemod:block/turbolift_refit",
       "y": 180
     },
-    "facing=west": {
+    "facing=south,half=upper": {
+      "model": "simonspacemod:block/turbolift_door_refit",
+      "y": 180
+    },
+    "facing=west,half=lower": {
       "model": "simonspacemod:block/turbolift_refit",
+      "y": 270
+    },
+    "facing=west,half=upper": {
+      "model": "simonspacemod:block/turbolift_door_refit",
       "y": 270
     }
   }

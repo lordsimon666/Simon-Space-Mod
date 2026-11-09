@@ -8,6 +8,11 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 public final class ClientSetup {
     private ClientSetup() {}
 
+    /** Der Sitz ist unsichtbar. */
+    public static void onRegisterRenderers(net.minecraftforge.client.event.EntityRenderersEvent.RegisterRenderers event) {
+        event.registerEntityRenderer(ModBlocks.SEAT.get(), net.minecraft.client.renderer.entity.NoopRenderer::new);
+    }
+
     public static void onClientSetup(FMLClientSetupEvent event) {
         event.enqueueWork(() -> MenuScreens.register(ModBlocks.TURBOLIFT_MENU.get(), TurboliftScreen::new));
     }

@@ -10,6 +10,8 @@ import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.state.properties.SlabType;
 import de.simon.spacemod.block.VariantFacingBlock;
 import de.simon.spacemod.block.BiobedBlock;
+import de.simon.spacemod.block.TurboliftBlock;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
@@ -43,7 +45,7 @@ public final class ShipPalette {
             case WARP_CORE -> ModBlocks.WARP_CORE.get().defaultBlockState();
             case PLASMA_CONDUIT -> ModBlocks.PLASMA_CONDUIT.get().defaultBlockState();
             case TRANSPORTER_PAD -> ModBlocks.TRANSPORTER_PAD.get().defaultBlockState();
-            case TURBOLIFT -> ModBlocks.TURBOLIFT.get().defaultBlockState();
+            case TURBOLIFT -> lift(ModBlocks.TURBOLIFT.get().defaultBlockState(), cellCode);
             case LADDER -> Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING, facing);
             case HULL_PLATING_SLAB -> slab(ModBlocks.HULL_PLATING_SLAB.get().defaultBlockState(), cellCode);
             case HULL_MARKING_SLAB -> slab(ModBlocks.HULL_MARKING_SLAB.get().defaultBlockState(), cellCode);
@@ -131,10 +133,10 @@ public final class ShipPalette {
             case ENT_CHAIR -> ModBlocks.ENT_CHAIR.get().defaultBlockState();
             case CAPTAINS_CHAIR_NX -> ModBlocks.CAPTAINS_CHAIR_NX.get().defaultBlockState();
             case DECON_LIGHT -> ModBlocks.DECON_LIGHT.get().defaultBlockState();
-            case TURBOLIFT_NX -> ModBlocks.TURBOLIFT_NX.get().defaultBlockState();
-            case TURBOLIFT_REFIT -> ModBlocks.TURBOLIFT_REFIT.get().defaultBlockState();
-            case TURBOLIFT_EXCELSIOR -> ModBlocks.TURBOLIFT_EXCELSIOR.get().defaultBlockState();
-            case TURBOLIFT_TNG -> ModBlocks.TURBOLIFT_TNG.get().defaultBlockState();
+            case TURBOLIFT_NX -> lift(ModBlocks.TURBOLIFT_NX.get().defaultBlockState(), cellCode);
+            case TURBOLIFT_REFIT -> lift(ModBlocks.TURBOLIFT_REFIT.get().defaultBlockState(), cellCode);
+            case TURBOLIFT_EXCELSIOR -> lift(ModBlocks.TURBOLIFT_EXCELSIOR.get().defaultBlockState(), cellCode);
+            case TURBOLIFT_TNG -> lift(ModBlocks.TURBOLIFT_TNG.get().defaultBlockState(), cellCode);
             case TURBOLIFT_DOOR_NX -> ModBlocks.TURBOLIFT_DOOR_NX.get().defaultBlockState();
             case TURBOLIFT_DOOR_REFIT -> ModBlocks.TURBOLIFT_DOOR_REFIT.get().defaultBlockState();
             case TURBOLIFT_DOOR_TNG -> ModBlocks.TURBOLIFT_DOOR_TNG.get().defaultBlockState();
@@ -148,6 +150,11 @@ public final class ShipPalette {
             st = st.setValue(BlockStateProperties.HORIZONTAL_FACING, facing);
         }
         return st;
+    }
+
+    /** Turbolift: Variante 1 = obere Hälfte (Tür). */
+    private static BlockState lift(BlockState st, int code) {
+        return st.setValue(TurboliftBlock.HALF, EnterpriseBlueprint.variant(code) == 1 ? DoubleBlockHalf.UPPER : DoubleBlockHalf.LOWER);
     }
 
     private static BlockState slab(BlockState st, int code) {

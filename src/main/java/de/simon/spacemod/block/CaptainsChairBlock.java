@@ -27,6 +27,12 @@ public class CaptainsChairBlock extends FacingBlock {
     }
 
     @Override
+    protected net.minecraft.world.InteractionResult useWithoutItem(BlockState state, net.minecraft.world.level.Level level, BlockPos pos,
+                                                                  net.minecraft.world.entity.player.Player player, net.minecraft.world.phys.BlockHitResult hit) {
+        return ChairBlock.sit(state, level, pos, player);
+    }
+
+    @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPE;
     }

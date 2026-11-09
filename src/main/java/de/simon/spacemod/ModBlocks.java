@@ -2,6 +2,10 @@ package de.simon.spacemod;
 
 import de.simon.spacemod.block.BiobedBlock;
 import de.simon.spacemod.block.CaptainsChairBlock;
+import de.simon.spacemod.block.ChairBlock;
+import de.simon.spacemod.entity.SeatEntity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobCategory;
 import de.simon.spacemod.block.FacingBlock;
 import de.simon.spacemod.block.GlowParticleBlock;
 import de.simon.spacemod.block.RailingBlock;
@@ -41,6 +45,7 @@ public final class ModBlocks {
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, SimonSpaceMod.MODID);
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, SimonSpaceMod.MODID);
     public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, SimonSpaceMod.MODID);
+    public static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, SimonSpaceMod.MODID);
     public static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, SimonSpaceMod.MODID);
 
     private static final List<RegistryObject<? extends Item>> TAB_ITEMS = new ArrayList<>();
@@ -91,7 +96,7 @@ public final class ModBlocks {
     public static final RegistryObject<Block> LIGHT_PILLAR = block("light_pillar", Block::new, glowing(metal(MapColor.SAND), 12));
     public static final RegistryObject<Block> CAPTAINS_CHAIR_TEAL = block("captains_chair_teal", CaptainsChairBlock::new, metal(MapColor.COLOR_CYAN).noOcclusion());
     public static final RegistryObject<Block> STATION_CHAIR_TEAL = block("station_chair_teal",
-        p -> new ShapedFacingBlock(p, Shapes.or(Block.box(6, 0, 6, 10, 7, 10), Block.box(3, 7, 3, 13, 9, 13), Block.box(3, 9, 11, 13, 20, 14))),
+        p -> new ChairBlock(p, ChairBlock.CHAIR_SHAPE),
         metal(MapColor.COLOR_CYAN).noOcclusion());
     public static final RegistryObject<Block> TURBOLIFT_DOOR_TEAL = block("turbolift_door_teal", FacingBlock::new, metal(MapColor.COLOR_CYAN));
     public static final RegistryObject<Block> HELM_CONSOLE_GRAY = block("helm_console_gray",
@@ -105,7 +110,7 @@ public final class ModBlocks {
         p -> new ShapedFacingBlock(p, Shapes.or(Block.box(0, 0, 0, 16, 10, 16), Block.box(0, 10, 6, 16, 14, 16))),
         glowing(metal(MapColor.COLOR_BLACK), 9).noOcclusion());
     public static final RegistryObject<Block> TNG_CHAIR = block("tng_chair",
-        p -> new ShapedFacingBlock(p, Shapes.or(Block.box(6, 0, 6, 10, 7, 10), Block.box(3, 7, 3, 13, 9, 13), Block.box(3, 9, 11, 13, 20, 14))),
+        p -> new ChairBlock(p, ChairBlock.CHAIR_SHAPE),
         BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BROWN).strength(1.5F).sound(SoundType.WOOL).noOcclusion());
     public static final RegistryObject<Block> CAPTAINS_CHAIR_TNG = block("captains_chair_tng", CaptainsChairBlock::new,
         BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BROWN).strength(1.5F).sound(SoundType.WOOL).noOcclusion());
@@ -127,7 +132,7 @@ public final class ModBlocks {
         p -> new ShapedFacingBlock(p, Shapes.or(Block.box(0, 0, 0, 16, 10, 16), Block.box(0, 10, 6, 16, 14, 16))),
         glowing(metal(MapColor.COLOR_GRAY), 8).noOcclusion());
     public static final RegistryObject<Block> ENT_CHAIR = block("ent_chair",
-        p -> new ShapedFacingBlock(p, Shapes.or(Block.box(6, 0, 6, 10, 7, 10), Block.box(3, 7, 3, 13, 9, 13), Block.box(3, 9, 11, 13, 20, 14))),
+        p -> new ChairBlock(p, ChairBlock.CHAIR_SHAPE),
         metal(MapColor.COLOR_GRAY).noOcclusion());
     public static final RegistryObject<Block> CAPTAINS_CHAIR_NX = block("captains_chair_nx", CaptainsChairBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion());
     public static final RegistryObject<Block> DECON_LIGHT = block("decon_light", Block::new, glowing(glass(MapColor.COLOR_LIGHT_BLUE), 14));
@@ -142,7 +147,7 @@ public final class ModBlocks {
     public static final RegistryObject<Block> BRIDGE_RAILING = block("bridge_railing", RailingBlock::new,
         metal(MapColor.COLOR_RED).noOcclusion());
     public static final RegistryObject<Block> STATION_CHAIR = block("station_chair",
-        p -> new ShapedFacingBlock(p, Shapes.or(Block.box(6, 0, 6, 10, 7, 10), Block.box(3, 7, 3, 13, 9, 13), Block.box(3, 9, 11, 13, 20, 14))),
+        p -> new ChairBlock(p, ChairBlock.CHAIR_SHAPE),
         metal(MapColor.COLOR_LIGHT_BLUE).noOcclusion());
     public static final RegistryObject<Block> HELM_CONSOLE = block("helm_console",
         p -> new ShapedFacingBlock(p, Block.box(0, 0, 2, 16, 12, 14)), glowing(metal(MapColor.COLOR_RED), 7).noOcclusion());
@@ -217,6 +222,12 @@ public final class ModBlocks {
         () -> new CommunicatorItem(new Item.Properties().setId(ITEMS.key("communicator")).stacksTo(1)));
     static { TAB_ITEMS.add(COMMUNICATOR); }
 
+    // --- Entities ---
+    /** Unsichtbarer Sitz für die Stühle. */
+    public static final RegistryObject<EntityType<SeatEntity>> SEAT = ENTITIES.register("seat",
+        () -> EntityType.Builder.<SeatEntity>of(SeatEntity::new, MobCategory.MISC).sized(0.001F, 0.001F)
+            .noSummon().noSave().clientTrackingRange(10).build(ENTITIES.key("seat")));
+
     // --- Menüs ---
     public static final RegistryObject<MenuType<TurboliftMenu>> TURBOLIFT_MENU = MENUS.register("turbolift",
         () -> IForgeMenuType.create(TurboliftMenu::new));
@@ -232,6 +243,7 @@ public final class ModBlocks {
         BLOCKS.register(modBus);
         ITEMS.register(modBus);
         MENUS.register(modBus);
+        ENTITIES.register(modBus);
         TABS.register(modBus);
     }
 
