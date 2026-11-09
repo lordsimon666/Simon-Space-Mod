@@ -36,14 +36,15 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
 
 ## Was im Schiff ist
 
-* **Außen**: Untertasse mit Halbstufen geglättet, Kennung „U.S.S. ENTERPRISE“ und groß „NCC-1701“
-  (lesbar von vorne wie beim Original), „NCC-1701“ und rote Zierstreifen an Gondeln und
+* **Außen**: Untertasse mit Halbstufen geglättet, Kennung wie beim Original (lesbar von vorne):
+  „NCC-1701“ im Bogen entlang des vorderen Rands, darüber klein „USS ENTERPRISE“, „NCC-1701“ und rote Zierstreifen an Gondeln und
   Sekundärhülle, orange glühende Bussard-Kollektoren, Positionslichter (Backbord rot,
   Steuerbord grün), Fensterreihen, Deflektorschüssel, Shuttlehangar.
 * **Brücke** (Ø 15 m) nach dem Vorbild der Originalserie: graue Wände mit Monitoren und rotem
   Abschlussstreifen, Stationen mit schrägem Pult und farbig leuchtender Front, rotes Geländer
   um die Kommandomulde, Kommandantensessel auf weißem Sockel, rot-schwarze Steuerkonsole mit
-  zwei Stühlen, Hauptbildschirm (7 x 3), zwei rote Turbolift-Türen mit leuchtendem Rahmen.
+  zwei Stühlen, Hauptbildschirm (7 x 3), ein Turbolift hinten Steuerbord mit roter Tür und
+  leuchtendem Rahmen.
 * **Maschinenraum** (19 x 11 m, zwei Ebenen): Warpkern vom Boden bis durch die Decke,
   Plasmaleitungen im Boden, Konsolen, Galerie mit Leitern, Turbolift.
 * **Transporterraum**: lila Wände, erhöhte rote Plattform mit Stufe und sechs Transporterfeldern,
@@ -52,7 +53,8 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
 
 ### Funktionen
 
-* **Turbolift**: Rechtsklick fährt zum verbundenen Deck (Brücke ↔ Maschinenraum, Brücke ↔ Transporterraum).
+* **Turbolift**: Rechtsklick fährt zum ausgewählten Deck, **Schleichen + Rechtsklick** wählt ein
+  anderes Deck. Von der Brücke geht es zum Maschinenraum oder Transporterraum, von dort zurück zur Brücke.
 * **Transporterfeld**: Rechtsklick beamt dich auf den Boden unter dem Schiff.
   Hast du keinen Kommunikator dabei, bekommst du einen.
 * **Kommunikator**: Rechtsklick beamt dich zurück auf das zuletzt benutzte Transporterfeld.

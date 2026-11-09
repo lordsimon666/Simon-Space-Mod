@@ -388,7 +388,14 @@ public final class EnterpriseBlueprint {
     // ---- Schriften (Zeilen von oben nach unten) ----
     private static final java.util.Map<Character, String[]> FONT5x7 = new java.util.HashMap<>();
     private static final java.util.Map<Character, String[]> FONT3x5 = new java.util.HashMap<>();
+    private static final java.util.Map<Character, String[]> FONT6x9 = new java.util.HashMap<>();
     static {
+        FONT6x9.put('N', new String[] {"100001", "110001", "101001", "101001", "100101", "100101", "100011", "100001", "100001"});
+        FONT6x9.put('C', new String[] {"011110", "100001", "100000", "100000", "100000", "100000", "100000", "100001", "011110"});
+        FONT6x9.put('-', new String[] {"0000", "0000", "0000", "0000", "1111", "0000", "0000", "0000", "0000"});
+        FONT6x9.put('1', new String[] {"001100", "011100", "101100", "001100", "001100", "001100", "001100", "001100", "111111"});
+        FONT6x9.put('7', new String[] {"111111", "000001", "000010", "000100", "000100", "001000", "001000", "001000", "001000"});
+        FONT6x9.put('0', new String[] {"011110", "100001", "100011", "100101", "101001", "110001", "100001", "100001", "011110"});
         FONT5x7.put('N', new String[] {"10001", "11001", "10101", "10011", "10001", "10001", "10001"});
         FONT5x7.put('C', new String[] {"01110", "10001", "10000", "10000", "10000", "10001", "01110"});
         FONT5x7.put('-', new String[] {"000", "000", "000", "111", "000", "000", "000"});
@@ -419,36 +426,75 @@ public final class EnterpriseBlueprint {
     }
 
     /**
-     * Kennung auf der Oberseite der Untertasse, lesbar von vorne (Buchstaben-Oberkante zeigt nach achtern),
-     * wie beim Original: "U.S.S. ENTERPRISE" vor der Brücke, darunter groß "NCC-1701".
+     * Kennung auf der Oberseite der Untertasse wie beim Original (lesbar von vorne, Oberkante der
+     * Buchstaben zeigt nach achtern): "NCC-1701" mit Abstand im Bogen entlang des vorderen Rands,
+     * darüber klein und gerade "USS ENTERPRISE".
      */
     private void registryLettering() {
         boolean big = s >= 0.75;
-        var font = big ? FONT5x7 : FONT3x5;
-        int px = big ? 2 : 1;
-        String reg = "NCC-1701";
+        var font = big ? FONT6x9 : FONT3x5;
+        int spacing = big ? 4 : 2;
+        double scale = big ? GLYPH_SCALE : 1.0; // gedrehte Buchstaben etwas größer, damit sie sauber bleiben
         int h = font.get('N').length;
-        int w = textWidth(reg, font);
-        int xCenter = (int) Math.round(sCx - sR * (big ? 0.6 : 0.62));
-        int xTop = xCenter + h * px / 2;
-        int zLeft = w * px / 2;
-        int col = 0;
+        double ra = sR * (big ? 0.8 : 0.78);
+        String reg = "NCC-1701";
+        int total = 0;
+        for (char ch : reg.toCharArray()) total += font.get(ch)[0].length() + spacing;
+        total -= spacing;
+        total = (int) Math.round(total * scale);
+        // Bogen: erster Buchstabe auf Steuerbord (+z), dann Richtung Backbord
+        double pos = -total / 2.0;
         for (char ch : reg.toCharArray()) {
             String[] g = font.get(ch);
-            drawGlyphTop(g, xTop, zLeft - col * px, px);
-            col += g[0].length() + 1;
+            int w = g[0].length();
+            if (big) {
+                drawGlyphOnArc(g, -(pos + w * scale / 2.0) / ra, ra, scale);
+            } else {
+                // kleine Schrift gedreht wäre unleserlich -> gerade Zeile vor der Brücke
+                int xTop = (int) Math.round(sCx - 0.55 * sR) + h / 2;
+                drawGlyphTop(g, xTop, (int) Math.round(-pos), 1);
+            }
+            pos += (w + spacing) * scale;
         }
-        if (!big) return;
-        // "U.S.S. ENTERPRISE" gerade darüber (zwischen Brücke und Kennung)
-        String name = "U.S.S. ENTERPRISE";
-        int nameTop = xTop + 4 + 5;
-        int nz = textWidth(name, FONT3x5) / 2;
-        int c2 = 0;
+        // "USS ENTERPRISE" klein und gerade zwischen Brücke und Kennung, wenn genug Platz ist
+        String name = "USS ENTERPRISE";
+        int nw = textWidth(name, FONT3x5);
+        double nx = 0.5 * sR;
+        if (Math.hypot(nx, nw / 2.0) > ra - h * scale / 2.0 - 1 || nx - 3 < 11) return;
+        int top = (int) Math.round(sCx - nx) + 2;
+        int col = 0;
         for (char ch : name.toCharArray()) {
             String[] g = FONT3x5.get(ch);
-            drawGlyphTop(g, nameTop, nz - c2, 1);
-            c2 += g[0].length() + 1;
+            drawGlyphTop(g, top, nw / 2 - col, 1);
+            col += g[0].length() + 1;
         }
+    }
+
+    /**
+     * Zeichnet ein Zeichen gedreht auf den Bogen mit Radius {@code ra} um die Untertassenmitte:
+     * die Oberkante zeigt zur Mitte, die Leserichtung folgt dem Bogen (wie beim Original).
+     */
+    private static final double GLYPH_SCALE = 1.4;
+
+    private void drawGlyphOnArc(String[] g, double theta, double ra, double scale) {
+        int h = g.length, w = g[0].length();
+        double px = sCx - ra * Math.cos(theta), pz = ra * Math.sin(theta);
+        double nx = Math.cos(theta), nz = -Math.sin(theta);   // nach innen = Oberkante
+        double tx = -Math.sin(theta), tz = -Math.cos(theta);  // Leserichtung
+        int reach = (int) Math.ceil(Math.hypot(w, h) * scale / 2) + 1;
+        for (int x = (int) px - reach; x <= (int) px + reach; x++)
+            for (int z = (int) pz - reach; z <= (int) pz + reach; z++) {
+                // 2x2 Abtastpunkte je Block, damit gedrehte Linien geschlossen bleiben
+                boolean hit = false;
+                for (int sx = 0; sx < 2 && !hit; sx++)
+                    for (int sz = 0; sz < 2 && !hit; sz++) {
+                        double dx = x + (sx - 0.5) * 0.5 - px, dz = z + (sz - 0.5) * 0.5 - pz;
+                        int c = (int) Math.floor((dx * tx + dz * tz) / scale + w / 2.0);
+                        int r = (int) Math.floor(-(dx * nx + dz * nz) / scale + h / 2.0);
+                        hit = c >= 0 && c < w && r >= 0 && r < h && g[r].charAt(c) == '1';
+                    }
+                if (hit) markTop(x, z, ShipPart.HULL_MARKING);
+            }
     }
 
     /** Zeichnet ein Zeichen auf die Oberseite: Zeile 0 bei xTop (achtern), Spalten Richtung Backbord (-z). */
@@ -563,12 +609,12 @@ public final class EnterpriseBlueprint {
                 double r = Math.sqrt(dx * dx + dz * dz);
                 int x = cx + dx;
                 boolean front = dx < 0 && Math.abs(dz) <= 3;
-                boolean aft = dx > 0 && Math.abs(dz) <= 3;
+                boolean aft = dx > 0 && dz >= 0 && dz <= 4; // Turbolift hinten Steuerbord
                 if (r <= 7.5) {
                     set(x, yb, dz, carpet);
                     for (int y = yb + 1; y <= yb + 5; y++) set(x, y, dz, air);
                     set(x, yb + 6, dz, r < 1.5 || Math.abs(r - 3.5) < 0.5 ? light : ShipPart.CEILING_PANEL);
-                    boolean gap = Math.abs(dz) <= 1; // Durchgänge vorne und hinten
+                    boolean gap = dx < 0 ? Math.abs(dz) <= 1 : (dz >= 0 && dz <= 2); // Durchgänge zur Konsole und zum Turbolift
                     if (r > 5.2) {
                         set(x, yb + 1, dz, carpet); // erhöhter Außenring
                     } else if (r > 4.2) {
@@ -610,16 +656,14 @@ public final class EnterpriseBlueprint {
         // Stühle an Wissenschafts- und Kommunikationsstation
         set(cx + 4, yb + 2, 5, ShipPart.STATION_CHAIR, Direction.EAST);
         set(cx + 4, yb + 2, -5, ShipPart.STATION_CHAIR, Direction.WEST);
-        // Turbolift-Türen mit leuchtendem Rahmen
-        for (int side : new int[] {-1, 1}) {
-            int z = 2 * side;
-            set(cx + 8, yb + 3, z, ShipPart.TURBOLIFT_DOOR, Direction.NORTH);
-            for (int dz : new int[] {-1, 1}) {
-                set(cx + 8, yb + 2, z + dz, ShipPart.TURBOLIFT_FRAME);
-                set(cx + 8, yb + 3, z + dz, ShipPart.TURBOLIFT_FRAME);
-            }
-            set(cx + 8, yb + 4, z, ShipPart.TURBOLIFT_FRAME);
+        // Turbolift-Tür (hinten, etwas Steuerbord) mit leuchtendem Rahmen
+        BlockPos lift = bridgeTurbolift();
+        set(lift.getX(), yb + 3, lift.getZ(), ShipPart.TURBOLIFT_DOOR, Direction.NORTH);
+        for (int dz : new int[] {-1, 1}) {
+            set(lift.getX(), yb + 2, lift.getZ() + dz, ShipPart.TURBOLIFT_FRAME);
+            set(lift.getX(), yb + 3, lift.getZ() + dz, ShipPart.TURBOLIFT_FRAME);
         }
+        set(lift.getX(), yb + 4, lift.getZ(), ShipPart.TURBOLIFT_FRAME);
         bridgeSpawn = new BlockPos(cx + 2, yb + 1, 0);
     }
 
@@ -628,8 +672,8 @@ public final class EnterpriseBlueprint {
         return dz < 0 ? Direction.EAST : Direction.WEST;
     }
 
-    private BlockPos bridgeTurbolift(int side) {
-        return new BlockPos((int) Math.round(sCx) + 8, bridgeFloor + 2, 2 * side);
+    private BlockPos bridgeTurbolift() {
+        return new BlockPos((int) Math.round(sCx) + 8, bridgeFloor + 2, 2);
     }
 
     /** Hohler Raum mit Wänden, Boden und Decke; die Außenhülle bleibt erhalten. */
@@ -779,17 +823,15 @@ public final class EnterpriseBlueprint {
         return true;
     }
 
+    /** Ein Turbolift auf der Brücke mit zwei Zielen; Maschinenraum und Transporterraum fahren zur Brücke. */
     private void linkTurbolifts(BlockPos engineering, BlockPos transporter) {
-        ShipPart lift = ShipPart.TURBOLIFT;
-        BlockPos toEng = bridgeTurbolift(-1);
-        set(toEng.getX(), toEng.getY(), toEng.getZ(), lift, Direction.NORTH);
-        turboLinks.add(new TurboLink(toEng, engineering, "deck.simonspacemod.engineering"));
-        turboLinks.add(new TurboLink(engineering, toEng, "deck.simonspacemod.bridge"));
+        BlockPos bridge = bridgeTurbolift();
+        set(bridge.getX(), bridge.getY(), bridge.getZ(), ShipPart.TURBOLIFT, Direction.NORTH);
+        turboLinks.add(new TurboLink(bridge, engineering, "deck.simonspacemod.engineering"));
+        turboLinks.add(new TurboLink(engineering, bridge, "deck.simonspacemod.bridge"));
         if (transporter != null) {
-            BlockPos toTr = bridgeTurbolift(1);
-            set(toTr.getX(), toTr.getY(), toTr.getZ(), lift, Direction.NORTH);
-            turboLinks.add(new TurboLink(toTr, transporter, "deck.simonspacemod.transporter"));
-            turboLinks.add(new TurboLink(transporter, toTr, "deck.simonspacemod.bridge"));
+            turboLinks.add(new TurboLink(bridge, transporter, "deck.simonspacemod.transporter"));
+            turboLinks.add(new TurboLink(transporter, bridge, "deck.simonspacemod.bridge"));
         }
     }
 

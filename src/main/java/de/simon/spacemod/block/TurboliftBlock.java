@@ -17,7 +17,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
-/** Turbolift-Panel: Rechtsklick bringt den Spieler zum verknüpften Deck (z.B. Brücke &lt;-&gt; Maschinenraum). */
+/**
+ * Turbolift: Rechtsklick fährt zum ausgewählten Deck, Schleichen + Rechtsklick wählt ein anderes Deck
+ * (z.B. von der Brücke zum Maschinenraum oder Transporterraum).
+ */
 public class TurboliftBlock extends FacingBlock implements EntityBlock {
     public static final MapCodec<TurboliftBlock> CODEC = simpleCodec(TurboliftBlock::new);
 
@@ -40,16 +43,22 @@ public class TurboliftBlock extends FacingBlock implements EntityBlock {
         if (!(level instanceof ServerLevel server) || !(player instanceof ServerPlayer sp)) {
             return InteractionResult.SUCCESS;
         }
-        if (!(level.getBlockEntity(pos) instanceof TurboliftBlockEntity be) || be.getTarget() == null) {
+        if (!(level.getBlockEntity(pos) instanceof TurboliftBlockEntity be) || be.getSelected() == null) {
             sp.sendOverlayMessage(Component.translatable("message.simonspacemod.turbolift.unlinked"));
             return InteractionResult.CONSUME;
         }
-        BlockPos target = be.getTarget();
-        BlockState targetState = server.getBlockState(target);
+        // Schleichen + Rechtsklick: anderes Deck wählen
+        if (sp.isShiftKeyDown()) {
+            TurboliftBlockEntity.Destination next = be.cycle();
+            sp.sendOverlayMessage(Component.translatable("message.simonspacemod.turbolift.selected", Component.translatable(next.key())));
+            return InteractionResult.CONSUME;
+        }
+        TurboliftBlockEntity.Destination dest = be.getSelected();
+        BlockState targetState = server.getBlockState(dest.pos());
         Direction out = targetState.hasProperty(FACING) ? targetState.getValue(FACING) : Direction.NORTH;
-        BlockPos stand = target.relative(out);
+        BlockPos stand = dest.pos().relative(out);
         Beam.teleport(sp, server, stand.getX() + 0.5, stand.getY(), stand.getZ() + 0.5, out.toYRot());
-        sp.sendOverlayMessage(Component.translatable("message.simonspacemod.turbolift.arrived", Component.translatable(be.getDestination())));
+        sp.sendOverlayMessage(Component.translatable("message.simonspacemod.turbolift.arrived", Component.translatable(dest.key())));
         return InteractionResult.CONSUME;
     }
 }

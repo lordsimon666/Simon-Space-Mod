@@ -48,6 +48,7 @@
   "deck.simonspacemod.engineering": "Maschinenraum",
   "deck.simonspacemod.transporter": "Transporterraum",
   "message.simonspacemod.turbolift.arrived": "Turbolift: %s",
+  "message.simonspacemod.turbolift.selected": "Turbolift-Ziel: %s (Rechtsklick zum Fahren)",
   "message.simonspacemod.turbolift.unlinked": "Dieser Turbolift ist mit keinem Deck verbunden.",
   "message.simonspacemod.transporter.energize": "Energie! Beamen Sie mit dem Kommunikator zurück.",
   "message.simonspacemod.transporter.no_ground": "Kein Boden unter dem Schiff gefunden.",

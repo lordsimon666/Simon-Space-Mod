@@ -48,6 +48,7 @@
   "deck.simonspacemod.engineering": "Engineering",
   "deck.simonspacemod.transporter": "Transporter Room",
   "message.simonspacemod.turbolift.arrived": "Turbolift: %s",
+  "message.simonspacemod.turbolift.selected": "Turbolift destination: %s (right-click to go)",
   "message.simonspacemod.turbolift.unlinked": "This turbolift is not linked to any deck.",
   "message.simonspacemod.transporter.energize": "Energize! Use the communicator to beam back up.",
   "message.simonspacemod.transporter.no_ground": "No ground found below the ship.",

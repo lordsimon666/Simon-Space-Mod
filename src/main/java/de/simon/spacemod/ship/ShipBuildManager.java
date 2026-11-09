@@ -123,11 +123,13 @@ public final class ShipBuildManager {
 
         void finish() {
             ServerLevel level = placement.level();
+            java.util.Set<BlockPos> cleared = new java.util.HashSet<>();
             for (EnterpriseBlueprint.TurboLink link : blueprint.turboLinks) {
                 BlockPos from = placement.toWorld(blueprint, link.from().getX(), link.from().getY(), link.from().getZ());
                 BlockPos to = placement.toWorld(blueprint, link.to().getX(), link.to().getY(), link.to().getZ());
                 if (level.getBlockEntity(from) instanceof TurboliftBlockEntity be) {
-                    be.setTarget(to, link.destinationKey());
+                    if (cleared.add(from)) be.clearDestinations();
+                    be.addDestination(to, link.destinationKey());
                 } else {
                     LOGGER.warn("[{}] Turbolift bei {} hat kein Block-Entity", SimonSpaceMod.MODID, from);
                 }
