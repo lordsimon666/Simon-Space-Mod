@@ -685,19 +685,25 @@ public final class EnterpriseBlueprint {
         }
         if (yhi < 0) return;
         double yc = (ylo + yhi) / 2.0, hy = (yhi - ylo + 1) / 2.0, hz = wmax + 0.5, m = Math.min(hy, hz);
-        double cy = yc, ry, rz, inner = 0, ring = 0;
-        ShipPart outer = ShipPart.DEFLECTOR_DISH_BLUE, core = null;
+        double cy = yc, ry, rz, inner = 0, ring = 0, depth;
+        boolean concave = false;
+        ShipPart outer = ShipPart.DEFLECTOR_DISH_BLUE, core = null, ringPart = ShipPart.HULL_DARK;
         switch (design) {
-            case NCC_1701 -> { ry = rz = 0.62 * m; outer = ShipPart.DEFLECTOR_DISH; }
-            case NCC_1701_A -> { ry = rz = 0.72 * m; ring = 0.84 * m; }
-            case NCC_1701_B -> ry = rz = 0.42 * m;
-            case NCC_1701_C -> ry = rz = 0.58 * m;
-            case NCC_1701_D -> { cy = yc + 0.4 * hy; ry = 0.4 * hy; rz = 0.45 * hz; outer = ShipPart.DEFLECTOR_DISH; core = ShipPart.DEFLECTOR_DISH_BLUE; inner = 0.55; }
-            case NCC_1701_E -> ry = rz = 0.5 * m;
+            // Originalserie: gewölbte Kupferschüssel (Rand vorne) in einem Hüllenring, Antenne in der Mitte
+            case NCC_1701 -> { ry = rz = 0.6 * m; ring = 0.75 * m; outer = ShipPart.DEFLECTOR_DISH; ringPart = ShipPart.HULL_PLATING; depth = 0.3; concave = true; }
+            // Refit: große blau leuchtende Schüssel, leicht nach vorne gewölbt, dunkler Rahmen
+            case NCC_1701_A -> { ry = rz = 0.72 * m; ring = 0.84 * m; depth = 0.15; }
+            // Excelsior-B: hohes blaues Oval unten am Kielrumpf
+            case NCC_1701_B -> { cy = yc - 0.15 * hy; ry = 0.5 * m; rz = 0.34 * m; depth = 0.12; }
+            case NCC_1701_C -> { ry = rz = 0.58 * m; depth = 0.1; }
+            // Galaxy: breites flaches Oval, Kupferrand, blau leuchtender Ring, Kupfermitte
+            case NCC_1701_D -> { cy = yc + 0.4 * hy; ry = 0.3 * hy; rz = 0.45 * hz; outer = ShipPart.DEFLECTOR_DISH; core = ShipPart.DEFLECTOR_DISH_BLUE; inner = 0.85; depth = 0; }
+            case NCC_1701_E -> { ry = rz = 0.5 * m; depth = 0.12; }
             default -> { return; }
         }
         ry = Math.max(1.5, ry);
         rz = Math.max(1.5, rz);
+        double rmin = Math.min(ry, rz), dmax = depth * rmin;
         double reach = Math.max(ring, Math.max(ry, rz)) + 1;
         int frontX = Integer.MAX_VALUE;
         for (int y = (int) Math.floor(cy - reach); y <= cy + reach; y++)
@@ -707,12 +713,17 @@ public final class EnterpriseBlueprint {
                 if (e > 1 && !inRing) continue;
                 int x = frontHull(y, z, true);
                 if (x < 0) continue;
-                set(x, y, z, inRing ? ShipPart.HULL_DARK : core != null && e <= inner ? core : outer);
-                if (Math.abs(y - cy) < 0.5 && z == 0) frontX = x;
+                ShipPart part = inRing ? ringPart
+                    : core != null && e <= inner && e > 0.5 ? core : outer;
+                // Wölbung: Blöcke vor die Hülle setzen (konkav: Rand weiter vorne, konvex: Mitte)
+                int d = inRing ? (int) Math.round(concave ? dmax + 1 : dmax * 0.3)
+                    : (int) Math.round(dmax * (concave ? e : 1 - e * e));
+                for (int k = 0; k <= d; k++) set(x - k, y, z, part);
+                if (Math.abs(y - cy) < 0.5 && z == 0) frontX = x - d;
             }
         // Originalserie: Antenne in der Mitte der Schüssel
         if (design == ShipDesign.NCC_1701 && frontX != Integer.MAX_VALUE) {
-            int len = (int) Math.max(2, Math.round(0.5 * m));
+            int len = (int) Math.max(2, Math.round(0.6 * m));
             for (int k = 1; k <= len; k++) set(frontX - k, (int) Math.round(cy), 0, ShipPart.HULL_DARK);
         }
     }
@@ -1233,9 +1244,17 @@ public final class EnterpriseBlueprint {
             // Sekundärhülle: Text vor dem Pylon, roter Streifen darunter
             int ey = (int) Math.round(eY + eR * 0.25);
             int ex = (int) Math.round(eXf + (excelsior ? 0.25 : 0.5) * (eXr - eXf)); // Excelsior: vor den Gondeln
-            sideText(regText, side > 0 ? ex + reg : ex, ey + 2, side);
+            if (design != ShipDesign.NCC_1701) sideText(regText, side > 0 ? ex + reg : ex, ey + 2, side); // Originalserie: keine Kennung am Unterrumpf
             int px0 = (int) Math.round(eXf + 0.15 * (eXr - eXf));
-            if (refit) pennant(px0, ex + reg + 2, ey - 5, side, 1); // Refit: Wimpel mit Pfeilspitze vorne
+            if (design == ShipDesign.NCC_1701) {
+                // Originalserie: Wimpel mit Pfeilspitze und drei roten Streifen (nach unten kürzer)
+                // kurz, vorne am Rumpf (wie am Studiomodell)
+                double L = eXr - eXf;
+                int s0 = (int) Math.round(eXf + 0.08 * L);
+                pennant(s0, (int) Math.round(s0 + 0.3 * L), ey - 5, side, 1);
+                for (int x = s0 + 4; x < s0 + 0.22 * L; x++) markSide(x, ey - 7, side, ShipPart.HULL_PENNANT);
+                for (int x = s0 + 4; x < s0 + 0.15 * L; x++) markSide(x, ey - 9, side, ShipPart.HULL_PENNANT);
+            } else if (refit) pennant(px0, ex + reg + 2, ey - 5, side, 1); // Refit: Wimpel mit Pfeilspitze vorne
             else for (int x = px0; x < ex + reg + 2; x++) markSide(x, ey - 5, side, ShipPart.HULL_PENNANT);
         }
         if (design == ShipDesign.NCC_1701_D) {
