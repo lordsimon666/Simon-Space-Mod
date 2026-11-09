@@ -37,9 +37,9 @@ public final class EnterpriseBlueprint {
     private final boolean refit;
     private final boolean excelsior;
     /** Excelsior: halbe Breite des Unterrumpfs. */
-    private final double eW;
+    private double eW;
     /** Excelsior: halbe Breite der (flachen) Gondeln. */
-    private final double nW;
+    private double nW;
     public final int sizeX, sizeY, sizeZ;
     /** Verschiebung lokales z -> Rasterindex. */
     public final int zOffset;
@@ -60,11 +60,19 @@ public final class EnterpriseBlueprint {
     // ---- Abgeleitete Geometrie (in Blöcken) ----
     private final double s;          // Hüllen-Skalierung
     private final double k;          // Skalierung der Sekundärhülle (mind. so groß, dass der Maschinenraum passt)
-    private final double sCx, sR, sMid; // Untertassensektion: Mittelpunkt X, Radius, Mittelebene
-    private final double eY, eR, eXf, eXr; // Sekundärhülle: Achshöhe, Radius, Front, Heck
-    private final double nZ, nY, nR, nX0, nX1; // Warpgondeln
-    private final int bridgeFloor;
-    private final int floorBase;
+    // Nicht final: werden bei vorhandenem 3D-Modell aus dem Modell vermessen.
+    private double sCx, sR, sMid; // Untertassensektion: Mittelpunkt X, Radius, Mittelebene
+    private double eY, eR, eXf, eXr; // Sekundärhülle: Achshöhe, Radius, Front, Heck
+    private double nZ, nY, nR, nX0, nX1; // Warpgondeln
+    private int bridgeFloor;
+    private int floorBase;
+
+    /** Außenform aus einem 3D-Modell (oder null = eingebaute, berechnete Form). */
+    private final ShipModel model;
+    /** Aus dem Modell vermessene Profile der Untertasse (Index = Radius in Blöcken). */
+    private double[] topProf, botProf;
+    /** Aus dem Modell vermessener Unterrumpf je x: Ober-/Unterkante. */
+    private double[] lowTop, lowBot;
 
     public EnterpriseBlueprint(double scale) {
         this(ShipDesign.NCC_1701, scale);
@@ -97,12 +105,18 @@ public final class EnterpriseBlueprint {
         nX0 = (excelsior ? 227 : refit ? 140 : 150) * s;
         nX1 = (excelsior ? 467 : refit ? 305 : 289) * s;
 
-        bridgeFloor = (int) Math.floor(saucerTop(0));
+        model = ShipModel.load(design, scale);
+        if (model != null) {
+            fitToModel();
+            bridgeFloor = (int) Math.floor(topProf[Math.min(topProf.length - 1, (int) Math.round(11 * Math.min(1, s / 0.75)))]);
+        } else {
+            bridgeFloor = (int) Math.floor(saucerTop(0));
+        }
         floorBase = Math.floorMod(bridgeFloor, DECK_HEIGHT);
 
-        sizeX = (int) Math.ceil(Math.max(nX1, eXr) + 3);
-        sizeY = Math.max(bridgeFloor + 12, (int) Math.ceil(nY + nR + 3));
-        int halfZ = (int) Math.ceil(Math.max(sR, nZ + nR) + 2);
+        sizeX = model != null ? model.sx + 2 : (int) Math.ceil(Math.max(nX1, eXr) + 3);
+        sizeY = model != null ? Math.max(model.sy + 2, bridgeFloor + 12) : Math.max(bridgeFloor + 12, (int) Math.ceil(nY + nR + 3));
+        int halfZ = model != null ? Math.max(model.zc, model.sz - 1 - model.zc) + 2 : (int) Math.ceil(Math.max(sR, nZ + nR) + 2);
         zOffset = halfZ;
         sizeZ = 2 * halfZ + 1;
 
@@ -116,7 +130,7 @@ public final class EnterpriseBlueprint {
         registryLettering();
         hullDetails();
         if (refit) torpedoLaunchers();
-        smoothSaucer();
+        if (model == null) smoothSaucer(); // das Modell ist schon glatt
         boolean fullDecks = s >= 0.75;
         if (fullDecks) {
             layoutSaucerDecks();
@@ -227,7 +241,16 @@ public final class EnterpriseBlueprint {
         return ((i + j) & 1) == 0 ? (h & 3) != 0 : (h & 7) == 0;
     }
 
+    private static double prof(double[] p, double r) {
+        if (r <= 0) return p[0];
+        int i = (int) Math.floor(r);
+        if (i >= p.length - 1) return p[p.length - 1];
+        double f = r - i;
+        return p[i] * (1 - f) + p[i + 1] * f;
+    }
+
     private double saucerTop(double r) {
+        if (model != null) return prof(topProf, r);
         double u = Math.min(1, r / sR);
         if (excelsior) {
             // flache Untertasse, kegelförmig zur Mitte ansteigend, Stufe um den Brückenbereich
@@ -241,11 +264,17 @@ public final class EnterpriseBlueprint {
     }
 
     private double saucerBottom(double r) {
+        if (model != null) return prof(botProf, r);
         double u = Math.min(1, r / sR);
         return sMid - Math.max(1.6, s * ((excelsior ? 2 : 2.5) + (excelsior ? 3 : refit ? 6.5 : 5.5) * (1 - u * u)));
     }
 
     private double secondaryRadius(double x) {
+        if (model != null) {
+            int ix = (int) Math.round(x);
+            if (ix < 0 || ix >= lowTop.length || Double.isNaN(lowTop[ix])) return -1;
+            return (lowTop[ix] - lowBot[ix]) / 2;
+        }
         double f = (x - eXf) / (eXr - eXf);
         if (f < 0 || f > 1) return -1;
         if (excelsior) {
@@ -379,7 +408,187 @@ public final class EnterpriseBlueprint {
         return NONE;
     }
 
+    // =====================================================================================
+    //  Form aus dem 3D-Modell
+    // =====================================================================================
+
+    private boolean ms(int x, int y, int z) {
+        return model.solid(x, y, z + model.zc);
+    }
+
+    /** Lauf massiver Zellen in der Säule (x, z), der y0 enthält (bzw. der nächste innerhalb von ±4). */
+    private int[] runAt(int x, int z, int y0) {
+        for (int d = 0; d <= 4; d++)
+            for (int y : new int[] {y0 + d, y0 - d}) {
+                if (!ms(x, y, z)) continue;
+                int lo = y, hi = y;
+                while (ms(x, lo - 1, z)) lo--;
+                while (ms(x, hi + 1, z)) hi++;
+                return new int[] {lo, hi};
+            }
+        return null;
+    }
+
+    private static double median(java.util.List<Double> v) {
+        if (v.isEmpty()) return Double.NaN;
+        java.util.Collections.sort(v);
+        return v.get(v.size() / 2);
+    }
+
+    /**
+     * Vermisst das Modell: Untertasse (Mitte, Radius, Mittelebene, Ober-/Unterseitenprofil), Gondeln
+     * (Lage, Größe, Anfang/Ende) und Unterrumpf (Ober-/Unterkante je x, Front, Heck, Achse).
+     * Damit funktionieren Decks, Räume, Brücke, Farben und Beschriftung wie bei der berechneten Form.
+     */
+    private void fitToModel() {
+        int gx = model.sx, gy = model.sy;
+        int zmin = -model.zc, zmax = model.sz - 1 - model.zc;
+        // halbe Breite je x
+        int[] hw = new int[gx];
+        for (int x = 0; x < gx; x++) {
+            int m = -1;
+            for (int z = zmin; z <= zmax; z++)
+                for (int y = 0; y < gy && m < Math.abs(z); y++)
+                    if (ms(x, y, z)) { m = Math.max(m, Math.abs(z)); break; }
+            hw[x] = m;
+        }
+        int best = 0;
+        for (int x = 0; x < gx * 0.6; x++) if (hw[x] > hw[best]) best = x;
+        double sum = 0;
+        int cnt = 0;
+        for (int x = 0; x < gx * 0.6; x++) if (hw[x] >= hw[best] - 0.5) { sum += x; cnt++; }
+        sCx = sum / cnt;
+        sR = hw[best] + 0.5;
+        // Mittelebene am Rand
+        java.util.List<Double> mids = new java.util.ArrayList<>();
+        for (double th : new double[] {0, 0.8, -0.8, 1.57, -1.57}) {
+            int x = (int) Math.round(sCx - 0.85 * sR * Math.cos(th)), z = (int) Math.round(0.85 * sR * Math.sin(th));
+            for (int y = 0; y < gy; y++)
+                if (ms(x, y, z)) {
+                    int[] run = runAt(x, z, y);
+                    mids.add((run[0] + run[1]) / 2.0);
+                    break;
+                }
+        }
+        sMid = median(mids);
+        // Profile der Untertasse
+        int nr = (int) Math.ceil(sR) + 1;
+        topProf = new double[nr + 1];
+        botProf = new double[nr + 1];
+        for (int r = 0; r <= nr; r++) {
+            java.util.List<Double> tops = new java.util.ArrayList<>(), bots = new java.util.ArrayList<>();
+            for (double th : new double[] {0, 0.5, -0.5, 1.0, -1.0, 1.57, -1.57}) {
+                int x = (int) Math.round(sCx - r * Math.cos(th)), z = (int) Math.round(r * Math.sin(th));
+                int[] run = runAt(x, z, (int) Math.round(sMid));
+                if (run != null) { tops.add((double) run[1]); bots.add((double) run[0]); }
+            }
+            topProf[r] = median(tops);
+            botProf[r] = median(bots);
+        }
+        for (int r = 1; r <= nr; r++) {
+            if (Double.isNaN(topProf[r])) topProf[r] = topProf[r - 1];
+            if (Double.isNaN(botProf[r])) botProf[r] = botProf[r - 1];
+        }
+        // Gondeln: Querschnitt kurz vor dem Heck
+        int xs = (int) Math.round(gx * 0.92);
+        double cy = 0, cz = 0;
+        int ylo = gy, yhi = 0, zlo = zmax, zhi = 0, c = 0;
+        for (int z = 1; z <= zmax; z++)
+            for (int y = 0; y < gy; y++)
+                if (ms(xs, y, z)) { cy += y; cz += z; c++; ylo = Math.min(ylo, y); yhi = Math.max(yhi, y); zlo = Math.min(zlo, z); zhi = Math.max(zhi, z); }
+        if (c > 0) {
+            nY = cy / c;
+            nZ = cz / c;
+            nR = Math.max(1.5, (yhi - ylo + 1) / 2.0);
+            nW = Math.max(1.5, (zhi - zlo + 1) / 2.0);
+            int ny = (int) Math.round(nY), nz = (int) Math.round(nZ);
+            int x0 = xs, x1 = xs;
+            while (x0 > 0 && (ms(x0 - 1, ny, nz) || ms(x0 - 2, ny, nz))) x0--;
+            while (x1 < gx - 1 && ms(x1 + 1, ny, nz)) x1++;
+            nX0 = x0;
+            nX1 = x1;
+        }
+        // Unterrumpf: von unten durch die Mittellinie nach oben, solange er breit genug bleibt
+        lowTop = new double[gx];
+        lowBot = new double[gx];
+        java.util.Arrays.fill(lowTop, Double.NaN);
+        java.util.Arrays.fill(lowBot, Double.NaN);
+        double thick = 0;
+        int xThick = -1;
+        eXf = Double.NaN;
+        for (int x = 0; x < gx; x++) {
+            int yb = -1;
+            for (int y = 0; y < gy; y++) if (ms(x, y, 0)) { yb = y; break; }
+            if (yb < 0) continue;
+            double r = Math.abs(x - sCx);
+            double limit = r <= sR ? saucerBottom(r) - 1 : sMid + 1;
+            if (yb >= limit - 2) continue; // nur die Untertasse
+            int maxw = 0, y = yb;
+            while (y + 1 < limit && ms(x, y + 1, 0)) {
+                int w = 0;
+                while (ms(x, y + 1, w + 1)) w++;
+                maxw = Math.max(maxw, w);
+                if (w < 0.35 * maxw && y - yb > 3) break;
+                y++;
+            }
+            if (y - yb < 2) continue;
+            lowBot[x] = yb;
+            lowTop[x] = y;
+            if (Double.isNaN(eXf)) eXf = x;
+            eXr = x;
+            if (y - yb > thick) { thick = y - yb; xThick = x; }
+        }
+        if (xThick >= 0) {
+            eY = (lowTop[xThick] + lowBot[xThick]) / 2;
+            eR = (lowTop[xThick] - lowBot[xThick]) / 2;
+            int w = 0;
+            while (ms(xThick, (int) Math.round(eY), w + 1)) w++;
+            eW = w;
+        }
+    }
+
+    /** Senkrechte Heckfläche (mind. 3 Blöcke hoch) – bei der Excelsior sitzen dort die Impulstriebwerke. */
+    private boolean rearWall(int x, int y, int z) {
+        return compAt(x + 1, y, z) == NONE && compAt(x + 1, y + 1, z) == NONE && compAt(x + 1, y - 1, z) == NONE
+            && compAt(x, y + 1, z) != NONE && compAt(x, y - 1, z) != NONE && x > sCx + 0.3 * sR;
+    }
+
+    private boolean inEngineeringBox(int x, int y, int z) {
+        int[] b = engineeringBox();
+        return x >= b[0] - 1 && x <= b[1] + 1 && y >= b[2] - 1 && y <= b[3] + 1 && Math.abs(z) <= 7;
+    }
+
+    /** Lage des Maschinenraums: {x von, x bis, Boden, Decke}. */
+    private int[] engineeringBox() {
+        double f0 = eXf + (refit || excelsior ? 0.15 : 0.12) * (eXr - eXf), f1 = eXf + (refit ? 0.45 : excelsior ? 0.5 : 0.6) * (eXr - eXf);
+        int x0 = (int) Math.round((f0 + f1) / 2);
+        int yF = (int) Math.round(eY) - 3;
+        return new int[] {x0 - 10, x0 + 10, yF, yF + 7};
+    }
+
+    /** Bauteil-Zuordnung für die Form aus dem 3D-Modell. */
+    private byte classifyModel(int x, int y, int z) {
+        double dx = x - sCx;
+        double r = Math.sqrt(dx * dx + (double) z * z);
+        double az = Math.abs(z);
+        if (r <= 10) {
+            int rel = y - bridgeFloor;
+            if (rel >= -1 && rel <= 6) return BRIDGE;
+            if (rel == 7 && r <= 8.5) return BRIDGE;
+            if (rel == 8 && r <= 5.5) return BRIDGE;
+        }
+        if (inEngineeringBox(x, y, z) && !ms(x, y, z) && s < 0.75) return SECONDARY; // Platz für den Maschinenraum
+        if (!ms(x, y, z)) return NONE;
+        if (r <= sR + 0.5 && y >= saucerBottom(r) - 0.5 && y <= saucerTop(r) + 0.5) return SAUCER;
+        if (x >= nX0 - 1 && Math.abs(az - nZ) <= nW + 1.5 && Math.abs(y - nY) <= nR + 1.5)
+            return !refit && x < nX0 + nR * 0.9 ? BUSSARD : NACELLE; // Refit: graue Kappe mit seitlichen Fenstern
+        if (x >= 0 && x < lowTop.length && !Double.isNaN(lowTop[x]) && y >= lowBot[x] - 0.5 && y <= lowTop[x] + 0.5)
+            return SECONDARY;
+        return az <= 6 * s + 2 ? NECK : PYLON;
+    }
+
     private byte classify(int x, int y, int z) {
+        if (model != null) return classifyModel(x, y, z);
         if (excelsior) return classifyExcelsior(x, y, z);
         double dx = x - sCx;
         double r = Math.sqrt(dx * dx + (double) z * z);
@@ -505,6 +714,7 @@ public final class EnterpriseBlueprint {
                                     if ((refit || excelsior) && aztec(r, Math.atan2(z, dx))) st = ShipPart.HULL_AZTEC;
                                     // Excelsior: dunkler petrolfarbener Ring auf der Oberseite
                                     if (excelsior && compAt(x, y + 1, z) == NONE && r > 0.87 * sR && r < 0.93 * sR) st = ShipPart.HULL_TEAL;
+                                    if (excelsior && model != null && rearWall(x, y, z) && y > sMid + 1) st = ShipPart.IMPULSE_ENGINE;
                                     if (excelsior && compAt(x, y + 1, z) == NONE && Math.abs(r - 0.56 * sR) < 0.8) st = ShipPart.HULL_PENNANT;
                                     // Refit: rot leuchtende Impulstriebwerke hinten am erhöhten Aufbau
                                     if (refit && dx > 0 && Math.abs(z) <= 8 * s && Math.abs(r - 24 * s) < 1.3 && openSide)
@@ -512,9 +722,17 @@ public final class EnterpriseBlueprint {
                                 }
                             }
                             case BRIDGE -> st = y >= bridgeFloor + 6 ? panel : plating;
-                            case NECK, PYLON -> st = refit && aztecXY(x, y + z) ? ShipPart.HULL_AZTEC
+                            case NECK, PYLON -> st = excelsior && model != null && rearWall(x, y, z) ? ShipPart.IMPULSE_ENGINE
+                                : (refit || excelsior) && aztecXY(x, y + z) ? ShipPart.HULL_AZTEC
                                 : Math.floorMod(x, 6) == 0 ? panel : plating;
                             case SECONDARY -> {
+                                // Modell: Deflektorschüssel vorne am Unterrumpf
+                                if (model != null && x <= eXf + 4 * Math.max(s, 0.5) && compAt(x - 1, y, z) == NONE) {
+                                    int fx = (int) Math.min(lowTop.length - 1, Math.round(eXf) + 2);
+                                    double yc = Double.isNaN(lowTop[fx]) ? eY : (lowTop[fx] + lowBot[fx]) / 2;
+                                    double hh = Double.isNaN(lowTop[fx]) ? eR : (lowTop[fx] - lowBot[fx]) / 2;
+                                    if (Math.hypot(y - yc, z) <= Math.max(1.5, 0.65 * hh)) { st = dish; break; }
+                                }
                                 if (excelsior && compAt(x, y + 1, z) == NONE && Math.floorMod(x + Math.abs(z), 16) < 3) {
                                     st = ShipPart.HULL_TEAL; // schräge Streifen oben auf dem Unterrumpf
                                     break;
@@ -555,7 +773,8 @@ public final class EnterpriseBlueprint {
                                 else if (excelsior && y > nY + nR * 0.5 && Math.abs(Math.abs(z) - nZ) <= nW * 0.55)
                                     st = grille; // blauer Streifen oben
                                 else if (excelsior && Math.abs(y - nY) <= 0.6) st = ShipPart.HULL_TEAL; // Seitenband
-                                else if (refit && side && Math.abs(y - nY) <= nR * 0.45 && x >= nX0 + nR * 0.7 && x <= nX0 + nR * 2.4)
+                                else if (refit && side && Math.abs(y - nY) <= nR * (model != null ? 0.3 : 0.45)
+                                    && x >= nX0 + nR * 0.8 && x <= nX0 + nR * (model != null ? 1.8 : 2.4))
                                     st = bussard; // Refit: rötliche ovale Bussard-Fenster seitlich vorne
                                 else if (refit && x < nX0 + nR * 2.6) st = plating; // graue Frontkappe
                                 else if ((inner || refit) && mid && x < nX1 - (refit ? 9 : 6) * s) st = grille; // Refit: Gitter beidseitig
@@ -1008,9 +1227,9 @@ public final class EnterpriseBlueprint {
 
     /** Maschinenraum (19 x 11 m, zwei Ebenen) mit Warpkern in der Sekundärhülle. */
     private BlockPos buildEngineering() {
-        double f0 = eXf + (refit || excelsior ? 0.15 : 0.12) * (eXr - eXf), f1 = eXf + (refit ? 0.45 : excelsior ? 0.5 : 0.6) * (eXr - eXf);
-        int x0 = (int) Math.round((f0 + f1) / 2);
-        int yF = (int) Math.round(eY) - 3;
+        int[] box = engineeringBox();
+        int x0 = box[0] + 10;
+        int yF = box[2];
         room(x0 - 10, x0 + 10, yF, yF + 7, -6, 6);
 
         ShipPart core = ShipPart.WARP_CORE;
@@ -1102,7 +1321,23 @@ public final class EnterpriseBlueprint {
                 return transporterRoomAt(xt, 0, f, true);
             }
         }
+        // Ausweichlösung (z.B. dünne Untertasse bei kleinen Größen): irgendwo entlang der Mittellinie
+        for (int xt = 6; xt < sizeX - 6; xt++)
+            for (int f = sizeY - 7; f > 0; f--)
+                if (boxInterior(xt - 4, xt + 4, f + 1, f + 3, -4, 4) && !boxTouches(xt - 5, xt + 5, f, f + 4, -5, 5))
+                    return transporterRoomAt(xt, 0, f, true);
         return null;
+    }
+
+    /** Liegt schon ein besonderer Raum (Maschinenraum, Brücke) im Kasten? */
+    private boolean boxTouches(int x0, int x1, int y0, int y1, int z0, int z1) {
+        for (int x = x0; x <= x1; x++)
+            for (int y = y0; y <= y1; y++)
+                for (int z = z0; z <= z1; z++) {
+                    ShipPart p = get(x, y, z);
+                    if (p == ShipPart.WARP_CORE || p == ShipPart.ENGINEERING_CONSOLE || p == ShipPart.TURBOLIFT || compAt(x, y, z) == BRIDGE) return true;
+                }
+        return false;
     }
 
     /**

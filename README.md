@@ -13,7 +13,7 @@ Befehl in die Welt setzt – wahlweise die **NCC-1701** (Originalserie), die **N
 * Ohne Schiffsangabe wird die **NCC-1701** gebaut, z.B. `/enterprise spawn full`.
 * `/enterprise spawn ncc-1701-a full` baut die **NCC-1701-A** in Originalgröße (308 x 145 x 85 Blöcke).
 
-* `/enterprise spawn ncc-1701-b full` baut die **NCC-1701-B** in Originalgröße (470 x 195 x 75 Blöcke).
+* `/enterprise spawn ncc-1701-b full` baut die **NCC-1701-B** in Originalgröße (469 x 186 x 84 Blöcke).
 
 ### NCC-1701-B (Excelsior-Klasse)
 
@@ -146,6 +146,21 @@ F = roter Farbstoff, P = Enderperle, R = Redstone
   Warpkern, Plasmaleitung
 
 Dazu das Item Kommunikator. Alles ist im Kreativ-Tab „Simon Space Mod“ zu finden.
+
+## Außenform aus echten 3D-Modellen
+
+Die Außenhülle aller drei Schiffe stammt aus 3D-Modellen und ist dadurch sehr genau. Das Werkzeug
+`tools/voxelize_stl.py` rechnet ein STL-Modell auf die echte Schiffslänge in Blöcken um
+(NCC-1701: 289, NCC-1701-A: 305, NCC-1701-B: 467) und füllt das Innere. Die Ergebnisse liegen in
+`src/main/resources/ships/`. Beim Bauen vermisst die Mod die Form automatisch (Untertasse, Gondeln,
+Unterrumpf) und erzeugt daraus Decks, Räume, Brücke, Maschinenraum, Farben und Beschriftung.
+Fehlt ein Modell, wird die eingebaute, berechnete Form verwendet.
+
+**Modell-Quelle:** „Star Trek USS Enterprise Ultimate Collection“ von **Alexei Bruton (Solid_Alexei)**,
+Thingiverse #1423364 (Spiegel: archive.org/details/thingiverse-1423364), Lizenz
+**CC BY-NC 4.0** (https://creativecommons.org/licenses/by-nc/4.0/) – Namensnennung, nicht kommerziell.
+Die Modelle wurden in Blockraster umgewandelt. Deshalb darf auch diese Mod nur nicht-kommerziell
+verwendet werden.
 
 ## Bauen
 
