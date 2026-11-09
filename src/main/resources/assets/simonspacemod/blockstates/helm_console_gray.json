@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "simonspacemod:block/helm_console_gray"
+    },
+    "facing=east": {
+      "model": "simonspacemod:block/helm_console_gray",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "simonspacemod:block/helm_console_gray",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "simonspacemod:block/helm_console_gray",
+      "y": 270
+    }
+  }
+}

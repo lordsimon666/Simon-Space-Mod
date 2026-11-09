@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "simonspacemod:block/excelsior_display_2",
+    "side": "simonspacemod:block/bridge_wall_dark",
+    "top": "simonspacemod:block/bridge_wall_dark"
+  }
+}

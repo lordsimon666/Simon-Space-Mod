@@ -1,5 +1,6 @@
 {
   "values": [
+    "simonspacemod:light_pillar",
     "simonspacemod:hull_teal",
     "simonspacemod:bussard_blue",
     "simonspacemod:bridge_trim_cream",
@@ -50,6 +51,10 @@
     "simonspacemod:helm_console",
     "simonspacemod:transporter_console",
     "simonspacemod:biobed_monitor",
+    "simonspacemod:captains_chair_teal",
+    "simonspacemod:station_chair_teal",
+    "simonspacemod:helm_console_gray",
+    "simonspacemod:turbolift_door_teal",
     "simonspacemod:exam_table",
     "simonspacemod:medical_cabinet",
     "simonspacemod:crew_bed",
@@ -62,6 +67,8 @@
     "simonspacemod:warp_core",
     "simonspacemod:bridge_station",
     "simonspacemod:bridge_monitor",
+    "simonspacemod:excelsior_console",
+    "simonspacemod:excelsior_display",
     "simonspacemod:bridge_railing",
     "simonspacemod:bridge_railing_gray",
     "simonspacemod:bridge_railing_wood",

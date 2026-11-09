@@ -31,11 +31,11 @@ class EnterpriseBlueprintTest {
         assertTrue(bp.sizeY < 384 - 64, "zu hoch: " + bp.sizeY);
 
         // Wichtige Räume vorhanden
-        assertTrue(counts.get(ShipPart.CAPTAINS_CHAIR) >= 1);
+        assertTrue(counts.getOrDefault(ShipPart.CAPTAINS_CHAIR, 0) + counts.getOrDefault(ShipPart.CAPTAINS_CHAIR_TEAL, 0) >= 1);
         assertEquals(21, counts.get(ShipPart.VIEWSCREEN));
         assertTrue(counts.getOrDefault(ShipPart.BRIDGE_RAILING, 0) + counts.getOrDefault(ShipPart.BRIDGE_RAILING_GRAY, 0)
             + counts.getOrDefault(ShipPart.BRIDGE_RAILING_WOOD, 0) > 20, "Geländer fehlt");
-        assertTrue(counts.getOrDefault(ShipPart.BRIDGE_STATION, 0) > 10, "Stationen fehlen");
+        assertTrue(counts.getOrDefault(ShipPart.BRIDGE_STATION, 0) + counts.getOrDefault(ShipPart.EXCELSIOR_CONSOLE, 0) > 10, "Stationen fehlen");
         assertTrue(counts.getOrDefault(ShipPart.TRANSPORTER_ENERGIZER, 0) > 0, "Energiewand fehlt");
         assertTrue(counts.getOrDefault(ShipPart.WARP_CORE, 0) >= 30, "Warpkern fehlt");
         assertEquals(6, counts.get(ShipPart.TRANSPORTER_PAD), "Transporterraum fehlt");

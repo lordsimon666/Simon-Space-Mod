@@ -941,6 +941,110 @@ def tex_wall_dark():
     return img
 
 
+def tex_ex_console_front(v):
+    img = new((44, 46, 52))
+    px = img.load()
+    for x in range(16):
+        for y in range(16):
+            if y < 3:
+                px[x, y] = (24, 26, 30, 255)
+            elif 10 <= y <= 13:
+                px[x, y] = (230, 214, 170, 255) if y % 2 == 0 else (120, 110, 90, 255)  # cremefarbene Lamellen unten
+    return img
+
+
+def tex_ex_console_top(v):
+    img = new((14, 16, 18))
+    rnd = random.Random(100 + v)
+    px = img.load()
+    for x0 in (1, 9):
+        for x in range(x0, x0 + 6):
+            for y in range(2, 8):
+                px[x, y] = (10, 40, 20, 255)
+        for _ in range(8):
+            px[x0 + rnd.randrange(6), 2 + rnd.randrange(6)] = rnd.choice([(80, 255, 120), (60, 200, 255), (200, 255, 120)]) + (255,)
+    for x in range(1, 15):
+        if rnd.random() < 0.6:
+            px[x, 11] = (90, 230, 130, 255)
+    return img
+
+
+def tex_ex_display(v):
+    img = new((50, 52, 58))
+    px = img.load()
+    for x in range(1, 15):
+        for y in range(1, 15):
+            frame = x in (1, 14) or y in (1, 14)
+            px[x, y] = (40, 90, 200, 255) if frame else (4, 10, 6, 255)
+    rnd = random.Random(110 + v)
+    green = (60, 230, 110)
+    if v == 0:  # Schiffs-Schema
+        for x in range(3, 13):
+            px[x, 6] = green + (255,)
+        for x in range(4, 9):
+            px[x, 9] = green + (255,)
+        for y in range(6, 10):
+            px[4, y] = green + (255,)
+    elif v == 1:  # Balken
+        for x in range(3, 13, 2):
+            for y in range(13 - rnd.randint(2, 8), 13):
+                px[x, y] = green + (255,)
+    elif v == 2:  # Kreis
+        for x in range(2, 14):
+            for y in range(2, 14):
+                if abs(math.hypot(x - 7.5, y - 7.5) - 4) < 0.7:
+                    px[x, y] = green + (255,)
+    else:  # Text
+        for y in range(3, 13, 2):
+            for x in range(3, 3 + rnd.randint(4, 10)):
+                px[x, y] = (90, 200, 255, 255) if y == 3 else green + (255,)
+    return img
+
+
+def tex_light_pillar():
+    img = new((60, 62, 66))
+    px = img.load()
+    for y in range(16):
+        for x in range(4, 12):
+            px[x, y] = (245, 232, 196, 255) if y % 3 != 2 else (150, 140, 116, 255)
+        px[3, y] = (90, 92, 96, 255)
+        px[12, y] = (90, 92, 96, 255)
+    return img
+
+
+def tex_chair_teal():
+    return noise(new((44, 104, 112)), 5, 120)
+
+
+def tex_door_teal():
+    img = noise(new((30, 68, 72)), 3, 121)
+    px = img.load()
+    for y in range(16):
+        px[7, y] = (14, 30, 32, 255)
+        px[8, y] = (14, 30, 32, 255)
+        px[0, y] = (70, 72, 78, 255)
+        px[15, y] = (70, 72, 78, 255)
+    return img
+
+
+def tex_helm_gray():
+    return noise(new((138, 140, 144)), 4, 122)
+
+
+def tex_helm_gray_top():
+    img = new((20, 22, 24))
+    px = img.load()
+    rnd = random.Random(123)
+    for x in range(2, 14):
+        for y in range(3, 9):
+            px[x, y] = (12, 40, 24, 255)
+    for _ in range(14):
+        px[rnd.randrange(2, 14), rnd.randrange(3, 9)] = (90, 240, 130, 255)
+    for x in range(1, 15, 2):
+        px[x, 12] = rnd.choice([(255, 80, 60), (90, 240, 130), (240, 240, 240)]) + (255,)
+    return img
+
+
 def tex_railing_gray():
     return noise(new((150, 154, 162)), 5, 82)
 
@@ -1012,6 +1116,14 @@ TEXTURES = {
     "bridge_carpet_teal": tex_carpet_teal,
     "deck_plate": tex_deck_plate,
     "bridge_wall_dark": tex_wall_dark,
+    "light_pillar": tex_light_pillar,
+    "chair_teal": tex_chair_teal,
+    "turbolift_door_teal": tex_door_teal,
+    "helm_gray": tex_helm_gray,
+    "helm_gray_top": tex_helm_gray_top,
+    **{f"excelsior_console_front_{v}": (lambda v=v: tex_ex_console_front(v)) for v in range(4)},
+    **{f"excelsior_console_top_{v}": (lambda v=v: tex_ex_console_top(v)) for v in range(4)},
+    **{f"excelsior_display_{v}": (lambda v=v: tex_ex_display(v)) for v in range(4)},
     "sickbay_floor": tex_sickbay_floor,
     "bio_mattress": tex_bio_mattress,
     "bio_body": tex_bio_body,
@@ -1054,7 +1166,7 @@ def b(name):
     return f"{MODID}:block/{name}"
 
 
-SIMPLE = ["hull_teal", "bussard_blue", "bridge_trim_cream", "bridge_carpet_teal", "deck_plate", "bridge_wall_dark", "impulse_engine", "hull_aztec", "deflector_dish_blue", "bussard_red", "torpedo_launcher", "bridge_trim_blue", "sickbay_wall", "sickbay_floor", "cargo_container", "bridge_wall", "bridge_trim", "turbolift_frame", "transporter_wall", "transporter_platform",
+SIMPLE = ["light_pillar", "hull_teal", "bussard_blue", "bridge_trim_cream", "bridge_carpet_teal", "deck_plate", "bridge_wall_dark", "impulse_engine", "hull_aztec", "deflector_dish_blue", "bussard_red", "torpedo_launcher", "bridge_trim_blue", "sickbay_wall", "sickbay_floor", "cargo_container", "bridge_wall", "bridge_trim", "turbolift_frame", "transporter_wall", "transporter_platform",
           "transporter_energizer", "transporter_emitter", "nav_light_red", "nav_light_green", "hull_pennant",
           "hull_plating", "hull_panel", "hull_dark", "hull_window", "hull_marking", "deflector_dish",
           "bussard_collector", "nacelle_grille", "deck_floor", "bridge_deck", "corridor_wall",
@@ -1079,6 +1191,11 @@ FACING = {
     "helm_console": None,
     "transporter_console": None,
     "biobed_monitor": None,
+    "captains_chair_teal": None,
+    "station_chair_teal": None,
+    "helm_console_gray": None,
+    "turbolift_door_teal": {"parent": "minecraft:block/orientable",
+                            "textures": {"front": b("turbolift_door_teal"), "side": b("bridge_wall_dark"), "top": b("bridge_wall_dark")}},
     "exam_table": None,
     "medical_cabinet": {"parent": "minecraft:block/orientable",
                         "textures": {"front": b("cabinet_front"), "side": b("sickbay_wall"), "top": b("sickbay_wall")}},
@@ -1235,6 +1352,19 @@ def station_model(v):
     }
 
 
+def ex_console_model(v):
+    m = station_model(v)
+    m = json.loads(json.dumps(m))
+    m["textures"].update({"particle": b("bridge_wall_dark"), "front": b(f"excelsior_console_front_{v}"),
+                          "top": b(f"excelsior_console_top_{v}"), "side": b("bridge_wall_dark")})
+    return m
+
+
+def ex_display_model(v):
+    return {"parent": "minecraft:block/orientable",
+            "textures": {"front": b(f"excelsior_display_{v}"), "side": b("bridge_wall_dark"), "top": b("bridge_wall_dark")}}
+
+
 def monitor_model(v):
     return {"parent": "minecraft:block/orientable",
             "textures": {"front": b(f"bridge_monitor_{v}"), "side": b("bridge_wall"), "top": b("bridge_wall")}}
@@ -1374,6 +1504,13 @@ NAMES = {
     "bridge_carpet_teal": ("Petrolfarbener Teppich (Excelsior)", "Teal Carpet (Excelsior)"),
     "deck_plate": ("Riffelblech-Boden", "Diamond Plate Floor"),
     "bridge_wall_dark": ("Dunkle Brückenwand (Excelsior)", "Dark Bridge Wall (Excelsior)"),
+    "excelsior_console": ("Excelsior-Konsole", "Excelsior Console"),
+    "excelsior_display": ("Excelsior-Wandbildschirm", "Excelsior Wall Display"),
+    "light_pillar": ("Lichtsäule", "Light Pillar"),
+    "captains_chair_teal": ("Kommandantensessel (Excelsior)", "Captain's Chair (Excelsior)"),
+    "station_chair_teal": ("Stationsstuhl (Excelsior)", "Station Chair (Excelsior)"),
+    "turbolift_door_teal": ("Turbolift-Tür (Excelsior)", "Turbolift Door (Excelsior)"),
+    "helm_console_gray": ("Steuerkonsole (Excelsior)", "Helm Console (Excelsior)"),
     "bridge_railing_gray": ("Brückengeländer (Refit, grau)", "Bridge Railing (Refit, Gray)"),
     "bridge_trim_blue": ("Blaue Lichtleiste (Refit)", "Blue Light Strip (Refit)"),
     "sickbay_floor": ("Krankenstations-Boden", "Sickbay Floor"),
@@ -1415,7 +1552,10 @@ def main():
         models[name] = {"parent": "minecraft:block/cube_all", "textures": {"all": b(name)}}
     custom = {"captains_chair": CHAIR, "station_chair": STATION_CHAIR, "helm_console": HELM,
               "transporter_console": TRANSPORTER_CONSOLE, "crew_bed": CREW_BED, "crew_desk": CREW_DESK,
-              "biobed_monitor": BIOBED_MONITOR, "exam_table": EXAM_TABLE}
+              "biobed_monitor": BIOBED_MONITOR, "exam_table": EXAM_TABLE,
+              "captains_chair_teal": dict(CHAIR, textures=dict(CHAIR["textures"], seat=b("chair_teal"), white=b("helm_gray"), particle=b("chair_teal"))),
+              "station_chair_teal": dict(STATION_CHAIR, textures=dict(STATION_CHAIR["textures"], blue=b("helm_gray"), seat=b("chair_teal"), particle=b("chair_teal"))),
+              "helm_console_gray": dict(HELM, textures={"particle": b("helm_gray"), "red": b("helm_gray"), "top": b("helm_gray_top"), "black": b("bridge_wall_dark")})}
     for name, model in FACING.items():
         models[name] = model if model else custom[name]
     models["conference_table"] = CONFERENCE_TABLE
@@ -1436,7 +1576,8 @@ def main():
         write_json(os.path.join(DATA, "loot_table", "blocks", name + ".json"), loot(name))
 
     # Blöcke mit Varianten (Stationen, Monitore)
-    for name, fn in (("bridge_station", station_model), ("bridge_monitor", monitor_model)):
+    for name, fn in (("bridge_station", station_model), ("bridge_monitor", monitor_model),
+                     ("excelsior_console", ex_console_model), ("excelsior_display", ex_display_model)):
         for v in range(4):
             write_json(os.path.join(ASSETS, "models", "block", f"{name}_{v}.json"), fn(v))
         write_json(os.path.join(ASSETS, "blockstates", name + ".json"), variant_facing_blockstate(name))

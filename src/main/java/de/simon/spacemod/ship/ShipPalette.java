@@ -93,6 +93,15 @@ public final class ShipPalette {
             case BRIDGE_CARPET_TEAL -> ModBlocks.BRIDGE_CARPET_TEAL.get().defaultBlockState();
             case DECK_PLATE -> ModBlocks.DECK_PLATE.get().defaultBlockState();
             case BRIDGE_WALL_DARK -> ModBlocks.BRIDGE_WALL_DARK.get().defaultBlockState();
+            case EXCELSIOR_CONSOLE -> ModBlocks.EXCELSIOR_CONSOLE.get().defaultBlockState()
+                .setValue(VariantFacingBlock.VARIANT, EnterpriseBlueprint.variant(cellCode));
+            case EXCELSIOR_DISPLAY -> ModBlocks.EXCELSIOR_DISPLAY.get().defaultBlockState()
+                .setValue(VariantFacingBlock.VARIANT, EnterpriseBlueprint.variant(cellCode));
+            case LIGHT_PILLAR -> ModBlocks.LIGHT_PILLAR.get().defaultBlockState();
+            case CAPTAINS_CHAIR_TEAL -> ModBlocks.CAPTAINS_CHAIR_TEAL.get().defaultBlockState();
+            case STATION_CHAIR_TEAL -> ModBlocks.STATION_CHAIR_TEAL.get().defaultBlockState();
+            case TURBOLIFT_DOOR_TEAL -> ModBlocks.TURBOLIFT_DOOR_TEAL.get().defaultBlockState();
+            case HELM_CONSOLE_GRAY -> ModBlocks.HELM_CONSOLE_GRAY.get().defaultBlockState();
             case IRON_BARS -> Blocks.IRON_BARS.defaultBlockState()
                 .setValue(CrossCollisionBlock.NORTH, EnterpriseBlueprint.bar(cellCode, Direction.NORTH))
                 .setValue(CrossCollisionBlock.EAST, EnterpriseBlueprint.bar(cellCode, Direction.EAST))

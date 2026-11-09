@@ -84,6 +84,18 @@ public final class ModBlocks {
         BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_CYAN).strength(1.5F, 6F).sound(SoundType.WOOL));
     public static final RegistryObject<Block> DECK_PLATE = block("deck_plate", Block::new, metal(MapColor.COLOR_GRAY));
     public static final RegistryObject<Block> BRIDGE_WALL_DARK = block("bridge_wall_dark", Block::new, metal(MapColor.COLOR_BLACK));
+    public static final RegistryObject<Block> EXCELSIOR_CONSOLE = block("excelsior_console",
+        p -> new VariantFacingBlock(p, Shapes.or(Block.box(0, 0, 0, 16, 10, 16), Block.box(0, 10, 6, 16, 14, 16))),
+        glowing(metal(MapColor.COLOR_BLACK), 8).noOcclusion());
+    public static final RegistryObject<Block> EXCELSIOR_DISPLAY = block("excelsior_display", VariantFacingBlock::new, glowing(metal(MapColor.COLOR_BLACK), 9));
+    public static final RegistryObject<Block> LIGHT_PILLAR = block("light_pillar", Block::new, glowing(metal(MapColor.SAND), 12));
+    public static final RegistryObject<Block> CAPTAINS_CHAIR_TEAL = block("captains_chair_teal", CaptainsChairBlock::new, metal(MapColor.COLOR_CYAN).noOcclusion());
+    public static final RegistryObject<Block> STATION_CHAIR_TEAL = block("station_chair_teal",
+        p -> new ShapedFacingBlock(p, Shapes.or(Block.box(6, 0, 6, 10, 7, 10), Block.box(3, 7, 3, 13, 9, 13), Block.box(3, 9, 11, 13, 20, 14))),
+        metal(MapColor.COLOR_CYAN).noOcclusion());
+    public static final RegistryObject<Block> TURBOLIFT_DOOR_TEAL = block("turbolift_door_teal", FacingBlock::new, metal(MapColor.COLOR_CYAN));
+    public static final RegistryObject<Block> HELM_CONSOLE_GRAY = block("helm_console_gray",
+        p -> new ShapedFacingBlock(p, Block.box(0, 0, 2, 16, 12, 14)), glowing(metal(MapColor.COLOR_LIGHT_GRAY), 6).noOcclusion());
 
     // --- Brücke ---
     public static final RegistryObject<Block> BRIDGE_WALL = block("bridge_wall", Block::new, metal(MapColor.COLOR_LIGHT_GRAY));

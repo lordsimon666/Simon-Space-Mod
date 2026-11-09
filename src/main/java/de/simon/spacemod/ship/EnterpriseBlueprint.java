@@ -36,8 +36,10 @@ public final class EnterpriseBlueprint {
     public final ShipDesign design;
     private final boolean refit;
     private final boolean excelsior;
-    /** Excelsior: halbe Breite der (elliptischen) Maschinensektion. */
+    /** Excelsior: halbe Breite des Unterrumpfs. */
     private final double eW;
+    /** Excelsior: halbe Breite der (flachen) Gondeln. */
+    private final double nW;
     public final int sizeX, sizeY, sizeZ;
     /** Verschiebung lokales z -> Rasterindex. */
     public final int zOffset;
@@ -77,20 +79,22 @@ public final class EnterpriseBlueprint {
         this.k = Math.max(scale, 9.5 / 15.0);
 
         // Maße in Metern: Originalserie / Refit (NCC-1701-A) / Excelsior (NCC-1701-B)
-        eR = (excelsior ? 17 : refit ? 14 : 15) * k;
-        eW = 26 * k;
+        eR = (excelsior ? 15 : refit ? 14 : 15) * k;
+        eW = 40 * k;
         eY = 1 + eR;
-        sMid = eY + eR + (excelsior ? 16 : refit ? 14 : 20) * s;
-        sR = (excelsior ? 75 : refit ? 70 : 63.5) * s;
+        sMid = eY + eR + (excelsior ? 18 : refit ? 14 : 20) * s;
+        sR = (excelsior ? 94.5 : refit ? 70 : 63.5) * s;
         sCx = 1 + sR;
         // Refit: Sekundärhülle weiter vorne (Deflektor fast unter der Untertasse)
-        eXf = (excelsior ? 110 : refit ? 108 : 118) * s;
-        eXr = (excelsior ? 345 : refit ? 232 : 245) * s;
-        nR = Math.max((refit || excelsior ? 6.5 : 7) * s, 2.6);
+        eXf = (excelsior ? 86 : refit ? 108 : 118) * s;
+        eXr = (excelsior ? 397 : refit ? 232 : 245) * s;
+        nR = Math.max((excelsior ? 5.5 : refit ? 6.5 : 7) * s, 2.6);
+        nW = excelsior ? Math.max(9 * s, 3.5) : nR;
         // Refit: Gondeln höher über der Untertasse und enger zusammen
-        nZ = excelsior ? Math.max(60 * s, eW + nR + 4) : Math.max((refit ? 36 : 42) * s, eR + nR + 6);
-        nY = excelsior ? eY + 6 * s : sMid + (refit ? 32 : 8) * s;
-        nX0 = (excelsior ? 225 : refit ? 140 : 150) * s;
+        // Excelsior: Gondeln auf Höhe der Untertasse, innerhalb ihrer Breite
+        nZ = excelsior ? Math.max(65 * s, 30 * k + nW + 4) : Math.max((refit ? 36 : 42) * s, eR + nR + 6);
+        nY = excelsior ? sMid + 10 * s : sMid + (refit ? 32 : 8) * s;
+        nX0 = (excelsior ? 227 : refit ? 140 : 150) * s;
         nX1 = (excelsior ? 467 : refit ? 305 : 289) * s;
 
         bridgeFloor = (int) Math.floor(saucerTop(0));
@@ -225,6 +229,12 @@ public final class EnterpriseBlueprint {
 
     private double saucerTop(double r) {
         double u = Math.min(1, r / sR);
+        if (excelsior) {
+            // flache Untertasse, kegelförmig zur Mitte ansteigend, Stufe um den Brückenbereich
+            double top = sMid + s * (2 + 10 * (1 - u));
+            if (r < 0.34 * sR) top += 2.5 * s;
+            return top;
+        }
         double top = sMid + s * (2.5 + (excelsior ? 7 : refit ? 9 : 8) * (1 - u * u));
         if (r < (excelsior ? 20 : refit ? 24 : 22) * s) top += (refit ? 3 : 2.5) * s; // erhöhter Aufbau um die Brücke
         return top;
@@ -232,13 +242,16 @@ public final class EnterpriseBlueprint {
 
     private double saucerBottom(double r) {
         double u = Math.min(1, r / sR);
-        return sMid - Math.max(1.6, s * (2.5 + (excelsior ? 5 : refit ? 6.5 : 5.5) * (1 - u * u)));
+        return sMid - Math.max(1.6, s * ((excelsior ? 2 : 2.5) + (excelsior ? 3 : refit ? 6.5 : 5.5) * (1 - u * u)));
     }
 
     private double secondaryRadius(double x) {
         double f = (x - eXf) / (eXr - eXf);
         if (f < 0 || f > 1) return -1;
-        if (excelsior) return eR * excelsiorProfile(x);
+        if (excelsior) {
+            double[] h = excelsiorLower(x);
+            return h == null ? -1 : (h[0] - h[1]) / 2;
+        }
         if (refit) {
             // bauchige Front, kurzer zylindrischer Teil, starke Verjüngung nach hinten
             if (f < 0.15) return eR * (0.72 + 0.28 * Math.sin(f / 0.15 * Math.PI / 2));
@@ -262,29 +275,52 @@ public final class EnterpriseBlueprint {
         return nR;
     }
 
-    /** Excelsior: Querschnitts-Faktor der Maschinensektion entlang der Länge (0..1, -1 = außerhalb). */
-    private double excelsiorProfile(double x) {
+    /**
+     * Excelsior-Unterrumpf an der Längsposition x: {Oberkante, Unterkante, halbe Breite} oder null.
+     * Oben flach, vorne abgerundet, nach hinten steigt die Unterseite an und läuft spitz aus.
+     */
+    private double[] excelsiorLower(double x) {
         double f = (x - eXf) / (eXr - eXf);
-        if (f < 0 || f > 1) return -1;
-        if (f < 0.08) return 0.6 + 0.4 * Math.sin(f / 0.08 * Math.PI / 2);
-        if (f < 0.55) return 1;
-        return 1 - 0.55 * (f - 0.55) / 0.45;
+        if (f < 0 || f > 1) return null;
+        double top = eY + eR;
+        double depth = 2 * eR, half = eW;
+        if (f < 0.06) {
+            double kf = 0.55 + 0.45 * Math.sin(f / 0.06 * Math.PI / 2);
+            depth *= kf;
+            half *= kf;
+        } else if (f > 0.35) {
+            double t = (f - 0.35) / 0.65;
+            depth *= 1 - 0.85 * t;
+            half *= 1 - 0.8 * t;
+        }
+        return new double[] {top, top - depth, half};
+    }
+
+    /** Halbe Breite des Unterrumpfs auf Höhe y (Bootskiel: unten rund, oben leicht eingezogen). */
+    private static double keelHalf(double[] h, double y) {
+        double yc = (h[0] + h[1]) / 2, hh = Math.max(0.5, (h[0] - h[1]) / 2);
+        double v = (y - yc) / hh;
+        if (v > 1 || v < -1) return -1;
+        if (v >= 0.2) return h[2] * (1 - 0.25 * (v - 0.2) / 0.8);
+        double q = (0.2 - v) / 1.2;
+        return h[2] * Math.sqrt(Math.max(0, 1 - q * q));
     }
 
     private double spineEnd() {
-        return sCx + 170 * s;
+        return sCx + 0.75 * sR;
     }
 
     private double spineHalf(double x) {
         double dx = x - sCx;
-        if (dx < 0) return Math.sqrt(Math.max(0, 81 * s * s - dx * dx)); // runde Nase an der Brücke
-        return Math.min(11 * s, 9 * s + dx * 0.05);
+        if (dx < 0) return Math.sqrt(Math.max(0, 144 * s * s - dx * dx)); // runde Nase an der Brücke
+        return Math.min(14 * s, 12 * s + dx * 0.04);
     }
 
     /**
-     * Excelsior-Klasse (NCC-1701-B): flache Untertasse mit langem Rücken ("Spine"), Impulsdeck nach
-     * achtern, Impulsausleger (Variante B), breite Maschinensektion direkt darunter mit geripptem
-     * Verbindungsteil, lange tief liegende Gondeln an kurzen Pylonen, Heckflossen.
+     * Excelsior-Klasse (NCC-1701-B) nach den Bauplänen: große flache Untertasse (so breit wie das Schiff)
+     * mit Rücken ("Spine"), Impulsausleger der Variante B, breiter Rückenblock (unter der Untertasse
+     * gerippt) über einem Unterrumpf in Bootskiel-Form mit eingelassener Deflektorschüssel,
+     * waagerechter Pylonflügel, flache Gondeln auf Höhe der Untertasse.
      */
     private byte classifyExcelsior(int x, int y, int z) {
         double dx = x - sCx;
@@ -297,54 +333,48 @@ public final class EnterpriseBlueprint {
             if (rel == 8 && r <= 5.5) return BRIDGE;
         }
         if (r <= sR && y <= saucerTop(r) && y >= saucerBottom(r)) return SAUCER;
-        double domeR = Math.max(2, 7 * s);
-        double domeY = saucerBottom(0) + 3 * s;
-        if (dx * dx + (y - domeY) * (y - domeY) + (double) z * z <= domeR * domeR && y < saucerBottom(0) + 1) return SENSOR;
-        // Impulsausleger der B hinten auf der Untertasse
-        double sx0 = sCx + 28 * s, sx1 = sCx + 62 * s;
-        if (x >= sx0 && x <= sx1 && az >= 34 * s && az <= 52 * s - (x - sx0) * 0.15 && y >= sMid && y <= sMid + 8 * s) return SPONSON;
-        // Rücken
-        if (x >= sCx - 9 * s && x <= spineEnd()) {
-            double top = sMid + (12 - 5 * (x - sCx) / (spineEnd() - sCx)) * s;
+        // Impulsausleger der B hinten seitlich auf der Untertasse
+        if (dx >= 0.5 * sR && dx <= 0.85 * sR && az >= 0.42 * sR && az <= 0.66 * sR - (dx - 0.5 * sR) * 0.3
+            && y >= sMid && y <= sMid + 7 * s && r <= sR + 2) return SPONSON;
+        // Rücken auf der Untertasse
+        if (x >= sCx - 12 * s && x <= spineEnd()) {
+            double top = sMid + (16 - 6 * Math.max(0, dx) / (spineEnd() - sCx)) * s;
             if (az <= spineHalf(x) && y >= sMid && y <= top) return SPINE;
         }
-        // Impulsdeck: Verlängerung der Untertasse nach achtern
-        double npEnd = sCx + 180 * s;
-        if (x >= sCx && x <= npEnd) {
-            double t = (x - sCx) / (npEnd - sCx);
-            double half = sR * 0.55 * (1 - t) + 22 * s * t;
-            if (az <= half && y >= sMid - 4 * s && y <= sMid + 4 * s) return NECKPLATE;
+        // Rückenblock: unter der Untertasse gerippt, dahinter das graue Impulsdeck bis zum Pylonflügel
+        double bx0 = 110 * s, bx1 = 300 * s;
+        if (x >= bx0 && x <= bx1) {
+            double t = (x - bx0) / (bx1 - bx0);
+            double half = (30 - 8 * t) * s;
+            if (az <= half && y >= eY + eR - 1 && y <= sMid + 3 * s) return x < sCx + sR - 3 ? COLUMN : NECKPLATE;
         }
-        // geripptes Verbindungsteil zwischen Untertasse und Maschinensektion
-        double cxc = eXf + 60 * s, chl = 28 * s, chw = 18 * s;
-        if (y >= eY + eR * 0.6 && y <= sMid - 3 * s
-            && Math.pow((x - cxc) / chl, 2) + Math.pow(z / chw, 2) <= 1) return COLUMN;
-        // Deflektor vorne an der Maschinensektion
-        double dishY = eY - eR * 0.05;
-        double rho = Math.hypot(y - dishY, z);
-        if (x >= eXf - 1 && x < eXf && rho <= eR * 0.42) return DISH;
-        if (x >= eXf - 1 && x < eXf + 1 && rho > eR * 0.42 && rho <= eR * 0.52) return ANTENNA;
-        // Maschinensektion (elliptisch, breiter als hoch)
-        double pr = excelsiorProfile(x);
-        if (pr > 0 && Math.pow(z / (eW * pr), 2) + Math.pow((y - eY) / (eR * pr), 2) <= 1)
-            return x > eXr - 30 * s ? SHUTTLEBAY : SECONDARY;
-        // Gondeln
+        // Unterrumpf mit Deflektor
+        double[] h = excelsiorLower(x);
+        if (h != null) {
+            double w = keelHalf(h, y);
+            if (w >= 0 && az <= w) {
+                double yc = (h[0] + h[1]) / 2;
+                double rho = Math.hypot(y - yc, z);
+                double dishR = Math.max(2.5, 7 * s);
+                if (x < eXf + 3 * s && rho <= dishR) return DISH;
+                if (x < eXf + 3 * s && rho <= dishR + 1.5) return ANTENNA;
+                return SECONDARY;
+            }
+        }
+        // Gondeln (breiter als hoch)
         double nr = nacelleRadius(x);
-        if (nr > 0 && Math.hypot(az - nZ, y - nY) <= nr) return x < nX0 + nR * 0.9 ? BUSSARD : NACELLE;
-        // kurze Pylonen von der Maschinensektion zu den Gondeln
-        double p0z = eW * 0.6, p0y = eY + 2 * s, lz = nZ - p0z, ly = nY - p0y, len = Math.hypot(lz, ly);
-        double t = ((az - p0z) * lz + (y - p0y) * ly) / (len * len);
-        if (t >= 0 && t <= 1) {
-            double perp = Math.abs((az - p0z) * ly - (y - p0y) * lz) / len;
-            double xc = (300 + 10 * t) * s;
-            double chord = Math.max(3, (16 - 4 * t) * s);
-            if (perp <= Math.max(1.0, 2.5 * s) && Math.abs(x - xc) <= chord) return PYLON;
+        if (nr > 0) {
+            double kf = nr / nR;
+            double q = Math.pow(Math.abs(az - nZ) / (nW * kf), 4) + Math.pow(Math.abs(y - nY) / (nR * kf), 4);
+            if (q <= 1) return x < nX0 + nR * 0.9 ? BUSSARD : NACELLE;
         }
-        // Heckflossen unter der Maschinensektion
-        if (Math.abs(az - 11 * s) <= Math.max(0.6, s) && x >= 305 * s && x <= 335 * s) {
-            double pb = excelsiorProfile(x);
-            double bottom = eY - eR * Math.max(0, pb);
-            if (y <= bottom + 2 && y >= bottom - 6 * s) return FIN;
+        // waagerechter Pylonflügel, außen zur Gondel hochgeknickt
+        double xw = 304 * s, yw = sMid - 12 * s;
+        double chord = Math.max(3, 12 * s - (az / nZ) * 3 * s);
+        if (Math.abs(x - xw) <= chord) {
+            boolean wing = az >= 18 * s && az <= nZ - 3 * s && Math.abs(y - yw) <= Math.max(1, 1.5 * s);
+            boolean riser = Math.abs(az - (nZ - 4 * s)) <= Math.max(1, 2 * s) && y >= yw && y <= nY;
+            if (wing || riser) return PYLON;
         }
         return NONE;
     }
@@ -475,6 +505,7 @@ public final class EnterpriseBlueprint {
                                     if ((refit || excelsior) && aztec(r, Math.atan2(z, dx))) st = ShipPart.HULL_AZTEC;
                                     // Excelsior: dunkler petrolfarbener Ring auf der Oberseite
                                     if (excelsior && compAt(x, y + 1, z) == NONE && r > 0.87 * sR && r < 0.93 * sR) st = ShipPart.HULL_TEAL;
+                                    if (excelsior && compAt(x, y + 1, z) == NONE && Math.abs(r - 0.56 * sR) < 0.8) st = ShipPart.HULL_PENNANT;
                                     // Refit: rot leuchtende Impulstriebwerke hinten am erhöhten Aufbau
                                     if (refit && dx > 0 && Math.abs(z) <= 8 * s && Math.abs(r - 24 * s) < 1.3 && openSide)
                                         st = ShipPart.IMPULSE_ENGINE;
@@ -484,8 +515,12 @@ public final class EnterpriseBlueprint {
                             case NECK, PYLON -> st = refit && aztecXY(x, y + z) ? ShipPart.HULL_AZTEC
                                 : Math.floorMod(x, 6) == 0 ? panel : plating;
                             case SECONDARY -> {
+                                if (excelsior && compAt(x, y + 1, z) == NONE && Math.floorMod(x + Math.abs(z), 16) < 3) {
+                                    st = ShipPart.HULL_TEAL; // schräge Streifen oben auf dem Unterrumpf
+                                    break;
+                                }
                                 if (openSide && !openUpDown && deckY == 2 && Math.floorMod(x * 5 + y, 4) == 0 && Math.abs(z) > 1) st = window;
-                                else if (refit && aztecXY(x, y * 3 + z)) st = ShipPart.HULL_AZTEC;
+                                else if ((refit || excelsior) && aztecXY(x, y * 3 + z)) st = ShipPart.HULL_AZTEC;
                                 else if (Math.floorMod(x, 8) == 0) st = panel;
                             }
                             case SHUTTLEBAY -> {
@@ -496,13 +531,13 @@ public final class EnterpriseBlueprint {
                             }
                             case SPINE -> {
                                 boolean topFace = compAt(x, y + 1, z) == NONE;
-                                if (topFace && Math.abs(z) >= spineHalf(x) - 1.6) st = ShipPart.HULL_TEAL; // Streifen an den Kanten
+                                if (compAt(x + 1, y, z) == NONE && x >= spineEnd() - 1.5 && Math.abs(z) <= 9 * s)
+                                    st = ShipPart.IMPULSE_ENGINE; // Heck des Rückens
+                                else if (topFace && Math.abs(z) >= spineHalf(x) - 3) st = ShipPart.HULL_TEAL; // Hufeisen-Streifen
                                 else if (aztecXY(x, z)) st = ShipPart.HULL_AZTEC;
                             }
                             case NECKPLATE -> {
-                                boolean rear = compAt(x + 1, y, z) == NONE;
-                                if (rear && Math.abs(z) <= 14 * s) st = ShipPart.IMPULSE_ENGINE;
-                                else if (openSide && !openUpDown && deckY == 2 && Math.floorMod(x * 7 + z * 13, 5) != 0) st = window;
+                                if (openSide && !openUpDown && deckY == 2 && Math.floorMod(x * 7 + z * 13, 5) != 0) st = window;
                                 else if (aztecXY(x, z)) st = ShipPart.HULL_AZTEC;
                             }
                             case COLUMN -> st = Math.floorMod(y, 2) == 0 ? dark : panel; // gerippt
@@ -516,8 +551,10 @@ public final class EnterpriseBlueprint {
                                 boolean mid = Math.abs(y - nY) <= Math.max(1, nR * 0.35);
                                 boolean side = Math.abs(Math.abs(z) - nZ) > nR * 0.45;
                                 if (x > nX1 - 2) st = dark;
-                                else if (excelsior && y > nY + nR * 0.6 && Math.abs(Math.abs(z) - nZ) <= nR * 0.35)
-                                    st = ShipPart.HULL_TEAL; // schmaler Streifen oben
+                                else if (excelsior && x > nX1 - 4 * s) st = ShipPart.IMPULSE_ENGINE; // rote Spitze hinten
+                                else if (excelsior && y > nY + nR * 0.5 && Math.abs(Math.abs(z) - nZ) <= nW * 0.55)
+                                    st = grille; // blauer Streifen oben
+                                else if (excelsior && Math.abs(y - nY) <= 0.6) st = ShipPart.HULL_TEAL; // Seitenband
                                 else if (refit && side && Math.abs(y - nY) <= nR * 0.45 && x >= nX0 + nR * 0.7 && x <= nX0 + nR * 2.4)
                                     st = bussard; // Refit: rötliche ovale Bussard-Fenster seitlich vorne
                                 else if (refit && x < nX0 + nR * 2.6) st = plating; // graue Frontkappe
@@ -790,6 +827,10 @@ public final class EnterpriseBlueprint {
      * roter Abschlussstreifen, Hauptbildschirm vorne, zwei Turbolift-Türen hinten.
      */
     private void buildBridge() {
+        if (excelsior) {
+            buildBridgeExcelsior();
+            return;
+        }
         int cx = (int) Math.round(sCx);
         int yb = bridgeFloor;
         ShipPart air = ShipPart.AIR;
@@ -857,6 +898,81 @@ public final class EnterpriseBlueprint {
         }
         set(lift.getX(), yb + 4, lift.getZ(), ShipPart.TURBOLIFT_FRAME);
         bridgeSpawn = new BlockPos(cx + 2, yb + 1, 0);
+    }
+
+    /**
+     * Brücke der Excelsior-Klasse: dunkle Wände mit senkrechten cremefarbenen Lichtsäulen und großen
+     * grünen Schemata, dunkle Konsolen mit grünen Bildschirmen, Riffelblech-Boden, Holzgeländer,
+     * petrolfarbener Kommandantensessel auf erhöhtem Podest, lange graue Steuerkonsole mit zwei Stühlen,
+     * roter Teppich am Turbolift, dunkle Decke mit Spots.
+     */
+    private void buildBridgeExcelsior() {
+        int cx = (int) Math.round(sCx);
+        int yb = bridgeFloor;
+        for (int dx = -10; dx <= 10; dx++)
+            for (int dz = -10; dz <= 10; dz++) {
+                double r = Math.sqrt(dx * dx + dz * dz);
+                int x = cx + dx;
+                boolean front = dx < 0 && Math.abs(dz) <= 3;
+                boolean aft = dx > 0 && dz >= 0 && dz <= 4;
+                int sector = Math.floorMod((int) Math.round(Math.atan2(dz, dx) / (Math.PI / 12)), 24);
+                if (r <= 7.5) {
+                    set(x, yb, dz, ShipPart.DECK_PLATE);
+                    for (int y = yb + 1; y <= yb + 5; y++) set(x, y, dz, ShipPart.AIR);
+                    boolean spot = Math.floorMod(dx, 3) == 0 && Math.floorMod(dz, 3) == 0;
+                    set(x, yb + 6, dz, spot ? ShipPart.CEILING_LIGHT : ShipPart.BRIDGE_WALL_DARK);
+                    boolean gap = dx < 0 ? Math.abs(dz) <= 1 : (dz >= 0 && dz <= 2);
+                    if (r > 5.2) {
+                        set(x, yb + 1, dz, aft ? ShipPart.TRANSPORTER_PLATFORM : ShipPart.DECK_PLATE); // Ring, hinten roter Teppich
+                    } else if (r > 4.2) {
+                        if (gap) {
+                            set(x, yb + 1, dz, ShipPart.STEP_SLAB, Direction.NORTH, 0);
+                        } else {
+                            set(x, yb + 1, dz, ShipPart.BRIDGE_WALL_DARK);
+                            set(x, yb + 2, dz, ShipPart.BRIDGE_RAILING_WOOD);
+                        }
+                    }
+                    if (r > 6.5 && !front && !aft)
+                        set(x, yb + 2, dz, ShipPart.EXCELSIOR_CONSOLE, inwardFacing(dx, dz), Math.floorMod(sector, 4));
+                } else if (r <= 10) {
+                    if (!isInterior(x, yb + 2, dz)) continue;
+                    for (int y = yb; y <= yb + 5; y++) if (isInterior(x, y, dz)) set(x, y, dz, ShipPart.BRIDGE_WALL_DARK);
+                    if (r <= 8.5 && !front) {
+                        boolean pillar = sector % 3 == 0;
+                        for (int y = yb + 2; y <= yb + 5; y++)
+                            if (pillar) set(x, y, dz, ShipPart.LIGHT_PILLAR);
+                        if (!pillar && !aft) {
+                            set(x, yb + 3, dz, ShipPart.EXCELSIOR_DISPLAY, inwardFacing(dx, dz), Math.floorMod(sector, 4));
+                            set(x, yb + 4, dz, ShipPart.EXCELSIOR_DISPLAY, inwardFacing(dx, dz), Math.floorMod(sector + 1, 4));
+                        }
+                    }
+                }
+            }
+        // Hauptbildschirm vorne (7 x 3), Lichtsäulen daneben
+        for (int dz = -3; dz <= 3; dz++)
+            for (int y = yb + 2; y <= yb + 4; y++) set(cx - 8, y, dz, ShipPart.VIEWSCREEN, Direction.SOUTH);
+        for (int y = yb + 2; y <= yb + 5; y++) {
+            set(cx - 8, y, -4, ShipPart.LIGHT_PILLAR);
+            set(cx - 8, y, 4, ShipPart.LIGHT_PILLAR);
+        }
+        // lange graue Steuerkonsole mit zwei Stühlen
+        for (int dz = -1; dz <= 1; dz++) set(cx - 3, yb + 1, dz, ShipPart.HELM_CONSOLE_GRAY, Direction.SOUTH);
+        set(cx - 2, yb + 1, -1, ShipPart.STATION_CHAIR_TEAL, Direction.NORTH);
+        set(cx - 2, yb + 1, 1, ShipPart.STATION_CHAIR_TEAL, Direction.NORTH);
+        // erhöhtes Podest mit dem Kommandantensessel
+        for (int ddx = 0; ddx <= 2; ddx++)
+            for (int dz = -1; dz <= 1; dz++)
+                if (Math.abs(ddx - 1) + Math.abs(dz) <= 2) set(cx + ddx, yb + 1, dz, ShipPart.BRIDGE_CARPET_TEAL);
+        set(cx + 1, yb + 2, 0, ShipPart.CAPTAINS_CHAIR_TEAL, Direction.NORTH);
+        // Stationsstühle an Wissenschaft und Kommunikation
+        set(cx + 4, yb + 2, 5, ShipPart.STATION_CHAIR_TEAL, Direction.EAST);
+        set(cx + 4, yb + 2, -5, ShipPart.STATION_CHAIR_TEAL, Direction.WEST);
+        // Turbolift mit dunkler Tür, Lichtsäulen als Rahmen
+        BlockPos lift = bridgeTurbolift();
+        set(lift.getX(), yb + 3, lift.getZ(), ShipPart.TURBOLIFT_DOOR_TEAL, Direction.NORTH);
+        for (int dz : new int[] {-1, 1})
+            for (int y = yb + 2; y <= yb + 4; y++) set(lift.getX(), y, lift.getZ() + dz, ShipPart.LIGHT_PILLAR);
+        bridgeSpawn = new BlockPos(cx + 3, yb + 1, 0);
     }
 
     private static Direction inwardFacing(int dx, int dz) {
@@ -1505,6 +1621,7 @@ public final class EnterpriseBlueprint {
 
     private static boolean connects(ShipPart self, ShipPart n) {
         if (self == ShipPart.BRIDGE_RAILING || self == ShipPart.BRIDGE_RAILING_GRAY || self == ShipPart.BRIDGE_RAILING_WOOD) return n == self;
+        if (n == ShipPart.STATION_CHAIR_TEAL || n == ShipPart.CAPTAINS_CHAIR_TEAL) return false;
         return n != null && n != ShipPart.AIR && n != ShipPart.LADDER && n != ShipPart.CAPTAINS_CHAIR
             && n != ShipPart.TRANSPORTER_PAD;
     }

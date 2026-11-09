@@ -13,17 +13,23 @@ Befehl in die Welt setzt – wahlweise die **NCC-1701** (Originalserie), die **N
 * Ohne Schiffsangabe wird die **NCC-1701** gebaut, z.B. `/enterprise spawn full`.
 * `/enterprise spawn ncc-1701-a full` baut die **NCC-1701-A** in Originalgröße (308 x 145 x 85 Blöcke).
 
-* `/enterprise spawn ncc-1701-b full` baut die **NCC-1701-B** in Originalgröße (470 x 155 x 75 Blöcke).
+* `/enterprise spawn ncc-1701-b full` baut die **NCC-1701-B** in Originalgröße (470 x 195 x 75 Blöcke).
 
 ### NCC-1701-B (Excelsior-Klasse)
 
-467 m lang: große flache Untertasse mit dunklem petrolfarbenem Ring, langer erhöhter Rücken mit
-petrolfarbenen Streifen von der Brücke nach achtern, breites Impulsdeck mit roten Impulstriebwerken
-am Heck, die B-typischen Impulsausleger hinten auf der Untertasse, breite elliptische Maschinensektion
-direkt unter der Untertasse mit geripptem Verbindungsteil, blauer Deflektorschüssel, Shuttlehangar
-und Heckflossen, lange dünne Gondeln mit blau leuchtender Spitze an kurzen Pylonen. Die Brücke ist im
-Excelsior-Stil: dunkle Wände, Riffelblech, petrolfarbener Teppich in der Kommandomulde,
-Holzgeländer und cremefarbene Lichtleisten. Decks, Räume und Turbolifte wie bei den anderen Schiffen.
+467 m lang, nach Bauplänen der Excelsior-B: große flache Untertasse (so breit wie das Schiff,
+ca. 190 m), kegelförmig zur Mitte ansteigend, mit petrolfarbenem Außenring und rotem Innenring;
+hufeisenförmiger Rücken mit petrolfarbenen Streifen und roten Impulstriebwerken am Ende; die
+B-typischen Impulsausleger hinten seitlich auf der Untertasse; breiter Rückenblock (unter der
+Untertasse gerippt, dahinter das graue Impulsdeck) über einem Unterrumpf in Bootskiel-Form mit
+eingelassener blauer Deflektorschüssel, der nach hinten ansteigt und spitz ausläuft; waagerechter
+Pylonflügel, der außen zu den Gondeln hochknickt; flache Gondeln auf Höhe der Untertasse mit blauem
+Leuchtstreifen oben, blauer Spitze vorne und roter hinten.
+
+Die Brücke im Excelsior-Stil: Riffelblech-Boden, dunkle Wände mit cremefarbenen Lichtsäulen und
+großen grünen Bildschirmen, dunkle Konsolen mit grünen Anzeigen, Holzgeländer, petrolfarbener
+Kommandantensessel auf erhöhtem Podest, lange graue Steuerkonsole mit zwei petrolfarbenen Stühlen,
+roter Teppich am Turbolift, dunkle Decke mit Spots.
 
 ### NCC-1701-A (Refit)
 
@@ -116,7 +122,7 @@ E = Eisenbarren        G = Goldbarren
 F = roter Farbstoff, P = Enderperle, R = Redstone
 ```
 
-## Neue Blöcke (69)
+## Neue Blöcke (76)
 
 * **Hülle**: Hüllenpanzerung (+ Stufe), Hüllenplatte, dunkle Hüllenplatte, Hüllenfenster,
   Kennungsmarkierung (+ Stufe), roter Zierstreifen, Positionslicht rot/grün, Deflektorschüssel,
@@ -133,7 +139,9 @@ F = roter Farbstoff, P = Enderperle, R = Redstone
 * **Refit (NCC-1701-A)**: Refit-Hüllenplatte (Aztec), blaue Deflektorschüssel, roter
   Bussard-Kollektor, Photonentorpedo-Werfer, Impulstriebwerk, graues Brückengeländer, blaue Lichtleiste
 * **Excelsior (NCC-1701-B)**: petrolfarbene Hüllenplatte, blauer Bussard-Kollektor, Holz-Brückengeländer,
-  cremefarbene Lichtleiste, petrolfarbener Teppich, Riffelblech-Boden, dunkle Brückenwand
+  cremefarbene Lichtleiste, petrolfarbener Teppich, Riffelblech-Boden, dunkle Brückenwand,
+  Excelsior-Konsole, Excelsior-Wandbildschirm, Lichtsäule, Kommandantensessel, Stationsstuhl,
+  Turbolift-Tür und Steuerkonsole im Excelsior-Stil
 * **Allgemein**: Deckboden, Korridorwand, Deckenverkleidung, Deckenleuchte, Maschinenraum-Konsole,
   Warpkern, Plasmaleitung
 
