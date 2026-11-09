@@ -1,13 +1,25 @@
 # Simon Space Mod
 
-Forge-Mod für **Minecraft 26.2** (Forge 65.1.x, Java 25), die die **USS Enterprise NCC-1701**
-(Originalserie) mit einem Befehl in die Welt setzt.
+Forge-Mod für **Minecraft 26.2** (Forge 65.1.x, Java 25), die die **USS Enterprise** mit einem
+Befehl in die Welt setzt – wahlweise die **NCC-1701** (Originalserie) oder die **NCC-1701-A**
+(Refit aus den Kinofilmen).
 
 ## Befehl
 
 ```
-/enterprise spawn [full|compact|mini|scale <faktor>] [x y z] [north|east|south|west]
+/enterprise spawn [ncc-1701|ncc-1701-a] [full|compact|mini|scale <faktor>] [x y z] [north|east|south|west]
 ```
+
+* Ohne Schiffsangabe wird die **NCC-1701** gebaut, z.B. `/enterprise spawn full`.
+* `/enterprise spawn ncc-1701-a full` baut die **NCC-1701-A** in Originalgröße (308 x 145 x 79 Blöcke).
+
+### NCC-1701-A (Refit)
+
+Etwas größer als das Original (ca. 305 m), mit blau leuchtender, eingelassener Deflektorschüssel,
+kantigeren Warpgondeln mit blauen Leuchtstreifen an beiden Seiten und roten Bussard-Kollektoren,
+nach hinten gepfeilten Pylonen, dickerem Hals mit zwei Photonentorpedo-Werfern, „Aztec“-Plattenmuster
+auf der Hülle und Kennung „NCC-1701-A“. Die Brücke hat graues Geländer und blaue Lichtleisten statt
+Rot. Decks, Räume und Turbolifte sind wie bei der NCC-1701 aufgebaut.
 
 | Variante              | Hülle         | Größe (L x B x H)    | Brücke / Maschinenraum / Transporterraum |
 |-----------------------|---------------|----------------------|------------------------------------------|
@@ -90,7 +102,7 @@ E = Eisenbarren        G = Goldbarren
 F = roter Farbstoff, P = Enderperle, R = Redstone
 ```
 
-## Neue Blöcke (55)
+## Neue Blöcke (61)
 
 * **Hülle**: Hüllenpanzerung (+ Stufe), Hüllenplatte, dunkle Hüllenplatte, Hüllenfenster,
   Kennungsmarkierung (+ Stufe), roter Zierstreifen, Positionslicht rot/grün, Deflektorschüssel,
@@ -104,6 +116,8 @@ F = roter Farbstoff, P = Enderperle, R = Redstone
   Messetisch
 * **Krankenstation**: Biobett (2 Blöcke lang, wird wie ein Bett gesetzt), Diagnosemonitor (sitzt in
   der Wand), Untersuchungstisch, Medizinschrank, Krankenstations-Wand und -Boden
+* **Refit (NCC-1701-A)**: Refit-Hüllenplatte (Aztec), blaue Deflektorschüssel, roter
+  Bussard-Kollektor, Photonentorpedo-Werfer, graues Brückengeländer, blaue Lichtleiste
 * **Allgemein**: Deckboden, Korridorwand, Deckenverkleidung, Deckenleuchte, Maschinenraum-Konsole,
   Warpkern, Plasmaleitung
 

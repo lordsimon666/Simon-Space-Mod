@@ -62,6 +62,16 @@ public final class ModBlocks {
     public static final RegistryObject<Block> NAV_LIGHT_RED = block("nav_light_red", Block::new, glowing(glass(MapColor.COLOR_RED), 12));
     public static final RegistryObject<Block> NAV_LIGHT_GREEN = block("nav_light_green", Block::new, glowing(glass(MapColor.COLOR_GREEN), 12));
 
+    // --- Refit (NCC-1701-A) ---
+    public static final RegistryObject<Block> HULL_AZTEC = block("hull_aztec", Block::new, metal(MapColor.COLOR_LIGHT_BLUE));
+    public static final RegistryObject<Block> DEFLECTOR_DISH_BLUE = block("deflector_dish_blue", Block::new, glowing(metal(MapColor.COLOR_BLUE), 14));
+    public static final RegistryObject<Block> BUSSARD_RED = block("bussard_red",
+        p -> new GlowParticleBlock(p, GlowParticleBlock.Kind.BUSSARD), glowing(metal(MapColor.COLOR_RED), 15));
+    public static final RegistryObject<Block> TORPEDO_LAUNCHER = block("torpedo_launcher", Block::new, glowing(metal(MapColor.COLOR_ORANGE), 9));
+    public static final RegistryObject<Block> BRIDGE_RAILING_GRAY = block("bridge_railing_gray", RailingBlock::new,
+        metal(MapColor.COLOR_GRAY).noOcclusion());
+    public static final RegistryObject<Block> BRIDGE_TRIM_BLUE = block("bridge_trim_blue", Block::new, glowing(metal(MapColor.COLOR_BLUE), 8));
+
     // --- Brücke ---
     public static final RegistryObject<Block> BRIDGE_WALL = block("bridge_wall", Block::new, metal(MapColor.COLOR_LIGHT_GRAY));
     public static final RegistryObject<Block> BRIDGE_TRIM = block("bridge_trim", Block::new, glowing(metal(MapColor.COLOR_RED), 4));

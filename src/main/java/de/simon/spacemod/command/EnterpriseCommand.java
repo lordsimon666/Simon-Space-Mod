@@ -4,7 +4,9 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import de.simon.spacemod.ship.EnterpriseBlueprint;
+import de.simon.spacemod.ship.ShipDesign;
 import de.simon.spacemod.ship.ShipBuildManager;
 import java.util.function.ToDoubleFunction;
 import net.minecraft.ChatFormatting;
@@ -22,7 +24,7 @@ import net.minecraftforge.event.RegisterCommandsEvent;
 import org.jspecify.annotations.Nullable;
 
 /**
- * {@code /enterprise spawn [full|compact|mini|scale <faktor>] [position] [north|east|south|west]}
+ * {@code /enterprise spawn [ncc-1701|ncc-1701-a] [full|compact|mini|scale <faktor>] [position] [north|east|south|west]}
  *
  * <ul>
  *   <li>{@code full}    – Originalgröße 1:1 (289 x 127 x ~72 Blöcke)</li>
@@ -42,42 +44,53 @@ public final class EnterpriseCommand {
     }
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        var spawn = Commands.literal("spawn")
-            .executes(ctx -> spawn(ctx, COMPACT, null, null));
-        spawn.then(withPlacement(Commands.literal("full"), _ -> FULL));
-        spawn.then(withPlacement(Commands.literal("compact"), _ -> COMPACT));
-        spawn.then(withPlacement(Commands.literal("mini"), _ -> MINI));
-        spawn.then(Commands.literal("scale").then(withPlacement(
-            Commands.argument("factor", DoubleArgumentType.doubleArg(MINI, FULL)),
-            ctx -> DoubleArgumentType.getDouble(ctx, "factor"))));
-
+        // ohne Schiffsangabe: NCC-1701 (wie bisher)
+        var spawn = Commands.literal("spawn");
+        addSizes(spawn, ShipDesign.NCC_1701);
+        for (ShipDesign design : ShipDesign.values()) {
+            var node = Commands.literal(design.id);
+            addSizes(node, design);
+            spawn.then(node);
+        }
         dispatcher.register(Commands.literal("enterprise")
             .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
             .then(spawn));
     }
 
-    /** Hängt die optionalen Argumente [Position] [Richtung] an. */
-    private static <T extends ArgumentBuilder<CommandSourceStack, T>> T withPlacement(
-            T node, ToDoubleFunction<CommandContext<CommandSourceStack>> scale) {
-        var pos = Commands.argument("pos", BlockPosArgument.blockPos())
-            .executes(ctx -> spawn(ctx, scale.applyAsDouble(ctx), BlockPosArgument.getBlockPos(ctx, "pos"), null));
-        for (Direction dir : Direction.Plane.HORIZONTAL) {
-            pos.then(Commands.literal(dir.getSerializedName())
-                .executes(ctx -> spawn(ctx, scale.applyAsDouble(ctx), BlockPosArgument.getBlockPos(ctx, "pos"), dir)));
-        }
-        return node.executes(ctx -> spawn(ctx, scale.applyAsDouble(ctx), null, null)).then(pos);
+    /** Hängt [full|compact|mini|scale <faktor>] [Position] [Richtung] an. */
+    private static void addSizes(LiteralArgumentBuilder<CommandSourceStack> node, ShipDesign design) {
+        node.executes(ctx -> spawn(ctx, design, COMPACT, null, null));
+        node.then(withPlacement(Commands.literal("full"), design, _ -> FULL));
+        node.then(withPlacement(Commands.literal("compact"), design, _ -> COMPACT));
+        node.then(withPlacement(Commands.literal("mini"), design, _ -> MINI));
+        node.then(Commands.literal("scale").then(withPlacement(
+            Commands.argument("factor", DoubleArgumentType.doubleArg(MINI, FULL)), design,
+            ctx -> DoubleArgumentType.getDouble(ctx, "factor"))));
     }
 
-    private static int spawn(CommandContext<CommandSourceStack> ctx, double scale, @Nullable BlockPos pos, @Nullable Direction bow) {
+    /** Hängt die optionalen Argumente [Position] [Richtung] an. */
+    private static <T extends ArgumentBuilder<CommandSourceStack, T>> T withPlacement(
+            T node, ShipDesign design, ToDoubleFunction<CommandContext<CommandSourceStack>> scale) {
+        var pos = Commands.argument("pos", BlockPosArgument.blockPos())
+            .executes(ctx -> spawn(ctx, design, scale.applyAsDouble(ctx), BlockPosArgument.getBlockPos(ctx, "pos"), null));
+        for (Direction dir : Direction.Plane.HORIZONTAL) {
+            pos.then(Commands.literal(dir.getSerializedName())
+                .executes(ctx -> spawn(ctx, design, scale.applyAsDouble(ctx), BlockPosArgument.getBlockPos(ctx, "pos"), dir)));
+        }
+        return node.executes(ctx -> spawn(ctx, design, scale.applyAsDouble(ctx), null, null)).then(pos);
+    }
+
+    private static int spawn(CommandContext<CommandSourceStack> ctx, ShipDesign design, double scale,
+                             @Nullable BlockPos pos, @Nullable Direction bow) {
         CommandSourceStack source = ctx.getSource();
         ServerLevel level = source.getLevel();
         Vec3 here = source.getPosition();
         Direction look = Direction.fromYRot(source.getRotation().y);
 
         source.sendSuccess(() -> Component.translatable("command.simonspacemod.enterprise.computing",
-            String.format("%.0f%%", scale * 100)), true);
+            design.registry, String.format("%.0f%%", scale * 100)), true);
 
-        ShipBuildManager.computeAsync(scale).thenAcceptAsync(bp -> {
+        ShipBuildManager.computeAsync(design, scale).thenAcceptAsync(bp -> {
             // Ohne Richtung zeigt der Bug zum Spieler; ohne Position entsteht das Schiff vor dem Spieler
             Direction shipBow = bow != null ? bow : look.getOpposite();
             BlockPos origin = pos;
@@ -115,6 +128,6 @@ public final class EnterpriseCommand {
                 .withUnderlined(true)
                 .withClickEvent(new ClickEvent.RunCommand(tp))
                 .withHoverEvent(new HoverEvent.ShowText(Component.literal(tp))));
-        return Component.translatable("command.simonspacemod.enterprise.done", job.total()).append(" ").append(link);
+        return Component.translatable("command.simonspacemod.enterprise.done", bp.design.registry, job.total()).append(" ").append(link);
     }
 }

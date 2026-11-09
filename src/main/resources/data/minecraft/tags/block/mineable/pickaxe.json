@@ -1,5 +1,10 @@
 {
   "values": [
+    "simonspacemod:hull_aztec",
+    "simonspacemod:deflector_dish_blue",
+    "simonspacemod:bussard_red",
+    "simonspacemod:torpedo_launcher",
+    "simonspacemod:bridge_trim_blue",
     "simonspacemod:sickbay_wall",
     "simonspacemod:sickbay_floor",
     "simonspacemod:cargo_container",
@@ -51,6 +56,7 @@
     "simonspacemod:bridge_station",
     "simonspacemod:bridge_monitor",
     "simonspacemod:bridge_railing",
+    "simonspacemod:bridge_railing_gray",
     "simonspacemod:biobed",
     "simonspacemod:hull_plating_slab",
     "simonspacemod:hull_marking_slab",

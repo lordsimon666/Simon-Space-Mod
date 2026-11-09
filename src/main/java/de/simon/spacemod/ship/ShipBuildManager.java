@@ -55,8 +55,8 @@ public final class ShipBuildManager {
         }
     }
 
-    public static CompletableFuture<EnterpriseBlueprint> computeAsync(double scale) {
-        return CompletableFuture.supplyAsync(() -> new EnterpriseBlueprint(scale));
+    public static CompletableFuture<EnterpriseBlueprint> computeAsync(ShipDesign design, double scale) {
+        return CompletableFuture.supplyAsync(() -> new EnterpriseBlueprint(design, scale));
     }
 
     public static void start(EnterpriseBlueprint bp, Placement placement, Consumer<Job> onDone) {
@@ -126,7 +126,7 @@ public final class ShipBuildManager {
             // Alle Turbolifte des Schiffs in ein eigenes Netz eintragen und benennen
             ServerLevel level = placement.level();
             TurboliftData data = TurboliftData.get(level);
-            String network = "NCC-1701 " + placement.origin().getX() + "/" + placement.origin().getZ();
+            String network = blueprint.design.registry + " " + placement.origin().getX() + "/" + placement.origin().getZ();
             for (EnterpriseBlueprint.LiftStop stop : blueprint.liftStops) {
                 BlockPos pos = placement.toWorld(blueprint, stop.pos().getX(), stop.pos().getY(), stop.pos().getZ());
                 if (level.getBlockState(pos).is(ModBlocks.TURBOLIFT.get())) {

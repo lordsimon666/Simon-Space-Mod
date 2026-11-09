@@ -11,18 +11,19 @@ import java.util.Map;
 import javax.imageio.ImageIO;
 import net.minecraft.core.BlockPos;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.CsvSource;
 
 /** Prüft den Bauplan ohne laufendes Minecraft und rendert Vorschaubilder. */
 class EnterpriseBlueprintTest {
 
     @ParameterizedTest
-    @ValueSource(doubles = {0.4, 0.5, 0.75, 1.0})
-    void blueprintIsConsistent(double scale) throws Exception {
-        EnterpriseBlueprint bp = new EnterpriseBlueprint(scale);
+    @CsvSource({"NCC_1701,0.4", "NCC_1701,0.5", "NCC_1701,0.75", "NCC_1701,1.0",
+                "NCC_1701_A,0.4", "NCC_1701_A,0.5", "NCC_1701_A,0.75", "NCC_1701_A,1.0"})
+    void blueprintIsConsistent(ShipDesign design, double scale) throws Exception {
+        EnterpriseBlueprint bp = new EnterpriseBlueprint(design, scale);
         Map<ShipPart, Integer> counts = new EnumMap<>(ShipPart.class);
         bp.forEach((x, y, z, code) -> counts.merge(EnterpriseBlueprint.part(code), 1, Integer::sum));
-        System.out.printf("scale %.2f: %d x %d x %d, %d Zellen, %s, lifts=%d%n",
+        System.out.printf(design + " scale %.2f: %d x %d x %d, %d Zellen, %s, lifts=%d%n",
             scale, bp.sizeX, bp.sizeZ, bp.sizeY, bp.countBlocks(), counts, bp.liftStops.size());
 
         // Passt in die normale Overworld-Bauhöhe (-64..320 = 384 Blöcke)
@@ -31,7 +32,7 @@ class EnterpriseBlueprintTest {
         // Wichtige Räume vorhanden
         assertTrue(counts.get(ShipPart.CAPTAINS_CHAIR) >= 1);
         assertEquals(21, counts.get(ShipPart.VIEWSCREEN));
-        assertTrue(counts.getOrDefault(ShipPart.BRIDGE_RAILING, 0) > 20, "Geländer fehlt");
+        assertTrue(counts.getOrDefault(ShipPart.BRIDGE_RAILING, 0) + counts.getOrDefault(ShipPart.BRIDGE_RAILING_GRAY, 0) > 20, "Geländer fehlt");
         assertTrue(counts.getOrDefault(ShipPart.BRIDGE_STATION, 0) > 10, "Stationen fehlen");
         assertTrue(counts.getOrDefault(ShipPart.TRANSPORTER_ENERGIZER, 0) > 0, "Energiewand fehlt");
         assertTrue(counts.getOrDefault(ShipPart.WARP_CORE, 0) >= 30, "Warpkern fehlt");
@@ -53,6 +54,11 @@ class EnterpriseBlueprintTest {
         assertStandable(bp, bp.bridgeSpawn, "Brücke");
 
         render(bp, scale);
+        if (design.refit) {
+            assertTrue(counts.getOrDefault(ShipPart.DEFLECTOR_DISH_BLUE, 0) > 0, "blaue Deflektorschüssel fehlt");
+            assertTrue(counts.getOrDefault(ShipPart.TORPEDO_LAUNCHER, 0) > 0, "Torpedowerfer fehlen");
+            assertTrue(counts.getOrDefault(ShipPart.HULL_AZTEC, 0) > 0, "Aztec-Muster fehlt");
+        }
     }
 
     /** Im Bauplan zeigt NORDEN zum Bug (-X), OSTEN nach Steuerbord (+Z). */
@@ -89,7 +95,7 @@ class EnterpriseBlueprintTest {
         if (dir == null) return;
         new File(dir).mkdirs();
         int px = scale < 0.6 ? 4 : 2;
-        String tag = String.format("%03d", Math.round(scale * 100));
+        String tag = bp.design.id + "_" + String.format("%03d", Math.round(scale * 100));
 
         // Draufsicht (oberster Block jeder Säule)
         BufferedImage top = new BufferedImage(bp.sizeX * px, bp.sizeZ * px, BufferedImage.TYPE_INT_RGB);

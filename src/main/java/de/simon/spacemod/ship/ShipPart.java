@@ -65,7 +65,14 @@ public enum ShipPart {
     EXAM_TABLE(0x9A9AA0),
     MEDICAL_CABINET(0x88A8B0),
     SICKBAY_WALL(0x9FB8C0),
-    SICKBAY_FLOOR(0x2F4A3A);
+    SICKBAY_FLOOR(0x2F4A3A),
+    // Refit (NCC-1701-A)
+    DEFLECTOR_DISH_BLUE(0x50A0FF),
+    BUSSARD_RED(0xE02030),
+    HULL_AZTEC(0xC4CCD4),
+    TORPEDO_LAUNCHER(0xFF6020),
+    BRIDGE_RAILING_GRAY(0x8A8E96),
+    BRIDGE_TRIM_BLUE(0x4080E0);
 
     /** Farbe für Vorschaubilder. */
     public final int color;

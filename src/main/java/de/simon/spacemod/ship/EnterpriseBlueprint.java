@@ -6,7 +6,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 
 /**
- * Prozeduraler Bauplan der USS Enterprise NCC-1701 (Originalserie).
+ * Prozeduraler Bauplan der USS Enterprise – wahlweise NCC-1701 (Originalserie) oder
+ * NCC-1701-A (Refit aus den Kinofilmen), siehe {@link ShipDesign}.
  *
  * <p>Alle Maße sind in Metern der echten Enterprise angegeben (1 Block = 1 m bei {@code scale = 1}).
  * Die Hülle wird mit dem Faktor {@code scale} verkleinert. Die wichtigsten Räume – Brücke,
@@ -30,14 +31,16 @@ public final class EnterpriseBlueprint {
     private static final int DECK_HEIGHT = 4;
 
     public final double scale;
+    public final ShipDesign design;
+    private final boolean refit;
     public final int sizeX, sizeY, sizeZ;
     /** Verschiebung lokales z -> Rasterindex. */
     public final int zOffset;
 
     private final byte[] comp;
     private final boolean[] hull;
-    /** 0 = nichts setzen, sonst (Teil+1) | Richtung << 6 | Gitter-Verbindungen << 8. */
-    private final short[] cell;
+    /** 0 = nichts setzen, sonst (Teil+1) | Richtung << 8 | Variante bzw. Gitter-Verbindungen << 10. */
+    private final int[] cell;
 
     /** Turbolift-Verbindungen in lokalen Koordinaten. */
     public final List<LiftStop> liftStops = new ArrayList<>();
@@ -57,22 +60,29 @@ public final class EnterpriseBlueprint {
     private final int floorBase;
 
     public EnterpriseBlueprint(double scale) {
+        this(ShipDesign.NCC_1701, scale);
+    }
+
+    public EnterpriseBlueprint(ShipDesign design, double scale) {
         this.scale = scale;
+        this.design = design;
+        this.refit = design.refit;
         this.s = scale;
         this.k = Math.max(scale, 9.5 / 15.0);
 
-        eR = 15 * k;
+        // Maße in Metern: Originalserie / Refit (NCC-1701-A)
+        eR = (refit ? 17 : 15) * k;
         eY = 1 + eR;
-        sMid = eY + eR + 20 * s;
-        sR = 63.5 * s;
+        sMid = eY + eR + (refit ? 18 : 20) * s;
+        sR = (refit ? 70 : 63.5) * s;
         sCx = 1 + sR;
-        eXf = 118 * s;
-        eXr = 245 * s;
-        nR = Math.max(7 * s, 2.6);
-        nZ = Math.max(42 * s, eR + nR + 6);
-        nY = sMid + 8 * s;
-        nX0 = 150 * s;
-        nX1 = 289 * s;
+        eXf = (refit ? 135 : 118) * s;
+        eXr = (refit ? 268 : 245) * s;
+        nR = Math.max((refit ? 6.5 : 7) * s, 2.6);
+        nZ = Math.max((refit ? 46 : 42) * s, eR + nR + 6);
+        nY = sMid + (refit ? 4 : 8) * s;
+        nX0 = (refit ? 172 : 150) * s;
+        nX1 = (refit ? 305 : 289) * s;
 
         bridgeFloor = (int) Math.floor(saucerTop(0));
         floorBase = Math.floorMod(bridgeFloor, DECK_HEIGHT);
@@ -86,12 +96,13 @@ public final class EnterpriseBlueprint {
         int n = sizeX * sizeY * sizeZ;
         comp = new byte[n];
         hull = new boolean[n];
-        cell = new short[n];
+        cell = new int[n];
 
         buildShape();
         skinAndDecks();
         registryLettering();
         hullDetails();
+        if (refit) torpedoLaunchers();
         smoothSaucer();
         boolean fullDecks = s >= 0.75;
         if (fullDecks) {
@@ -128,11 +139,11 @@ public final class EnterpriseBlueprint {
     /** @param variant 0–3: Variante (Farbe/Anzeige) bzw. Halbstufe (0 = unten, 1 = oben) */
     private void set(int x, int y, int z, ShipPart part, Direction facing, int variant) {
         if (!inBounds(x, y, z)) return;
-        cell[idx(x, y, z)] = (short) ((part.ordinal() + 1) | (facing.get2DDataValue() << 6) | ((variant & 3) << 8));
+        cell[idx(x, y, z)] = (part.ordinal() + 1) | (facing.get2DDataValue() << 8) | ((variant & 3) << 10);
     }
 
     public static int variant(int code) {
-        return (code >> 8) & 3;
+        return (code >> 10) & 3;
     }
 
     /** @return Bauteil der Zelle oder {@code null}, wenn dort nichts gesetzt wird */
@@ -143,15 +154,15 @@ public final class EnterpriseBlueprint {
     }
 
     public static ShipPart part(int code) {
-        return ShipPart.byId((code & 0x3F) - 1);
+        return ShipPart.byId((code & 0xFF) - 1);
     }
 
     public static Direction facing(int code) {
-        return Direction.from2DDataValue((code >> 6) & 3);
+        return Direction.from2DDataValue((code >> 8) & 3);
     }
 
     public static boolean bar(int code, Direction dir) {
-        return (code >> (8 + dir.get2DDataValue()) & 1) != 0;
+        return (code >> (10 + dir.get2DDataValue()) & 1) != 0;
     }
 
     private byte compAt(int x, int y, int z) {
@@ -167,14 +178,14 @@ public final class EnterpriseBlueprint {
         for (int x = 0; x < sizeX; x++)
             for (int y = 0; y < sizeY; y++)
                 for (int z = -zOffset; z <= zOffset; z++) {
-                    short code = cell[idx(x, y, z)];
+                    int code = cell[idx(x, y, z)];
                     if (code != 0) consumer.accept(x, y, z, code);
                 }
     }
 
     public int countBlocks() {
         int c = 0;
-        for (short id : cell) if (id != 0) c++;
+        for (int id : cell) if (id != 0) c++;
         return c;
     }
 
@@ -187,21 +198,42 @@ public final class EnterpriseBlueprint {
     //  Form der Hülle
     // =====================================================================================
 
+    /** "Aztec"-Plattenmuster der Refit-Hülle auf der Untertasse (polar, blockweise Zufall). */
+    private static boolean aztec(double r, double theta) {
+        int ring = (int) Math.floor(r / 4);
+        int seg = (int) Math.floor((theta + Math.PI) * r / 4);
+        int h = ring * 73856093 ^ seg * 19349663;
+        h ^= h >>> 13;
+        return ((ring + seg) & 1) == 0 ? (h & 3) != 0 : (h & 7) == 0;
+    }
+
+    private static boolean aztecXY(int a, int b) {
+        int i = Math.floorDiv(a, 4), j = Math.floorDiv(b, 3);
+        int h = i * 73856093 ^ j * 19349663;
+        h ^= h >>> 13;
+        return ((i + j) & 1) == 0 ? (h & 3) != 0 : (h & 7) == 0;
+    }
+
     private double saucerTop(double r) {
         double u = Math.min(1, r / sR);
-        double top = sMid + s * (2.5 + 8 * (1 - u * u));
-        if (r < 22 * s) top += 2.5 * s; // erhöhter Aufbau um die Brücke
+        double top = sMid + s * (2.5 + (refit ? 9 : 8) * (1 - u * u));
+        if (r < (refit ? 24 : 22) * s) top += (refit ? 3 : 2.5) * s; // erhöhter Aufbau um die Brücke
         return top;
     }
 
     private double saucerBottom(double r) {
         double u = Math.min(1, r / sR);
-        return sMid - Math.max(1.6, s * (2.5 + 5.5 * (1 - u * u)));
+        return sMid - Math.max(1.6, s * (2.5 + (refit ? 6.5 : 5.5) * (1 - u * u)));
     }
 
     private double secondaryRadius(double x) {
         double f = (x - eXf) / (eXr - eXf);
         if (f < 0 || f > 1) return -1;
+        if (refit) {
+            if (f < 0.1) return eR * (0.85 + 0.15 * f / 0.1);
+            if (f < 0.55) return eR;
+            return eR * (1 - 0.45 * (f - 0.55) / 0.45);
+        }
         if (f < 0.12) return eR * (0.8 + 0.2 * f / 0.12);
         if (f < 0.6) return eR;
         return eR * (1 - 0.4 * (f - 0.6) / 0.4);
@@ -214,7 +246,7 @@ public final class EnterpriseBlueprint {
             double d = capEnd - x;
             return Math.sqrt(Math.max(0, nR * nR - d * d));
         }
-        double tail = nX1 - 6 * s;
+        double tail = nX1 - (refit ? 9 : 6) * s;
         if (x > tail) return nR * (1 - 0.4 * (x - tail) / (nX1 - tail));
         return nR;
     }
@@ -238,40 +270,43 @@ public final class EnterpriseBlueprint {
         if (dx * dx + (y - domeY) * (y - domeY) + (double) z * z <= domeR * domeR && y < saucerBottom(0) + 1) return SENSOR;
 
         // Hals ("Dorsal"): schräge Verbindung zwischen Untertasse und Sekundärhülle
-        double neckTopX = sCx + 30 * s, neckTopY = saucerBottom(30 * s) + 1;
-        double neckBotX = eXf + 30 * s, neckBotY = eY + eR * 0.7;
+        double neckTopX = sCx + (refit ? 34 : 30) * s, neckTopY = saucerBottom((refit ? 34 : 30) * s) + 1;
+        double neckBotX = eXf + (refit ? 36 : 30) * s, neckBotY = eY + eR * 0.7;
         if (y >= neckBotY && y <= neckTopY) {
             double t = (neckTopY - y) / (neckTopY - neckBotY);
             double xc = neckTopX + t * (neckBotX - neckTopX);
-            double chord = Math.max(4, 13 * s);
-            double w = Math.max(1.5, 4 * s * (1 - 0.25 * t));
+            double chord = Math.max(4, (refit ? 15 : 13) * s);
+            double w = Math.max(1.5, (refit ? 5.5 : 4) * s * (1 - 0.25 * t));
             if (Math.abs(x - xc) <= chord && Math.abs(z) <= w) return NECK;
         }
 
         // Deflektorschüssel + Antenne
         double rho = Math.sqrt((y - eY) * (y - eY) + (double) z * z);
         double dishR = eR * 0.7;
-        double dishDepth = Math.max(1, 3 * s);
+        double dishDepth = refit ? 1 : Math.max(1, 3 * s);
         if (rho <= dishR && x < eXf && x >= eXf - 1 - dishDepth * (rho / dishR)) return DISH;
-        if (rho <= Math.max(0.5, s) && x < eXf && x >= eXf - Math.max(4, 10 * s)) return ANTENNA;
+        if (!refit && rho <= Math.max(0.5, s) && x < eXf && x >= eXf - Math.max(4, 10 * s)) return ANTENNA;
 
         // Sekundärhülle mit Shuttlehangar
         double er = secondaryRadius(x);
-        if (er > 0 && rho <= er) return x > eXr - 22 * s ? SHUTTLEBAY : SECONDARY;
+        if (er > 0 && rho <= er) return x > eXr - (refit ? 28 : 22) * s ? SHUTTLEBAY : SECONDARY;
 
         // Pylonen + Gondeln (symmetrisch)
         double az = Math.abs(z);
         double nr = nacelleRadius(x);
-        double nd = Math.sqrt((az - nZ) * (az - nZ) + (y - nY) * (y - nY));
+        double nd = refit
+            // Refit: kantigere Gondel (abgerundetes Rechteck, schmaler als hoch)
+            ? nR * Math.pow(Math.pow(Math.abs(az - nZ) / (0.75 * nR), 4) + Math.pow(Math.abs(y - nY) / nR, 4), 0.25)
+            : Math.sqrt((az - nZ) * (az - nZ) + (y - nY) * (y - nY));
         if (nr > 0 && nd <= nr) return x < nX0 + nR * 0.9 ? BUSSARD : NACELLE;
 
-        double p0z = 0, p0y = eY + eR * 0.5, p1z = nZ, p1y = nY;
+        double p0z = refit ? eR * 0.6 : 0, p0y = eY + eR * (refit ? 0.2 : 0.5), p1z = nZ, p1y = nY;
         double lz = p1z - p0z, ly = p1y - p0y, len = Math.sqrt(lz * lz + ly * ly);
         double t = ((az - p0z) * lz + (y - p0y) * ly) / (len * len);
         if (t >= 0 && t <= 1) {
             double perp = Math.abs((az - p0z) * ly - (y - p0y) * lz) / len;
-            double xc = (212 + 10 * t) * s + (eXr - 245 * s);
-            double chord = Math.max(2.5, (12 - 3 * t) * s);
+            double xc = refit ? (232 + 22 * t) * s : (212 + 10 * t) * s;
+            double chord = Math.max(2.5, ((refit ? 11 : 12) - (refit ? 2 : 3) * t) * s);
             if (perp <= Math.max(1.0, 1.6 * s) && Math.abs(x - xc) <= chord) return PYLON;
         }
         return NONE;
@@ -303,8 +338,8 @@ public final class EnterpriseBlueprint {
         ShipPart panel = ShipPart.HULL_PANEL;
         ShipPart dark = ShipPart.HULL_DARK;
         ShipPart window = ShipPart.HULL_WINDOW;
-        ShipPart dish = ShipPart.DEFLECTOR_DISH;
-        ShipPart bussard = ShipPart.BUSSARD_COLLECTOR;
+        ShipPart dish = refit ? ShipPart.DEFLECTOR_DISH_BLUE : ShipPart.DEFLECTOR_DISH;
+        ShipPart bussard = refit ? ShipPart.BUSSARD_RED : ShipPart.BUSSARD_COLLECTOR;
         ShipPart grille = ShipPart.NACELLE_GRILLE;
         ShipPart floor = ShipPart.DECK_FLOOR;
         ShipPart light = ShipPart.CEILING_LIGHT;
@@ -337,12 +372,15 @@ public final class EnterpriseBlueprint {
                                     boolean ring = Math.abs(r - 0.55 * sR) < 0.5 || Math.abs(r - 0.82 * sR) < 0.5
                                         || Math.abs(r - 0.32 * sR) < 0.5;
                                     if (ring) st = panel;
+                                    if (refit && aztec(r, Math.atan2(z, dx))) st = ShipPart.HULL_AZTEC;
                                 }
                             }
                             case BRIDGE -> st = y >= bridgeFloor + 6 ? panel : plating;
-                            case NECK, PYLON -> st = Math.floorMod(x, 6) == 0 ? panel : plating;
+                            case NECK, PYLON -> st = refit && aztecXY(x, y + z) ? ShipPart.HULL_AZTEC
+                                : Math.floorMod(x, 6) == 0 ? panel : plating;
                             case SECONDARY -> {
                                 if (openSide && !openUpDown && deckY == 2 && Math.floorMod(x * 5 + y, 4) == 0 && Math.abs(z) > 1) st = window;
+                                else if (refit && aztecXY(x, y * 3 + z)) st = ShipPart.HULL_AZTEC;
                                 else if (Math.floorMod(x, 8) == 0) st = panel;
                             }
                             case SHUTTLEBAY -> {
@@ -358,7 +396,8 @@ public final class EnterpriseBlueprint {
                                 boolean inner = Math.abs(z) < nZ - nR * 0.4;
                                 boolean mid = Math.abs(y - nY) <= Math.max(1, nR * 0.35);
                                 if (x > nX1 - 2) st = dark;
-                                else if (inner && mid && x < nX1 - 6 * s) st = grille;
+                                else if ((inner || refit) && mid && x < nX1 - (refit ? 9 : 6) * s) st = grille; // Refit: Gitter beidseitig
+                                else if (refit && aztecXY(x, y)) st = ShipPart.HULL_AZTEC;
                                 else if (Math.floorMod(x, 10) == 0) st = panel;
                             }
                             default -> {}
@@ -401,6 +440,7 @@ public final class EnterpriseBlueprint {
         FONT6x9.put('-', new String[] {"0000", "0000", "0000", "0000", "1111", "0000", "0000", "0000", "0000"});
         FONT6x9.put('1', new String[] {"001100", "011100", "101100", "001100", "001100", "001100", "001100", "001100", "111111"});
         FONT6x9.put('7', new String[] {"111111", "000001", "000010", "000100", "000100", "001000", "001000", "001000", "001000"});
+        FONT6x9.put('A', new String[] {"001100", "010010", "100001", "100001", "111111", "100001", "100001", "100001", "100001"});
         FONT6x9.put('0', new String[] {"011110", "100001", "100011", "100101", "101001", "110001", "100001", "100001", "011110"});
         FONT5x7.put('N', new String[] {"10001", "11001", "10101", "10011", "10001", "10001", "10001"});
         FONT5x7.put('C', new String[] {"01110", "10001", "10000", "10000", "10000", "10001", "01110"});
@@ -414,6 +454,7 @@ public final class EnterpriseBlueprint {
         FONT3x5.put('1', new String[] {"010", "110", "010", "010", "111"});
         FONT3x5.put('7', new String[] {"111", "001", "010", "010", "010"});
         FONT3x5.put('0', new String[] {"111", "101", "101", "101", "111"});
+        FONT3x5.put('A', new String[] {"010", "101", "111", "101", "101"});
         FONT3x5.put('U', new String[] {"101", "101", "101", "101", "111"});
         FONT3x5.put('S', new String[] {"111", "100", "111", "001", "111"});
         FONT3x5.put('E', new String[] {"111", "100", "110", "100", "111"});
@@ -439,11 +480,11 @@ public final class EnterpriseBlueprint {
     private void registryLettering() {
         boolean big = s >= 0.75;
         var font = big ? FONT6x9 : FONT3x5;
-        int spacing = big ? 4 : 2;
+        int spacing = big ? (refit ? 2 : 4) : (refit ? 1 : 2);
         double scale = big ? GLYPH_SCALE : 1.0; // gedrehte Buchstaben etwas größer, damit sie sauber bleiben
         int h = font.get('N').length;
         double ra = sR * (big ? 0.8 : 0.78);
-        String reg = "NCC-1701";
+        String reg = design.registry;
         int total = 0;
         for (char ch : reg.toCharArray()) total += font.get(ch)[0].length() + spacing;
         total -= spacing;
@@ -550,18 +591,19 @@ public final class EnterpriseBlueprint {
 
     /** Kennung + rote Zierstreifen an Gondeln und Sekundärhülle, Positionslichter. */
     private void hullDetails() {
-        int reg = textWidth("NCC-1701", FONT3x5);
+        String regText = design.registry;
+        int reg = textWidth(regText, FONT3x5);
         for (int side : new int[] {1, -1}) {
             // Gondeln: Text vorne, danach roter Streifen auf Mittelhöhe
             int ny = (int) Math.round(nY);
             int textFront = (int) Math.round(nX0 + nR * 1.5);
             int start = side > 0 ? textFront + reg : textFront;
-            sideText("NCC-1701", start, ny + 2, side);
+            sideText(regText, start, ny + 2, side);
             for (int x = textFront + reg + 3; x < nX1 - 6 * s; x++) markSide(x, ny, side, ShipPart.HULL_PENNANT);
             // Sekundärhülle: Text vor dem Pylon, roter Streifen darunter
             int ey = (int) Math.round(eY + eR * 0.25);
             int ex = (int) Math.round(eXf + 0.5 * (eXr - eXf));
-            sideText("NCC-1701", side > 0 ? ex + reg : ex, ey + 2, side);
+            sideText(regText, side > 0 ? ex + reg : ex, ey + 2, side);
             for (int x = (int) Math.round(eXf + 0.15 * (eXr - eXf)); x < ex + reg + 2; x++) markSide(x, ey - 5, side, ShipPart.HULL_PENNANT);
         }
         // Positionslichter am Untertassenrand: Backbord rot, Steuerbord grün
@@ -570,6 +612,23 @@ public final class EnterpriseBlueprint {
         markSide(mx, my, 1, ShipPart.NAV_LIGHT_GREEN);
         markSide(mx + 1, my, -1, ShipPart.NAV_LIGHT_RED);
         markSide(mx + 1, my, 1, ShipPart.NAV_LIGHT_GREEN);
+    }
+
+    /** Refit: zwei Photonentorpedo-Werfer vorne am unteren Ende des Halses. */
+    private void torpedoLaunchers() {
+        // die untersten zwei sichtbaren Zeilen der Halsvorderseite (über der Sekundärhülle)
+        for (int z : new int[] {-2, -1, 1, 2}) {
+            int placed = 0;
+            for (int y = (int) eY; y < sizeY && placed < 2; y++)
+                for (int x = 0; x < sizeX; x++) {
+                    if (compAt(x, y, z) != NECK) continue;
+                    if (hull[idx(x, y, z)] && compAt(x - 1, y, z) == NONE) {
+                        set(x, y, z, ShipPart.TORPEDO_LAUNCHER);
+                        placed++;
+                    }
+                    break;
+                }
+        }
     }
 
     /** Glättet Ober- und Unterseite der Untertasse mit Halbstufen. */
@@ -628,7 +687,7 @@ public final class EnterpriseBlueprint {
                             set(x, yb + 1, dz, ShipPart.STEP_SLAB, Direction.NORTH, 0); // Stufe
                         } else {
                             set(x, yb + 1, dz, ShipPart.HULL_MARKING); // schwarze Stufenkante
-                            set(x, yb + 2, dz, ShipPart.BRIDGE_RAILING);
+                            set(x, yb + 2, dz, refit ? ShipPart.BRIDGE_RAILING_GRAY : ShipPart.BRIDGE_RAILING);
                         }
                     }
                     // Stationen am Außenrand des Rings
@@ -641,7 +700,7 @@ public final class EnterpriseBlueprint {
                     if (!isInterior(x, yb + 2, dz)) continue;
                     for (int y = yb; y <= yb + 5; y++) if (isInterior(x, y, dz)) set(x, y, dz, ShipPart.BRIDGE_WALL);
                     if (r <= 8.5) {
-                        set(x, yb + 5, dz, ShipPart.BRIDGE_TRIM);
+                        set(x, yb + 5, dz, refit ? ShipPart.BRIDGE_TRIM_BLUE : ShipPart.BRIDGE_TRIM);
                         if (!front && !aft) {
                             int variant = Math.floorMod((int) Math.round(Math.atan2(dz, dx) * 5), 4);
                             set(x, yb + 3, dz, ShipPart.BRIDGE_MONITOR, inwardFacing(dx, dz), variant);
@@ -1305,19 +1364,19 @@ public final class EnterpriseBlueprint {
             for (int y = 0; y < sizeY; y++)
                 for (int z = -zOffset; z <= zOffset; z++) {
                     ShipPart self = get(x, y, z);
-                    if (self != ShipPart.IRON_BARS && self != ShipPart.BRIDGE_RAILING) continue;
+                    if (self != ShipPart.IRON_BARS && self != ShipPart.BRIDGE_RAILING && self != ShipPart.BRIDGE_RAILING_GRAY) continue;
                     int code = cell[idx(x, y, z)];
-                    code &= 0xFF; // Varianten-Bits löschen, hier stehen die Verbindungen
-                    if (connects(self, get(x - 1, y, z))) code |= 1 << (8 + Direction.NORTH.get2DDataValue());
-                    if (connects(self, get(x + 1, y, z))) code |= 1 << (8 + Direction.SOUTH.get2DDataValue());
-                    if (connects(self, get(x, y, z + 1))) code |= 1 << (8 + Direction.EAST.get2DDataValue());
-                    if (connects(self, get(x, y, z - 1))) code |= 1 << (8 + Direction.WEST.get2DDataValue());
-                    cell[idx(x, y, z)] = (short) code;
+                    code &= 0x3FF; // Varianten-Bits löschen, hier stehen die Verbindungen
+                    if (connects(self, get(x - 1, y, z))) code |= 1 << (10 + Direction.NORTH.get2DDataValue());
+                    if (connects(self, get(x + 1, y, z))) code |= 1 << (10 + Direction.SOUTH.get2DDataValue());
+                    if (connects(self, get(x, y, z + 1))) code |= 1 << (10 + Direction.EAST.get2DDataValue());
+                    if (connects(self, get(x, y, z - 1))) code |= 1 << (10 + Direction.WEST.get2DDataValue());
+                    cell[idx(x, y, z)] = code;
                 }
     }
 
     private static boolean connects(ShipPart self, ShipPart n) {
-        if (self == ShipPart.BRIDGE_RAILING) return n == ShipPart.BRIDGE_RAILING;
+        if (self == ShipPart.BRIDGE_RAILING || self == ShipPart.BRIDGE_RAILING_GRAY) return n == self;
         return n != null && n != ShipPart.AIR && n != ShipPart.LADDER && n != ShipPart.CAPTAINS_CHAIR
             && n != ShipPart.TRANSPORTER_PAD;
     }

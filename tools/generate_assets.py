@@ -815,6 +815,70 @@ def tex_cabinet_front():
     return img
 
 
+def tex_hull_aztec():
+    img = noise(new((190, 200, 210)), 3, 80)
+    px = img.load()
+    for i in range(16):
+        px[i, 0] = shade(px[i, 0], -14)
+        px[0, i] = shade(px[0, i], -14)
+    return img
+
+
+def tex_dish_blue():
+    img = new((0, 0, 0))
+    px = img.load()
+    for x in range(16):
+        for y in range(16):
+            d = math.hypot(x - 7.5, y - 7.5)
+            ring = (math.sin(d * 1.8) + 1) / 2
+            px[x, y] = (clamp(60 + 60 * ring), clamp(140 + 80 * ring), 255, 255)
+            if d < 2:
+                px[x, y] = (220, 240, 255, 255)
+    return img
+
+
+def tex_bussard_red():
+    img = new((0, 0, 0))
+    px = img.load()
+    for x in range(16):
+        for y in range(16):
+            d = math.hypot(x - 7.5, y - 7.5)
+            a = math.atan2(y - 7.5, x - 7.5)
+            swirl = (math.sin(a * 3 + d * 1.2) + 1) / 2
+            core = max(0.0, 1 - d / 9)
+            px[x, y] = (255, clamp(30 + 60 * core * swirl), clamp(40 + 50 * core), 255)
+    return img
+
+
+def tex_torpedo():
+    img = noise(new((60, 62, 68)), 3, 81)
+    px = img.load()
+    for x in range(16):
+        for y in range(16):
+            d = math.hypot(x - 7.5, y - 7.5)
+            if d < 5:
+                px[x, y] = (255, clamp(90 + 25 * (5 - d)), 40, 255)
+            elif d < 6:
+                px[x, y] = (30, 30, 34, 255)
+    return img
+
+
+def tex_railing_gray():
+    return noise(new((150, 154, 162)), 5, 82)
+
+
+def tex_trim_blue():
+    img = new((50, 110, 210))
+    px = img.load()
+    for x in range(16):
+        for y in range(16):
+            glow = 1 - abs(y - 7.5) / 8
+            px[x, y] = (clamp(40 + 80 * glow), clamp(100 + 110 * glow), 255, 255)
+        px[x, 0] = (60, 64, 72, 255)
+        px[x, 15] = (60, 64, 72, 255)
+    return img
+
+
 TEXTURES = {
     "hull_plating": tex_hull_plating,
     "hull_panel": tex_hull_panel,
@@ -856,6 +920,12 @@ TEXTURES = {
     "cargo_container": tex_cargo,
     "mess_top": tex_mess_top,
     "sickbay_wall": tex_sickbay_wall,
+    "hull_aztec": tex_hull_aztec,
+    "deflector_dish_blue": tex_dish_blue,
+    "bussard_red": tex_bussard_red,
+    "torpedo_launcher": tex_torpedo,
+    "bridge_railing_gray": tex_railing_gray,
+    "bridge_trim_blue": tex_trim_blue,
     "sickbay_floor": tex_sickbay_floor,
     "bio_mattress": tex_bio_mattress,
     "bio_body": tex_bio_body,
@@ -898,7 +968,7 @@ def b(name):
     return f"{MODID}:block/{name}"
 
 
-SIMPLE = ["sickbay_wall", "sickbay_floor", "cargo_container", "bridge_wall", "bridge_trim", "turbolift_frame", "transporter_wall", "transporter_platform",
+SIMPLE = ["hull_aztec", "deflector_dish_blue", "bussard_red", "torpedo_launcher", "bridge_trim_blue", "sickbay_wall", "sickbay_floor", "cargo_container", "bridge_wall", "bridge_trim", "turbolift_frame", "transporter_wall", "transporter_platform",
           "transporter_energizer", "transporter_emitter", "nav_light_red", "nav_light_green", "hull_pennant",
           "hull_plating", "hull_panel", "hull_dark", "hull_window", "hull_marking", "deflector_dish",
           "bussard_collector", "nacelle_grille", "deck_floor", "bridge_deck", "corridor_wall",
@@ -1104,10 +1174,10 @@ RAIL_SIDE = {
 }
 
 
-def railing_blockstate():
-    parts = [{"apply": {"model": b("bridge_railing_post")}}]
+def railing_blockstate(name="bridge_railing"):
+    parts = [{"apply": {"model": b(name + "_post")}}]
     for d, y in (("north", 0), ("east", 90), ("south", 180), ("west", 270)):
-        m = {"model": b("bridge_railing_side")}
+        m = {"model": b(name + "_side")}
         if y:
             m["y"] = y
         parts.append({"apply": m, "when": {d: "true"}})
@@ -1206,6 +1276,12 @@ NAMES = {
     "exam_table": ("Untersuchungstisch", "Examination Table"),
     "medical_cabinet": ("Medizinschrank", "Medical Cabinet"),
     "sickbay_wall": ("Krankenstations-Wand", "Sickbay Wall"),
+    "hull_aztec": ("Refit-Hüllenplatte (Aztec)", "Refit Hull Panel (Aztec)"),
+    "deflector_dish_blue": ("Deflektorschüssel (Refit, blau)", "Deflector Dish (Refit, Blue)"),
+    "bussard_red": ("Bussard-Kollektor (Refit, rot)", "Bussard Collector (Refit, Red)"),
+    "torpedo_launcher": ("Photonentorpedo-Werfer", "Photon Torpedo Launcher"),
+    "bridge_railing_gray": ("Brückengeländer (Refit, grau)", "Bridge Railing (Refit, Gray)"),
+    "bridge_trim_blue": ("Blaue Lichtleiste (Refit)", "Blue Light Strip (Refit)"),
     "sickbay_floor": ("Krankenstations-Boden", "Sickbay Floor"),
     "crew_bed": ("Koje", "Crew Bunk"),
     "crew_desk": ("Schreibtisch", "Crew Desk"),
@@ -1273,16 +1349,19 @@ def main():
         write_json(os.path.join(ASSETS, "items", name + ".json"), item_def(b(f"{name}_0")))
         write_json(os.path.join(DATA, "loot_table", "blocks", name + ".json"), loot(name))
         models_extra.append(name)
-    # Geländer (verbindet sich wie Eisengitter)
-    write_json(os.path.join(ASSETS, "models", "block", "bridge_railing_post.json"), RAIL_POST)
-    write_json(os.path.join(ASSETS, "models", "block", "bridge_railing_side.json"), RAIL_SIDE)
-    write_json(os.path.join(ASSETS, "models", "block", "bridge_railing_inventory.json"),
-               {"parent": "minecraft:block/block", "textures": RAIL_SIDE["textures"],
-                "elements": RAIL_POST["elements"] + RAIL_SIDE["elements"]})
-    write_json(os.path.join(ASSETS, "blockstates", "bridge_railing.json"), railing_blockstate())
-    write_json(os.path.join(ASSETS, "items", "bridge_railing.json"), item_def(b("bridge_railing_inventory")))
-    write_json(os.path.join(DATA, "loot_table", "blocks", "bridge_railing.json"), loot("bridge_railing"))
-    models_extra.append("bridge_railing")
+    # Geländer (verbindet sich wie Eisengitter): rot (Originalserie) und grau (Refit)
+    for rail in ("bridge_railing", "bridge_railing_gray"):
+        tex = {"particle": b(rail), "red": b(rail), "black": b("trim_black")}
+        post = dict(RAIL_POST, textures=tex)
+        side = dict(RAIL_SIDE, textures=tex)
+        write_json(os.path.join(ASSETS, "models", "block", rail + "_post.json"), post)
+        write_json(os.path.join(ASSETS, "models", "block", rail + "_side.json"), side)
+        write_json(os.path.join(ASSETS, "models", "block", rail + "_inventory.json"),
+                   {"parent": "minecraft:block/block", "textures": tex, "elements": post["elements"] + side["elements"]})
+        write_json(os.path.join(ASSETS, "blockstates", rail + ".json"), railing_blockstate(rail))
+        write_json(os.path.join(ASSETS, "items", rail + ".json"), item_def(b(rail + "_inventory")))
+        write_json(os.path.join(DATA, "loot_table", "blocks", rail + ".json"), loot(rail))
+        models_extra.append(rail)
     # Biobett (zwei Hälften)
     write_json(os.path.join(ASSETS, "models", "block", "biobed_foot.json"), BIOBED_FOOT)
     write_json(os.path.join(ASSETS, "models", "block", "biobed_head.json"), BIOBED_HEAD)
@@ -1350,9 +1429,9 @@ def main():
         f"message.{MODID}.communicator.no_pad": "Keine Transporterplattform gespeichert.",
         f"message.{MODID}.communicator.pad_gone": "Die Transporterplattform existiert nicht mehr.",
         f"message.{MODID}.communicator.beam_up": "Enterprise an Landetrupp: Wir beamen Sie hoch.",
-        f"command.{MODID}.enterprise.computing": "Berechne Bauplan der USS Enterprise NCC-1701 (Hülle %s, wichtige Räume 1:1) ...",
+        f"command.{MODID}.enterprise.computing": "Berechne Bauplan der USS Enterprise %s (Hülle %s, wichtige Räume 1:1) ...",
         f"command.{MODID}.enterprise.started": "Baue die Enterprise (%s x %s x %s Blöcke) bei %s ...",
-        f"command.{MODID}.enterprise.done": "USS Enterprise fertig gebaut (%s Blöcke).",
+        f"command.{MODID}.enterprise.done": "USS Enterprise %s fertig gebaut (%s Blöcke).",
         f"command.{MODID}.enterprise.to_bridge": "[Zur Brücke]",
         f"command.{MODID}.enterprise.too_high": "Das Schiff ist %s Blöcke hoch und passt hier nicht in die Bauhöhe (%s bis %s). Wähle eine andere Y-Position oder eine kleinere Größe.",
     })
@@ -1372,9 +1451,9 @@ def main():
         f"message.{MODID}.communicator.no_pad": "No transporter pad stored.",
         f"message.{MODID}.communicator.pad_gone": "The transporter pad no longer exists.",
         f"message.{MODID}.communicator.beam_up": "Enterprise to landing party: beaming you up.",
-        f"command.{MODID}.enterprise.computing": "Computing blueprint of the USS Enterprise NCC-1701 (hull %s, key rooms 1:1) ...",
+        f"command.{MODID}.enterprise.computing": "Computing blueprint of the USS Enterprise %s (hull %s, key rooms 1:1) ...",
         f"command.{MODID}.enterprise.started": "Building the Enterprise (%s x %s x %s blocks) at %s ...",
-        f"command.{MODID}.enterprise.done": "USS Enterprise complete (%s blocks).",
+        f"command.{MODID}.enterprise.done": "USS Enterprise %s complete (%s blocks).",
         f"command.{MODID}.enterprise.to_bridge": "[To the bridge]",
         f"command.{MODID}.enterprise.too_high": "The ship is %s blocks tall and does not fit into the build height here (%s to %s). Choose another Y position or a smaller size.",
     })
