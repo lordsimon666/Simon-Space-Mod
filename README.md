@@ -206,6 +206,15 @@ Thingiverse #1423364 (Spiegel: archive.org/details/thingiverse-1423364), Lizenz
 Die Modelle wurden in Blockraster umgewandelt. Deshalb darf auch diese Mod nur nicht-kommerziell
 verwendet werden.
 
+### Hüllenmarkierungen
+
+* Alle Schiffe: Kennung groß im Bogen oben vorne auf der Untertasse **und** gespiegelt auf der
+  Unterseite (von unten lesbar), Kennung seitlich am Unterrumpf.
+* NCC-1701-A: Kennung zusätzlich klein hinter der Brücke, rote Sternenflotten-Wimpel mit
+  Pfeilspitze vorne an Unterrumpf und Gondeln.
+* NCC-1701-D: zwei parallele rote Linien hinten den Hals hinunter, rote Wimpel an den Gondeln
+  (auch bei der E).
+
 ### Quellen für die Räume der C, D und E
 
 * Deckpläne der Galaxy-Klasse (nach den Sternbach-Blueprints):

@@ -123,6 +123,19 @@ class EnterpriseBlueprintTest {
                 }
         ImageIO.write(top, "png", new File(dir, "top_" + tag + ".png"));
 
+        // Untersicht (unterster Block jeder Säule, wie von unten gesehen: links/rechts vertauscht)
+        BufferedImage bottom = new BufferedImage(bp.sizeX * px, bp.sizeZ * px, BufferedImage.TYPE_INT_RGB);
+        for (int x = 0; x < bp.sizeX; x++)
+            for (int z = -bp.zOffset; z <= bp.zOffset; z++)
+                for (int y = 0; y < bp.sizeY; y++) {
+                    ShipPart p = bp.get(x, y, z);
+                    if (p != null && p != ShipPart.AIR) {
+                        fill(bottom, x, bp.zOffset - z, px, p.color);
+                        break;
+                    }
+                }
+        ImageIO.write(bottom, "png", new File(dir, "bottom_" + tag + ".png"));
+
         // Seitenansicht (von Backbord, vorderster Block)
         BufferedImage side = new BufferedImage(bp.sizeX * px, bp.sizeY * px, BufferedImage.TYPE_INT_RGB);
         for (int x = 0; x < bp.sizeX; x++)

@@ -1002,7 +1002,10 @@ public final class EnterpriseBlueprint {
         for (char ch : reg.toCharArray()) total += font.get(ch)[0].length() + spacing;
         total -= spacing;
         total = (int) Math.round(total * scale);
-        // Bogen: erster Buchstabe auf Steuerbord (+z), dann Richtung Backbord
+        // Bogen: erster Buchstabe auf Steuerbord (+z), dann Richtung Backbord.
+        // Zweiter Durchgang: dieselbe Kennung auf der Unterseite (gespiegelt, lesbar von unten)
+        for (int pass = 0; pass < 2; pass++) {
+        underside = pass == 1;
         double pos = -total / 2.0;
         for (char ch : reg.toCharArray()) {
             String[] g = font.get(ch);
@@ -1015,6 +1018,20 @@ public final class EnterpriseBlueprint {
                 drawGlyphTop(g, xTop, (int) Math.round(-pos), 1);
             }
             pos += (w + spacing) * scale;
+        }
+        }
+        underside = false;
+        if (refit) {
+            // Refit: Kennung ein zweites Mal klein hinter der Brücke
+            int px = big ? 2 : 1;
+            int rw = textWidth(reg, FONT3x5) * px;
+            int xTop = (int) Math.round(sCx) + bR + 3 + 5 * px;
+            int col = 0;
+            for (char ch : reg.toCharArray()) {
+                String[] g = FONT3x5.get(ch);
+                drawGlyphTop(g, xTop, rw / 2 - col, px);
+                col += (g[0].length() + 1) * px;
+            }
         }
         // "USS ENTERPRISE" klein und gerade zwischen Brücke und Kennung, wenn genug Platz ist
         String name = "USS ENTERPRISE";
@@ -1070,7 +1087,21 @@ public final class EnterpriseBlueprint {
             }
     }
 
+    /** Schreiben die Zeichenfunktionen gerade auf die Unterseite (an der Längsachse gespiegelt)? */
+    private boolean underside;
+
     private void markTop(int x, int z, ShipPart mark) {
+        if (underside) {
+            // von unten gesehen ist links und rechts vertauscht
+            for (int y = 0; y < sizeY; y++) {
+                if (!inBounds(x, y, -z)) return;
+                int i = idx(x, y, -z);
+                if (comp[i] == NONE) continue;
+                if (comp[i] == SAUCER && hull[i]) set(x, y, -z, mark);
+                return;
+            }
+            return;
+        }
         for (int y = sizeY - 1; y >= 0; y--) {
             if (!inBounds(x, y, z)) return;
             int i = idx(x, y, z);
@@ -1110,10 +1141,15 @@ public final class EnterpriseBlueprint {
         int reg = textWidth(regText, FONT3x5);
         for (int side : new int[] {1, -1}) {
             if (tng) {
-                // TNG: Kennung nur seitlich am Unterrumpf, keine roten Zierstreifen
+                // TNG: Kennung seitlich am Unterrumpf; D und E: rote Sternenflotten-Wimpel an den Gondeln
                 int ey = (int) Math.round(eY + eR * 0.25);
                 int ex = (int) Math.round(eXf + 0.3 * (eXr - eXf));
                 sideText(regText, side > 0 ? ex + reg : ex, ey + 2, side);
+                if (design != ShipDesign.NCC_1701_C) {
+                    int ny = (int) Math.round(nY + nR * 0.5);
+                    int x0 = (int) Math.round(nX0 + nR * 1.6);
+                    pennant(x0, (int) Math.round(nX0 + 0.7 * (nX1 - nX0)), ny, side, (int) Math.max(1, nR * 0.15));
+                }
                 continue;
             }
             // Gondeln: Text vorne, danach roter Streifen auf Mittelhöhe
@@ -1126,7 +1162,18 @@ public final class EnterpriseBlueprint {
             int ey = (int) Math.round(eY + eR * 0.25);
             int ex = (int) Math.round(eXf + (excelsior ? 0.25 : 0.5) * (eXr - eXf)); // Excelsior: vor den Gondeln
             sideText(regText, side > 0 ? ex + reg : ex, ey + 2, side);
-            for (int x = (int) Math.round(eXf + 0.15 * (eXr - eXf)); x < ex + reg + 2; x++) markSide(x, ey - 5, side, ShipPart.HULL_PENNANT);
+            int px0 = (int) Math.round(eXf + 0.15 * (eXr - eXf));
+            if (refit) pennant(px0, ex + reg + 2, ey - 5, side, 1); // Refit: Wimpel mit Pfeilspitze vorne
+            else for (int x = px0; x < ex + reg + 2; x++) markSide(x, ey - 5, side, ShipPart.HULL_PENNANT);
+        }
+        if (design == ShipDesign.NCC_1701_D) {
+            // zwei parallele rote Linien hinten den Hals hinunter
+            for (int x = 0; x < sizeX; x++)
+                for (int y = 0; y < sizeY; y++)
+                    for (int z : new int[] {-2, 2}) {
+                        if (compAt(x, y, z) != NECK || !hull[idx(x, y, z)]) continue;
+                        if (compAt(x + 1, y, z) == NONE && compAt(x, y + 1, z) != NONE) set(x, y, z, ShipPart.HULL_PENNANT);
+                    }
         }
         // Positionslichter am Untertassenrand: Backbord rot, Steuerbord grün
         int mx = (int) Math.round(sCx), my = (int) Math.round(sMid);
@@ -1134,6 +1181,17 @@ public final class EnterpriseBlueprint {
         markSide(mx, my, 1, ShipPart.NAV_LIGHT_GREEN);
         markSide(mx + 1, my, -1, ShipPart.NAV_LIGHT_RED);
         markSide(mx + 1, my, 1, ShipPart.NAV_LIGHT_GREEN);
+    }
+
+    /**
+     * Sternenflotten-Wimpel: vorne eine nach vorne zeigende Pfeilspitze (bis {@code half} Blöcke über
+     * und unter dem Streifen), dahinter ein roter Streifen bis x1.
+     */
+    private void pennant(int x0, int x1, int y, int side, int half) {
+        for (int x = x0; x < x1; x++) {
+            int h = x - x0 < 2 * (half + 1) ? (x - x0) / 2 : 0; // Spitze zeigt nach vorne
+            for (int dy = -Math.max(0, h); dy <= Math.max(0, h); dy++) markSide(x, y + dy, side, ShipPart.HULL_PENNANT);
+        }
     }
 
     /** Refit: zwei Photonentorpedo-Werfer vorne am unteren Ende des Halses. */
