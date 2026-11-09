@@ -29,6 +29,7 @@ public final class ShipPalette {
             case BRIDGE_DECK -> ModBlocks.BRIDGE_DECK.get().defaultBlockState();
             case CORRIDOR_WALL -> ModBlocks.CORRIDOR_WALL.get().defaultBlockState();
             case CEILING_LIGHT -> ModBlocks.CEILING_LIGHT.get().defaultBlockState();
+            case CEILING_PANEL -> ModBlocks.CEILING_PANEL.get().defaultBlockState();
             case BRIDGE_CONSOLE -> ModBlocks.BRIDGE_CONSOLE.get().defaultBlockState();
             case ENGINEERING_CONSOLE -> ModBlocks.ENGINEERING_CONSOLE.get().defaultBlockState();
             case LCARS_PANEL -> ModBlocks.LCARS_PANEL.get().defaultBlockState();

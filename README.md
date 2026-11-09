@@ -40,7 +40,7 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
   Stationen mit LCARS-Anzeigen, erhöhter roter Außenring mit Geländer, zwei Turbolifte.
 * **Maschinenraum** (19 x 11 m, zwei Ebenen): Warpkern vom Boden bis durch die Decke,
   Plasmaleitungen im Boden, Konsolen, Galerie mit Leitern, Turbolift.
-* **Transporterraum** (9 x 9 m): sechs Transporterplattformen, Bedienkonsole, Turbolift.
+* **Transporterraum** (9 x 9 m): sechs Transporterplattformen, Bedienkonsole, Deckenlichter, Turbolift.
 * Decks mit Deckenlichtern und Ringkorridoren in Untertassen- und Sekundärhülle, Fensterreihen,
   Shuttlehangar, Deflektorschüssel, Bussard-Kollektoren, Warpgondeln mit Gittern und die
   Kennung „NCC-1701“ auf der Untertasse.
@@ -52,11 +52,11 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
   Hast du keinen Kommunikator dabei, bekommst du einen.
 * **Kommunikator**: Rechtsklick beamt dich zurück auf die zuletzt benutzte Plattform.
 
-## Neue Blöcke
+## Neue Blöcke (22)
 
 Hüllenpanzerung, Hüllenplatte, dunkle Hüllenplatte, Hüllenfenster (leuchtet), Kennungsmarkierung,
 Deflektorschüssel, Bussard-Kollektor, Warpgondel-Gitter, Deckboden, Brückenboden, Korridorwand,
-Deckenleuchte, Brückenkonsole, Maschinenraum-Konsole, LCARS-Anzeige, Hauptbildschirm,
+Deckenleuchte, Deckenverkleidung, Brückenkonsole, Maschinenraum-Konsole, LCARS-Anzeige, Hauptbildschirm,
 Kommandantensessel, Warpkern, Plasmaleitung, Transporterplattform, Turbolift – plus das Item
 Kommunikator. Alles ist im Kreativ-Tab „Simon Space Mod“ zu finden.
 

@@ -186,6 +186,17 @@ def tex_ceiling_light():
     return img
 
 
+def tex_ceiling_panel():
+    img = noise(new((226, 226, 222)), 3, 22)
+    px = img.load()
+    for i in range(16):
+        px[i, 0] = shade(px[i, 0], -25)
+        px[0, i] = shade(px[0, i], -25)
+    for x, y in ((4, 4), (11, 4), (4, 11), (11, 11)):
+        px[x, y] = (170, 170, 168, 255)
+    return img
+
+
 def tex_console_side():
     img = noise(new((60, 60, 66)), 3, 10)
     px = img.load()
@@ -407,6 +418,7 @@ TEXTURES = {
     "bridge_deck": tex_bridge_deck,
     "corridor_wall": tex_corridor_wall,
     "ceiling_light": tex_ceiling_light,
+    "ceiling_panel": tex_ceiling_panel,
     "console_side": tex_console_side,
     "bridge_console_front": tex_bridge_console_front,
     "bridge_console_top": tex_bridge_console_top,
@@ -437,7 +449,7 @@ def b(name):
 
 SIMPLE = ["hull_plating", "hull_panel", "hull_dark", "hull_window", "hull_marking", "deflector_dish",
           "bussard_collector", "nacelle_grille", "deck_floor", "bridge_deck", "corridor_wall",
-          "ceiling_light", "plasma_conduit"]
+          "ceiling_light", "ceiling_panel", "plasma_conduit"]
 
 # Blöcke mit Blickrichtung: Name -> Modell-JSON
 FACING = {
@@ -505,6 +517,7 @@ NAMES = {
     "bridge_deck": ("Brückenboden", "Bridge Floor"),
     "corridor_wall": ("Korridorwand", "Corridor Wall"),
     "ceiling_light": ("Deckenleuchte", "Ceiling Light"),
+    "ceiling_panel": ("Deckenverkleidung", "Ceiling Panel"),
     "bridge_console": ("Brückenkonsole", "Bridge Console"),
     "engineering_console": ("Maschinenraum-Konsole", "Engineering Console"),
     "lcars_panel": ("LCARS-Anzeige", "LCARS Display"),

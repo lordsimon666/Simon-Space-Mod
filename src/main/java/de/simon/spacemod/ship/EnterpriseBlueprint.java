@@ -444,7 +444,7 @@ public final class EnterpriseBlueprint {
                 if (r <= 7.5) {
                     set(x, yb, dz, floor);
                     for (int y = yb + 1; y <= yb + 5; y++) set(x, y, dz, air);
-                    set(x, yb + 6, dz, r < 2.5 ? light : (Math.abs(r - 5.5) < 0.5 ? light : wall));
+                    set(x, yb + 6, dz, r < 2.5 ? light : (Math.abs(r - 5.5) < 0.5 ? light : ShipPart.CEILING_PANEL));
                     if (r > 4.6) set(x, yb + 1, dz, ringFloor); // erhöhter Außenring
                     else if (r > 3.9 && !(dx < 0 && Math.abs(dz) <= 1) && !(dx > 0 && Math.abs(dz) <= 1)) {
                         set(x, yb + 2, dz, rail); // Geländer zur Mittelgrube
@@ -497,7 +497,7 @@ public final class EnterpriseBlueprint {
                     int i = idx(x, y, z);
                     boolean boundary = x == x0 || x == x1 || y == y0 || y == y1 || z == z0 || z == z1;
                     if (boundary) {
-                        if (comp[i] != NONE && !hull[i]) set(x, y, z, y == y0 ? floor : wall);
+                        if (comp[i] != NONE && !hull[i]) set(x, y, z, y == y0 ? floor : y == y1 ? ShipPart.CEILING_PANEL : wall);
                     } else {
                         set(x, y, z, air);
                     }
@@ -588,10 +588,11 @@ public final class EnterpriseBlueprint {
                 for (int px : new int[] {xt + 1, xt + 3})
                     for (int pz : new int[] {-2, 0, 2}) {
                         set(px, f + 1, pz, pad);
-                        if (isInterior(px, f + 4, pz)) set(px, f + 4, pz, light);
+                        set(px, f + 4, pz, light); // auch wenn die Decke Außenhülle ist
                     }
                 set(xt - 3, f + 1, 0, ShipPart.BRIDGE_CONSOLE, Direction.NORTH);
                 set(xt - 3, f + 1, 1, ShipPart.LCARS_PANEL, Direction.NORTH);
+                set(xt - 3, f + 4, 0, light);
                 BlockPos lift = new BlockPos(xt - 5, f + 1, -3);
                 set(lift.getX(), lift.getY(), lift.getZ(), ShipPart.TURBOLIFT, Direction.SOUTH);
                 return lift;
