@@ -164,6 +164,11 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
   verbunden – so baust du Fahrstühle in eigenen Schiffen und Basen. Mit unterschiedlichen Netznamen
   bleiben getrennte Basen getrennt. Jede gespawnte Enterprise hat ihr eigenes Netz
   („NCC-1701 x/z“). Ausgestiegen wird auf der Seite, in die die Vorderseite des Blocks zeigt.
+* **Turbolift als Doppelblock**: Ein Turbolift ist zwei volle Blöcke hoch (unten Bedienfeld, oben
+  Tür) und wird wie eine Tür mit einem Klick gesetzt und zusammen abgebaut. Ein Rechtsklick
+  irgendwo auf den Turbolift (oben oder unten, jede Seite) öffnet das Menü.
+* **Sitzen**: Rechtsklick auf einen Stuhl oder Kommandantensessel – man setzt sich mit Blick in
+  die Richtung des Stuhls. Aufstehen mit Shift.
 * **Turbolift-Stile**: Jedes Schiff hat Turbolifte im Stil seiner Zeit – NX-01 graue Metalltüren,
   Originalserie rot, Refit hellgrau mit blauen Lichtleisten, Excelsior petrolfarben mit Lichtsäulen,
   C/D/E beige Schiebetüren. Alle Stile funktionieren gleich und lassen sich gemeinsam in einem Netz
