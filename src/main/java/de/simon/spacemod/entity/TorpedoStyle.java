@@ -7,21 +7,21 @@ package de.simon.spacemod.entity;
  */
 public enum TorpedoStyle {
     /** NX-01: frühe Photonik-Torpedos – klein, gelb-orange, schwach. */
-    PHOTONIC_NX(0xFFA030, 0xFFF0C0, 1.8F, 3.2, 4.8F),
+    PHOTONIC_NX(0xFFA030, 0xFFF0C0, 1.8F, 4.8, 4.8F),
     /** NCC-1701: rot-rosa pulsierender Lichtball ohne Schweif (wie in der Originalserie). */
-    PHOTON_TOS(0xFF3060, 0xFFC0D0, 2.6F, 3.6, 5.5F),
+    PHOTON_TOS(0xFF3060, 0xFFC0D0, 2.6F, 5.4, 5.5F),
     /** NCC-1701-A: roter Glutball mit Strahlenkranz (Kinofilme). */
-    PHOTON_MOVIE_A(0xFF3A18, 0xFFD8A0, 2.8F, 4.0, 6.0F),
+    PHOTON_MOVIE_A(0xFF3A18, 0xFFD8A0, 2.8F, 6.0, 6.0F),
     /** NCC-1701-B: wie A, etwas stärker. */
-    PHOTON_MOVIE_B(0xFF3A18, 0xFFD8A0, 2.9F, 4.0, 6.5F),
+    PHOTON_MOVIE_B(0xFF3A18, 0xFFD8A0, 2.9F, 6.0, 6.5F),
     /** NCC-1701-C: rot-orange mit Leuchtschweif (Next Generation). */
-    PHOTON_TNG_C(0xFF5A1A, 0xFFE8C0, 3.0F, 4.4, 7.0F),
+    PHOTON_TNG_C(0xFF5A1A, 0xFFE8C0, 3.0F, 6.6, 7.0F),
     /** NCC-1701-D: rot-orange mit langem Leuchtschweif. */
-    PHOTON_TNG_D(0xFF5A1A, 0xFFE8C0, 3.0F, 4.4, 7.5F),
+    PHOTON_TNG_D(0xFF5A1A, 0xFFE8C0, 3.0F, 6.6, 7.5F),
     /** NCC-1701-E: Photonentorpedo der 2370er – kräftiges Orange. */
-    PHOTON_E(0xFF6A20, 0xFFF4D8, 3.2F, 4.8, 8.0F),
+    PHOTON_E(0xFF6A20, 0xFFF4D8, 3.2F, 7.2, 8.0F),
     /** NCC-1701-E: Quantentorpedo – großer blau-weißer Ball, am stärksten. */
-    QUANTUM(0x5AA8FF, 0xF0F8FF, 3.8F, 2.8, 11.0F);
+    QUANTUM(0x5AA8FF, 0xF0F8FF, 3.8F, 8.0, 11.0F);
 
     public final int glow, core;
     public final float size;
