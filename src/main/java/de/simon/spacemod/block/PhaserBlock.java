@@ -6,21 +6,19 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 
 /** Ein Phaser an der Außenhülle. Gefeuert wird von der Waffenstation auf der Brücke. */
 public class PhaserBlock extends Block {
-    /** Waffenart mit Strahlfarbe, Schaden und ob sie Pulse (NX-Phasenkanone) statt Dauerstrahl schießt. */
+    /** Waffenart mit Strahlfarbe und ob sie Pulse (NX-Phasenkanone) statt Dauerstrahl schießt (Schaden: siehe PhaserControl). */
     public enum Kind {
-        PHASE_CANNON(0x7FD8FF, 0xE8FAFF, 8F, true),
-        PHASER_BANK(0x4F8CFF, 0xD8E6FF, 10F, false),
-        PHASER_EMITTER(0xFF3A18, 0xFFD0A0, 12F, false),
-        PHASER_STRIP(0xFF8418, 0xFFE8B0, 14F, false);
+        PHASE_CANNON(0x7FD8FF, 0xE8FAFF, true),
+        PHASER_BANK(0x4F8CFF, 0xD8E6FF, false),
+        PHASER_EMITTER(0xFF3A18, 0xFFD0A0, false),
+        PHASER_STRIP(0xFF8418, 0xFFE8B0, false);
 
         public final int color, core;
-        public final float damage;
         public final boolean pulse;
 
-        Kind(int color, int core, float damage, boolean pulse) {
+        Kind(int color, int core, boolean pulse) {
             this.color = color;
             this.core = core;
-            this.damage = damage;
             this.pulse = pulse;
         }
     }

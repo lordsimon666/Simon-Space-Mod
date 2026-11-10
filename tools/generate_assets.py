@@ -2465,14 +2465,20 @@ def main():
         f"message.{MODID}.phaser.recharging": "Phaser laden nach ...",
         f"message.{MODID}.phaser.none": "Keine Phaser mit dieser Waffenstation verbunden.",
         f"message.{MODID}.phaser.no_arc": "Kein Phaser hat freie Schussbahn zum Ziel.",
-        f"message.{MODID}.camera.show": "Kamera %s/%s: %s – Linksklick: Phaser, Rechtsklick: nächste Kamera, Shift: zurück",
+        f"message.{MODID}.camera.show": "Kamera %s/%s: %s | Stärke %s – Linksklick: Phaser, Rechtsklick: Kamera, Mausrad: Stärke, Shift: zurück",
+        f"message.{MODID}.phaser.power.1": "Phaserstärke 1: Betäuben – Schaden ohne Blockschaden",
+        f"message.{MODID}.phaser.power.2": "Phaserstärke 2: mehr Schaden und Blockschaden",
+        f"message.{MODID}.phaser.power.3": "Phaserstärke 3: volle Leistung – großer Blockschaden",
     })
     en.update({
         f"message.{MODID}.phaser.fire": "Firing phasers!",
         f"message.{MODID}.phaser.recharging": "Phasers recharging ...",
         f"message.{MODID}.phaser.none": "No phasers linked to this weapons console.",
         f"message.{MODID}.phaser.no_arc": "No phaser has a clear line of fire to the target.",
-        f"message.{MODID}.camera.show": "Camera %s/%s: %s – left click: fire phasers, right click: next camera, shift: leave",
+        f"message.{MODID}.camera.show": "Camera %s/%s: %s | power %s – left click: fire, right click: camera, mouse wheel: power, shift: leave",
+        f"message.{MODID}.phaser.power.1": "Phaser power 1: stun – damage without block damage",
+        f"message.{MODID}.phaser.power.2": "Phaser power 2: more damage and block damage",
+        f"message.{MODID}.phaser.power.3": "Phaser power 3: full power – heavy block damage",
     })
     uniform_assets(de, en)
     write_json(os.path.join(ASSETS, "lang", "de_de.json"), de)

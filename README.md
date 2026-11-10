@@ -192,13 +192,22 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
   **Kamerasicht:** Rechtsklick auf die Waffenstation schaltet auf eine von mehreren unsichtbaren
   Kameras außen am Schiff (Bug, Untertasse oben/unten, Backbord, Steuerbord, beide Warpgondeln,
   Sekundärhülle unten, Heck). In der Kamerasicht: **Rechtsklick** = nächste Kamera,
-  **Linksklick** = Phaser feuern auf das Fadenkreuz, **Shift** = zurück zur Station. Du bist dabei
+  **Linksklick** = Phaser feuern auf das Fadenkreuz, **Mausrad** = Phaserstärke, **Shift** = zurück zur Station. Du bist dabei
   unsichtbar und unverwundbar und kannst dich nur umsehen.
 
   Gezielt wird auf das, was im Fadenkreuz ist: eine Kreatur im Blick,
   sonst den ersten Block außerhalb des Schiffs. Es feuern bis zu zwei Phaser, die freie Schussbahn
-  zum Ziel haben und am nächsten dran sind. Treffer verursachen Schaden und setzen in Brand, am Ziel
-  gibt es eine kleine Explosion, die keine Blöcke zerstört. Nachladen: 1 Sekunde. Eine selbst
+  zum Ziel haben und am nächsten dran sind. Treffer verursachen Schaden und setzen in Brand.
+
+  **Phaserstärke (Mausrad, 3 Stufen):**
+  * Stufe 1: Schaden, kleine Explosion ohne Blockschaden (Nachladen 1 s)
+  * Stufe 2: 1,6-facher Schaden und Blockschaden (Nachladen 1,5 s)
+  * Stufe 3: 2,2-facher Schaden, große Explosion mit Feuer (Nachladen 2 s)
+
+  Neuere Schiffe haben stärkere Waffen. Grundschaden pro Treffer / Explosionsradius auf Stufe 3:
+  NX-01 8 / 2,5 – NCC-1701 10 / 3 – A 12 / 3,5 – B 14 / 4 – C 16 / 4,5 – D 18 / 5 – E 20 / 5,5.
+  Liegt das Ziel so nah am eigenen Schiff, dass die Explosion es treffen würde, gibt es keinen
+  Blockschaden. Eine selbst
   gesetzte Waffenstation verbindet sich beim ersten Schuss mit allen Phaser-Blöcken im Umkreis von
   40 Blöcken; ihre Kameras liegen dann an den sechs Seiten rund um diese Phaser.
 * **Uniformen**: Für jede Epoche gibt es Uniformen in den drei Abteilungsfarben, dazu Hosen und Stiefel:

@@ -33,7 +33,12 @@ public final class PhaserControl {
     private static final int SCAN_RADIUS = 40;
     private static final Map<String, Long> LAST_SHOT = new HashMap<>();
 
-    public static void fire(ServerLevel level, BlockPos console, ServerPlayer player) {
+    /**
+     * Feuert die Phaser einer Station.
+     * @param power Stufe 1: Schaden ohne Blockschaden, 2: mehr Schaden und Blockschaden, 3: am meisten
+     *              Schaden und große Explosion. Wie stark, hängt vom Schiff ab (NX-01 schwach … Enterprise-E stark).
+     */
+    public static void fire(ServerLevel level, BlockPos console, ServerPlayer player, int power) {
         String key = level.dimension().identifier() + "@" + console.asLong();
         long now = level.getGameTime();
         Long last = LAST_SHOT.get(key);
@@ -100,10 +105,17 @@ public final class PhaserControl {
             player.sendOverlayMessage(Component.translatable("message.simonspacemod.phaser.no_arc"));
             return;
         }
-        LAST_SHOT.put(key, now);
+        LAST_SHOT.put(key, now + (power - 1) * 10L); // stärkere Schüsse laden länger nach
+        WeaponsData.Battery battery = data.battery(console);
+        int tier = battery != null && battery.tier() > 0 ? battery.tier() : tierOf(level, chosen.get(0));
+        float damage = (6 + 2 * tier) * (power == 1 ? 1F : power == 2 ? 1.6F : 2.2F);
+        float radius = power == 1 ? 1.0F : power == 2 ? 1.2F + 0.25F * tier : 2.0F + 0.5F * tier;
+        // Blockschaden ab Stufe 2 – aber nie so nah am eigenen Schiff, dass die Explosion es trifft
+        boolean breakBlocks = power >= 2 && !ship.inflate(radius + 2).contains(tgt);
         level.playSound(null, console, SoundEvents.BEACON_DEACTIVATE, SoundSource.BLOCKS, 1.0F, 1.8F);
-        for (BlockPos p : chosen) beam(level, player, p, tgt, ((PhaserBlock) level.getBlockState(p).getBlock()).kind);
-        if (hit) level.explode(null, tgt.x, tgt.y, tgt.z, 1.5F, false, Level.ExplosionInteraction.NONE);
+        for (BlockPos p : chosen) beam(level, player, p, tgt, ((PhaserBlock) level.getBlockState(p).getBlock()).kind, damage, power);
+        if (hit) level.explode(null, tgt.x, tgt.y, tgt.z, radius, power == 3,
+            breakBlocks ? Level.ExplosionInteraction.TNT : Level.ExplosionInteraction.NONE);
         player.sendOverlayMessage(Component.translatable("message.simonspacemod.phaser.fire"));
     }
 
@@ -125,13 +137,24 @@ public final class PhaserControl {
         return true;
     }
 
-    private static void beam(ServerLevel level, ServerPlayer shooter, BlockPos from, Vec3 to, PhaserBlock.Kind kind) {
+    /** Waffenstärke aus der Phaserart, wenn die Station nicht von einem gespawnten Schiff stammt. */
+    private static int tierOf(ServerLevel level, BlockPos phaser) {
+        if (!(level.getBlockState(phaser).getBlock() instanceof PhaserBlock pb)) return 1;
+        return switch (pb.kind) {
+            case PHASE_CANNON -> 1;
+            case PHASER_BANK -> 2;
+            case PHASER_EMITTER -> 3;
+            case PHASER_STRIP -> 6;
+        };
+    }
+
+    private static void beam(ServerLevel level, ServerPlayer shooter, BlockPos from, Vec3 to, PhaserBlock.Kind kind, float damage, int power) {
         Vec3 c = Vec3.atCenterOf(from);
         Vec3 dir = to.subtract(c);
         double len = dir.length();
         dir = dir.normalize();
         Vec3 start = c.add(dir.scale(0.7));
-        DustParticleOptions outer = new DustParticleOptions(kind.color, 1.6F);
+        DustParticleOptions outer = new DustParticleOptions(kind.color, 1.2F + 0.4F * power); // stärker = dicker
         DustParticleOptions inner = new DustParticleOptions(kind.core, 0.7F);
         for (double t = 0.7; t < len; t += 0.4) {
             if (kind.pulse && (t % 4.0) > 1.6) continue; // Phasenkanone: einzelne Pulse
@@ -144,8 +167,8 @@ public final class PhaserControl {
         for (Entity e : level.getEntities(shooter, new AABB(start, to).inflate(1),
                 e -> e instanceof LivingEntity le && le.isAlive())) {
             if (e.getBoundingBox().inflate(0.3).clip(start, to.add(dir.scale(0.5))).isEmpty()) continue;
-            e.hurtServer(level, level.damageSources().indirectMagic(shooter, shooter), kind.damage);
-            e.igniteForSeconds(3);
+            e.hurtServer(level, level.damageSources().indirectMagic(shooter, shooter), damage);
+            e.igniteForSeconds(2 + power * 2);
         }
     }
 

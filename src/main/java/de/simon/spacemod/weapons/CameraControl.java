@@ -41,6 +41,7 @@ public final class CameraControl {
         final List<Vec3> focus = new ArrayList<>();
         final List<String> names = new ArrayList<>();
         int index;
+        int power = 1;
 
         Session(ServerPlayer p, BlockPos console) {
             dim = p.level().dimension();
@@ -125,13 +126,21 @@ public final class CameraControl {
         show(player, s);
     }
 
+    /** Phaserstärke 1-3 (Mausrad in der Kamerasicht). */
+    public static void power(ServerPlayer player, int delta) {
+        Session s = SESSIONS.get(player.getUUID());
+        if (s == null) return;
+        s.power = Math.max(1, Math.min(3, s.power + delta));
+        player.sendOverlayMessage(Component.translatable("message.simonspacemod.phaser.power." + s.power));
+    }
+
     /** Feuern auf das Fadenkreuz (Linksklick in der Kamerasicht). */
     public static void fire(ServerPlayer player, float yRot, float xRot) {
         Session s = SESSIONS.get(player.getUUID());
         if (s == null) return;
         player.setYRot(yRot);
         player.setXRot(xRot);
-        PhaserControl.fire(player.level(), s.console, player);
+        PhaserControl.fire(player.level(), s.console, player, s.power);
     }
 
     private static void show(ServerPlayer player, Session s) {
@@ -141,7 +150,7 @@ public final class CameraControl {
         float pitch = (float) Math.toDegrees(-Math.atan2(d.y, Math.hypot(d.x, d.z))) * 0.5F;
         player.teleportTo(player.level(), cam.x, cam.y, cam.z, Set.of(), yaw, pitch, false);
         player.sendOverlayMessage(Component.translatable("message.simonspacemod.camera.show",
-            s.index + 1, s.cams.size(), s.names.get(s.index)));
+            s.index + 1, s.cams.size(), s.names.get(s.index), s.power));
     }
 
     /** Zurück zur Station; Fähigkeiten und Sichtbarkeit wiederherstellen. */

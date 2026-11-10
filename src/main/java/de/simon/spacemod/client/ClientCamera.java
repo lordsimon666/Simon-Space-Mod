@@ -23,6 +23,12 @@ public final class ClientCamera {
     public static void init() {
         InputEvent.InteractionKeyMappingTriggered.BUS.addListener(ClientCamera::onInteract);
         MovementInputUpdateEvent.BUS.addListener(ClientCamera::onMovement);
+        // Mausrad: Phaserstärke (statt Hotbar wechseln)
+        InputEvent.MouseScrollingEvent.BUS.addListener(e -> {
+            if (!active || e.getDeltaY() == 0) return false;
+            TurboliftNetwork.sendToServer(new CameraAction(CameraAction.POWER, e.getDeltaY() > 0 ? 1 : -1, 0, 0));
+            return true;
+        });
         RenderHandEvent.BUS.addListener(e -> active);
         ClientPlayerNetworkEvent.LoggingOut.BUS.addListener(e -> active = false);
     }
@@ -33,8 +39,8 @@ public final class ClientCamera {
         e.setSwingHand(false);
         var player = Minecraft.getInstance().player;
         if (player == null) return true;
-        if (e.isAttack()) TurboliftNetwork.sendToServer(new CameraAction(true, player.getYRot(), player.getXRot()));
-        else if (e.isUseItem()) TurboliftNetwork.sendToServer(new CameraAction(false, 0, 0));
+        if (e.isAttack()) TurboliftNetwork.sendToServer(new CameraAction(CameraAction.FIRE, 0, player.getYRot(), player.getXRot()));
+        else if (e.isUseItem()) TurboliftNetwork.sendToServer(new CameraAction(CameraAction.NEXT, 0, 0, 0));
         return true;
     }
 

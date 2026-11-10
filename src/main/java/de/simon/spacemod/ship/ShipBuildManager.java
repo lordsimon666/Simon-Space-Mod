@@ -151,7 +151,8 @@ public final class ShipBuildManager {
                 focus.add(placement.toWorld(blueprint, f.getX(), f.getY(), f.getZ()));
             }
             for (BlockPos st : blueprint.weaponStations)
-                weapons.set(placement.toWorld(blueprint, st.getX(), st.getY(), st.getZ()), phasers, cams, focus, blueprint.cameraNames);
+                weapons.set(placement.toWorld(blueprint, st.getX(), st.getY(), st.getZ()), phasers, cams, focus, blueprint.cameraNames,
+                    blueprint.design.ordinal() + 1); // NX-01 = 1 ... Enterprise-E = 7
             onDone.accept(this);
         }
     }
