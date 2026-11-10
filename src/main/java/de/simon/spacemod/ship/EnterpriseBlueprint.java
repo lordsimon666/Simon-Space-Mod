@@ -864,7 +864,7 @@ public final class EnterpriseBlueprint {
                         boolean plate = p == ShipPart.HULL_PLATING || p == ShipPart.HULL_PANEL || p == ShipPart.HULL_AZTEC;
                         if (!plate) continue;
                         // Gondeln dunkelgrau, Rumpf mittelgrau mit etwas helleren Platten
-                        if (compAt(x, y, z) == NACELLE) set(x, y, z, ShipPart.HULL_DARK);
+                        if (compAt(x, y, z) == NACELLE) set(x, y, z, Math.floorMod(x, 10) == 0 ? ShipPart.HULL_DARK : ShipPart.HULL_PANEL);
                         else set(x, y, z, p == ShipPart.HULL_AZTEC ? ShipPart.HULL_PLATING : ShipPart.HULL_PANEL);
                     }
         }
@@ -894,6 +894,14 @@ public final class EnterpriseBlueprint {
                 if (depth > best) { best = depth; by = cy; br = r; }
             }
         return br > 0 ? new double[] {by, br} : null;
+    }
+
+    /** NX-01: liegt x in einem der drei cyan leuchtenden Fenstersegmente der Gondel? */
+    private boolean nxWindow(int x) {
+        double a = nX0 + nR * 1.4, b = nX1 - 0.3 * (nX1 - nX0);
+        if (x < a || x > b) return false;
+        double seg = (b - a) / 3, t = (x - a) % seg;
+        return t >= Math.max(1, seg * 0.12) && t <= seg - Math.max(1, seg * 0.12);
     }
 
     /** Galaxy: liegt (x, y, z) auf dem Rahmen des Hauptimpulstriebwerks hinten am Hals? */
@@ -1147,7 +1155,8 @@ public final class EnterpriseBlueprint {
                                 else if (refit && x < nX0 + nR * 2.6) st = plating; // graue Frontkappe
                                 else if (tng && x < nX0 + nR * 1.2) st = bussard; // TNG: rote Bussard-Kuppel vorne
                                 else if (nx && x < nX0 + nR * 0.8) st = bussard; // NX: rot-orange leuchtende Gondelspitze
-                                else if ((tng || nx) && mid && x < nX1 - 6 * s) st = grille; // TNG/NX: Gitter beidseitig (Originalserie/Refit: keine blauen Linien)
+                                else if (nx && mid) st = nxWindow(x) ? ShipPart.BUSSARD_BLUE : plating; // NX: drei cyan Fenstersegmente
+                                else if (tng && mid && x < nX1 - 6 * s) st = grille; // TNG/NX: Gitter beidseitig (Originalserie/Refit: keine blauen Linien)
                                 else if ((refit || tng) && aztecXY(x, y)) st = ShipPart.HULL_AZTEC;
                                 else if (Math.floorMod(x, 10) == 0) st = panel;
                             }
@@ -1237,6 +1246,7 @@ public final class EnterpriseBlueprint {
      * darüber klein und gerade "USS ENTERPRISE".
      */
     private void registryLettering() {
+        if (nx && model != null) { nxMarkings(); return; }
         boolean big = s >= 0.75;
         var font = big ? FONT6x9 : FONT3x5;
         int spacing = big ? (refit ? 2 : 4) : (refit ? 1 : 2);
@@ -1291,6 +1301,78 @@ public final class EnterpriseBlueprint {
             String[] g = FONT3x5.get(ch);
             drawGlyphTop(g, top, nw / 2 - col, 1);
             col += g[0].length() + 1;
+        }
+    }
+
+    /** Oberste Hüllenzelle bei (x, z) (beliebiges Bauteil), sonst -1. */
+    private int topHullY(int x, int z) {
+        for (int y = sizeY - 1; y >= 0; y--) {
+            if (!inBounds(x, y, z)) return -1;
+            int i = idx(x, y, z);
+            if (comp[i] == NONE) continue;
+            return hull[i] ? y : -1;
+        }
+        return -1;
+    }
+
+    /**
+     * NX-01 nach Referenzbildern: dunkelrotes Linienraster auf der erhöhten Platte um die Brücke,
+     * bronzene Brückenkuppel und kleine, gerade Schrift "NX-01" / "ENTERPRISE" vor der Platte.
+     */
+    private void nxMarkings() {
+        // Platte symmetrisch um die Brücke: vorne/hinten je eine Zellbreite vor bzw. hinter der Kuppel
+        int fx = (int) Math.round(sCx) - bR - 2, rx = (int) Math.round(sCx) + bR + 2;
+        int px0 = (int) Math.round(sCx - 0.45 * sR), px1 = rx + (fx - px0);
+        int pz = (int) Math.round(0.45 * sR);
+        // Höhe der Platte: Median der Oberseite neben der Brücke
+        java.util.List<Integer> hs = new java.util.ArrayList<>();
+        for (int x = px0; x <= px1; x++)
+            for (int z = bR + 2; z <= pz - 2; z++) {
+                int y = topHullY(x, z);
+                if (y >= 0) hs.add(y);
+            }
+        if (!hs.isEmpty()) nxPlate(px0, px1, pz, fx, rx, hs);
+        // Schrift klein und gerade vor der Platte (oben und gespiegelt unten)
+        int nw = textWidth("NX-01", FONT3x5), ew = textWidth("ENTERPRISE", FONT3x5);
+        int xNx = px0 - 3, xEn = xNx - 5 - 3;
+        for (int pass = 0; pass < 2; pass++) {
+            underside = pass == 1;
+            writeTop("NX-01", xNx, nw);
+            if (rad(xEn - 5, ew / 2) <= 0.92 * sR) writeTop("ENTERPRISE", xEn, ew);
+        }
+        underside = false;
+    }
+
+    /** Linienraster auf der Platte und bronzene Kuppel (nur wenn die Platte breiter als die Brücke ist). */
+    private void nxPlate(int px0, int px1, int pz, int fx, int rx, java.util.List<Integer> hs) {
+        java.util.Collections.sort(hs);
+        int plate = hs.get(hs.size() / 2);
+        int g = Math.max(1, (int) Math.round(s)); // Linienbreite
+        for (int x = px0; x <= px1; x++)
+            for (int z = -pz; z <= pz; z++) {
+                boolean border = x < px0 + g || x > px1 - g || Math.abs(z) > pz - g;
+                boolean grid = (Math.abs(x - fx) < g || Math.abs(x - rx) < g) || Math.abs(Math.abs(z) - (bR + 2)) < g;
+                if (!border && !grid) continue;
+                int y = topHullY(x, z);
+                // nicht auf Brücke oder Rippen (alles höher als die Platte)
+                if (y < 0 || y > plate + 1 || comp[idx(x, y, z)] != SAUCER) continue;
+                set(x, y, z, ShipPart.HULL_PENNANT);
+            }
+        // Bronzene Brückenkuppel: alles deutlich über der Platte rund um die Brücke
+        for (int x = (int) sCx - bR - 3; x <= sCx + bR + 3; x++)
+            for (int z = -bR - 3; z <= bR + 3; z++) {
+                if (Math.hypot(x - sCx, z) > bR + 2) continue;
+                int y = topHullY(x, z);
+                if (y >= plate + 5) set(x, y, z, ShipPart.DEFLECTOR_RING);
+            }
+    }
+
+    private void writeTop(String text, int xTop, int width) {
+        int col = 0;
+        for (char ch : text.toCharArray()) {
+            String[] gl = FONT3x5.get(ch);
+            drawGlyphTop(gl, xTop, width / 2 - col, 1);
+            col += gl[0].length() + 1;
         }
     }
 
