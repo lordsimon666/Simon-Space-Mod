@@ -150,9 +150,14 @@ public final class ShipBuildManager {
                 cams.add(placement.toWorld(blueprint, c.getX(), c.getY(), c.getZ()));
                 focus.add(placement.toWorld(blueprint, f.getX(), f.getY(), f.getZ()));
             }
+            // Bereich des Schiffs in der Welt: nur dieser ist vor den eigenen Phasern geschützt
+            int zo = blueprint.sizeZ / 2;
+            BlockPos a = placement.toWorld(blueprint, 0, 0, -zo), b = placement.toWorld(blueprint, blueprint.sizeX - 1, blueprint.sizeY - 1, zo);
+            BlockPos shipMin = new BlockPos(Math.min(a.getX(), b.getX()), Math.min(a.getY(), b.getY()), Math.min(a.getZ(), b.getZ()));
+            BlockPos shipMax = new BlockPos(Math.max(a.getX(), b.getX()), Math.max(a.getY(), b.getY()), Math.max(a.getZ(), b.getZ()));
             for (BlockPos st : blueprint.weaponStations)
                 weapons.set(placement.toWorld(blueprint, st.getX(), st.getY(), st.getZ()), phasers, cams, focus, blueprint.cameraNames,
-                    blueprint.design.ordinal() + 1); // NX-01 = 1 ... Enterprise-E = 7
+                    blueprint.design.ordinal() + 1, shipMin, shipMax); // Stärke: NX-01 = 1 ... Enterprise-E = 7
             onDone.accept(this);
         }
     }

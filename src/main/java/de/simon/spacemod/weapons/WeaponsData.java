@@ -17,18 +17,26 @@ import org.jspecify.annotations.Nullable;
 /** Welche Phaser und Kameras zu welcher Waffenstation gehören (pro Dimension gespeichert). */
 public final class WeaponsData extends SavedData {
     /** Phaser einer Station und ihre Kamerapunkte (Position, Blickziel, Name). */
-    public record Battery(BlockPos console, List<BlockPos> phasers, List<BlockPos> cameras, List<BlockPos> focus, List<String> names, int tier) {
+    public record Battery(BlockPos console, List<BlockPos> phasers, List<BlockPos> cameras, List<BlockPos> focus, List<String> names, int tier,
+                          BlockPos shipMin, BlockPos shipMax) {
         public static final Codec<Battery> CODEC = RecordCodecBuilder.create(i -> i.group(
             BlockPos.CODEC.fieldOf("console").forGetter(Battery::console),
             BlockPos.CODEC.listOf().fieldOf("phasers").forGetter(Battery::phasers),
             BlockPos.CODEC.listOf().optionalFieldOf("cameras", List.of()).forGetter(Battery::cameras),
             BlockPos.CODEC.listOf().optionalFieldOf("focus", List.of()).forGetter(Battery::focus),
             Codec.STRING.listOf().optionalFieldOf("names", List.of()).forGetter(Battery::names),
-            Codec.INT.optionalFieldOf("tier", 0).forGetter(Battery::tier)
+            Codec.INT.optionalFieldOf("tier", 0).forGetter(Battery::tier),
+            BlockPos.CODEC.optionalFieldOf("ship_min", BlockPos.ZERO).forGetter(Battery::shipMin),
+            BlockPos.CODEC.optionalFieldOf("ship_max", BlockPos.ZERO).forGetter(Battery::shipMax)
         ).apply(i, Battery::new));
 
         Battery copy() {
-            return new Battery(console, new ArrayList<>(phasers), new ArrayList<>(cameras), new ArrayList<>(focus), new ArrayList<>(names), tier);
+            return new Battery(console, new ArrayList<>(phasers), new ArrayList<>(cameras), new ArrayList<>(focus), new ArrayList<>(names), tier, shipMin, shipMax);
+        }
+
+        /** Hat die Station einen gespeicherten Schiffsbereich (gespawntes Schiff)? */
+        public boolean hasShipBox() {
+            return !shipMin.equals(shipMax);
         }
     }
 
@@ -60,12 +68,13 @@ public final class WeaponsData extends SavedData {
     }
 
     public void set(BlockPos console, List<BlockPos> phasers) {
-        set(console, phasers, List.of(), List.of(), List.of(), 0);
+        set(console, phasers, List.of(), List.of(), List.of(), 0, BlockPos.ZERO, BlockPos.ZERO);
     }
 
     /** @param tier Waffenstärke des Schiffs: 1 = NX-01 ... 7 = Enterprise-E (0 = aus den Phasern ableiten) */
-    public void set(BlockPos console, List<BlockPos> phasers, List<BlockPos> cameras, List<BlockPos> focus, List<String> names, int tier) {
-        batteries.put(console.immutable(), new Battery(console.immutable(), phasers, cameras, focus, names, tier).copy());
+    public void set(BlockPos console, List<BlockPos> phasers, List<BlockPos> cameras, List<BlockPos> focus, List<String> names, int tier,
+                    BlockPos shipMin, BlockPos shipMax) {
+        batteries.put(console.immutable(), new Battery(console.immutable(), phasers, cameras, focus, names, tier, shipMin, shipMax).copy());
         setDirty();
     }
 }

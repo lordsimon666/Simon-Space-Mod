@@ -207,7 +207,10 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
   Neuere Schiffe haben stärkere Waffen. Grundschaden pro Treffer / Explosionsradius auf Stufe 3:
   NX-01 8 / 3,1 – NCC-1701 10 / 3,7 – A 12 / 4,3 – B 14 / 4,9 – C 16 / 5,5 – D 18 / 6,1 – E 20 / 6,7.
   Gezielt wird auf den Block im Fadenkreuz (bis 400 Blöcke weit), Kreaturen bis 192 Blöcke.
-  Die Explosionen zerstören nie Blöcke des eigenen Schiffs. Eine selbst
+  Geschützt ist nur das eigene Schiff (der Bauraum, in dem es gespawnt wurde): Durch das eigene Schiff
+  wird hindurchgezielt und seine Blöcke gehen nie kaputt. Andere Schiffe kann man beschießen und
+  zerstören. Bei einer selbst gebauten Station gilt der Bereich um die Station und ihre Phaser als
+  eigenes Schiff. Eine selbst
   gesetzte Waffenstation verbindet sich beim ersten Schuss mit allen Phaser-Blöcken im Umkreis von
   40 Blöcken; ihre Kameras liegen dann an den sechs Seiten rund um diese Phaser.
 * **Uniformen**: Für jede Epoche gibt es Uniformen in den drei Abteilungsfarben, dazu Hosen und Stiefel:

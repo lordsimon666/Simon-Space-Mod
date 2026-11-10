@@ -1,6 +1,5 @@
 package de.simon.spacemod.weapons;
 
-import de.simon.spacemod.SimonSpaceMod;
 import de.simon.spacemod.block.PhaserBlock;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -11,7 +10,6 @@ import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -25,7 +23,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.registries.ForgeRegistries;
 
 /** Feuerleitung: sucht das Ziel im Blick des Spielers und lässt passende Phaser darauf feuern. */
 public final class PhaserControl {
@@ -61,11 +58,12 @@ public final class PhaserControl {
             player.sendOverlayMessage(Component.translatable("message.simonspacemod.phaser.none"));
             return;
         }
+        AABB own = ownShip(data.battery(console), console, phasers);
         Vec3 eye = player.getEyePosition(), look = player.getLookAngle();
         Vec3 end = eye.add(look.scale(RANGE));
         Vec3 target = end;
         boolean hit = false;
-        // 1. erster Block im Fadenkreuz (Schiffsblöcke und was direkt daran hängt zählen nicht)
+        // 1. erster Block im Fadenkreuz (das eigene Schiff zählt nicht, andere Schiffe schon)
         double blockDist = BLOCK_RANGE;
         BlockPos prev = null;
         for (double t = 0.5; t < BLOCK_RANGE; t += 0.2) {
@@ -74,7 +72,7 @@ public final class PhaserControl {
             if (bp.equals(prev)) continue;
             prev = bp;
             BlockState st = level.getBlockState(bp);
-            if (st.isAir() || isShipBlock(st) || st.getCollisionShape(level, bp).isEmpty() || touchesShip(level, bp)) continue;
+            if (st.isAir() || own.contains(v) || st.getCollisionShape(level, bp).isEmpty()) continue;
             target = v;
             blockDist = t;
             hit = true;
@@ -114,25 +112,36 @@ public final class PhaserControl {
         float radius = power == 1 ? 1.0F : power == 2 ? 1.8F + 0.3F * tier : 2.5F + 0.6F * tier;
         level.playSound(null, console, SoundEvents.BEACON_DEACTIVATE, SoundSource.BLOCKS, 1.0F, 1.8F);
         for (BlockPos p : chosen) beam(level, player, p, tgt, ((PhaserBlock) level.getBlockState(p).getBlock()).kind, damage, power);
-        // Blockschaden ab Stufe 2; die Blöcke des Schiffs selbst bleiben immer heil
-        if (hit) level.explode(null, null, SPARE_SHIP, tgt.x, tgt.y, tgt.z, radius, power == 3,
+        // Blockschaden ab Stufe 2; nur das eigene Schiff bleibt heil
+        if (hit) level.explode(null, null, spare(own), tgt.x, tgt.y, tgt.z, radius, power == 3,
             power >= 2 ? Level.ExplosionInteraction.TNT : Level.ExplosionInteraction.NONE);
         player.sendOverlayMessage(Component.translatable("message.simonspacemod.phaser.fire"));
     }
 
-    /** Explosionen zerstören keine Blöcke der Mod (Hülle, Einrichtung). */
-    private static final ExplosionDamageCalculator SPARE_SHIP = new ExplosionDamageCalculator() {
-        @Override
-        public boolean shouldBlockExplode(Explosion explosion, BlockGetter level, BlockPos pos, BlockState state, float power) {
-            return !isShipBlock(state) && super.shouldBlockExplode(explosion, level, pos, state, power);
-        }
-    };
+    /** Explosionen lassen alles im Bereich des eigenen Schiffs heil. */
+    private static ExplosionDamageCalculator spare(AABB own) {
+        return new ExplosionDamageCalculator() {
+            @Override
+            public boolean shouldBlockExplode(Explosion explosion, BlockGetter level, BlockPos pos, BlockState state, float power) {
+                return !own.contains(Vec3.atCenterOf(pos)) && super.shouldBlockExplode(explosion, level, pos, state, power);
+            }
+        };
+    }
 
-    /** Hängt der Block direkt am Schiff (Fenster, Gitter, Pflanzen im Arboretum)? */
-    private static boolean touchesShip(ServerLevel level, BlockPos pos) {
-        for (net.minecraft.core.Direction d : net.minecraft.core.Direction.values())
-            if (isShipBlock(level.getBlockState(pos.relative(d)))) return true;
-        return false;
+    /**
+     * Bereich des eigenen Schiffs: bei gespawnten Schiffen der gespeicherte Bauraum, bei älteren
+     * Spawns der Kasten um Phaser und Kameras, bei selbst gebauten Stationen um Phaser und Station.
+     */
+    private static AABB ownShip(WeaponsData.Battery b, BlockPos console, List<BlockPos> phasers) {
+        if (b != null && b.hasShipBox())
+            return new AABB(Vec3.atLowerCornerOf(b.shipMin()), Vec3.atLowerCornerOf(b.shipMax()).add(1, 1, 1));
+        AABB box = new AABB(console);
+        for (BlockPos p : phasers) box = box.minmax(new AABB(p));
+        if (b != null && !b.cameras().isEmpty()) {
+            for (BlockPos c : b.cameras()) box = box.minmax(new AABB(c));
+            return box;
+        }
+        return box.inflate(6);
     }
 
     /** Selbst gebaute Station: Phaser im Umkreis suchen und speichern. */
@@ -200,10 +209,5 @@ public final class PhaserControl {
                     if (level.getBlockState(m).getBlock() instanceof PhaserBlock) found.add(m.immutable());
                 }
         return found;
-    }
-
-    private static boolean isShipBlock(BlockState s) {
-        Identifier id = ForgeRegistries.BLOCKS.getKey(s.getBlock());
-        return id != null && id.getNamespace().equals(SimonSpaceMod.MODID);
     }
 }
