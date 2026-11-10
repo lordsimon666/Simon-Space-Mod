@@ -1316,8 +1316,7 @@ public final class EnterpriseBlueprint {
     }
 
     /**
-     * NX-01 nach Referenzbildern: dunkelrotes Linienraster auf der erhöhten Platte um die Brücke,
-     * bronzene Brückenkuppel und kleine, gerade Schrift "NX-01" / "ENTERPRISE" vor der Platte.
+     * NX-01 nach Referenzbildern: bronzene Brückenkuppel und kleine, gerade Schrift "NX-01" / "ENTERPRISE" vor der Platte.
      */
     private void nxMarkings() {
         // Platte symmetrisch um die Brücke: vorne/hinten je eine Zellbreite vor bzw. hinter der Kuppel
@@ -1343,21 +1342,10 @@ public final class EnterpriseBlueprint {
         underside = false;
     }
 
-    /** Linienraster auf der Platte und bronzene Kuppel (nur wenn die Platte breiter als die Brücke ist). */
+    /** Bronzene Brückenkuppel (alles deutlich über der Platte um die Brücke). */
     private void nxPlate(int px0, int px1, int pz, int fx, int rx, java.util.List<Integer> hs) {
         java.util.Collections.sort(hs);
         int plate = hs.get(hs.size() / 2);
-        int g = Math.max(1, (int) Math.round(s)); // Linienbreite
-        for (int x = px0; x <= px1; x++)
-            for (int z = -pz; z <= pz; z++) {
-                boolean border = x < px0 + g || x > px1 - g || Math.abs(z) > pz - g;
-                boolean grid = (Math.abs(x - fx) < g || Math.abs(x - rx) < g) || Math.abs(Math.abs(z) - (bR + 2)) < g;
-                if (!border && !grid) continue;
-                int y = topHullY(x, z);
-                // nicht auf Brücke oder Rippen (alles höher als die Platte)
-                if (y < 0 || y > plate + 1 || comp[idx(x, y, z)] != SAUCER) continue;
-                set(x, y, z, ShipPart.HULL_PENNANT);
-            }
         // Bronzene Brückenkuppel: alles deutlich über der Platte rund um die Brücke
         for (int x = (int) sCx - bR - 3; x <= sCx + bR + 3; x++)
             for (int z = -bR - 3; z <= bR + 3; z++) {
