@@ -143,7 +143,7 @@ public final class PhaserControl {
 
     /**
      * Feuert einen Photonen- (P) bzw. Quantentorpedo (O, nur Enterprise-E) aus dem Werfer, der dem
-     * Ziel am nächsten ist und freie Bahn hat.
+     * Ziel am nächsten ist.
      */
     public static void torpedo(ServerLevel level, BlockPos console, ServerPlayer player, boolean quantum) {
         String key = level.dimension().identifier() + "@" + console.asLong() + (quantum ? "q" : "t");
@@ -169,7 +169,8 @@ public final class PhaserControl {
         Aim aim = aim(level, player, own);
         Vec3 tgt = aim.point();
         launchers.sort(Comparator.comparingDouble(p -> Vec3.atCenterOf(p).distanceToSqr(tgt)));
-        BlockPos from = launchers.stream().filter(p -> clear(level, p, tgt)).findFirst().orElse(launchers.get(0));
+        // Torpedos manövrieren und fliegen durch das eigene Schiff hindurch: immer der Werfer, der dem Ziel am nächsten ist
+        BlockPos from = launchers.get(0);
         LAST_SHOT.put(key, now);
         int tier = b.tier() > 0 ? b.tier() : quantum ? 7 : 3;
         TorpedoStyle style = quantum ? TorpedoStyle.QUANTUM : TorpedoStyle.photon(tier);
