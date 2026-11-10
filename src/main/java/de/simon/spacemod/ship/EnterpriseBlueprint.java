@@ -699,11 +699,11 @@ public final class EnterpriseBlueprint {
             // Refit: große blau leuchtende Schüssel, leicht nach vorne gewölbt, dunkler Rahmen
             case NCC_1701_A -> { ry = rz = 0.72 * m; ring = 0.84 * m; depth = 0.15; }
             // Excelsior-B: hohes blaues Oval unten am Kielrumpf
-            case NCC_1701_B -> { cy = yc - 0.15 * hy; ry = 0.5 * m; rz = 0.34 * m; depth = 0.12; }
+            case NCC_1701_B -> { cy = yc + 0.15 * hy; ry = 0.5 * m; rz = 0.34 * m; depth = 0.12; }
             case NCC_1701_C -> { ry = rz = 0.58 * m; depth = 0.1; }
             // Galaxy: breites flaches Oval, Kupferrand, blau leuchtender Ring, Kupfermitte
-            case NCC_1701_D -> { cy = yc + 0.4 * hy; ry = 0.3 * hy; rz = 0.45 * hz; outer = ShipPart.DEFLECTOR_DISH; core = ShipPart.DEFLECTOR_DISH_BLUE; inner = 0.85; depth = 0; }
-            case NCC_1701_E -> { ry = rz = 0.5 * m; depth = 0.12; }
+            case NCC_1701_D -> { cy = yc + 0.05 * hy; ry = 0.3 * hy; rz = 0.45 * hz; outer = ShipPart.DEFLECTOR_DISH; core = ShipPart.DEFLECTOR_DISH_BLUE; inner = 0.85; depth = 0; }
+            case NCC_1701_E -> { cy = yc - 0.1 * hy; ry = rz = 0.5 * m; depth = 0.12; }
             default -> { return; }
         }
         ry = Math.max(1.5, ry);
