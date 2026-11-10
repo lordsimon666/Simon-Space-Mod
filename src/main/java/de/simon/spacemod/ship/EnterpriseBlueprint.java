@@ -666,10 +666,7 @@ public final class EnterpriseBlueprint {
      * -B, -C, -E runde blaue Schüssel, -D breite ovale Kupferschüssel mit blau leuchtender Mitte.
      */
     private void paintDish() {
-        if (nx) {
-            paintDishNx();
-            return;
-        }
+        if (nx) return; // die NX-01 hat noch keine Deflektorschüssel
         // Silhouette des Unterrumpfs von vorne gesehen: Breite je Höhe; der schmale Hals darüber
         // zählt nicht mit (Breite unter 40 % der größten Breite)
         int[] wz = new int[sizeY];
@@ -749,29 +746,6 @@ public final class EnterpriseBlueprint {
         }
     }
 
-    /** NX-01: Deflektor vorne unten an der Untertasse (E-Deck), kupferfarben, leicht herausstehend. */
-    private void paintDishNx() {
-        int yb = sizeY;
-        for (int x = 0; x < sCx; x++)
-            for (int y = 0; y < yb; y++)
-                if (compAt(x, y, 0) != NONE) { yb = y; break; }
-        if (yb >= sMid) return;
-        double cy = yb + 0.45 * (sMid - yb), rr = Math.max(1.5, 0.45 * (sMid - yb));
-        for (int y = (int) Math.floor(cy - rr); y <= cy + rr; y++)
-            for (int z = (int) -Math.ceil(rr * 1.4); z <= rr * 1.4; z++) {
-                double e = Math.hypot((y - cy) / rr, z / (rr * 1.4));
-                if (e > 1) continue;
-                for (int x = 0; x < sCx; x++) {
-                    if (compAt(x, y, z) == NONE) continue;
-                    if (hull[idx(x, y, z)]) {
-                        set(x, y, z, ShipPart.DEFLECTOR_DISH);
-                        if (e < 0.7) set(x - 1, y, z, ShipPart.DEFLECTOR_DISH);
-                    }
-                    break;
-                }
-            }
-    }
-
     /**
      * Impulstriebwerke (rot leuchtend) nur dort, wo sie am Original sitzen:
      * Refit/A hinten am erhöhten Aufbau der Untertasse; Excelsior/B am Ende des Rückens und hinten an
@@ -795,11 +769,29 @@ public final class EnterpriseBlueprint {
                         case TNG -> (c == SAUCER && dx > 0 && r > 0.6 * sR && y >= sMid - 0.5 && y <= sMid + 5 * sc
                                 && az >= 0.04 * sR && az <= 0.32 * sR)
                             || (design == ShipDesign.NCC_1701_D && c == NECK && az <= 6 * sc + 2 && y >= saucerBottom(r) - 6 * sc);
-                        case NX -> c == PYLON && y > sMid + 2 && az > 0.5 * nZ; // hinten an den Gondel-Pylonen
+                        case NX -> false; // eigene Farbe, siehe unten
                         default -> false;
                     };
                     if (hit) set(x, y, z, ShipPart.IMPULSE_ENGINE);
+                    // NX-01: cyan leuchtende Impulstriebwerke an den hinteren Enden der beiden Untertassen-Ausleger
+                    if (nx && (c == SAUCER || c == PYLON || c == NECK) && dx > 0.6 * sR && az >= 0.4 * sR && az <= 0.75 * sR
+                        && Math.abs(y - sMid) <= Math.max(1.5, 2.5 * sc))
+                        set(x, y, z, ShipPart.NACELLE_GRILLE);
                 }
+        if (nx) {
+            // NX-01: metallisch mittelgraue Hülle mit dunkleren Platten statt Weiß
+            for (int x = 0; x < sizeX; x++)
+                for (int y = 0; y < sizeY; y++)
+                    for (int z = -zOffset; z <= zOffset; z++) {
+                        if (!inBounds(x, y, z) || !hull[idx(x, y, z)]) continue;
+                        ShipPart p = get(x, y, z);
+                        boolean plate = p == ShipPart.HULL_PLATING || p == ShipPart.HULL_PANEL || p == ShipPart.HULL_AZTEC;
+                        if (!plate) continue;
+                        // Gondeln dunkelgrau, Rumpf mittelgrau mit etwas helleren Platten
+                        if (compAt(x, y, z) == NACELLE) set(x, y, z, ShipPart.HULL_DARK);
+                        else set(x, y, z, p == ShipPart.HULL_AZTEC ? ShipPart.HULL_PLATING : ShipPart.HULL_PANEL);
+                    }
+        }
     }
 
     /**
@@ -952,7 +944,7 @@ public final class EnterpriseBlueprint {
         ShipPart window = ShipPart.HULL_WINDOW;
         // Die Galaxy-Klasse (D) hat eine kupferfarbene Schüssel, C und E eine blaue
         ShipPart dish = refit || excelsior || (tng && design != ShipDesign.NCC_1701_D) ? ShipPart.DEFLECTOR_DISH_BLUE : ShipPart.DEFLECTOR_DISH;
-        ShipPart bussard = nx ? ShipPart.HULL_DARK : excelsior ? ShipPart.BUSSARD_BLUE : refit || tng ? ShipPart.BUSSARD_RED : ShipPart.BUSSARD_COLLECTOR;
+        ShipPart bussard = nx ? ShipPart.BUSSARD_COLLECTOR : excelsior ? ShipPart.BUSSARD_BLUE : refit || tng ? ShipPart.BUSSARD_RED : ShipPart.BUSSARD_COLLECTOR;
         ShipPart grille = ShipPart.NACELLE_GRILLE;
         ShipPart floor = ShipPart.DECK_FLOOR;
         ShipPart light = ShipPart.CEILING_LIGHT;
@@ -1043,7 +1035,7 @@ public final class EnterpriseBlueprint {
                                     st = bussard; // Refit: rötliche ovale Bussard-Fenster seitlich vorne
                                 else if (refit && x < nX0 + nR * 2.6) st = plating; // graue Frontkappe
                                 else if (tng && x < nX0 + nR * 1.2) st = bussard; // TNG: rote Bussard-Kuppel vorne
-                                else if (nx && x < nX0 + nR * 0.8) st = dark; // NX: dunkle Gondelspitze
+                                else if (nx && x < nX0 + nR * 0.8) st = bussard; // NX: rot-orange leuchtende Gondelspitze
                                 else if ((inner || refit || tng || nx) && mid && x < nX1 - (refit ? 9 : 6) * s) st = grille; // Refit/TNG/NX: Gitter beidseitig
                                 else if ((refit || tng) && aztecXY(x, y)) st = ShipPart.HULL_AZTEC;
                                 else if (Math.floorMod(x, 10) == 0) st = panel;
@@ -1284,9 +1276,11 @@ public final class EnterpriseBlueprint {
         int reg = textWidth(regText, FONT3x5);
         for (int side : new int[] {1, -1}) {
             if (nx) {
-                // NX-01: Kennung seitlich hinten am Rand der Untertasse
+                // NX-01: Kennung seitlich hinten am Rand der Untertasse und außen an den Gondeln
                 int x = (int) Math.round(sCx + 0.45 * sR);
                 sideText(regText, side > 0 ? x + reg : x, (int) Math.round(sMid) + 2, side);
+                int nxText = (int) Math.round(nX0 + 0.55 * (nX1 - nX0));
+                sideText(regText, side > 0 ? nxText + reg : nxText, (int) Math.round(nY) + 2, side);
                 continue;
             }
             if (tng) {
