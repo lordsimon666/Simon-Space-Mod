@@ -216,12 +216,23 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
 * **Torpedos** (in der Kamerasicht der Waffenstation): **P** feuert einen Photonentorpedo, **O** einen
   Quantentorpedo – Quantentorpedos hat nur die Enterprise-E. Die Tasten lassen sich in den
   Steuerungs-Einstellungen unter „Simon Space Mod – Waffen“ ändern. Der Torpedo startet aus dem
-  Werfer, der dem Ziel am nächsten ist, fliegt als leuchtende Kugel (Photonen rot-orange, Quanten
-  blau) auf das Fadenkreuz zu, folgt einer anvisierten Kreatur und explodiert beim Aufprall mit
-  Blockschaden (das eigene Schiff bleibt heil). Werfer: vorne am Hals über der Sekundärhülle und
-  hinten am Heck; NX-01 vorne unter und hinten an der Untertasse; bei der E zusätzlich der
-  Quantentorpedo-Werfer. Explosionsradius Photonentorpedo 3,4 (NX-01) bis 5,8 (E), Quantentorpedo 8.
-  Nachladen: Photonen 1,5 s, Quanten 2,5 s.
+  Werfer, der dem Ziel am nächsten ist, fliegt auf das Fadenkreuz zu, folgt einer anvisierten
+  Kreatur und explodiert beim Aufprall mit Blockschaden (das eigene Schiff bleibt heil).
+  Nachladen: Photonen 1,5 s, Quanten 2,5 s. Werfer, Aussehen und Stärke je Schiff:
+
+  | Schiff | Werfer | Torpedo | Tempo | Explosionsradius |
+  |---|---|---|---|---|
+  | NX-01 | 2 vorne und 2 hinten auf F-Deck in der unteren Untertasse | Photonik-Torpedo: klein, gelb-orange | 1,6 | 2,8 |
+  | NCC-1701 | 2 an der unteren Sensorkuppel der Untertasse | rot-rosa pulsierender Lichtball ohne Schweif | 1,8 | 3,5 |
+  | NCC-1701-A | Doppelwerfer vorne am Hals, kein Heckwerfer | roter Glutball mit Strahlenkranz | 2,0 | 4,0 |
+  | NCC-1701-B | 2 vorne über dem Deflektor, 2 hinten über dem Hangar | roter Glutball mit Strahlenkranz | 2,0 | 4,5 |
+  | NCC-1701-C | 2 vorne am Hals | rot-orange mit Leuchtschweif | 2,2 | 5,0 |
+  | NCC-1701-D | vorne am Hals über dem Deflektor, hinten am Heck | rot-orange mit Leuchtschweif | 2,2 | 5,5 |
+  | NCC-1701-E | Photonen: je 2 unten vorne und unten hinten an der Sekundärhülle | kräftig orange | 2,4 | 6,0 |
+  | NCC-1701-E | Quanten: Schnellfeuerwerfer unter der Untertasse | großer blau-weißer Ball | 2,8 | 9,0 |
+
+  Quellen: Memory Alpha, Ex Astris Scientia und die Technical Manuals. Nicht alles davon ist im
+  Kanon eindeutig belegt, besonders die Werferzahlen von B, C und E.
 * **Uniformen**: Für jede Epoche gibt es Uniformen in den drei Abteilungsfarben, dazu Hosen und Stiefel:
   NX-01 (dunkelblauer Overall mit farbiger Paspel, dunkelblaue Hose), Originalserie (gold / blau / rot),
   Kinofilme der 2280er und 90er (rote Jacke, Kragen weiß / grau / gelb, für A und B),

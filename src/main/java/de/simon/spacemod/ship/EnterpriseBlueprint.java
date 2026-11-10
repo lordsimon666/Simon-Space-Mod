@@ -1679,23 +1679,87 @@ public final class EnterpriseBlueprint {
 
     /** Refit: zwei Photonentorpedo-Werfer vorne am unteren Ende des Halses. */
     /**
-     * Torpedowerfer wie bei den Originalen: vorne unten am Hals über der Sekundärhülle (bei der E
-     * darüber zusätzlich der Quantentorpedo-Werfer) und hinten am Heck der Sekundärhülle. Die NX-01
-     * hat ihre Werfer vorne unter der Untertasse und hinten am Untertassenrand.
+     * Torpedowerfer nach den Vorlagen (Memory Alpha, Ex Astris Scientia, Technical Manuals):
+     * <ul>
+     *   <li>NX-01: vorne und hinten auf F-Deck in der unteren Untertasse (Photonik-Torpedos)</li>
+     *   <li>NCC-1701: an der unteren Sensorkuppel der Untertasse (dort kamen die Torpedos heraus)</li>
+     *   <li>NCC-1701-A: Doppelwerfer im rechteckigen Gehäuse vorne am Hals, kein Heckwerfer</li>
+     *   <li>NCC-1701-B: zwei vorne im Hals über dem Deflektor, zwei hinten über dem Hangar</li>
+     *   <li>NCC-1701-C: zwei vorne im Hals, kein sichtbarer Heckwerfer</li>
+     *   <li>NCC-1701-D: vorne im Hals über dem Deflektor, hinten am Heck der Sekundärhülle</li>
+     *   <li>NCC-1701-E: Schnellfeuer-Quantentorpedowerfer unter der Untertasse, je zwei
+     *       Photonentorpedowerfer unten vorne und unten hinten an der Sekundärhülle</li>
+     * </ul>
      */
     private void torpedoLaunchers() {
+        int rows = s >= 0.75 ? 2 : 1;
         if (nx) {
-            for (int z : new int[] {-1, 1}) {
-                surfaceWeapon((int) Math.round(polX(0.55 * sR, 0)), z, false, ShipPart.TORPEDO_LAUNCHER, SAUCER);
-                rearLauncher(z, (int) Math.round(sMid), SAUCER, ShipPart.TORPEDO_LAUNCHER);
+            for (int z : new int[] {-2, 2}) {
+                saucerWeapon(z > 0 ? 0.08 : -0.08, 0.82, false, ShipPart.TORPEDO_LAUNCHER, false);
+                rearLauncher(z / 2, (int) Math.round(sMid) - 1, SAUCER, ShipPart.TORPEDO_LAUNCHER);
             }
             return;
         }
-        // die untersten zwei sichtbaren Zeilen der Halsvorderseite (über der Sekundärhülle)
-        int top = -1;
-        for (int z : new int[] {-2, -1, 1, 2}) {
+        if (design == ShipDesign.NCC_1701) {
+            // untere Sensorkuppel in der Mitte der Untertasse
+            for (int z : new int[] {-1, 1})
+                for (int x = (int) Math.round(sCx) - 3; x <= sCx + 3; x++)
+                    if (surfaceWeapon(x, z, false, ShipPart.TORPEDO_LAUNCHER, NONE)) break;
+            return;
+        }
+        if (design == ShipDesign.NCC_1701_E) {
+            // Quanten: Schnellfeuerwerfer unter der Untertasse, direkt vor dem Hals
+            for (int z : new int[] {-1, 0, 1}) {
+                boolean done = false;
+                for (double rf = 0.1; !done && rf <= 0.7; rf += 0.03)
+                    done = surfaceWeapon((int) Math.round(polX(rf * sR, Math.PI)), z, false, ShipPart.QUANTUM_LAUNCHER, SAUCER)
+                        || surfaceWeapon((int) Math.round(polX(rf * sR, 0)), z, false, ShipPart.QUANTUM_LAUNCHER, SAUCER);
+            }
+            // Photonen: unten vorne und unten hinten an der Sekundärhülle
+            int[] sec = secondaryRange();
+            if (sec != null) {
+                int len = sec[1] - sec[0];
+                for (int z : new int[] {-1, 1}) {
+                    ventral(sec[0] + (int) (0.08 * len), z, SECONDARY, 1);
+                    ventral(sec[1] - (int) (0.12 * len), z, SECONDARY, -1);
+                }
+            }
+            if (!torpedoesPlaced()) neckFront(rows);
+            return;
+        }
+        neckFront(rows);
+        if (!torpedoesPlaced()) // kein Hals im Modell: oben an der Front der Sekundärhülle, über dem Deflektor
+            for (int z : new int[] {-1, 1}) {
+                int placed = 0;
+                for (int y = sizeY - 1; y >= 0 && placed < rows; y--)
+                    for (int x = 0; x < sizeX; x++) {
+                        byte c = compAt(x, y, z);
+                        if (c == NONE) continue;
+                        if (c == SECONDARY && hull[idx(x, y, z)]) {
+                            set(x, y, z, ShipPart.TORPEDO_LAUNCHER);
+                            placed++;
+                        }
+                        break;
+                    }
+            }
+        // Zwillingswerfer symmetrisch halten (die Modelle sind nicht ganz symmetrisch)
+        for (int x = 0; x < sizeX; x++)
+            for (int y = 0; y < sizeY; y++)
+                for (int z : new int[] {-1, 1})
+                    if (get(x, y, z) == ShipPart.TORPEDO_LAUNCHER && get(x, y, -z) != ShipPart.TORPEDO_LAUNCHER
+                        && inBounds(x, y, -z) && hull[idx(x, y, -z)])
+                        set(x, y, -z, ShipPart.TORPEDO_LAUNCHER);
+        if (excelsior) // hinten über dem Hangar
+            for (int z : new int[] {-1, 1}) rearLauncher(z, (int) Math.round(eY + 0.5 * eR), SECONDARY, ShipPart.TORPEDO_LAUNCHER);
+        else if (design == ShipDesign.NCC_1701_D)
+            for (int z : new int[] {-1, 1}) rearLauncher(z, (int) Math.round(eY), SECONDARY, ShipPart.TORPEDO_LAUNCHER);
+    }
+
+    /** Doppelwerfer an der Halsfront (die untersten sichtbaren Zeilen über der Sekundärhülle). */
+    private void neckFront(int rows) {
+        for (int z : new int[] {-1, 1}) {
             int placed = 0;
-            for (int y = (int) eY; y < sizeY && placed < 2; y++)
+            for (int y = (int) eY; y < sizeY && placed < rows; y++)
                 for (int x = 0; x < sizeX; x++) {
                     byte c = compAt(x, y, z);
                     if (c == NONE) continue;
@@ -1703,36 +1767,34 @@ public final class EnterpriseBlueprint {
                     if (hull[idx(x, y, z)]) {
                         set(x, y, z, ShipPart.TORPEDO_LAUNCHER);
                         placed++;
-                        top = Math.max(top, y);
                     }
                     break;
                 }
         }
-        if (top < 0) // kein Hals im Modell: vorne unter der Untertasse
-            for (int z : new int[] {-1, 1})
-                surfaceWeapon((int) Math.round(polX(0.3 * sR, 0)), z, false, ShipPart.TORPEDO_LAUNCHER, SAUCER);
-        // Enterprise-E: Quantentorpedo-Werfer oben am Hals, über den Photonentorpedos
-        if (design == ShipDesign.NCC_1701_E) {
-            int qy = top >= 0 ? top + 3 : -1;
-            for (int z = -1; z <= 1; z++) {
-                boolean done = false;
-                for (int y = Math.max(qy, (int) eY); y < sizeY && !done; y++)
-                    for (int x = 0; x < sizeX; x++) {
-                        byte c = compAt(x, y, z);
-                        if (c == NONE) continue;
-                        if (c == NECK && hull[idx(x, y, z)] && get(x, y, z) != ShipPart.TORPEDO_LAUNCHER) {
-                            set(x, y, z, ShipPart.QUANTUM_LAUNCHER);
-                            done = true;
-                        }
-                        break;
-                    }
-                // sonst unter der Untertasse vor dem Hals
-                for (double rf = 0.2; !done && rf <= 0.6; rf += 0.05)
-                    done = surfaceWeapon((int) Math.round(polX(rf * sR, 0)), z, false, ShipPart.QUANTUM_LAUNCHER, NONE);
-            }
-        }
-        // hinten am Heck der Sekundärhülle
-        for (int z : new int[] {-1, 1}) rearLauncher(z, (int) Math.round(eY), SECONDARY, ShipPart.TORPEDO_LAUNCHER);
+    }
+
+    private boolean torpedoesPlaced() {
+        for (short c : cell) if (c != 0 && part(c & 0xFFFF) == ShipPart.TORPEDO_LAUNCHER) return true;
+        return false;
+    }
+
+    /** x-Bereich der Sekundärhülle auf der Mittellinie, sonst null. */
+    private int[] secondaryRange() {
+        int x0 = -1, x1 = -1;
+        for (int x = 0; x < sizeX; x++)
+            for (int y = 0; y < sizeY; y++)
+                if (compAt(x, y, 0) == SECONDARY) {
+                    if (x0 < 0) x0 = x;
+                    x1 = x;
+                    break;
+                }
+        return x0 < 0 ? null : new int[] {x0, x1};
+    }
+
+    /** Werfer auf der Unterseite eines Bauteils ab x, notfalls ein paar Blöcke weiter (dir). */
+    private void ventral(int x, int z, byte component, int dir) {
+        for (int k = 0; k < 20; k++)
+            if (surfaceWeapon(x + dir * k, z, false, ShipPart.TORPEDO_LAUNCHER, component)) return;
     }
 
     /** Hinterste Hüllenzelle des Bauteils bei (y, z) – sucht auch ein paar Zeilen darüber/darunter. */
