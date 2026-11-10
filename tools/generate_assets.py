@@ -1347,6 +1347,17 @@ def tex_deflector_ring():
     return img
 
 
+def tex_deflector_violet():
+    img = noise(new((154, 120, 184)), 5, 241)
+    px = img.load()
+    for x in range(16):
+        for y in range(16):
+            g = 1 - abs(y - 7.5) / 8
+            r, gg, b, a = px[x, y]
+            px[x, y] = (clamp(r + 25 * g), clamp(gg + 15 * g), clamp(b + 30 * g), 255)
+    return img
+
+
 TEXTURES = {
     "hull_plating": tex_hull_plating,
     "hull_panel": tex_hull_panel,
@@ -1460,6 +1471,7 @@ TEXTURES = {
     "decon_light": tex_decon_light,
     "phaser_strip": tex_phaser_strip,
     "deflector_ring": tex_deflector_ring,
+    "deflector_violet": tex_deflector_violet,
     "turbolift_door_nx": tex_door_nx,
     "turbolift_door_refit": tex_door_refit,
     "turbolift_door_tng": tex_door_tng,
@@ -1478,7 +1490,7 @@ def b(name):
     return f"{MODID}:block/{name}"
 
 
-SIMPLE = ["deflector_ring", "phaser_strip", "ent_wall", "decon_light", "tng_carpet", "tng_wall", "holodeck_grid", "star_map", "bar_counter", "light_pillar", "hull_teal", "bussard_blue", "bridge_trim_cream", "bridge_carpet_teal", "deck_plate", "bridge_wall_dark", "impulse_engine", "hull_aztec", "deflector_dish_blue", "bussard_red", "torpedo_launcher", "bridge_trim_blue", "sickbay_wall", "sickbay_floor", "cargo_container", "bridge_wall", "bridge_trim", "turbolift_frame", "transporter_wall", "transporter_platform",
+SIMPLE = ["deflector_violet", "deflector_ring", "phaser_strip", "ent_wall", "decon_light", "tng_carpet", "tng_wall", "holodeck_grid", "star_map", "bar_counter", "light_pillar", "hull_teal", "bussard_blue", "bridge_trim_cream", "bridge_carpet_teal", "deck_plate", "bridge_wall_dark", "impulse_engine", "hull_aztec", "deflector_dish_blue", "bussard_red", "torpedo_launcher", "bridge_trim_blue", "sickbay_wall", "sickbay_floor", "cargo_container", "bridge_wall", "bridge_trim", "turbolift_frame", "transporter_wall", "transporter_platform",
           "transporter_energizer", "transporter_emitter", "nav_light_red", "nav_light_green", "hull_pennant",
           "hull_plating", "hull_panel", "hull_dark", "hull_window", "hull_marking", "deflector_dish",
           "bussard_collector", "nacelle_grille", "deck_floor", "bridge_deck", "corridor_wall",
@@ -1886,6 +1898,7 @@ NAMES = {
     "decon_light": ("Dekontaminations-Leuchte", "Decontamination Light"),
     "phaser_strip": ("Phaserstreifen", "Phaser Strip"),
     "deflector_ring": ("Deflektorring (Kupfer)", "Deflector Ring (Copper)"),
+    "deflector_violet": ("Deflektorschüssel (Galaxy, violett)", "Deflector Dish (Galaxy, Violet)"),
     "turbolift_nx": ("Turbolift (NX-01)", "Turbolift (NX-01)"),
     "turbolift_refit": ("Turbolift (Refit)", "Turbolift (Refit)"),
     "turbolift_excelsior": ("Turbolift (Excelsior)", "Turbolift (Excelsior)"),

@@ -703,7 +703,9 @@ public final class EnterpriseBlueprint {
             case NCC_1701_B -> { cy = yc + 0.15 * hy; ry = 0.5 * m; rz = 0.34 * m; ring = 0.62 * m; ringPart = ShipPart.HULL_PANEL; depth = 0.12; }
             case NCC_1701_C -> { ry = rz = 0.58 * m; depth = 0.1; }
             // Galaxy: breites flaches Oval, Kupferrand, blau leuchtender Ring, Kupfermitte
-            case NCC_1701_D -> { cy = yc + 0.05 * hy; ry = 0.3 * hy; rz = 0.45 * hz; outer = ShipPart.DEFLECTOR_DISH; core = ShipPart.DEFLECTOR_DISH_BLUE; inner = 0.85; depth = 0; }
+            // Galaxy: breites Oval – violetter Rand, hellblau leuchtender Ring, violette Fläche mit hellblauem
+            // abgerundeten Rechteck in der Mitte (nach dem Studiomodell)
+            case NCC_1701_D -> { cy = yc + 0.05 * hy; ry = 0.36 * hy; rz = 0.42 * hz; outer = ShipPart.DEFLECTOR_VIOLET; depth = 0; }
             case NCC_1701_E -> { cy = yc - 0.1 * hy; ry = rz = 0.5 * m; depth = 0.12; }
             default -> { return; }
         }
@@ -755,6 +757,16 @@ public final class EnterpriseBlueprint {
                 if (recessed && x < deep - 2) continue; // Rand der Vertiefung
                 ShipPart part = inRing ? ringPart
                     : core != null && e <= inner && e > 0.5 ? core : outer;
+                if (design == ShipDesign.NCC_1701_D && !inRing) {
+                    // abgerundetes Rechteck (Superellipse) mit 1 Block breitem Rand
+                    double w = Math.max(2, 0.55 * rz), h = Math.max(1.5, 0.36 * ry);
+                    double dz = Math.abs(z), dy = Math.abs(y - cy);
+                    boolean inRect = Math.pow(dz / w, 6) + Math.pow(dy / h, 6) <= 1;
+                    boolean inInner = Math.pow(dz / (w - 1), 6) + Math.pow(dy / Math.max(0.5, h - 1), 6) <= 1;
+                    if (e > 0.72 && e <= 0.87) part = ShipPart.DEFLECTOR_DISH_BLUE;
+                    else if (inRect && !inInner) part = ShipPart.DEFLECTOR_DISH_BLUE;
+                    else part = ShipPart.DEFLECTOR_VIOLET;
+                }
                 if (design == ShipDesign.NCC_1701 && !inRing) {
                     // Originalserie: Kupferschüssel mit dunkler Nabe und konzentrischen dunkleren Ringen
                     if (e < 0.15) part = ShipPart.HULL_DARK;
@@ -820,9 +832,13 @@ public final class EnterpriseBlueprint {
                         case REFIT -> c == SAUCER && dx > 0.15 * sR && dx < 0.4 * sR && az <= 0.1 * sR && y > sMid + 3 * sc;
                         case EXCELSIOR -> c == SAUCER && y > sMid + 2 * sc
                             && ((dx > 0.55 * sR && az <= 0.12 * sR) || (dx > 0.3 * sR && az >= 0.42 * sR && az <= 0.66 * sR));
-                        case TNG -> (c == SAUCER && dx > 0 && r > 0.6 * sR && y >= sMid - 0.5 && y <= sMid + 5 * sc
-                                && az >= 0.04 * sR && az <= 0.32 * sR)
-                            || (design == ShipDesign.NCC_1701_D && c == NECK && az <= 6 * sc + 2 && y >= saucerBottom(r) - 6 * sc);
+                        case TNG -> design == ShipDesign.NCC_1701_D
+                            // Galaxy: zwei kurze Rechtecke an der Hinterkante der Untertasse, weiter außen …
+                            ? (c == SAUCER && dx > 0 && r > 0.6 * sR && y >= sMid && y <= sMid + 3 * sc && az >= 0.22 * sR && az <= 0.33 * sR)
+                              // … und das Haupttriebwerk als roter Rahmen hinten am Hals, etwas unter der Untertasse
+                              || (c == NECK && neckImpulseFrame(x, y, z, sc))
+                            : (c == SAUCER && dx > 0 && r > 0.6 * sR && y >= sMid - 0.5 && y <= sMid + 5 * sc
+                                && az >= 0.04 * sR && az <= 0.32 * sR);
                         case NX -> false; // eigene Farbe, siehe unten
                         default -> false;
                     };
@@ -872,6 +888,15 @@ public final class EnterpriseBlueprint {
                 if (depth > best) { best = depth; by = cy; br = r; }
             }
         return br > 0 ? new double[] {by, br} : null;
+    }
+
+    /** Galaxy: liegt (x, y, z) auf dem Rahmen des Hauptimpulstriebwerks hinten am Hals? */
+    private boolean neckImpulseFrame(int x, int y, int z, double sc) {
+        double top = saucerBottom(rad(x, z)) - 3 * sc, h = Math.max(2, 4 * sc), w = Math.max(3, 7 * sc);
+        double cyI = top - h;
+        double ax = Math.abs(z) / w, ay = Math.abs(y - cyI) / h;
+        double rect = Math.pow(Math.pow(ax, 4) + Math.pow(ay, 4), 0.25);
+        return rect <= 1 && rect > 1 - Math.max(1.0 / w, 1.0 / h) * 1.5;
     }
 
     /**

@@ -56,6 +56,7 @@ public final class ModBlocks {
     public static final RegistryObject<Block> HULL_DARK = block("hull_dark", Block::new, metal(MapColor.COLOR_GRAY));
     public static final RegistryObject<Block> HULL_WINDOW = block("hull_window", Block::new, glowing(metal(MapColor.COLOR_YELLOW), 12));
     public static final RegistryObject<Block> HULL_MARKING = block("hull_marking", Block::new, metal(MapColor.COLOR_BLACK));
+    public static final RegistryObject<Block> DEFLECTOR_VIOLET = block("deflector_violet", Block::new, glowing(metal(MapColor.COLOR_PURPLE), 9));
     public static final RegistryObject<Block> DEFLECTOR_RING = block("deflector_ring", Block::new, metal(MapColor.COLOR_BROWN));
     public static final RegistryObject<Block> DEFLECTOR_DISH = block("deflector_dish", Block::new, glowing(metal(MapColor.COLOR_ORANGE), 13));
     public static final RegistryObject<Block> BUSSARD_COLLECTOR = block("bussard_collector",

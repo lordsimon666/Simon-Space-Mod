@@ -189,7 +189,7 @@ E = Eisenbarren        G = Goldbarren
 F = roter Farbstoff, P = Enderperle, R = Redstone
 ```
 
-## Neue Blöcke (102)
+## Neue Blöcke (103)
 
 * **Hülle**: Hüllenpanzerung (+ Stufe), Hüllenplatte, dunkle Hüllenplatte, Hüllenfenster,
   Kennungsmarkierung (+ Stufe), roter Zierstreifen, Positionslicht rot/grün, Deflektorschüssel,

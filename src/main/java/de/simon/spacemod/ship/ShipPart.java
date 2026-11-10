@@ -125,7 +125,9 @@ public enum ShipPart {
     // Phaserstreifen der TNG-Schiffe (Ringe auf der Untertasse)
     PHASER_STRIP(0xA05A30),
     // dunklere Kupferringe der Deflektorschüssel (Originalserie)
-    DEFLECTOR_RING(0x8A5A2A);
+    DEFLECTOR_RING(0x8A5A2A),
+    // violette Fläche der Galaxy-Deflektorschüssel
+    DEFLECTOR_VIOLET(0x9A78B8);
 
     /** Farbe für Vorschaubilder. */
     public final int color;
