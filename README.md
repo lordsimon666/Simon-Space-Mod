@@ -177,6 +177,29 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
   Hast du keinen Kommunikator dabei, bekommst du einen.
 * **Kommunikator**: Rechtsklick beamt dich zurück auf das zuletzt benutzte Transporterfeld.
 * **Brückenstation / Brückenmonitor**: Rechtsklick schaltet zwischen 4 Varianten (Farbe bzw. Anzeige) um.
+* **Phaser und Waffenstation**: Jedes Schiff hat Waffen im Stil seiner Zeit an den Stellen der
+  Originale und eine Waffenstation auf der Brücke:
+  * NX-01: Phasenkanonen (blaue Pulse) vorne unter der Untertasse und je eine oben und unten hinten;
+    Waffenstation hinten Steuerbord (Taktik).
+  * NCC-1701: Phaserbänke (blauer Strahl) unten am vorderen Untertassenrand; gefeuert wird am
+    Steuer (Backbord-Teil der Steuerkonsole, wie bei Sulu).
+  * NCC-1701-A: Zwillings-Phaser (roter Strahl) oben und unten auf der Untertasse und unten vorne an
+    der Sekundärhülle; NCC-1701-B: Zwillings-Phaser oben und unten auf der Untertasse. Waffenstation
+    jeweils am Steuer.
+  * NCC-1701-C/-D/-E: die Phaserstreifen auf der Untertasse (oranger Strahl); Taktikstation in der
+    Mitte des Holzgeländers hinter dem Captain.
+
+  Rechtsklick auf die Waffenstation feuert auf das, was man gerade anschaut: eine Kreatur im Blick,
+  sonst den ersten Block außerhalb des Schiffs. Es feuern bis zu zwei Phaser, die freie Schussbahn
+  zum Ziel haben und am nächsten dran sind. Treffer verursachen Schaden und setzen in Brand, am Ziel
+  gibt es eine kleine Explosion, die keine Blöcke zerstört. Nachladen: 1 Sekunde. Eine selbst
+  gesetzte Waffenstation verbindet sich beim ersten Schuss mit allen Phaser-Blöcken im Umkreis von
+  40 Blöcken.
+* **Uniformen**: Für jede Epoche gibt es Uniformen in den drei Abteilungsfarben, dazu Hosen und Stiefel:
+  NX-01 (dunkelblauer Overall mit farbiger Paspel, dunkelblaue Hose), Originalserie (gold / blau / rot),
+  Kinofilme der 2280er und 90er (rote Jacke, Kragen weiß / grau / gelb, für A und B),
+  Next Generation (rot / blau / gold mit schwarzer Schulterpasse, für C und D) und Enterprise-E
+  (schwarz mit grauen Schultern und farbigem Kragen). Die Uniformen ziehst du wie eine Rüstung an.
 
 ### Rezepte (Überlebensmodus)
 
@@ -189,7 +212,7 @@ E = Eisenbarren        G = Goldbarren
 F = roter Farbstoff, P = Enderperle, R = Redstone
 ```
 
-## Neue Blöcke (103)
+## Neue Blöcke (107)
 
 * **Hülle**: Hüllenpanzerung (+ Stufe), Hüllenplatte, dunkle Hüllenplatte, Hüllenfenster,
   Kennungsmarkierung (+ Stufe), roter Zierstreifen, Positionslicht rot/grün, Deflektorschüssel,
@@ -214,10 +237,12 @@ F = roter Farbstoff, P = Enderperle, R = Redstone
   Kraftfeld (durchsichtig), Sternenkarte, Bartresen, Phaserstreifen
 * **NX-01**: Metallwand, Konsole, Sitz, Kommandantensessel, Dekontaminations-Leuchte
 * **Turbolifte**: Turbolift und Turbolift-Tür im Stil von NX-01, Refit, Excelsior und Next Generation
+* **Waffen**: Phasenkanone (NX-01), Phaserbank (Originalserie), Phaser-Emitter (Refit/Excelsior),
+  Phaserstreifen (Next Generation), Waffenstation (4 Varianten je Epoche)
 * **Allgemein**: Deckboden, Korridorwand, Deckenverkleidung, Deckenleuchte, Maschinenraum-Konsole,
   Warpkern, Plasmaleitung
 
-Dazu das Item Kommunikator. Alles ist im Kreativ-Tab „Simon Space Mod“ zu finden.
+Dazu das Item Kommunikator, 15 Uniformen, 2 Uniformhosen und Sternenflotten-Stiefel. Alles ist im Kreativ-Tab „Simon Space Mod“ zu finden.
 
 ## Außenform aus echten 3D-Modellen
 

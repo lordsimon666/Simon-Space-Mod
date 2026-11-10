@@ -1,5 +1,8 @@
 {
   "values": [
+    "simonspacemod:phase_cannon",
+    "simonspacemod:phaser_bank",
+    "simonspacemod:phaser_emitter",
     "simonspacemod:deflector_violet",
     "simonspacemod:deflector_ring",
     "simonspacemod:phaser_strip",
@@ -96,6 +99,7 @@
     "simonspacemod:excelsior_console",
     "simonspacemod:excelsior_display",
     "simonspacemod:msd_display",
+    "simonspacemod:weapons_console",
     "simonspacemod:bridge_railing",
     "simonspacemod:bridge_railing_gray",
     "simonspacemod:bridge_railing_wood",

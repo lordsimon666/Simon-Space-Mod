@@ -1,0 +1,107 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "simonspacemod:block/bridge_railing",
+    "housing": "simonspacemod:block/bridge_railing",
+    "top": "simonspacemod:block/weapons_console_top_0",
+    "black": "simonspacemod:block/trim_black"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        0,
+        4
+      ],
+      "to": [
+        15,
+        9,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#housing"
+        },
+        "south": {
+          "texture": "#housing"
+        },
+        "east": {
+          "texture": "#housing"
+        },
+        "west": {
+          "texture": "#housing"
+        },
+        "up": {
+          "texture": "#housing"
+        },
+        "down": {
+          "texture": "#housing"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        9,
+        2
+      ],
+      "to": [
+        16,
+        11,
+        14
+      ],
+      "faces": {
+        "up": {
+          "texture": "#top"
+        },
+        "down": {
+          "texture": "#black"
+        },
+        "north": {
+          "texture": "#black"
+        },
+        "south": {
+          "texture": "#black"
+        },
+        "east": {
+          "texture": "#black"
+        },
+        "west": {
+          "texture": "#black"
+        }
+      }
+    },
+    {
+      "from": [
+        6,
+        11,
+        9
+      ],
+      "to": [
+        10,
+        13,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#black"
+        },
+        "south": {
+          "texture": "#black"
+        },
+        "east": {
+          "texture": "#black"
+        },
+        "west": {
+          "texture": "#black"
+        },
+        "up": {
+          "texture": "#black"
+        },
+        "down": {
+          "texture": "#black"
+        }
+      }
+    }
+  ]
+}

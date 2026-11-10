@@ -140,6 +140,12 @@ public final class ShipBuildManager {
                     LOGGER.warn("[{}] Turbolift bei {} fehlt", SimonSpaceMod.MODID, pos);
                 }
             }
+            // Phaser an die Waffenstation(en) der Brücke koppeln
+            java.util.List<BlockPos> phasers = new java.util.ArrayList<>();
+            for (BlockPos p : blueprint.phasers) phasers.add(placement.toWorld(blueprint, p.getX(), p.getY(), p.getZ()));
+            de.simon.spacemod.weapons.WeaponsData weapons = de.simon.spacemod.weapons.WeaponsData.get(level);
+            for (BlockPos st : blueprint.weaponStations)
+                weapons.set(placement.toWorld(blueprint, st.getX(), st.getY(), st.getZ()), phasers);
             onDone.accept(this);
         }
     }

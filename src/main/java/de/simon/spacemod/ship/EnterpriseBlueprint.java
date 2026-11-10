@@ -64,6 +64,10 @@ public final class EnterpriseBlueprint {
 
     /** Turbolift-Verbindungen in lokalen Koordinaten. */
     public final List<LiftStop> liftStops = new ArrayList<>();
+    /** Alle Phaser (lokal), die von der Waffenstation aus feuern. */
+    public final List<BlockPos> phasers = new ArrayList<>();
+    /** Waffenstationen auf der Brücke (lokal). */
+    public final List<BlockPos> weaponStations = new ArrayList<>();
     /** Position (lokal) vor dem Kommandantensessel, für den Teleport zur Brücke. */
     public BlockPos bridgeSpawn = BlockPos.ZERO;
 
@@ -157,6 +161,7 @@ public final class EnterpriseBlueprint {
         }
         registryLettering();
         hullDetails();
+        placePhasers();
         if (refit) torpedoLaunchers();
         if (model == null) smoothSaucer(); // das Modell ist schon glatt
         boolean fullDecks = s >= 0.75;
@@ -173,6 +178,7 @@ public final class EnterpriseBlueprint {
         liftStyle();
         connectBars();
         seal();
+        collectWeapons();
     }
 
     // =====================================================================================
@@ -1304,6 +1310,101 @@ public final class EnterpriseBlueprint {
         }
     }
 
+    // =====================================================================================
+    //  Waffen
+    // =====================================================================================
+
+    /** Unterste Hüllenzelle bei (x, z), sonst -1. */
+    private int bottomHullY(int x, int z) {
+        for (int y = 0; y < sizeY; y++) {
+            if (!inBounds(x, y, z)) return -1;
+            int i = idx(x, y, z);
+            if (comp[i] == NONE) continue;
+            return hull[i] ? y : -1;
+        }
+        return -1;
+    }
+
+    /** Setzt ein Waffenteil auf die Ober- oder Unterseite, wenn dort das passende Bauteil liegt (NONE = beliebig). */
+    private boolean surfaceWeapon(int x, int z, boolean top, ShipPart part, byte component) {
+        int y = top ? topHullY(x, z) : bottomHullY(x, z);
+        if (y < 0 || (component != NONE && comp[idx(x, y, z)] != component)) return false;
+        ShipPart old = get(x, y, z);
+        if (old == ShipPart.HULL_MARKING || old == ShipPart.HULL_PENNANT || old == ShipPart.HULL_WINDOW) return false; // Schrift freilassen
+        set(x, y, z, part);
+        return true;
+    }
+
+    /** Ist die Oberfläche bei (x, z) Untertasse ohne Schrift? */
+    private boolean free(int x, int z, boolean top) {
+        int y = top ? topHullY(x, z) : bottomHullY(x, z);
+        if (y < 0 || comp[idx(x, y, z)] != SAUCER) return false;
+        ShipPart p = get(x, y, z);
+        return p != ShipPart.HULL_MARKING && p != ShipPart.HULL_PENNANT && p != ShipPart.HULL_WINDOW;
+    }
+
+    /** Phaser auf der Untertasse bei Winkel a (0 = Bug) und Radius rf * sR; doppelt = Zwillingsbank. */
+    private void saucerWeapon(double a, double rf, boolean top, ShipPart part, boolean dual) {
+        double r = rf * sR;
+        double d = 1.0 / r * kx;
+        // liegt dort Schrift, etwas weiter nach innen ausweichen
+        for (int step = 0; step < 10; step++) {
+            double rr = r - step;
+            boolean ok = true;
+            for (double o : dual ? new double[] {-d, d} : new double[] {0}) {
+                int x = (int) Math.round(polX(rr, a + o)), z = (int) Math.round(polZ(rr, a + o));
+                for (int dx = 0; dx <= (s >= 0.75 ? 1 : 0); dx++) ok &= free(x + dx, z, top); // größere Schiffe: 2 Blöcke lang
+            }
+            if (!ok) continue;
+            for (double o : dual ? new double[] {-d, d} : new double[] {0}) {
+                int x = (int) Math.round(polX(rr, a + o)), z = (int) Math.round(polZ(rr, a + o));
+                for (int dx = 0; dx <= (s >= 0.75 ? 1 : 0); dx++) surfaceWeapon(x + dx, z, top, part, SAUCER);
+            }
+            return;
+        }
+    }
+
+    /**
+     * Phaser an den Stellen der Originale:
+     * NX-01: Phasenkanonen vorne unter der Untertasse, je eine oben und unten hinten.
+     * NCC-1701: Phaserbänke unten am Untertassenrand nach vorne.
+     * Refit (A) und Excelsior (B): Zwillings-Emitter oben und unten auf der Untertasse, Refit auch
+     * unten vorne an der Sekundärhülle. TNG-Schiffe: die Phaserstreifen (siehe phaserStrips).
+     */
+    private void placePhasers() {
+        if (model == null) return; // ohne Hüllenmodell (Mini-Ansicht) keine Waffen
+        if (nx) {
+            for (int side : new int[] {-1, 1}) saucerWeapon(side * 0.65, 0.8, false, ShipPart.PHASE_CANNON, false);
+            int xa = (int) Math.round(sCx + 0.62 * sR);
+            // falls dort Aufbauten sind, etwas weiter vorne
+            for (boolean top : new boolean[] {true, false})
+                for (int dx = 0; dx <= 6 && !surfaceWeapon(xa - dx, 0, top, ShipPart.PHASE_CANNON, top ? SAUCER : NONE); dx++) {}
+        } else if (refit || excelsior) {
+            double[] angles = refit ? new double[] {-0.95, 0.95, -2.5, 2.5} : new double[] {-0.8, 0.8, -2.3, 2.3};
+            for (double a : angles)
+                for (boolean top : new boolean[] {true, false})
+                    saucerWeapon(a, 0.78, top, ShipPart.PHASER_EMITTER, true);
+            if (refit) {
+                int xs = (int) Math.round(eXf + 0.14 * (eXr - eXf));
+                for (int side : new int[] {-1, 1})
+                    for (int dx = 0; dx <= (s >= 0.75 ? 1 : 0); dx++)
+                        surfaceWeapon(xs + dx, side * 2, false, ShipPart.PHASER_EMITTER, SECONDARY);
+            }
+        } else if (!tng) {
+            for (double a : new double[] {-0.85, -0.3, 0.3, 0.85}) saucerWeapon(a, 0.92, false, ShipPart.PHASER_BANK, false);
+        }
+    }
+
+    /** Sammelt alle Phaser und Waffenstationen für die Feuerleitung. */
+    private void collectWeapons() {
+        forEach((x, y, z, code) -> {
+            ShipPart p = part(code);
+            if (p == ShipPart.PHASER_STRIP || p == ShipPart.PHASE_CANNON || p == ShipPart.PHASER_BANK || p == ShipPart.PHASER_EMITTER)
+                phasers.add(new BlockPos(x, y, z));
+            else if (p == ShipPart.WEAPONS_CONSOLE) weaponStations.add(new BlockPos(x, y, z));
+        });
+    }
+
     /** Oberste Hüllenzelle bei (x, z) (beliebiges Bauteil), sonst -1. */
     private int topHullY(int x, int z) {
         for (int y = sizeY - 1; y >= 0; y--) {
@@ -1639,6 +1740,8 @@ public final class EnterpriseBlueprint {
                 set(cx - 8, y, dz, ShipPart.VIEWSCREEN, Direction.SOUTH);
         // Steuer-/Navigationskonsole mit zwei Stühlen
         for (int dz = -1; dz <= 1; dz++) set(cx - 3, yb + 1, dz, ShipPart.HELM_CONSOLE, Direction.SOUTH);
+        // Steuermann (Backbord) bedient wie bei Sulu auch die Phaser
+        set(cx - 3, yb + 1, -1, ShipPart.WEAPONS_CONSOLE, Direction.SOUTH, 0);
         set(cx - 2, yb + 1, -1, ShipPart.STATION_CHAIR, Direction.NORTH);
         set(cx - 2, yb + 1, 1, ShipPart.STATION_CHAIR, Direction.NORTH);
         // Kommandantensessel
@@ -1714,6 +1817,7 @@ public final class EnterpriseBlueprint {
         }
         // lange graue Steuerkonsole mit zwei Stühlen
         for (int dz = -1; dz <= 1; dz++) set(cx - 3, yb + 1, dz, ShipPart.HELM_CONSOLE_GRAY, Direction.SOUTH);
+        set(cx - 3, yb + 1, -1, ShipPart.WEAPONS_CONSOLE, Direction.SOUTH, 1); // Waffen am Steuer (Backbord)
         set(cx - 2, yb + 1, -1, ShipPart.STATION_CHAIR_TEAL, Direction.NORTH);
         set(cx - 2, yb + 1, 1, ShipPart.STATION_CHAIR_TEAL, Direction.NORTH);
         // erhöhtes Podest mit dem Kommandantensessel
@@ -1782,6 +1886,8 @@ public final class EnterpriseBlueprint {
         // Hauptbildschirm vorne (11 x 4)
         for (int dz = -5; dz <= 5; dz++)
             for (int y = yb + 1; y <= yb + 4; y++) set(cx - (int) Math.ceil(rr), y, dz, ShipPart.VIEWSCREEN, Direction.SOUTH);
+        // Taktikstation in der Mitte des Hufeisens (hinter dem Captain)
+        set(cx + 5, yb + 2, 0, ShipPart.WEAPONS_CONSOLE, Direction.SOUTH, 2);
         // Ops (Backbord) und Conn (Steuerbord)
         for (int side : new int[] {-1, 1}) {
             set(cx - 6, yb + 1, 2 * side, ShipPart.TNG_CONSOLE, Direction.SOUTH);
@@ -1837,6 +1943,8 @@ public final class EnterpriseBlueprint {
         for (int dz = -1; dz <= 1; dz++) set(cx - 5, yb + 1, dz, ShipPart.ENT_CONSOLE, Direction.SOUTH);
         set(cx - 4, yb + 1, 0, ShipPart.ENT_CHAIR, Direction.NORTH);
         set(cx, yb + 1, 0, ShipPart.CAPTAINS_CHAIR_NX, Direction.NORTH);
+        // Taktik hinten Steuerbord (Reed)
+        set(cx + 5, yb + 1, 5, ShipPart.WEAPONS_CONSOLE, inwardFacing(5, 5), 3);
         // Sitze an Kommunikation (Backbord) und Wissenschaft (Steuerbord)
         set(cx, yb + 1, -6, ShipPart.ENT_CHAIR, Direction.WEST);
         set(cx, yb + 1, 6, ShipPart.ENT_CHAIR, Direction.EAST);

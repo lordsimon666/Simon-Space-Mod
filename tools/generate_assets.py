@@ -1359,6 +1359,347 @@ def tex_deflector_violet():
     return img
 
 
+# ---------------------------------------------------------------------------------------------
+#  Waffen: Phaser-Blöcke und Waffenstation
+# ---------------------------------------------------------------------------------------------
+
+def tex_phase_cannon():
+    """NX-01 Phasenkanone: Metallgrau mit dunkler Mündung und bläulichem Glühen."""
+    img = noise(new((84, 90, 98)), 4, 300)
+    px = img.load()
+    for x in range(16):
+        for y in range(16):
+            d = math.hypot(x - 7.5, y - 7.5)
+            if d < 3.2:
+                px[x, y] = (20, 24, 30, 255)
+            elif d < 4.4:
+                px[x, y] = (120, 200, 240, 255)
+            elif d < 5.4:
+                px[x, y] = (50, 54, 60, 255)
+    for i in range(16):
+        px[i, 0] = px[i, 15] = px[0, i] = px[15, i] = (60, 64, 70, 255)
+    return img
+
+
+def tex_phaser_bank():
+    """Phaserbank der Originalserie: dunkles Gehäuse mit drei Emittern."""
+    img = noise(new((48, 52, 60)), 3, 301)
+    px = img.load()
+    for cx in (3, 8, 13):
+        for x in range(cx - 1, cx + 1):
+            for y in range(6, 10):
+                px[x, y] = (110, 160, 255, 255)
+        px[cx - 1, 6] = (220, 235, 255, 255)
+    for i in range(16):
+        px[i, 0] = px[i, 15] = (30, 32, 38, 255)
+    return img
+
+
+def tex_phaser_emitter():
+    """Refit-/Excelsior-Phaser: rötlicher Sockel mit glühendem Schlitz."""
+    img = noise(new((104, 60, 50)), 4, 302)
+    px = img.load()
+    for x in range(16):
+        for y in range(16):
+            if 6 <= y <= 9 and 2 <= x <= 13:
+                px[x, y] = (255, 110, 50, 255) if y in (7, 8) else (200, 60, 30, 255)
+            elif x in (0, 15) or y in (0, 15):
+                px[x, y] = (70, 40, 34, 255)
+    return img
+
+
+def tex_weapons_top(v):
+    """Zielerfassung: Fadenkreuz und Feuerknöpfe (Farben je Epoche)."""
+    bg, glow = [((18, 16, 18), (255, 60, 40)), ((26, 28, 30), (90, 240, 130)),
+                ((20, 20, 26), (255, 150, 30)), ((28, 32, 40), (120, 200, 255))][v]
+    img = new(bg)
+    px = img.load()
+    for x in range(16):
+        for y in range(16):
+            d = math.hypot(x - 7.5, y - 6.5)
+            if abs(d - 4.5) < 0.6 or (abs(x - 7.5) < 0.6 and 2 <= y <= 11) or (abs(y - 6.5) < 0.6 and 3 <= x <= 12):
+                px[x, y] = glow + (255,)
+    px[7, 6] = px[8, 6] = px[7, 7] = px[8, 7] = (255, 255, 255, 255)
+    for x in range(2, 14, 3):
+        px[x, 13] = (220, 40, 30, 255)
+        px[x + 1, 13] = (255, 210, 60, 255)
+    return img
+
+
+WEAPON_HOUSING = ["bridge_railing", "helm_gray", "chair_dark", "ent_wall"]
+
+
+def weapons_console_model(v):
+    return {
+        "parent": "minecraft:block/block",
+        "textures": {"particle": b(WEAPON_HOUSING[v]), "housing": b(WEAPON_HOUSING[v]),
+                     "top": b(f"weapons_console_top_{v}"), "black": b("trim_black")},
+        "elements": [
+            el([1, 0, 4], [15, 9, 13], all6("#housing")),
+            el([0, 9, 2], [16, 11, 14], {"up": "#top", "down": "#black", "north": "#black", "south": "#black", "east": "#black", "west": "#black"}),
+            el([6, 11, 9], [10, 13, 12], all6("#black")),       # Zielscanner
+        ],
+    }
+
+
+# ---------------------------------------------------------------------------------------------
+#  Uniformen (Rüstungs-Texturen 64x32 im Spielerlayout)
+# ---------------------------------------------------------------------------------------------
+
+ERAS = ["nx", "tos", "movie", "tng", "fc"]
+DIVS = ["command", "science", "operations"]
+DIV_COLOR = {
+    "nx": {"command": (214, 178, 60), "science": (90, 150, 215), "operations": (190, 40, 40)},
+    "tos": {"command": (216, 178, 60), "science": (120, 160, 214), "operations": (178, 36, 36)},
+    "movie": {"command": (236, 236, 230), "science": (160, 176, 150), "operations": (206, 168, 70)},
+    "tng": {"command": (156, 26, 26), "science": (44, 108, 140), "operations": (200, 160, 48)},
+    "fc": {"command": (150, 24, 24), "science": (40, 104, 136), "operations": (196, 156, 44)},
+}
+GOLD = (224, 192, 80)
+BLACK = (24, 24, 28)
+
+BODY = {"top": (20, 16, 8, 4), "bottom": (28, 16, 8, 4), "right": (16, 20, 4, 12), "front": (20, 20, 8, 12),
+        "left": (28, 20, 4, 12), "back": (32, 20, 8, 12)}
+ARM = {"top": (44, 16, 4, 4), "bottom": (48, 16, 4, 4), "right": (40, 20, 4, 12), "front": (44, 20, 4, 12),
+       "left": (48, 20, 4, 12), "back": (52, 20, 4, 12)}
+LEG = {"top": (4, 16, 4, 4), "bottom": (8, 16, 4, 4), "right": (0, 20, 4, 12), "front": (4, 20, 4, 12),
+       "left": (8, 20, 4, 12), "back": (12, 20, 4, 12)}
+SIDES = ("right", "front", "left", "back")
+
+
+def seed_of(*parts):
+    import zlib
+    return zlib.crc32("/".join(parts).encode())
+
+
+def fill(px, rect, color, seed=0, n=5):
+    rnd = random.Random(seed)
+    x0, y0, w, h = rect
+    for x in range(x0, x0 + w):
+        for y in range(y0, y0 + h):
+            px[x, y] = shade(color, rnd.randint(-n, n))
+
+
+def rows(px, part, r0, r1, color, faces=SIDES):
+    """Färbt Zeilen r0..r1 (0 = oben) der Seitenflächen eines Körperteils."""
+    for f in faces:
+        x0, y0, w, h = part[f]
+        for x in range(x0, x0 + w):
+            for r in range(r0, r1 + 1):
+                if 0 <= r < h:
+                    px[x, y0 + r] = tuple(color) + (255,)
+
+
+def uniform_texture(era, div):
+    img = Image.new("RGBA", (64, 32), (0, 0, 0, 0))
+    px = img.load()
+    dc = DIV_COLOR[era][div]
+    base = {"nx": (44, 61, 94), "tos": dc, "movie": (122, 22, 22), "tng": dc, "fc": (30, 30, 34)}[era]
+    for f, r in BODY.items():
+        fill(px, r, base, seed_of(era, div, f), 4)
+    for f, r in ARM.items():
+        fill(px, r, base, seed_of(era, div, "a", f), 4)
+    fx, fy = BODY["front"][0], BODY["front"][1]   # Vorderseite: x 20..27, y 20..31 (x=20 rechte Körperseite)
+    if era == "tos":
+        for x in range(22, 26):
+            px[x, fy] = BLACK + (255,)                       # schwarzer Kragen
+        for x in range(32, 40):
+            px[x, 20] = BLACK + (255,)
+        px[25, 22] = px[26, 22] = px[25, 23] = GOLD + (255,)  # Abzeichen
+        rows(px, ARM, 9, 9, GOLD)                           # Ärmelstreifen
+        rows(px, ARM, 11, 11, GOLD)
+    elif era == "movie":
+        light = (160, 46, 46)
+        for i in range(8):                                  # Brustklappe schräg
+            px[fx + i, fy + 1 + i // 2] = light + (255,)
+        for x in range(22, 26):
+            px[x, fy] = dc + (255,)                          # Rollkragen in Abteilungsfarbe
+        px[23, fy + 1] = px[24, fy + 1] = dc + (255,)
+        rows(px, BODY, 10, 11, BLACK)                        # Gürtel
+        px[23, fy + 10] = px[24, fy + 10] = GOLD + (255,)
+        px[26, fy + 2] = px[26, fy + 3] = GOLD + (255,)      # Abzeichen
+        rows(px, ARM, 10, 10, GOLD)                         # Rangstreifen
+    elif era == "tng":
+        rows(px, BODY, 0, 2, BLACK)                          # schwarze Schulterpasse
+        fill(px, BODY["top"], BLACK, 7, 2)
+        rows(px, ARM, 0, 1, BLACK)
+        fill(px, ARM["top"], BLACK, 8, 2)
+        px[25, fy + 3] = px[26, fy + 3] = px[25, fy + 4] = GOLD + (255,)  # Kommunikator
+        px[21, fy + 1] = px[22, fy + 1] = GOLD + (255,)      # Rangpins
+    elif era == "fc":
+        grey = (92, 94, 100)
+        rows(px, BODY, 0, 2, grey)                           # gesteppte graue Schultern
+        fill(px, BODY["top"], grey, 9, 6)
+        rows(px, ARM, 0, 1, grey)
+        fill(px, ARM["top"], grey, 10, 6)
+        for x in range(20, 28, 2):
+            px[x, fy + 1] = (120, 122, 128, 255)
+        for x in range(22, 26):
+            px[x, fy] = dc + (255,)                          # farbiges Unterhemd am Kragen
+        px[23, fy + 1] = px[24, fy + 1] = dc + (255,)
+        px[25, fy + 4] = px[26, fy + 4] = px[25, fy + 5] = GOLD + (255,)  # Kommunikator
+    elif era == "nx":
+        for x in (20, 21, 26, 27):
+            px[x, fy] = dc + (255,)                          # Paspel an den Schultern
+        rows(px, ARM, 0, 0, dc)
+        for x in range(21, 23):
+            px[x, fy + 4] = (70, 90, 130, 255)               # Reißverschlusstasche
+        px[23, fy + 1] = px[24, fy + 1] = (30, 40, 60, 255)  # Kragen
+        for f in ("front", "back", "left", "right"):          # Missionsabzeichen am Oberarm
+            x0, y0, _, _ = ARM[f]
+            px[x0 + 1, y0 + 2] = px[x0 + 2, y0 + 2] = (180, 200, 230, 255)
+            px[x0 + 1, y0 + 3] = px[x0 + 2, y0 + 3] = (60, 100, 170, 255)
+    return img
+
+
+def trousers_texture(color):
+    img = Image.new("RGBA", (64, 32), (0, 0, 0, 0))
+    px = img.load()
+    for f, r in LEG.items():
+        fill(px, r, color, seed_of("leg", f), 3)
+    for f in SIDES:                                          # Hosenbund am Körper
+        x0, y0, w, h = BODY[f]
+        fill(px, (x0, y0 + 6, w, 6), color, 410, 3)
+    fill(px, BODY["bottom"], color, 411, 3)
+    return img
+
+
+def boots_texture():
+    img = Image.new("RGBA", (64, 32), (0, 0, 0, 0))
+    px = img.load()
+    for f in SIDES:
+        x0, y0, w, h = LEG[f]
+        fill(px, (x0, y0 + 7, w, 5), (22, 22, 26), 420, 3)
+        for x in range(x0, x0 + w):
+            px[x, y0 + 7] = (50, 50, 56, 255)
+    fill(px, LEG["bottom"], (14, 14, 16), 421, 2)
+    return img
+
+
+def icon_tunic(era, div):
+    dc = DIV_COLOR[era][div]
+    base = {"nx": (44, 61, 94), "tos": dc, "movie": (122, 22, 22), "tng": dc, "fc": (30, 30, 34)}[era]
+    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    px = img.load()
+    for x in range(16):
+        for y in range(16):
+            body = 4 <= x <= 11 and 2 <= y <= 14
+            sleeve = (1 <= x <= 3 or 12 <= x <= 14) and 3 <= y <= 9
+            if body or sleeve:
+                px[x, y] = shade(base, -12 if x in (1, 14) or y == 14 else 0)
+    for x in range(6, 10):
+        px[x, 2] = (0, 0, 0, 0)
+    if era == "tos":
+        for x in range(6, 10):
+            px[x, 3] = BLACK + (255,)
+        px[9, 5] = GOLD + (255,)
+        for x in (1, 2, 3, 12, 13, 14):
+            px[x, 8] = GOLD + (255,)
+    elif era == "tng":
+        for x in range(1, 15):
+            for y in range(2, 6):
+                if px[x, y][3]:
+                    px[x, y] = BLACK + (255,)
+        px[9, 7] = GOLD + (255,)
+    elif era == "fc":
+        for x in range(1, 15):
+            for y in range(2, 5):
+                if px[x, y][3]:
+                    px[x, y] = (92, 94, 100, 255)
+        px[7, 3] = px[8, 3] = dc + (255,)
+        px[9, 7] = GOLD + (255,)
+    elif era == "movie":
+        for i in range(6):
+            px[4 + i, 4 + i // 2] = (170, 50, 50, 255)
+        px[7, 3] = px[8, 3] = dc + (255,)
+        for x in range(4, 12):
+            px[x, 12] = BLACK + (255,)
+    elif era == "nx":
+        for x in (4, 5, 10, 11, 1, 2, 13, 14):
+            px[x, 3] = dc + (255,)
+    return img
+
+
+def icon_trousers(color):
+    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    px = img.load()
+    for x in range(4, 12):
+        for y in range(2, 5):
+            px[x, y] = shade(color, 0)
+    for x in list(range(4, 8)) + list(range(8, 12)):
+        for y in range(5, 15):
+            if x in (7, 8) and y > 5:
+                continue
+            px[x, y] = shade(color, -10 if x in (4, 11) else 0)
+    return img
+
+
+def icon_boots():
+    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    px = img.load()
+    for (x0, x1) in ((2, 6), (9, 13)):
+        for x in range(x0, x1 + 1):
+            for y in range(4, 13):
+                px[x, y] = (30, 30, 34, 255)
+        for x in range(x0 - 1, x1 + 3):
+            for y in range(12, 14):
+                if x < 16:
+                    px[x, y] = (18, 18, 20, 255)
+    return img
+
+
+ERA_NAMES = {
+    "nx": ("NX-01, 2150er", "NX-01, 2150s"),
+    "tos": ("Originalserie, 2260er", "Original Series, 2260s"),
+    "movie": ("Kinofilme, 2280er/90er", "Movie Era, 2280s/90s"),
+    "tng": ("Next Generation, 2360er", "Next Generation, 2360s"),
+    "fc": ("Enterprise-E, 2370er", "Enterprise-E, 2370s"),
+}
+DIV_NAMES = {
+    "nx": {"command": ("Kommando, goldene Paspel", "Command, gold piping"),
+           "science": ("Wissenschaft, blaue Paspel", "Sciences, blue piping"),
+           "operations": ("Technik & Sicherheit, rote Paspel", "Engineering & Security, red piping")},
+    "tos": {"command": ("Kommando, gold", "Command, gold"), "science": ("Wissenschaft, blau", "Sciences, blue"),
+            "operations": ("Technik & Sicherheit, rot", "Engineering & Security, red")},
+    "movie": {"command": ("Kommando, weißer Kragen", "Command, white collar"),
+              "science": ("Wissenschaft & Medizin, grauer Kragen", "Sciences & Medical, grey collar"),
+              "operations": ("Technik, gelber Kragen", "Engineering, yellow collar")},
+    "tng": {"command": ("Kommando, rot", "Command, red"), "science": ("Wissenschaft, blau", "Sciences, blue"),
+            "operations": ("Technik & Sicherheit, gold", "Engineering & Security, gold")},
+    "fc": {"command": ("Kommando, rot", "Command, red"), "science": ("Wissenschaft, blau", "Sciences, blue"),
+           "operations": ("Technik & Sicherheit, gold", "Engineering & Security, gold")},
+}
+
+
+def uniform_assets(de, en):
+    tex_dir = os.path.join(ASSETS, "textures", "entity", "equipment")
+
+    def armor_item(name, layer, img, icon, dn, enn):
+        p = os.path.join(tex_dir, layer, name + ".png")
+        os.makedirs(os.path.dirname(p), exist_ok=True)
+        img.save(p)
+        write_json(os.path.join(ASSETS, "equipment", name + ".json"),
+                   {"layers": {layer: [{"texture": f"{MODID}:{name}"}]}})
+        save(icon, "item/" + name)
+        write_json(os.path.join(ASSETS, "models", "item", name + ".json"),
+                   {"parent": "minecraft:item/generated", "textures": {"layer0": f"{MODID}:item/{name}"}})
+        write_json(os.path.join(ASSETS, "items", name + ".json"), item_def(f"{MODID}:item/{name}"))
+        de[f"item.{MODID}.{name}"] = dn
+        en[f"item.{MODID}.{name}"] = enn
+
+    for era in ERAS:
+        for div in DIVS:
+            d, e = DIV_NAMES[era][div]
+            armor_item(f"uniform_{era}_{div}", "humanoid", uniform_texture(era, div), icon_tunic(era, div),
+                       f"Uniform ({ERA_NAMES[era][0]}) – {d}", f"Uniform ({ERA_NAMES[era][1]}) – {e}")
+    armor_item("trousers_nx", "humanoid_leggings", trousers_texture((40, 56, 88)), icon_trousers((40, 56, 88)),
+               "Uniformhose (NX-01, dunkelblau)", "Uniform Trousers (NX-01, navy)")
+    armor_item("trousers_black", "humanoid_leggings", trousers_texture((26, 26, 30)), icon_trousers((26, 26, 30)),
+               "Uniformhose (schwarz)", "Uniform Trousers (black)")
+    armor_item("boots_starfleet", "humanoid", boots_texture(), icon_boots(),
+               "Sternenflotten-Stiefel", "Starfleet Boots")
+
+
 TEXTURES = {
     "hull_plating": tex_hull_plating,
     "hull_panel": tex_hull_panel,
@@ -1473,6 +1814,10 @@ TEXTURES = {
     "phaser_strip": tex_phaser_strip,
     "deflector_ring": tex_deflector_ring,
     "deflector_violet": tex_deflector_violet,
+    "phase_cannon": tex_phase_cannon,
+    "phaser_bank": tex_phaser_bank,
+    "phaser_emitter": tex_phaser_emitter,
+    **{f"weapons_console_top_{v}": (lambda v=v: tex_weapons_top(v)) for v in range(4)},
     "turbolift_door_nx": tex_door_nx,
     "turbolift_door_refit": tex_door_refit,
     "turbolift_door_tng": tex_door_tng,
@@ -1491,7 +1836,7 @@ def b(name):
     return f"{MODID}:block/{name}"
 
 
-SIMPLE = ["deflector_violet", "deflector_ring", "phaser_strip", "ent_wall", "decon_light", "tng_carpet", "tng_wall", "holodeck_grid", "star_map", "bar_counter", "light_pillar", "hull_teal", "bussard_blue", "bridge_trim_cream", "bridge_carpet_teal", "deck_plate", "bridge_wall_dark", "impulse_engine", "hull_aztec", "deflector_dish_blue", "bussard_red", "torpedo_launcher", "bridge_trim_blue", "sickbay_wall", "sickbay_floor", "cargo_container", "bridge_wall", "bridge_trim", "turbolift_frame", "transporter_wall", "transporter_platform",
+SIMPLE = ["phase_cannon", "phaser_bank", "phaser_emitter", "deflector_violet", "deflector_ring", "phaser_strip", "ent_wall", "decon_light", "tng_carpet", "tng_wall", "holodeck_grid", "star_map", "bar_counter", "light_pillar", "hull_teal", "bussard_blue", "bridge_trim_cream", "bridge_carpet_teal", "deck_plate", "bridge_wall_dark", "impulse_engine", "hull_aztec", "deflector_dish_blue", "bussard_red", "torpedo_launcher", "bridge_trim_blue", "sickbay_wall", "sickbay_floor", "cargo_container", "bridge_wall", "bridge_trim", "turbolift_frame", "transporter_wall", "transporter_platform",
           "transporter_energizer", "transporter_emitter", "nav_light_red", "nav_light_green", "hull_pennant",
           "hull_plating", "hull_panel", "hull_dark", "hull_window", "hull_marking", "deflector_dish",
           "bussard_collector", "nacelle_grille", "deck_floor", "bridge_deck", "corridor_wall",
@@ -1897,7 +2242,11 @@ NAMES = {
     "ent_chair": ("Sitz (NX-01)", "Seat (NX-01)"),
     "captains_chair_nx": ("Kommandantensessel (NX-01)", "Captain's Chair (NX-01)"),
     "decon_light": ("Dekontaminations-Leuchte", "Decontamination Light"),
-    "phaser_strip": ("Phaserstreifen", "Phaser Strip"),
+    "phaser_strip": ("Phaserstreifen (Next Generation)", "Phaser Strip (Next Generation)"),
+    "phase_cannon": ("Phasenkanone (NX-01)", "Phase Cannon (NX-01)"),
+    "phaser_bank": ("Phaserbank (Originalserie)", "Phaser Bank (Original Series)"),
+    "phaser_emitter": ("Phaser-Emitter (Refit/Excelsior)", "Phaser Emitter (Refit/Excelsior)"),
+    "weapons_console": ("Waffenstation", "Weapons Console"),
     "deflector_ring": ("Deflektorring (Kupfer)", "Deflector Ring (Copper)"),
     "deflector_violet": ("Deflektorschüssel (Galaxy, violett)", "Deflector Dish (Galaxy, Violet)"),
     "turbolift_nx": ("Turbolift (NX-01)", "Turbolift (NX-01)"),
@@ -1990,7 +2339,7 @@ def main():
     # Blöcke mit Varianten (Stationen, Monitore)
     for name, fn in (("bridge_station", station_model), ("bridge_monitor", monitor_model),
                      ("excelsior_console", ex_console_model), ("excelsior_display", ex_display_model),
-                     ("msd_display", msd_model)):
+                     ("msd_display", msd_model), ("weapons_console", weapons_console_model)):
         for v in range(4):
             write_json(os.path.join(ASSETS, "models", "block", f"{name}_{v}.json"), fn(v))
         write_json(os.path.join(ASSETS, "blockstates", name + ".json"), variant_facing_blockstate(name))
@@ -2111,6 +2460,19 @@ def main():
         f"command.{MODID}.enterprise.to_bridge": "[To the bridge]",
         f"command.{MODID}.enterprise.too_high": "The ship is %s blocks tall and does not fit into the build height here (%s to %s). Choose another Y position or a smaller size.",
     })
+    de.update({
+        f"message.{MODID}.phaser.fire": "Phaser feuern!",
+        f"message.{MODID}.phaser.recharging": "Phaser laden nach ...",
+        f"message.{MODID}.phaser.none": "Keine Phaser mit dieser Waffenstation verbunden.",
+        f"message.{MODID}.phaser.no_arc": "Kein Phaser hat freie Schussbahn zum Ziel.",
+    })
+    en.update({
+        f"message.{MODID}.phaser.fire": "Firing phasers!",
+        f"message.{MODID}.phaser.recharging": "Phasers recharging ...",
+        f"message.{MODID}.phaser.none": "No phasers linked to this weapons console.",
+        f"message.{MODID}.phaser.no_arc": "No phaser has a clear line of fire to the target.",
+    })
+    uniform_assets(de, en)
     write_json(os.path.join(ASSETS, "lang", "de_de.json"), de)
     write_json(os.path.join(ASSETS, "lang", "en_us.json"), en)
 

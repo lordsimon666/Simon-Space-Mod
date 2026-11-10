@@ -143,6 +143,11 @@ public final class ShipPalette {
             case PHASER_STRIP -> ModBlocks.PHASER_STRIP.get().defaultBlockState();
             case DEFLECTOR_RING -> ModBlocks.DEFLECTOR_RING.get().defaultBlockState();
             case DEFLECTOR_VIOLET -> ModBlocks.DEFLECTOR_VIOLET.get().defaultBlockState();
+            case PHASE_CANNON -> ModBlocks.PHASE_CANNON.get().defaultBlockState();
+            case PHASER_BANK -> ModBlocks.PHASER_BANK.get().defaultBlockState();
+            case PHASER_EMITTER -> ModBlocks.PHASER_EMITTER.get().defaultBlockState();
+            case WEAPONS_CONSOLE -> ModBlocks.WEAPONS_CONSOLE.get().defaultBlockState()
+                .setValue(VariantFacingBlock.VARIANT, EnterpriseBlueprint.variant(cellCode));
             case IRON_BARS -> Blocks.IRON_BARS.defaultBlockState()
                 .setValue(CrossCollisionBlock.NORTH, EnterpriseBlueprint.bar(cellCode, Direction.NORTH))
                 .setValue(CrossCollisionBlock.EAST, EnterpriseBlueprint.bar(cellCode, Direction.EAST))

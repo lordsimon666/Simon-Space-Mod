@@ -20,6 +20,17 @@ import de.simon.spacemod.turbolift.TurboliftMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraftforge.common.extensions.IForgeMenuType;
 import de.simon.spacemod.item.CommunicatorItem;
+import de.simon.spacemod.block.PhaserBlock;
+import de.simon.spacemod.block.WeaponsConsoleBlock;
+import java.util.Map;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.world.item.equipment.ArmorMaterial;
+import net.minecraft.world.item.equipment.ArmorType;
+import net.minecraft.world.item.equipment.EquipmentAsset;
+import net.minecraft.world.item.equipment.EquipmentAssets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -107,7 +118,8 @@ public final class ModBlocks {
     // --- Next Generation (NCC-1701-C, -D, -E) ---
     public static final RegistryObject<Block> TNG_CARPET = block("tng_carpet", Block::new,
         BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GRAY).strength(1.5F, 6F).sound(SoundType.WOOL));
-    public static final RegistryObject<Block> PHASER_STRIP = block("phaser_strip", Block::new, glowing(metal(MapColor.COLOR_ORANGE), 3));
+    public static final RegistryObject<Block> PHASER_STRIP = block("phaser_strip",
+        p -> new PhaserBlock(p, PhaserBlock.Kind.PHASER_STRIP), glowing(metal(MapColor.COLOR_ORANGE), 3));
     public static final RegistryObject<Block> TNG_WALL = block("tng_wall", Block::new, metal(MapColor.SAND));
     public static final RegistryObject<Block> TNG_CONSOLE = block("tng_console",
         p -> new ShapedFacingBlock(p, Shapes.or(Block.box(0, 0, 0, 16, 10, 16), Block.box(0, 10, 6, 16, 14, 16))),
@@ -220,10 +232,42 @@ public final class ModBlocks {
     public static final RegistryObject<Block> TURBOLIFT_DOOR_REFIT = block("turbolift_door_refit", FacingBlock::new, metal(MapColor.COLOR_LIGHT_GRAY));
     public static final RegistryObject<Block> TURBOLIFT_DOOR_TNG = block("turbolift_door_tng", FacingBlock::new, metal(MapColor.SAND));
 
+    // --- Waffen ---
+    public static final RegistryObject<Block> PHASE_CANNON = block("phase_cannon",
+        p -> new PhaserBlock(p, PhaserBlock.Kind.PHASE_CANNON), glowing(metal(MapColor.COLOR_GRAY), 4));
+    public static final RegistryObject<Block> PHASER_BANK = block("phaser_bank",
+        p -> new PhaserBlock(p, PhaserBlock.Kind.PHASER_BANK), glowing(metal(MapColor.COLOR_BLACK), 3));
+    public static final RegistryObject<Block> PHASER_EMITTER = block("phaser_emitter",
+        p -> new PhaserBlock(p, PhaserBlock.Kind.PHASER_EMITTER), glowing(metal(MapColor.COLOR_RED), 4));
+    public static final RegistryObject<Block> WEAPONS_CONSOLE = block("weapons_console", WeaponsConsoleBlock::new,
+        glowing(metal(MapColor.COLOR_RED), 7).noOcclusion());
+
     // --- Items ---
     public static final RegistryObject<Item> COMMUNICATOR = ITEMS.register("communicator",
         () -> new CommunicatorItem(new Item.Properties().setId(ITEMS.key("communicator")).stacksTo(1)));
     static { TAB_ITEMS.add(COMMUNICATOR); }
+
+    // --- Uniformen: je Epoche Kommando, Wissenschaft und Betrieb, dazu Hosen und Stiefel ---
+    public static final String[] UNIFORM_ERAS = {"nx", "tos", "movie", "tng", "fc"};
+    public static final String[] UNIFORM_DIVISIONS = {"command", "science", "operations"};
+    static {
+        for (String era : UNIFORM_ERAS)
+            for (String div : UNIFORM_DIVISIONS) armor("uniform_" + era + "_" + div, ArmorType.CHESTPLATE);
+        armor("trousers_nx", ArmorType.LEGGINGS);
+        armor("trousers_black", ArmorType.LEGGINGS);
+        armor("boots_starfleet", ArmorType.BOOTS);
+    }
+
+    private static void armor(String name, ArmorType type) {
+        ResourceKey<EquipmentAsset> asset = ResourceKey.create(EquipmentAssets.ROOT_ID,
+            Identifier.fromNamespaceAndPath(SimonSpaceMod.MODID, name));
+        ArmorMaterial material = new ArmorMaterial(8,
+            Map.of(ArmorType.BOOTS, 1, ArmorType.LEGGINGS, 2, ArmorType.CHESTPLATE, 3, ArmorType.HELMET, 1, ArmorType.BODY, 3),
+            12, SoundEvents.ARMOR_EQUIP_LEATHER, 0F, 0F, ItemTags.REPAIRS_LEATHER_ARMOR, asset);
+        RegistryObject<Item> item = ITEMS.register(name,
+            () -> new Item(new Item.Properties().setId(ITEMS.key(name)).humanoidArmor(material, type)));
+        TAB_ITEMS.add(item);
+    }
 
     // --- Entities ---
     /** Unsichtbarer Sitz für die Stühle. */

@@ -127,7 +127,13 @@ public enum ShipPart {
     // dunklere Kupferringe der Deflektorschüssel (Originalserie)
     DEFLECTOR_RING(0x8A5A2A),
     // violette Fläche der Galaxy-Deflektorschüssel
-    DEFLECTOR_VIOLET(0x9A78B8);
+    DEFLECTOR_VIOLET(0x9A78B8),
+    // Waffen: Phasenkanone (NX-01), Phaserbank (Originalserie), Phaser-Emitter (Refit/Excelsior)
+    PHASE_CANNON(0x4A5058),
+    PHASER_BANK(0x30343C),
+    PHASER_EMITTER(0x6A3A30),
+    // Waffenstation auf der Brücke (Variante = Stil der Epoche)
+    WEAPONS_CONSOLE(0xC02020);
 
     /** Farbe für Vorschaubilder. */
     public final int color;

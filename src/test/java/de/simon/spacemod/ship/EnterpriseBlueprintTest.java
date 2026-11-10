@@ -49,6 +49,12 @@ class EnterpriseBlueprintTest {
         assertTrue(counts.getOrDefault(design.tng ? ShipPart.WARP_CORE_TNG : ShipPart.WARP_CORE, 0) >= 30, "Warpkern fehlt");
         assertEquals(design.nx ? 1 : 6, counts.get(ShipPart.TRANSPORTER_PAD), "Transporterraum fehlt");
         // Turbolift-Halte: mindestens Brücke, Maschinenraum, Transporterraum; in Originalgröße alle Decks
+        assertEquals(1, bp.weaponStations.size(), "Waffenstation fehlt");
+        ShipPart gun = design.nx ? ShipPart.PHASE_CANNON : design.tng ? ShipPart.PHASER_STRIP
+            : design.refit || design.excelsior ? ShipPart.PHASER_EMITTER : ShipPart.PHASER_BANK;
+        int guns = counts.getOrDefault(gun, 0);
+        assertTrue(guns >= (gun == ShipPart.PHASER_EMITTER || design.tng ? 8 : 4), "zu wenige Phaser: " + guns);
+        assertEquals(guns, bp.phasers.size(), "Phaserliste unvollständig");
         assertTrue(bp.liftStops.size() >= 3, "zu wenige Turbolift-Halte");
         if (scale >= 0.75) assertTrue(bp.liftStops.size() >= (design.nx ? 5 : 8), "Decks fehlen: " + bp.liftStops.size());
         assertTrue(counts.getOrDefault(ShipPart.BIOBED, 0) > 0 || scale < 0.75, "Krankenstation fehlt");
