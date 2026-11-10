@@ -105,6 +105,7 @@ public final class ModBlocks {
     // --- Next Generation (NCC-1701-C, -D, -E) ---
     public static final RegistryObject<Block> TNG_CARPET = block("tng_carpet", Block::new,
         BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GRAY).strength(1.5F, 6F).sound(SoundType.WOOL));
+    public static final RegistryObject<Block> PHASER_STRIP = block("phaser_strip", Block::new, glowing(metal(MapColor.COLOR_ORANGE), 3));
     public static final RegistryObject<Block> TNG_WALL = block("tng_wall", Block::new, metal(MapColor.SAND));
     public static final RegistryObject<Block> TNG_CONSOLE = block("tng_console",
         p -> new ShapedFacingBlock(p, Shapes.or(Block.box(0, 0, 0, 16, 10, 16), Block.box(0, 10, 6, 16, 14, 16))),

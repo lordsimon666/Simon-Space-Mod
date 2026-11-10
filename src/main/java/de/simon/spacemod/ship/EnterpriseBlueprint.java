@@ -147,6 +147,7 @@ public final class EnterpriseBlueprint {
         if (model != null) {
             paintDish();
             paintImpulse();
+            if (tng) phaserStrips();
         }
         registryLettering();
         hullDetails();
@@ -744,6 +745,32 @@ public final class EnterpriseBlueprint {
             int len = (int) Math.max(2, Math.round(0.6 * m));
             for (int k = 1; k <= len; k++) set(frontX - k, (int) Math.round(cy), 0, ShipPart.HULL_DARK);
         }
+    }
+
+    /**
+     * Next Generation: braun-orange Phaserstreifen als Ringe auf Ober- und Unterseite der Untertasse
+     * (wie bei der Galaxy-Klasse und ihren Verwandten).
+     */
+    private void phaserStrips() {
+        double w = Math.max(0.55, 0.6 * Math.max(s, 0.5));
+        int rx = (int) Math.ceil(sR / kx), rz = (int) Math.ceil(sR / kz), cx = (int) Math.round(sCx);
+        for (int x = cx - rx; x <= cx + rx; x++)
+            for (int z = -rz; z <= rz; z++) {
+                double r = rad(x, z);
+                boolean topRing = Math.abs(r - 0.66 * sR) < w, botRing = Math.abs(r - 0.6 * sR) < w;
+                if (!topRing && !botRing) continue;
+                // vorne über dem Bug ist die Kennung, dort bleibt der obere Ring frei
+                if (topRing) for (int y = sizeY - 1; y >= 0; y--) {
+                    if (compAt(x, y, z) == NONE) continue;
+                    if (compAt(x, y, z) == SAUCER && hull[idx(x, y, z)] && get(x, y, z) != ShipPart.HULL_MARKING) set(x, y, z, ShipPart.PHASER_STRIP);
+                    break;
+                }
+                if (botRing) for (int y = 0; y < sizeY; y++) {
+                    if (compAt(x, y, z) == NONE) continue;
+                    if (compAt(x, y, z) == SAUCER && hull[idx(x, y, z)] && get(x, y, z) != ShipPart.HULL_MARKING) set(x, y, z, ShipPart.PHASER_STRIP);
+                    break;
+                }
+            }
     }
 
     /**

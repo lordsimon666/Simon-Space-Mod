@@ -189,7 +189,7 @@ E = Eisenbarren        G = Goldbarren
 F = roter Farbstoff, P = Enderperle, R = Redstone
 ```
 
-## Neue Blöcke (100)
+## Neue Blöcke (101)
 
 * **Hülle**: Hüllenpanzerung (+ Stufe), Hüllenplatte, dunkle Hüllenplatte, Hüllenfenster,
   Kennungsmarkierung (+ Stufe), roter Zierstreifen, Positionslicht rot/grün, Deflektorschüssel,
@@ -211,7 +211,7 @@ F = roter Farbstoff, P = Enderperle, R = Redstone
   Turbolift-Tür und Steuerkonsole im Excelsior-Stil
 * **Next Generation (C, D, E)**: Teppichboden, Wandverkleidung, LCARS-Konsole, Sessel,
   Kommandantensessel, Warpkern (blau), Master Systems Display, Lagetisch, Holodeck-Gitter,
-  Kraftfeld (durchsichtig), Sternenkarte, Bartresen
+  Kraftfeld (durchsichtig), Sternenkarte, Bartresen, Phaserstreifen
 * **NX-01**: Metallwand, Konsole, Sitz, Kommandantensessel, Dekontaminations-Leuchte
 * **Turbolifte**: Turbolift und Turbolift-Tür im Stil von NX-01, Refit, Excelsior und Next Generation
 * **Allgemein**: Deckboden, Korridorwand, Deckenverkleidung, Deckenleuchte, Maschinenraum-Konsole,
