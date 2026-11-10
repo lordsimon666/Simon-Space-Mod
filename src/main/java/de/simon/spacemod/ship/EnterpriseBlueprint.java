@@ -2858,6 +2858,15 @@ public final class EnterpriseBlueprint {
         // Schrift des Modells auf Ober-/Unterseite der Untertasse weglassen – die Mod schreibt die Kennung selbst
         if (c == SAUCER && (k == ShipColors.BLACK || k == ShipColors.RED)
             && (compAt(x, y + 1, z) == NONE || compAt(x, y - 1, z) == NONE)) return st;
+        if (design == ShipDesign.NCC_1701_D) {
+            // Die Textur der D hat Licht und blaue Spiegelungen eingebrannt: Blau nur als Warpgitter an den
+            // Gondeln, Fenster nur an senkrechten Flächen, keine beigen Lichtflecken
+            boolean flat = compAt(x, y + 1, z) == NONE || compAt(x, y - 1, z) == NONE;
+            if (k == ShipColors.BLUEPAINT || k == ShipColors.TEAL || k == ShipColors.WINDOW) return st;
+            if (k == ShipColors.BLUE_GLOW && !nacelle) return st;
+            if (k == ShipColors.BLACK && !nacelle && flat) return st;
+            if (k == ShipColors.DARK && !nacelle && flat) return st; // eingebrannte Schatten
+        }
         return switch (k) {
             case ShipColors.LIGHT -> st == ShipPart.HULL_AZTEC || st == ShipPart.HULL_PANEL || st == ShipPart.HULL_WINDOW ? st : ShipPart.HULL_PLATING;
             case ShipColors.MID -> ShipPart.HULL_PANEL;
