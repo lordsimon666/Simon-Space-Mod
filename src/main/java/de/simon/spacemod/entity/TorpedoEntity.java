@@ -105,7 +105,7 @@ public class TorpedoEntity extends Entity {
      * auch weit draußen weiterfliegt und dort explodiert.
      */
     private void keepLoaded(ServerLevel level, Vec3 pos, Vec3 dir) {
-        if (age % 3 != 1) return; // Tickets laufen nach 2 s von selbst aus
+        if (age % 3 != 0) return; // Tickets laufen nach 2 s von selbst aus
         var chunks = level.getChunkSource();
         chunks.addTicketWithRadius(TicketType.ENDER_PEARL, ChunkPos.containing(BlockPos.containing(pos)), 2);
         chunks.addTicketWithRadius(TicketType.ENDER_PEARL, ChunkPos.containing(BlockPos.containing(pos.add(dir.scale(64)))), 2);

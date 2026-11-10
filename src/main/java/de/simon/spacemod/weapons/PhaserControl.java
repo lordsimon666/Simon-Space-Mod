@@ -180,6 +180,12 @@ public final class PhaserControl {
         if (t == null) return;
         t.setPos(start.x, start.y, start.z);
         t.setup(style, tgt, aim.entity(), own, player.getUUID());
+        // Der Werfer kann weit von der Kamera weg in einem ruhenden Chunk liegen: vorher aktiv laden,
+        // sonst bewegt sich der Torpedo nicht (er sichert sich danach im Flug selbst weiter)
+        var chunks = level.getChunkSource();
+        chunks.addTicketWithRadius(TicketType.ENDER_PEARL, ChunkPos.containing(BlockPos.containing(start)), 2);
+        chunks.addTicketWithRadius(TicketType.ENDER_PEARL,
+            ChunkPos.containing(BlockPos.containing(start.add(tgt.subtract(start).normalize().scale(64)))), 2);
         level.addFreshEntity(t);
         level.playSound(null, from, SoundEvents.BLAZE_SHOOT, SoundSource.BLOCKS, 3.0F, quantum ? 0.6F : 0.8F);
         player.sendOverlayMessage(Component.translatable(quantum ? "message.simonspacemod.torpedo.quantum" : "message.simonspacemod.torpedo.photon"));
