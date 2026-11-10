@@ -163,6 +163,19 @@ class EnterpriseBlueprintTest {
                 }
         ImageIO.write(front, "png", new File(dir, "front_" + tag + ".png"));
 
+        // Rückansicht (vom Heck aus)
+        BufferedImage back = new BufferedImage(bp.sizeZ * px, bp.sizeY * px, BufferedImage.TYPE_INT_RGB);
+        for (int z = -bp.zOffset; z <= bp.zOffset; z++)
+            for (int y = 0; y < bp.sizeY; y++)
+                for (int x = bp.sizeX - 1; x >= 0; x--) {
+                    ShipPart p = bp.get(x, y, z);
+                    if (p != null && p != ShipPart.AIR) {
+                        fill(back, z + bp.zOffset, bp.sizeY - 1 - y, px, shadeByHeight(p.color, x, bp.sizeX));
+                        break;
+                    }
+                }
+        ImageIO.write(back, "png", new File(dir, "back_" + tag + ".png"));
+
         // Längsschnitt durch die Mittelachse (z = 0) – zeigt Innenräume
         BufferedImage cut = new BufferedImage(bp.sizeX * px, bp.sizeY * px, BufferedImage.TYPE_INT_RGB);
         for (int x = 0; x < bp.sizeX; x++)

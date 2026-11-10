@@ -144,7 +144,10 @@ public final class EnterpriseBlueprint {
 
         buildShape();
         skinAndDecks();
-        if (model != null) paintDish();
+        if (model != null) {
+            paintDish();
+            paintImpulse();
+        }
         registryLettering();
         hullDetails();
         if (refit) torpedoLaunchers();
@@ -663,6 +666,10 @@ public final class EnterpriseBlueprint {
      * -B, -C, -E runde blaue Schüssel, -D breite ovale Kupferschüssel mit blau leuchtender Mitte.
      */
     private void paintDish() {
+        if (nx) {
+            paintDishNx();
+            return;
+        }
         // Silhouette des Unterrumpfs von vorne gesehen: Breite je Höhe; der schmale Hals darüber
         // zählt nicht mit (Breite unter 40 % der größten Breite)
         int[] wz = new int[sizeY];
@@ -742,6 +749,59 @@ public final class EnterpriseBlueprint {
         }
     }
 
+    /** NX-01: Deflektor vorne unten an der Untertasse (E-Deck), kupferfarben, leicht herausstehend. */
+    private void paintDishNx() {
+        int yb = sizeY;
+        for (int x = 0; x < sCx; x++)
+            for (int y = 0; y < yb; y++)
+                if (compAt(x, y, 0) != NONE) { yb = y; break; }
+        if (yb >= sMid) return;
+        double cy = yb + 0.45 * (sMid - yb), rr = Math.max(1.5, 0.45 * (sMid - yb));
+        for (int y = (int) Math.floor(cy - rr); y <= cy + rr; y++)
+            for (int z = (int) -Math.ceil(rr * 1.4); z <= rr * 1.4; z++) {
+                double e = Math.hypot((y - cy) / rr, z / (rr * 1.4));
+                if (e > 1) continue;
+                for (int x = 0; x < sCx; x++) {
+                    if (compAt(x, y, z) == NONE) continue;
+                    if (hull[idx(x, y, z)]) {
+                        set(x, y, z, ShipPart.DEFLECTOR_DISH);
+                        if (e < 0.7) set(x - 1, y, z, ShipPart.DEFLECTOR_DISH);
+                    }
+                    break;
+                }
+            }
+    }
+
+    /**
+     * Impulstriebwerke (rot leuchtend) nur dort, wo sie am Original sitzen:
+     * Refit/A hinten am erhöhten Aufbau der Untertasse; Excelsior/B am Ende des Rückens und hinten an
+     * den Seitenauslegern; C, D, E als Streifen an der Hinterkante der Untertasse links und rechts
+     * vom Hals (D zusätzlich das Hauptimpulstriebwerk oben hinten am Hals); NX-01 hinten an den
+     * Gondel-Pylonen. Die Originalserie hat keine leuchtenden Impulstriebwerke.
+     */
+    private void paintImpulse() {
+        if (design == ShipDesign.NCC_1701) return;
+        double sc = Math.max(s, 0.5);
+        for (int x = 0; x < sizeX; x++)
+            for (int y = 0; y < sizeY; y++)
+                for (int z = -zOffset; z <= zOffset; z++) {
+                    byte c = compAt(x, y, z);
+                    if (c == NONE || !hull[idx(x, y, z)] || compAt(x + 1, y, z) != NONE) continue; // nur Heckflächen
+                    double dx = x - sCx, az = Math.abs(z), r = rad(x, z);
+                    boolean hit = switch (design.era) {
+                        case REFIT -> c == SAUCER && dx > 0.15 * sR && dx < 0.4 * sR && az <= 0.1 * sR && y > sMid + 3 * sc;
+                        case EXCELSIOR -> c == SAUCER && y > sMid + 2 * sc
+                            && ((dx > 0.55 * sR && az <= 0.12 * sR) || (dx > 0.3 * sR && az >= 0.42 * sR && az <= 0.66 * sR));
+                        case TNG -> (c == SAUCER && dx > 0 && r > 0.6 * sR && y >= sMid - 0.5 && y <= sMid + 5 * sc
+                                && az >= 0.04 * sR && az <= 0.32 * sR)
+                            || (design == ShipDesign.NCC_1701_D && c == NECK && az <= 6 * sc + 2 && y >= saucerBottom(r) - 6 * sc);
+                        case NX -> c == PYLON && y > sMid + 2 && az > 0.5 * nZ; // hinten an den Gondel-Pylonen
+                        default -> false;
+                    };
+                    if (hit) set(x, y, z, ShipPart.IMPULSE_ENGINE);
+                }
+    }
+
     /**
      * Vorderste Hüllenzelle des Unterrumpfs (oder Halses) bei (y, z) von vorne gesehen, sonst -1.
      * @param pylon auch Pylon-Zellen zählen (manche Rumpffronten gelten im Modell als Pylon)
@@ -753,12 +813,6 @@ public final class EnterpriseBlueprint {
             return (c == SECONDARY || c == NECK || (pylon && c == PYLON) || c == DISH || c == ANTENNA) && hull[idx(x, y, z)] ? x : -1;
         }
         return -1;
-    }
-
-    /** Senkrechte Heckfläche (mind. 3 Blöcke hoch) – bei der Excelsior sitzen dort die Impulstriebwerke. */
-    private boolean rearWall(int x, int y, int z) {
-        return compAt(x + 1, y, z) == NONE && compAt(x + 1, y + 1, z) == NONE && compAt(x + 1, y - 1, z) == NONE
-            && compAt(x, y + 1, z) != NONE && compAt(x, y - 1, z) != NONE && x > sCx + 0.3 * sR;
     }
 
     private boolean inEngineeringBox(int x, int y, int z) {
@@ -934,16 +988,14 @@ public final class EnterpriseBlueprint {
                                     if (aztecHull && aztec(r, Math.atan2(z * kz, dx * kx))) st = ShipPart.HULL_AZTEC;
                                     // Excelsior: dunkler petrolfarbener Ring auf der Oberseite
                                     if (excelsior && compAt(x, y + 1, z) == NONE && r > 0.87 * sR && r < 0.93 * sR) st = ShipPart.HULL_TEAL;
-                                    if ((excelsior || tng || nx) && model != null && rearWall(x, y, z) && y > sMid + 1) st = ShipPart.IMPULSE_ENGINE;
                                     if (excelsior && compAt(x, y + 1, z) == NONE && Math.abs(r - 0.56 * sR) < 0.8) st = ShipPart.HULL_PENNANT;
                                     // Refit: rot leuchtende Impulstriebwerke hinten am erhöhten Aufbau
-                                    if (refit && dx > 0 && Math.abs(z) <= 8 * s && Math.abs(r - 24 * s) < 1.3 && openSide)
+                                    if (refit && model == null && dx > 0 && Math.abs(z) <= 8 * s && Math.abs(r - 24 * s) < 1.3 && openSide)
                                         st = ShipPart.IMPULSE_ENGINE;
                                 }
                             }
                             case BRIDGE -> st = y >= bridgeFloor + 6 ? panel : plating;
-                            case NECK, PYLON -> st = (excelsior || tng || nx) && model != null && rearWall(x, y, z) ? ShipPart.IMPULSE_ENGINE
-                                : aztecHull && aztecXY(x, y + z) ? ShipPart.HULL_AZTEC
+                            case NECK, PYLON -> st = aztecHull && aztecXY(x, y + z) ? ShipPart.HULL_AZTEC
                                 : Math.floorMod(x, 6) == 0 ? panel : plating;
                             case SECONDARY -> {
                                 if (excelsior && compAt(x, y + 1, z) == NONE && Math.floorMod(x + Math.abs(z), 16) < 3) {
