@@ -257,7 +257,7 @@ verwendet werden.
 
 ### Hüllenfarben aus farbigen 3D-Modellen (Sketchfab, CC BY 4.0)
 
-Die Farben der Hüllen von NCC-1701, -A, -B, -C und -D (Fenster, Streifen, Gitter, Bussards,
+Die Farben der Hüllen von NCC-1701, -A, -B, -C, -D und -E (Fenster, Streifen, Gitter, Bussards,
 Impulstriebwerke, Deflektoren) wurden mit `tools/colors_from_glb.py` aus texturierten 3D-Modellen
 auf das Blockraster übertragen (Dateien `src/main/resources/ships/*.colors.gz`). Die Form der Schiffe
 stammt weiterhin aus den Modellen von Alexei Bruton. Verwendet wurden – jeweils unter
@@ -273,6 +273,8 @@ stammt weiterhin aus den Modellen von Alexei Bruton. Verwendet wurden – jeweil
   https://sketchfab.com/3d-models/ambassador-class-uss-enterprise-ncc-1701-c-200cc04ceb2e48438b7a21cd4605f960
 * NCC-1701-D: „USS Enterprise D, Star Trek TNG“ von **HaughtyGrayAlien** –
   https://sketchfab.com/3d-models/uss-enterprise-d-star-trek-tng-e3118c97914342b3ad7dd957c4b4ce4e
+* NCC-1701-E: „USS Enterprise E“ von **giacar25** (nach dem Modell von Mathias auf GrabCAD) –
+  https://sketchfab.com/3d-models/uss-enterprise-e-6589011aeca9460aa9300c6e518d1d5a
 
 Die Kennungen, die Deflektorschüsseln von NCC-1701, B und D und alle Innenräume baut die Mod selbst.
 

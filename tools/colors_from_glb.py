@@ -96,7 +96,7 @@ def node_matrix(n):
 def sample_model(path, n_samples):
     j, binc = load_glb(path)
     cache = {}
-    tris, uvs, mats = [], [], []
+    tris, uvs, mats, vcols = [], [], [], []
     def visit(ni, parent):
         node = j["nodes"][ni]
         m = parent @ node_matrix(node)
@@ -109,8 +109,15 @@ def sample_model(path, n_samples):
                 uv = accessor(j, binc, prim["attributes"]["TEXCOORD_0"]) if "TEXCOORD_0" in prim["attributes"] else np.zeros((len(pos), 2))
                 idx = accessor(j, binc, prim["indices"]).astype(np.int64) if "indices" in prim else np.arange(len(pos))
                 idx = idx.reshape(-1, 3)
+                if "COLOR_0" in prim["attributes"]:
+                    col = accessor(j, binc, prim["attributes"]["COLOR_0"])[:, :3]
+                    if col.max() <= 1.0:
+                        col = col * 255
+                else:
+                    col = np.full((len(pos), 3), -1.0)  # keine Eckpunktfarben
                 tris.append(pos[idx])
                 uvs.append(uv[idx])
+                vcols.append(col[idx])
                 mats.append(np.full(len(idx), prim.get("material", -1)))
         for c in node.get("children", []):
             visit(c, m)
@@ -120,6 +127,7 @@ def sample_model(path, n_samples):
     T = np.concatenate(tris)
     U = np.concatenate(uvs)
     M = np.concatenate(mats)
+    V = np.concatenate(vcols)
     area = 0.5 * np.linalg.norm(np.cross(T[:, 1] - T[:, 0], T[:, 2] - T[:, 0]), axis=1)
     rng = np.random.default_rng(1)
     pick = rng.choice(len(T), n_samples, p=area / area.sum())
@@ -142,9 +150,14 @@ def sample_model(path, n_samples):
         efac = np.array(mat.get("emissiveFactor", [0, 0, 0]))
         uv = UV[sel] % 1.0
         img = image(j, binc, btex, cache)
+        vc = V[pick][sel]
         if img is not None:
             h, w = img.shape[:2]
             base[sel] = img[(uv[:, 1] * h).astype(int).clip(0, h - 1), (uv[:, 0] * w).astype(int).clip(0, w - 1)] * bfac
+        elif (vc >= 0).all():
+            # Eckpunktfarben an der Stichprobe interpolieren
+            ws = np.c_[w0[sel], a[sel], b[sel]]
+            base[sel] = (vc * ws[:, :, None]).sum(1) * bfac
         else:
             base[sel] = 255 * bfac
         img = image(j, binc, etex, cache)

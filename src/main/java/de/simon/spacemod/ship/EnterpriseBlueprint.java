@@ -1400,7 +1400,7 @@ public final class EnterpriseBlueprint {
                 int ey = (int) Math.round(eY + eR * 0.25);
                 int ex = (int) Math.round(eXf + 0.3 * (eXr - eXf));
                 sideText(regText, side > 0 ? ex + reg : ex, ey + 2, side);
-                if (design != ShipDesign.NCC_1701_C) {
+                if (design != ShipDesign.NCC_1701_C && !(design == ShipDesign.NCC_1701_E && colors != null)) {
                     int ny = (int) Math.round(nY + nR * 0.5);
                     int x0 = (int) Math.round(nX0 + nR * 1.6);
                     pennant(x0, (int) Math.round(nX0 + 0.7 * (nX1 - nX0)), ny, side, (int) Math.max(1, nR * 0.15));
@@ -2852,7 +2852,7 @@ public final class EnterpriseBlueprint {
         int k = colors.lookup(x, y, z, s);
         boolean nacelle = c == NACELLE || c == BUSSARD;
         // Schrift des Modells auf Ober-/Unterseite der Untertasse weglassen – die Mod schreibt die Kennung selbst
-        if (c == SAUCER && (k == ShipColors.BLACK || k == ShipColors.RED)
+        if (c == SAUCER && (k == ShipColors.BLACK || k == ShipColors.RED && design != ShipDesign.NCC_1701_E)
             && (compAt(x, y + 1, z) == NONE || compAt(x, y - 1, z) == NONE)) return st;
         if (design == ShipDesign.NCC_1701_D) {
             // Die Textur der D hat Licht und blaue Spiegelungen eingebrannt: Blau nur als Warpgitter an den
@@ -2862,6 +2862,19 @@ public final class EnterpriseBlueprint {
             if (k == ShipColors.BLUE_GLOW && !nacelle) return st;
             if (k == ShipColors.BLACK && !nacelle && flat) return st;
             if ((k == ShipColors.DARK || k == ShipColors.MID) && !nacelle && flat) return st; // eingebrannte Schatten
+        }
+        if (design == ShipDesign.NCC_1701_E) {
+            // Das Farbmodell der E hat dieselbe Form und saubere Eckpunktfarben: auch kleine Teile übernehmen
+            switch (k) {
+                case ShipColors.RED -> {
+                    if (nacelle && x < nX0 + nR * 1.6) return ShipPart.BUSSARD_RED;
+                    return c == SAUCER || c == NECK || c == PYLON ? ShipPart.IMPULSE_ENGINE : ShipPart.HULL_PENNANT;
+                }
+                case ShipColors.BLUEPAINT -> { return nacelle ? ShipPart.NACELLE_GRILLE : ShipPart.HULL_AZTEC; }
+                case ShipColors.COPPER -> { if (c == SECONDARY || c == NECK) return ShipPart.DEFLECTOR_DISH; }
+                case ShipColors.BLACK -> { return ShipPart.HULL_DARK; }
+                default -> { }
+            }
         }
         return switch (k) {
             case ShipColors.LIGHT -> st == ShipPart.HULL_AZTEC || st == ShipPart.HULL_PANEL || st == ShipPart.HULL_WINDOW ? st : ShipPart.HULL_PLATING;
