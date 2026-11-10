@@ -302,7 +302,24 @@ def transfer(vox, cls, g):
     best = acc.argmax(1)
     best[acc.max(1) <= 0] = 0
     out[sidx[:, 0], sidx[:, 1], sidx[:, 2]] = best
-    return out
+    return clean(out)
+
+
+def clean(out):
+    """Dünne Linien (Plattenfugen der Textur) entfernen: graue Abstufungen und Braun bleiben nur,
+    wo sie eine Fläche bilden (mind. 5 gleiche Nachbarn im 3x3x3-Würfel), sonst wird es helle Hülle."""
+    res = out.copy()
+    for k in (C["MID"], C["DARK"], C["COPPER"], C["BLUEPAINT"], C["TEAL"]):
+        m = (out == k).astype(np.int16)
+        p = np.pad(m, 1)
+        cnt = np.zeros_like(m)
+        for dx in (0, 1, 2):
+            for dy in (0, 1, 2):
+                for dz in (0, 1, 2):
+                    cnt += p[dx:dx + m.shape[0], dy:dy + m.shape[1], dz:dz + m.shape[2]]
+        thin = (m == 1) & (cnt - 1 < 5)
+        res[thin] = C["LIGHT"]
+    return res
 
 
 PREVIEW = {0: (0, 0, 0), 1: (215, 215, 210), 2: (175, 175, 172), 3: (110, 112, 116), 4: (25, 25, 28), 5: (190, 40, 40),

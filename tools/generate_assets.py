@@ -1327,34 +1327,15 @@ def tex_door_tng():
 
 
 def tex_phaser_strip():
-    img = new((150, 86, 46))
+    """Phaserstreifen: dunkles Rotbraun wie am Studiomodell (nicht hellbraun)."""
+    img = new((104, 58, 46))
     px = img.load()
     for x in range(16):
         for y in range(16):
             if y in (0, 15):
-                px[x, y] = (90, 50, 30, 255)
+                px[x, y] = (70, 40, 34, 255)
             elif x % 4 == 0:
-                px[x, y] = (190, 120, 60, 255)
-    return img
-
-
-def tex_deflector_ring():
-    img = noise(new((138, 90, 42)), 6, 240)
-    px = img.load()
-    for x in range(16):
-        px[x, 7] = (100, 62, 28, 255)
-        px[x, 8] = (170, 116, 60, 255)
-    return img
-
-
-def tex_deflector_violet():
-    img = noise(new((154, 120, 184)), 5, 241)
-    px = img.load()
-    for x in range(16):
-        for y in range(16):
-            g = 1 - abs(y - 7.5) / 8
-            r, gg, b, a = px[x, y]
-            px[x, y] = (clamp(r + 25 * g), clamp(gg + 15 * g), clamp(b + 30 * g), 255)
+                px[x, y] = (130, 74, 56, 255)
     return img
 
 

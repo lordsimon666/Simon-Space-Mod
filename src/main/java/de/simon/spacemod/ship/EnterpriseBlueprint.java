@@ -152,10 +152,8 @@ public final class EnterpriseBlueprint {
             // NCC-1701, B und D bleiben in der nach deinen Fotos gebauten Form
             if (colors == null || design == ShipDesign.NCC_1701 || design == ShipDesign.NCC_1701_B || design == ShipDesign.NCC_1701_D)
                 paintDish();
-            if (colors == null) {
-                paintImpulse();
-                if (tng) phaserStrips();
-            }
+            if (colors == null) paintImpulse();
+            if (tng) phaserStrips();
         }
         registryLettering();
         hullDetails();
@@ -1087,8 +1085,8 @@ public final class EnterpriseBlueprint {
                                     st = panel;
                                 } else {
                                     // dezente Plattenringe wie beim Original
-                                    boolean ring = Math.abs(r - 0.55 * sR) < 0.5 || Math.abs(r - 0.82 * sR) < 0.5
-                                        || Math.abs(r - 0.32 * sR) < 0.5;
+                                    boolean ring = colors == null && (Math.abs(r - 0.55 * sR) < 0.5 || Math.abs(r - 0.82 * sR) < 0.5
+                                        || Math.abs(r - 0.32 * sR) < 0.5);
                                     if (ring) st = panel;
                                     if (aztecHull && aztec(r, Math.atan2(z * kz, dx * kx))) st = ShipPart.HULL_AZTEC;
                                     // Excelsior: dunkler petrolfarbener Ring auf der Oberseite
@@ -2865,7 +2863,7 @@ public final class EnterpriseBlueprint {
             if (k == ShipColors.BLUEPAINT || k == ShipColors.TEAL || k == ShipColors.WINDOW) return st;
             if (k == ShipColors.BLUE_GLOW && !nacelle) return st;
             if (k == ShipColors.BLACK && !nacelle && flat) return st;
-            if (k == ShipColors.DARK && !nacelle && flat) return st; // eingebrannte Schatten
+            if ((k == ShipColors.DARK || k == ShipColors.MID) && !nacelle && flat) return st; // eingebrannte Schatten
         }
         return switch (k) {
             case ShipColors.LIGHT -> st == ShipPart.HULL_AZTEC || st == ShipPart.HULL_PANEL || st == ShipPart.HULL_WINDOW ? st : ShipPart.HULL_PLATING;
@@ -2877,7 +2875,7 @@ public final class EnterpriseBlueprint {
             case ShipColors.RED -> nacelle && x < nX0 + nR * 1.5 ? (refit || tng ? ShipPart.BUSSARD_RED : ShipPart.BUSSARD_COLLECTOR) : ShipPart.HULL_PENNANT;
             case ShipColors.TEAL -> ShipPart.HULL_TEAL;
             case ShipColors.BLUEPAINT -> ShipPart.HULL_AZTEC;
-            case ShipColors.COPPER -> c == SECONDARY || c == NECK ? ShipPart.DEFLECTOR_DISH : ShipPart.PHASER_STRIP;
+            case ShipColors.COPPER -> st; // braune Flecken der Texturen nicht übernehmen (Schüsseln/Phaser baut die Mod)
             case ShipColors.RED_GLOW -> nacelle ? (design == ShipDesign.NCC_1701 ? ShipPart.BUSSARD_COLLECTOR : ShipPart.BUSSARD_RED) : ShipPart.IMPULSE_ENGINE;
             case ShipColors.ORANGE_GLOW -> nacelle ? ShipPart.BUSSARD_COLLECTOR : ShipPart.DEFLECTOR_DISH;
             case ShipColors.BLUE_GLOW -> nacelle ? (c == BUSSARD || excelsior && x < nX0 + nR * 1.5 ? ShipPart.BUSSARD_BLUE : ShipPart.NACELLE_GRILLE)
