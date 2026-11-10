@@ -691,7 +691,7 @@ public final class EnterpriseBlueprint {
         if (yhi < 0) return;
         double yc = (ylo + yhi) / 2.0, hy = (yhi - ylo + 1) / 2.0, hz = wmax + 0.5, m = Math.min(hy, hz);
         double cy = yc, ry, rz, inner = 0, ring = 0, depth;
-        boolean concave = false;
+        boolean concave = false, recessed = false;
         ShipPart outer = ShipPart.DEFLECTOR_DISH_BLUE, core = null, ringPart = ShipPart.HULL_DARK;
         switch (design) {
             // Originalserie: gewölbte Kupferschüssel (Rand vorne) in einem Hüllenring, Antenne in der Mitte
@@ -705,6 +705,17 @@ public final class EnterpriseBlueprint {
             case NCC_1701_D -> { cy = yc + 0.05 * hy; ry = 0.3 * hy; rz = 0.45 * hz; outer = ShipPart.DEFLECTOR_DISH; core = ShipPart.DEFLECTOR_DISH_BLUE; inner = 0.85; depth = 0; }
             case NCC_1701_E -> { cy = yc - 0.1 * hy; ry = rz = 0.5 * m; depth = 0.12; }
             default -> { return; }
+        }
+        if (design == ShipDesign.NCC_1701_B) {
+            // Excelsior: die Schüssel sitzt in der runden Vertiefung vorne am Unterrumpf
+            double[] rec = findRecess((int) Math.round(yc - hy), (int) Math.round(yc + hy), m);
+            if (rec != null) {
+                cy = rec[0];
+                ry = rz = rec[1];
+                ring = 0;
+                depth = 0;
+                recessed = true;
+            }
         }
         ry = Math.max(1.5, ry);
         rz = Math.max(1.5, rz);
@@ -742,7 +753,7 @@ public final class EnterpriseBlueprint {
                 // Wölbung (konkav: Rand weiter vorne, konvex: Mitte weiter vorne)
                 int d = inRing ? (int) Math.round(concave ? dmax * 0.5 : dmax * 0.3) // Rahmen/Spalt hinter dem Schüsselrand
                     : (int) Math.round(dmax * (concave ? e : 1 - e * e));
-                int face = Math.min(xp, x) - d; // Vorderseite der Scheibe (mind. die Ebene)
+                int face = recessed ? x : Math.min(xp, x) - d; // Vorderseite der Scheibe (mind. die Ebene); in einer Vertiefung bleibt sie innen
                 for (int k = face; k <= x; k++) set(k, y, z, part);
                 if (Math.abs(y - cy) < 0.5 && z == 0) frontX = Math.min(face, x);
             }
@@ -825,6 +836,32 @@ public final class EnterpriseBlueprint {
                         else set(x, y, z, p == ShipPart.HULL_AZTEC ? ShipPart.HULL_PLATING : ShipPart.HULL_PANEL);
                     }
         }
+    }
+
+    /**
+     * Sucht auf der Mittellinie der Rumpffront eine runde Vertiefung (Mitte tiefer als der Rand).
+     * @return {Mitte y, Radius} oder null
+     */
+    private double[] findRecess(int y0, int y1, double m) {
+        double best = 2.0, by = 0, br = 0; // mind. 2 Blöcke tiefer als der Rand
+        for (int cy = y0; cy <= y1; cy++)
+            for (double r = 2; r <= 0.4 * m; r += 0.5) {
+                double in = 0, out = 0;
+                int ni = 0, no = 0;
+                for (int y = (int) Math.floor(cy - r - 2); y <= cy + r + 2; y++)
+                    for (int z = (int) -Math.ceil(r + 2); z <= r + 2; z++) {
+                        double e = Math.hypot(y - cy, z);
+                        int x = frontHull(y, z, true);
+                        if (x < 0) continue;
+                        if (e <= r * 0.7) { in += x; ni++; }
+                        else if (e > r + 0.5 && e <= r + 1.5) { out += x; no++; }
+                    }
+                // der Rand muss fast vollständig Rumpf sein (keine Vertiefung am Rumpfende)
+                if (ni < 4 || no < 0.8 * 2 * Math.PI * (r + 1)) continue;
+                double depth = in / ni - out / no;
+                if (depth > best) { best = depth; by = cy; br = r; }
+            }
+        return br > 0 ? new double[] {by, br} : null;
     }
 
     /**
