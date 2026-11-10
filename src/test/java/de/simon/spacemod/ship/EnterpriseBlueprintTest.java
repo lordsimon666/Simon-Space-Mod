@@ -31,6 +31,9 @@ class EnterpriseBlueprintTest {
         System.out.printf(design + " scale %.2f: %d x %d x %d, %d Zellen, %s, lifts=%d%n",
             scale, bp.sizeX, bp.sizeZ, bp.sizeY, bp.countBlocks(), counts, bp.liftStops.size());
 
+        // Hülle dicht: keine Luft und keine Möbel direkt am Außenraum
+        assertEquals(0, bp.countLeaks(), "Loch in der Hülle");
+
         // Passt in die normale Overworld-Bauhöhe (-64..320 = 384 Blöcke)
         assertTrue(bp.sizeY < 384 - 64, "zu hoch: " + bp.sizeY);
 

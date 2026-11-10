@@ -166,6 +166,7 @@ public final class EnterpriseBlueprint {
         if (nx) nxInterior();
         liftStyle();
         connectBars();
+        seal();
     }
 
     // =====================================================================================
@@ -1772,8 +1773,8 @@ public final class EnterpriseBlueprint {
                     boolean boundary = x == x0 || x == x1 || y == y0 || y == y1 || z == z0 || z == z1;
                     if (boundary) {
                         if (comp[i] != NONE && !hull[i]) set(x, y, z, y == y0 ? floor : y == y1 ? ShipPart.CEILING_PANEL : wall);
-                    } else {
-                        set(x, y, z, air);
+                    } else if (comp[i] != NONE) {
+                        set(x, y, z, air); // außerhalb der Hülle bleibt alles, wie es ist
                     }
                 }
     }
@@ -2833,6 +2834,64 @@ public final class EnterpriseBlueprint {
                     else if (p == ShipPart.BRIDGE_STATION || p == ShipPart.ENGINEERING_CONSOLE || p == ShipPart.LCARS_PANEL)
                         set(x, y, z, ShipPart.ENT_CONSOLE, d); // LCARS gibt es erst ab dem 24. Jahrhundert
                 }
+    }
+
+    /**
+     * Dichtet die Hülle ab: jede Luftzelle, die direkt an den Außenraum grenzt (z.B. wo ein Raum in
+     * Originalgröße über die Hülle hinausragt), wird zur Hüllenplatte.
+     */
+    private void seal() {
+        int[][] n = {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
+        // Möbel, Konsolen, Leitern usw. am Rand bekommen dahinter eine Hüllenplatte
+        for (int x = 0; x < sizeX; x++)
+            for (int y = 0; y < sizeY; y++)
+                for (int z = -zOffset; z <= zOffset; z++) {
+                    ShipPart p = get(x, y, z);
+                    if (p == null || !OPEN.contains(p)) continue;
+                    for (int[] o : n) {
+                        int nx = x + o[0], ny = y + o[1], nz = z + o[2];
+                        if (inBounds(nx, ny, nz) && cell[idx(nx, ny, nz)] == 0) set(nx, ny, nz, ShipPart.HULL_PLATING);
+                    }
+                }
+        for (int x = 0; x < sizeX; x++)
+            for (int y = 0; y < sizeY; y++)
+                for (int z = -zOffset; z <= zOffset; z++) {
+                    if (get(x, y, z) != ShipPart.AIR) continue;
+                    for (int[] o : n) {
+                        int nx = x + o[0], ny = y + o[1], nz = z + o[2];
+                        if (!inBounds(nx, ny, nz) || cell[idx(nx, ny, nz)] == 0) {
+                            set(x, y, z, ShipPart.HULL_PLATING);
+                            break;
+                        }
+                    }
+                }
+    }
+
+    /** Bauteile, die keinen vollen Block füllen (Luft kann durch). */
+    private static final java.util.EnumSet<ShipPart> OPEN = java.util.EnumSet.of(
+        ShipPart.LADDER, ShipPart.IRON_BARS, ShipPart.BRIDGE_RAILING, ShipPart.BRIDGE_RAILING_GRAY, ShipPart.BRIDGE_RAILING_WOOD,
+        ShipPart.STEP_SLAB, ShipPart.HULL_PLATING_SLAB, ShipPart.HULL_MARKING_SLAB, ShipPart.STATION_CHAIR, ShipPart.STATION_CHAIR_TEAL,
+        ShipPart.TNG_CHAIR, ShipPart.ENT_CHAIR, ShipPart.CAPTAINS_CHAIR, ShipPart.CAPTAINS_CHAIR_TEAL, ShipPart.CAPTAINS_CHAIR_TNG,
+        ShipPart.CAPTAINS_CHAIR_NX, ShipPart.HELM_CONSOLE, ShipPart.HELM_CONSOLE_GRAY, ShipPart.TNG_CONSOLE, ShipPart.ENT_CONSOLE,
+        ShipPart.EXCELSIOR_CONSOLE, ShipPart.BRIDGE_STATION, ShipPart.TRANSPORTER_CONSOLE, ShipPart.TRANSPORTER_PAD,
+        ShipPart.CONFERENCE_TABLE, ShipPart.TABLE_VIEWER, ShipPart.MESS_TABLE, ShipPart.CREW_DESK, ShipPart.CREW_BED,
+        ShipPart.BIOBED, ShipPart.EXAM_TABLE, ShipPart.SITUATION_TABLE, ShipPart.FLOWER);
+
+    /** Anzahl der Zellen mit Luft oder offenen Bauteilen, die an den Außenraum grenzen (0 = Hülle dicht). Für Tests. */
+    public int countLeaks() {
+        int[][] n = {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
+        int leaks = 0;
+        for (int x = 0; x < sizeX; x++)
+            for (int y = 0; y < sizeY; y++)
+                for (int z = -zOffset; z <= zOffset; z++) {
+                    ShipPart p = get(x, y, z);
+                    if (p != ShipPart.AIR && !OPEN.contains(p)) continue;
+                    for (int[] o : n) {
+                        int nx = x + o[0], ny = y + o[1], nz = z + o[2];
+                        if (!inBounds(nx, ny, nz) || cell[idx(nx, ny, nz)] == 0) { leaks++; break; }
+                    }
+                }
+        return leaks;
     }
 
     /** Setzt die Verbindungen von Gittern (Geländer), damit sie nicht als einzelne Pfosten erscheinen. */
