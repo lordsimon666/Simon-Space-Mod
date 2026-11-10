@@ -82,6 +82,8 @@ public final class EnterpriseBlueprint {
 
     /** Außenform aus einem 3D-Modell (oder null = eingebaute, berechnete Form). */
     private final ShipModel model;
+    /** Farbklassen aus einem texturierten 3D-Modell (oder null = Farben nach eigenen Regeln). */
+    private final ShipColors colors;
     /** Aus dem Modell vermessene Profile der Untertasse (Index = Radius in Blöcken). */
     private double[] topProf, botProf;
     /** Aus dem Modell vermessener Unterrumpf je x: Ober-/Unterkante. */
@@ -123,6 +125,7 @@ public final class EnterpriseBlueprint {
         nX1 = (excelsior ? 467 : refit ? 305 : 289) * s;
 
         model = ShipModel.load(design, scale);
+        colors = model != null ? ShipColors.load(design) : null;
         if (model != null) {
             fitToModel();
             bridgeFloor = (int) Math.floor(topProf[Math.min(topProf.length - 1, (int) Math.round((bR + 1) * Math.min(1, s / 0.75)))]);
@@ -145,9 +148,14 @@ public final class EnterpriseBlueprint {
         buildShape();
         skinAndDecks();
         if (model != null) {
-            paintDish();
-            paintImpulse();
-            if (tng) phaserStrips();
+            // Mit Farbmodell kommen Impulstriebwerke, Phaserstreifen usw. aus dem Modell; die Schüsseln von
+            // NCC-1701, B und D bleiben in der nach deinen Fotos gebauten Form
+            if (colors == null || design == ShipDesign.NCC_1701 || design == ShipDesign.NCC_1701_B || design == ShipDesign.NCC_1701_D)
+                paintDish();
+            if (colors == null) {
+                paintImpulse();
+                if (tng) phaserStrips();
+            }
         }
         registryLettering();
         hullDetails();
@@ -1147,6 +1155,7 @@ public final class EnterpriseBlueprint {
                             }
                             default -> {}
                         }
+                        if (colors != null) st = colorFromModel(st, c, x, y, z);
                         set(x, y, z, st);
                         continue;
                     }
@@ -1393,7 +1402,7 @@ public final class EnterpriseBlueprint {
                 int ey = (int) Math.round(eY + eR * 0.25);
                 int ex = (int) Math.round(eXf + 0.3 * (eXr - eXf));
                 sideText(regText, side > 0 ? ex + reg : ex, ey + 2, side);
-                if (design != ShipDesign.NCC_1701_C) {
+                if (design != ShipDesign.NCC_1701_C && colors == null) {
                     int ny = (int) Math.round(nY + nR * 0.5);
                     int x0 = (int) Math.round(nX0 + nR * 1.6);
                     pennant(x0, (int) Math.round(nX0 + 0.7 * (nX1 - nX0)), ny, side, (int) Math.max(1, nR * 0.15));
@@ -1405,13 +1414,15 @@ public final class EnterpriseBlueprint {
             int textFront = (int) Math.round(nX0 + nR * (refit ? 3.2 : 1.5)); // Refit: hinter den Bussard-Fenstern
             int start = side > 0 ? textFront + reg : textFront;
             sideText(regText, start, ny + 2, side);
-            for (int x = textFront + reg + 3; x < nX1 - 6 * s; x++) markSide(x, ny, side, ShipPart.HULL_PENNANT);
+            if (colors == null) for (int x = textFront + reg + 3; x < nX1 - 6 * s; x++) markSide(x, ny, side, ShipPart.HULL_PENNANT);
             // Sekundärhülle: Text vor dem Pylon, roter Streifen darunter
             int ey = (int) Math.round(eY + eR * 0.25);
             int ex = (int) Math.round(eXf + (excelsior ? 0.25 : 0.5) * (eXr - eXf)); // Excelsior: vor den Gondeln
             if (design != ShipDesign.NCC_1701) sideText(regText, side > 0 ? ex + reg : ex, ey + 2, side); // Originalserie: keine Kennung am Unterrumpf
             int px0 = (int) Math.round(eXf + 0.15 * (eXr - eXf));
-            if (design == ShipDesign.NCC_1701) {
+            if (colors != null) {
+                // Streifen und Wimpel kommen aus dem Farbmodell
+            } else if (design == ShipDesign.NCC_1701) {
                 // Originalserie: Wimpel mit Pfeilspitze und drei roten Streifen (nach unten kürzer)
                 // kurz, vorne am Rumpf (wie am Studiomodell)
                 double L = eXr - eXf;
@@ -1422,7 +1433,7 @@ public final class EnterpriseBlueprint {
             } else if (refit) pennant(px0, ex + reg + 2, ey - 5, side, 1); // Refit: Wimpel mit Pfeilspitze vorne
             else for (int x = px0; x < ex + reg + 2; x++) markSide(x, ey - 5, side, ShipPart.HULL_PENNANT);
         }
-        if (design == ShipDesign.NCC_1701_D) {
+        if (design == ShipDesign.NCC_1701_D && colors == null) {
             // zwei parallele rote Linien hinten den Hals hinunter
             for (int x = 0; x < sizeX; x++)
                 for (int y = 0; y < sizeY; y++)
@@ -2835,6 +2846,37 @@ public final class EnterpriseBlueprint {
                     int code = codeAt(x, y, z);
                     if (code != 0 && part(code) == lift && variant(code) == 0) set(x, y + 1, z, lift, facing(code), 1);
                 }
+    }
+
+    /**
+     * Hüllenfarbe aus dem Farbmodell. Leuchtende Farben werden je nach Bauteil zu Bussard, Warpgitter,
+     * Impulstriebwerk oder Deflektor; das Aztec-Muster bleibt auf hellen Flächen erhalten.
+     */
+    private ShipPart colorFromModel(ShipPart st, byte c, int x, int y, int z) {
+        int k = colors.lookup(x, y, z, s);
+        boolean nacelle = c == NACELLE || c == BUSSARD;
+        // Schrift des Modells auf Ober-/Unterseite der Untertasse weglassen – die Mod schreibt die Kennung selbst
+        if (c == SAUCER && (k == ShipColors.BLACK || k == ShipColors.RED)
+            && (compAt(x, y + 1, z) == NONE || compAt(x, y - 1, z) == NONE)) return st;
+        return switch (k) {
+            case ShipColors.LIGHT -> st == ShipPart.HULL_AZTEC || st == ShipPart.HULL_PANEL || st == ShipPart.HULL_WINDOW ? st : ShipPart.HULL_PLATING;
+            case ShipColors.MID -> ShipPart.HULL_PANEL;
+            case ShipColors.DARK -> nacelle && !excelsior ? ShipPart.NACELLE_GRILLE : ShipPart.HULL_DARK;
+            // dunkle Flecken: an Gondeln die (unbeleuchteten) Warpgitter, bei der D die Fenster
+            case ShipColors.BLACK -> nacelle && design != ShipDesign.NCC_1701 ? ShipPart.NACELLE_GRILLE
+                : design == ShipDesign.NCC_1701_D ? ShipPart.HULL_WINDOW : ShipPart.HULL_MARKING;
+            case ShipColors.RED -> nacelle && x < nX0 + nR * 1.5 ? (refit || tng ? ShipPart.BUSSARD_RED : ShipPart.BUSSARD_COLLECTOR) : ShipPart.HULL_PENNANT;
+            case ShipColors.TEAL -> ShipPart.HULL_TEAL;
+            case ShipColors.BLUEPAINT -> ShipPart.HULL_AZTEC;
+            case ShipColors.COPPER -> c == SECONDARY || c == NECK ? ShipPart.DEFLECTOR_DISH : ShipPart.PHASER_STRIP;
+            case ShipColors.RED_GLOW -> nacelle ? (design == ShipDesign.NCC_1701 ? ShipPart.BUSSARD_COLLECTOR : ShipPart.BUSSARD_RED) : ShipPart.IMPULSE_ENGINE;
+            case ShipColors.ORANGE_GLOW -> nacelle ? ShipPart.BUSSARD_COLLECTOR : ShipPart.DEFLECTOR_DISH;
+            case ShipColors.BLUE_GLOW -> nacelle ? (c == BUSSARD || excelsior && x < nX0 + nR * 1.5 ? ShipPart.BUSSARD_BLUE : ShipPart.NACELLE_GRILLE)
+                : ShipPart.DEFLECTOR_DISH_BLUE;
+            case ShipColors.VIOLET_GLOW -> ShipPart.DEFLECTOR_VIOLET;
+            case ShipColors.WINDOW -> ShipPart.HULL_WINDOW;
+            default -> st;
+        };
     }
 
     /** Ist das Bauteil ein Turbolift (in irgendeinem Stil)? */

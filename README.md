@@ -255,6 +255,27 @@ verwendet werden.
 * Enterprise-C / Ambassador-Klasse: https://memory-alpha.fandom.com/wiki/Ambassador_class,
   https://www.ex-astris-scientia.org/observations/yesterdaysenterprise.htm
 
+### Hüllenfarben aus farbigen 3D-Modellen (Sketchfab, CC BY 4.0)
+
+Die Farben der Hüllen von NCC-1701, -A, -B, -C und -D (Fenster, Streifen, Gitter, Bussards,
+Impulstriebwerke, Deflektoren) wurden mit `tools/colors_from_glb.py` aus texturierten 3D-Modellen
+auf das Blockraster übertragen (Dateien `src/main/resources/ships/*.colors.gz`). Die Form der Schiffe
+stammt weiterhin aus den Modellen von Alexei Bruton. Verwendet wurden – jeweils unter
+**CC BY 4.0** (https://creativecommons.org/licenses/by/4.0/), verändert (in Farbklassen je Block umgerechnet):
+
+* NCC-1701: „Classic U.S.S. Enterprise from Star Trek TOS“ von **Major Stress** –
+  https://sketchfab.com/3d-models/classic-uss-enterprise-from-star-trek-tos-acfe41446dc149848559e5542f59cef9
+* NCC-1701-A: „U.S.S. Enterprise NCC-1701-A“ von **Major Stress** –
+  https://sketchfab.com/3d-models/uss-enterprise-ncc-1701-a-c613e27541ca4b1d94c6a4e1c5d825c8
+* NCC-1701-B: „Excelsior Refit USS Enterprise NCC-1701-B“ von **Major Stress** –
+  https://sketchfab.com/3d-models/excelsior-refit-uss-enterprise-ncc-1701-b-76c9ccff44f04333b18a54265a09707c
+* NCC-1701-C: „Ambassador Class U.S.S. Enterprise NCC-1701-C“ von **Major Stress** –
+  https://sketchfab.com/3d-models/ambassador-class-uss-enterprise-ncc-1701-c-200cc04ceb2e48438b7a21cd4605f960
+* NCC-1701-D: „USS Enterprise D, Star Trek TNG“ von **HaughtyGrayAlien** –
+  https://sketchfab.com/3d-models/uss-enterprise-d-star-trek-tng-e3118c97914342b3ad7dd957c4b4ce4e
+
+Die Kennungen, die Deflektorschüsseln von NCC-1701, B und D und alle Innenräume baut die Mod selbst.
+
 ## Bauen
 
 ```bash
