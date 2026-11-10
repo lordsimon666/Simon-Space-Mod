@@ -123,7 +123,9 @@ public enum ShipPart {
     TURBOLIFT_DOOR_REFIT(0x9098A8),
     TURBOLIFT_DOOR_TNG(0xB0A890),
     // Phaserstreifen der TNG-Schiffe (Ringe auf der Untertasse)
-    PHASER_STRIP(0xA05A30);
+    PHASER_STRIP(0xA05A30),
+    // dunklere Kupferringe der Deflektorschüssel (Originalserie)
+    DEFLECTOR_RING(0x8A5A2A);
 
     /** Farbe für Vorschaubilder. */
     public final int color;

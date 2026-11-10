@@ -1338,6 +1338,15 @@ def tex_phaser_strip():
     return img
 
 
+def tex_deflector_ring():
+    img = noise(new((138, 90, 42)), 6, 240)
+    px = img.load()
+    for x in range(16):
+        px[x, 7] = (100, 62, 28, 255)
+        px[x, 8] = (170, 116, 60, 255)
+    return img
+
+
 TEXTURES = {
     "hull_plating": tex_hull_plating,
     "hull_panel": tex_hull_panel,
@@ -1450,6 +1459,7 @@ TEXTURES = {
     "ent_console_front": tex_ent_console_front,
     "decon_light": tex_decon_light,
     "phaser_strip": tex_phaser_strip,
+    "deflector_ring": tex_deflector_ring,
     "turbolift_door_nx": tex_door_nx,
     "turbolift_door_refit": tex_door_refit,
     "turbolift_door_tng": tex_door_tng,
@@ -1468,7 +1478,7 @@ def b(name):
     return f"{MODID}:block/{name}"
 
 
-SIMPLE = ["phaser_strip", "ent_wall", "decon_light", "tng_carpet", "tng_wall", "holodeck_grid", "star_map", "bar_counter", "light_pillar", "hull_teal", "bussard_blue", "bridge_trim_cream", "bridge_carpet_teal", "deck_plate", "bridge_wall_dark", "impulse_engine", "hull_aztec", "deflector_dish_blue", "bussard_red", "torpedo_launcher", "bridge_trim_blue", "sickbay_wall", "sickbay_floor", "cargo_container", "bridge_wall", "bridge_trim", "turbolift_frame", "transporter_wall", "transporter_platform",
+SIMPLE = ["deflector_ring", "phaser_strip", "ent_wall", "decon_light", "tng_carpet", "tng_wall", "holodeck_grid", "star_map", "bar_counter", "light_pillar", "hull_teal", "bussard_blue", "bridge_trim_cream", "bridge_carpet_teal", "deck_plate", "bridge_wall_dark", "impulse_engine", "hull_aztec", "deflector_dish_blue", "bussard_red", "torpedo_launcher", "bridge_trim_blue", "sickbay_wall", "sickbay_floor", "cargo_container", "bridge_wall", "bridge_trim", "turbolift_frame", "transporter_wall", "transporter_platform",
           "transporter_energizer", "transporter_emitter", "nav_light_red", "nav_light_green", "hull_pennant",
           "hull_plating", "hull_panel", "hull_dark", "hull_window", "hull_marking", "deflector_dish",
           "bussard_collector", "nacelle_grille", "deck_floor", "bridge_deck", "corridor_wall",
@@ -1875,6 +1885,7 @@ NAMES = {
     "captains_chair_nx": ("Kommandantensessel (NX-01)", "Captain's Chair (NX-01)"),
     "decon_light": ("Dekontaminations-Leuchte", "Decontamination Light"),
     "phaser_strip": ("Phaserstreifen", "Phaser Strip"),
+    "deflector_ring": ("Deflektorring (Kupfer)", "Deflector Ring (Copper)"),
     "turbolift_nx": ("Turbolift (NX-01)", "Turbolift (NX-01)"),
     "turbolift_refit": ("Turbolift (Refit)", "Turbolift (Refit)"),
     "turbolift_excelsior": ("Turbolift (Excelsior)", "Turbolift (Excelsior)"),

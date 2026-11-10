@@ -141,6 +141,7 @@ public final class ShipPalette {
             case TURBOLIFT_DOOR_REFIT -> ModBlocks.TURBOLIFT_DOOR_REFIT.get().defaultBlockState();
             case TURBOLIFT_DOOR_TNG -> ModBlocks.TURBOLIFT_DOOR_TNG.get().defaultBlockState();
             case PHASER_STRIP -> ModBlocks.PHASER_STRIP.get().defaultBlockState();
+            case DEFLECTOR_RING -> ModBlocks.DEFLECTOR_RING.get().defaultBlockState();
             case IRON_BARS -> Blocks.IRON_BARS.defaultBlockState()
                 .setValue(CrossCollisionBlock.NORTH, EnterpriseBlueprint.bar(cellCode, Direction.NORTH))
                 .setValue(CrossCollisionBlock.EAST, EnterpriseBlueprint.bar(cellCode, Direction.EAST))

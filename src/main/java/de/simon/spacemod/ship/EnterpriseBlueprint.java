@@ -695,11 +695,11 @@ public final class EnterpriseBlueprint {
         ShipPart outer = ShipPart.DEFLECTOR_DISH_BLUE, core = null, ringPart = ShipPart.HULL_DARK;
         switch (design) {
             // Originalserie: gewölbte Kupferschüssel (Rand vorne) in einem Hüllenring, Antenne in der Mitte
-            case NCC_1701 -> { ry = rz = 0.6 * m; ring = 0.75 * m; outer = ShipPart.DEFLECTOR_DISH; ringPart = ShipPart.HULL_PLATING; depth = 0.3; concave = true; }
+            case NCC_1701 -> { ry = rz = 0.6 * m; ring = 0.72 * m; outer = ShipPart.DEFLECTOR_DISH; ringPart = ShipPart.HULL_DARK; depth = 0.3; concave = true; }
             // Refit: große blau leuchtende Schüssel, leicht nach vorne gewölbt, dunkler Rahmen
             case NCC_1701_A -> { ry = rz = 0.72 * m; ring = 0.84 * m; depth = 0.15; }
             // Excelsior-B: hohes blaues Oval unten am Kielrumpf
-            case NCC_1701_B -> { cy = yc + 0.15 * hy; ry = 0.5 * m; rz = 0.34 * m; depth = 0.12; }
+            case NCC_1701_B -> { cy = yc + 0.15 * hy; ry = 0.5 * m; rz = 0.34 * m; ring = 0.62 * m; ringPart = ShipPart.HULL_PANEL; depth = 0.12; }
             case NCC_1701_C -> { ry = rz = 0.58 * m; depth = 0.1; }
             // Galaxy: breites flaches Oval, Kupferrand, blau leuchtender Ring, Kupfermitte
             case NCC_1701_D -> { cy = yc + 0.05 * hy; ry = 0.3 * hy; rz = 0.45 * hz; outer = ShipPart.DEFLECTOR_DISH; core = ShipPart.DEFLECTOR_DISH_BLUE; inner = 0.85; depth = 0; }
@@ -722,7 +722,8 @@ public final class EnterpriseBlueprint {
         if (fronts.isEmpty()) return;
         java.util.Collections.sort(fronts);
         int xp = fronts.get(fronts.size() / 2); // Ebene der Scheibe: mittlere Lage der Rumpffront
-        int maxFill = (int) Math.ceil(Math.max(2, rmin));
+        // Excelsior: die Schüssel sitzt in einem herausstehenden Rahmen, deshalb darf sie tiefer gefüllt werden
+        int maxFill = (int) Math.ceil(Math.max(2, rmin * (design == ShipDesign.NCC_1701_B ? 2.5 : 1)));
         int frontX = Integer.MAX_VALUE;
         for (int y = (int) Math.floor(cy - reach); y <= cy + reach; y++)
             for (int z = (int) -Math.ceil(reach); z <= reach; z++) {
@@ -733,8 +734,13 @@ public final class EnterpriseBlueprint {
                 if (x < 0 || x > xp + maxFill) continue; // zu weit hinten = Seitenfläche
                 ShipPart part = inRing ? ringPart
                     : core != null && e <= inner && e > 0.5 ? core : outer;
+                if (design == ShipDesign.NCC_1701 && !inRing) {
+                    // Originalserie: Kupferschüssel mit dunkler Nabe und konzentrischen dunkleren Ringen
+                    if (e < 0.15) part = ShipPart.HULL_DARK;
+                    else if ((e > 0.3 && e < 0.4) || (e > 0.55 && e < 0.65) || (e > 0.8 && e < 0.88)) part = ShipPart.DEFLECTOR_RING;
+                }
                 // Wölbung (konkav: Rand weiter vorne, konvex: Mitte weiter vorne)
-                int d = inRing ? (int) Math.round(concave ? dmax + 1 : dmax * 0.3)
+                int d = inRing ? (int) Math.round(concave ? dmax * 0.5 : dmax * 0.3) // Rahmen/Spalt hinter dem Schüsselrand
                     : (int) Math.round(dmax * (concave ? e : 1 - e * e));
                 int face = Math.min(xp, x) - d; // Vorderseite der Scheibe (mind. die Ebene)
                 for (int k = face; k <= x; k++) set(k, y, z, part);
@@ -742,7 +748,7 @@ public final class EnterpriseBlueprint {
             }
         // Originalserie: Antenne in der Mitte der Schüssel
         if (design == ShipDesign.NCC_1701 && frontX != Integer.MAX_VALUE) {
-            int len = (int) Math.max(2, Math.round(0.6 * m));
+            int len = (int) Math.max(3, Math.round(0.9 * m));
             for (int k = 1; k <= len; k++) set(frontX - k, (int) Math.round(cy), 0, ShipPart.HULL_DARK);
         }
     }
