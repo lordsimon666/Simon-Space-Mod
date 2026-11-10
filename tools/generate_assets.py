@@ -1339,6 +1339,26 @@ def tex_phaser_strip():
     return img
 
 
+def tex_deflector_ring():
+    img = noise(new((138, 90, 42)), 6, 240)
+    px = img.load()
+    for x in range(16):
+        px[x, 7] = (100, 62, 28, 255)
+        px[x, 8] = (170, 116, 60, 255)
+    return img
+
+
+def tex_deflector_violet():
+    img = noise(new((154, 120, 184)), 5, 241)
+    px = img.load()
+    for x in range(16):
+        for y in range(16):
+            g = 1 - abs(y - 7.5) / 8
+            r, gg, b, a = px[x, y]
+            px[x, y] = (clamp(r + 25 * g), clamp(gg + 15 * g), clamp(b + 30 * g), 255)
+    return img
+
+
 TEXTURES = {
     "hull_plating": tex_hull_plating,
     "hull_panel": tex_hull_panel,
