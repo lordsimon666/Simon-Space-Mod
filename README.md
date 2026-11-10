@@ -218,7 +218,8 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
   Steuerungs-Einstellungen unter „Simon Space Mod – Waffen“ ändern. Der Torpedo startet aus dem
   Werfer, der dem Ziel am nächsten ist, fliegt auf das Fadenkreuz zu, folgt einer anvisierten
   Kreatur und explodiert beim Aufprall mit Blockschaden (das eigene Schiff bleibt heil).
-  Torpedos sind stärker als die Phaser auf Stufe 3. Nachladen: Photonen 1,5 s, Quanten 2,5 s.
+  Torpedos halten die Gegend, durch die sie fliegen, geladen (wie eine Enderperle) und fliegen so
+  auch weit vom Spieler weg weiter; Phaser laden ihr Zielgebiet. Torpedos sind stärker als die Phaser auf Stufe 3. Nachladen: Photonen 1,5 s, Quanten 2,5 s.
   Werfer, Aussehen und Stärke je Schiff:
 
   | Schiff | Werfer | Torpedo | Tempo | Explosionsradius |

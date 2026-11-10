@@ -7,6 +7,8 @@ import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.TicketType;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -73,6 +75,7 @@ public class TorpedoEntity extends Entity {
         double speed = style.speed;
         Vec3 dir = dist < 1e-4 ? Vec3.ZERO : to.scale(1 / dist);
         double step = Math.min(speed, dist);
+        keepLoaded(level, pos, dir);
         // Weg in kleinen Schritten prüfen: Blöcke außerhalb des eigenen Schiffs und Kreaturen
         for (double t = 0.25; t <= step; t += 0.25) {
             Vec3 v = pos.add(dir.scale(t));
@@ -95,6 +98,17 @@ public class TorpedoEntity extends Entity {
         trail(level, pos, next);
         setPos(next.x, next.y, next.z);
         if (dist <= speed) detonate(level, next);
+    }
+
+    /**
+     * Hält die Chunks am Torpedo und ein Stück voraus geladen (wie bei einer Enderperle), damit er
+     * auch weit draußen weiterfliegt und dort explodiert.
+     */
+    private void keepLoaded(ServerLevel level, Vec3 pos, Vec3 dir) {
+        if (age % 5 != 1) return; // Tickets laufen nach 2 s von selbst aus
+        var chunks = level.getChunkSource();
+        chunks.addTicketWithRadius(TicketType.ENDER_PEARL, ChunkPos.containing(BlockPos.containing(pos)), 2);
+        chunks.addTicketWithRadius(TicketType.ENDER_PEARL, ChunkPos.containing(BlockPos.containing(pos.add(dir.scale(32)))), 2);
     }
 
     /** Leuchtspur je nach Epoche. */

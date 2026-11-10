@@ -18,6 +18,8 @@ import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.TicketType;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
@@ -84,6 +86,8 @@ public final class PhaserControl {
             return;
         }
         LAST_SHOT.put(key, now + (power - 1) * 10L); // stärkere Schüsse laden länger nach
+        // Zielgebiet geladen halten, damit Treffer und Explosion auch weit draußen wirken
+        level.getChunkSource().addTicketWithRadius(TicketType.ENDER_PEARL, ChunkPos.containing(BlockPos.containing(tgt)), 2);
         WeaponsData.Battery battery = data.battery(console);
         int tier = battery != null && battery.tier() > 0 ? battery.tier() : tierOf(level, chosen.get(0));
         float damage = (6 + 2 * tier) * (power == 1 ? 1F : power == 2 ? 1.6F : 2.2F);
