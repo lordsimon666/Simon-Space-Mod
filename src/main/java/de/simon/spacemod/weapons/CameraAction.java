@@ -7,7 +7,7 @@ import net.minecraftforge.event.network.CustomPayloadEvent;
 
 /** Client -> Server in der Kamerasicht: feuern (mit Blickrichtung), Kamera wechseln oder Stärke ändern. */
 public record CameraAction(int action, int delta, float yRot, float xRot) {
-    public static final int NEXT = 0, FIRE = 1, POWER = 2;
+    public static final int NEXT = 0, FIRE = 1, POWER = 2, PHOTON = 3, QUANTUM = 4;
 
     public static final StreamCodec<RegistryFriendlyByteBuf, CameraAction> STREAM_CODEC = StreamCodec.ofMember(
         (msg, buf) -> {
@@ -24,6 +24,7 @@ public record CameraAction(int action, int delta, float yRot, float xRot) {
         switch (msg.action()) {
             case FIRE -> CameraControl.fire(player, msg.yRot(), msg.xRot());
             case POWER -> CameraControl.power(player, msg.delta());
+            case PHOTON, QUANTUM -> CameraControl.torpedo(player, msg.action() == QUANTUM, msg.yRot(), msg.xRot());
             default -> CameraControl.next(player);
         }
     }

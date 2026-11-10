@@ -1395,6 +1395,24 @@ def tex_phaser_bank():
     return img
 
 
+def tex_quantum_launcher():
+    """Quantentorpedo-Werfer der E: dunkle Klappe mit blau leuchtender Öffnung."""
+    img = noise(new((70, 76, 86)), 4, 303)
+    px = img.load()
+    for x in range(16):
+        for y in range(16):
+            d = math.hypot(x - 7.5, y - 7.5)
+            if d < 3.0:
+                px[x, y] = (200, 230, 255, 255)
+            elif d < 4.6:
+                px[x, y] = (70, 140, 255, 255)
+            elif d < 5.6:
+                px[x, y] = (36, 40, 50, 255)
+            elif x in (0, 15) or y in (0, 15):
+                px[x, y] = (46, 50, 58, 255)
+    return img
+
+
 def tex_phaser_emitter():
     """Refit-/Excelsior-Phaser: rötlicher Sockel mit glühendem Schlitz."""
     img = noise(new((104, 60, 50)), 4, 302)
@@ -1817,6 +1835,7 @@ TEXTURES = {
     "phase_cannon": tex_phase_cannon,
     "phaser_bank": tex_phaser_bank,
     "phaser_emitter": tex_phaser_emitter,
+    "quantum_launcher": tex_quantum_launcher,
     **{f"weapons_console_top_{v}": (lambda v=v: tex_weapons_top(v)) for v in range(4)},
     "turbolift_door_nx": tex_door_nx,
     "turbolift_door_refit": tex_door_refit,
@@ -1836,7 +1855,7 @@ def b(name):
     return f"{MODID}:block/{name}"
 
 
-SIMPLE = ["phase_cannon", "phaser_bank", "phaser_emitter", "deflector_violet", "deflector_ring", "phaser_strip", "ent_wall", "decon_light", "tng_carpet", "tng_wall", "holodeck_grid", "star_map", "bar_counter", "light_pillar", "hull_teal", "bussard_blue", "bridge_trim_cream", "bridge_carpet_teal", "deck_plate", "bridge_wall_dark", "impulse_engine", "hull_aztec", "deflector_dish_blue", "bussard_red", "torpedo_launcher", "bridge_trim_blue", "sickbay_wall", "sickbay_floor", "cargo_container", "bridge_wall", "bridge_trim", "turbolift_frame", "transporter_wall", "transporter_platform",
+SIMPLE = ["quantum_launcher", "phase_cannon", "phaser_bank", "phaser_emitter", "deflector_violet", "deflector_ring", "phaser_strip", "ent_wall", "decon_light", "tng_carpet", "tng_wall", "holodeck_grid", "star_map", "bar_counter", "light_pillar", "hull_teal", "bussard_blue", "bridge_trim_cream", "bridge_carpet_teal", "deck_plate", "bridge_wall_dark", "impulse_engine", "hull_aztec", "deflector_dish_blue", "bussard_red", "torpedo_launcher", "bridge_trim_blue", "sickbay_wall", "sickbay_floor", "cargo_container", "bridge_wall", "bridge_trim", "turbolift_frame", "transporter_wall", "transporter_platform",
           "transporter_energizer", "transporter_emitter", "nav_light_red", "nav_light_green", "hull_pennant",
           "hull_plating", "hull_panel", "hull_dark", "hull_window", "hull_marking", "deflector_dish",
           "bussard_collector", "nacelle_grille", "deck_floor", "bridge_deck", "corridor_wall",
@@ -2247,6 +2266,7 @@ NAMES = {
     "phaser_bank": ("Phaserbank (Originalserie)", "Phaser Bank (Original Series)"),
     "phaser_emitter": ("Phaser-Emitter (Refit/Excelsior)", "Phaser Emitter (Refit/Excelsior)"),
     "weapons_console": ("Waffenstation", "Weapons Console"),
+    "quantum_launcher": ("Quantentorpedo-Werfer", "Quantum Torpedo Launcher"),
     "deflector_ring": ("Deflektorring (Kupfer)", "Deflector Ring (Copper)"),
     "deflector_violet": ("Deflektorschüssel (Galaxy, violett)", "Deflector Dish (Galaxy, Violet)"),
     "turbolift_nx": ("Turbolift (NX-01)", "Turbolift (NX-01)"),
@@ -2465,7 +2485,15 @@ def main():
         f"message.{MODID}.phaser.recharging": "Phaser laden nach ...",
         f"message.{MODID}.phaser.none": "Keine Phaser mit dieser Waffenstation verbunden.",
         f"message.{MODID}.phaser.no_arc": "Kein Phaser hat freie Schussbahn zum Ziel.",
-        f"message.{MODID}.camera.show": "Kamera %s/%s: %s | Stärke %s – Linksklick: Phaser, Rechtsklick: Kamera, Mausrad: Stärke, Shift: zurück",
+        f"message.{MODID}.camera.show": "Kamera %s/%s: %s | Stärke %s – Linksklick: Phaser, P/O: Torpedo, Rechtsklick: Kamera, Mausrad: Stärke, Shift: zurück",
+        f"message.{MODID}.torpedo.photon": "Photonentorpedo abgefeuert!",
+        f"message.{MODID}.torpedo.quantum": "Quantentorpedo abgefeuert!",
+        f"message.{MODID}.torpedo.loading": "Torpedorohr wird nachgeladen ...",
+        f"message.{MODID}.torpedo.none": "Dieses Schiff hat keine Torpedowerfer.",
+        f"message.{MODID}.torpedo.no_quantum": "Quantentorpedos hat nur die Enterprise-E.",
+        f"key.{MODID}.photon": "Photonentorpedo (Kamerasicht)",
+        f"key.{MODID}.quantum": "Quantentorpedo (Kamerasicht)",
+        f"key.category.{MODID}.weapons": "Simon Space Mod – Waffen",
         f"message.{MODID}.phaser.power.1": "Phaserstärke 1: Betäuben – Schaden ohne Blockschaden",
         f"message.{MODID}.phaser.power.2": "Phaserstärke 2: mehr Schaden und Blockschaden",
         f"message.{MODID}.phaser.power.3": "Phaserstärke 3: volle Leistung – großer Blockschaden",
@@ -2475,7 +2503,15 @@ def main():
         f"message.{MODID}.phaser.recharging": "Phasers recharging ...",
         f"message.{MODID}.phaser.none": "No phasers linked to this weapons console.",
         f"message.{MODID}.phaser.no_arc": "No phaser has a clear line of fire to the target.",
-        f"message.{MODID}.camera.show": "Camera %s/%s: %s | power %s – left click: fire, right click: camera, mouse wheel: power, shift: leave",
+        f"message.{MODID}.camera.show": "Camera %s/%s: %s | power %s – left click: phasers, P/O: torpedo, right click: camera, mouse wheel: power, shift: leave",
+        f"message.{MODID}.torpedo.photon": "Photon torpedo away!",
+        f"message.{MODID}.torpedo.quantum": "Quantum torpedo away!",
+        f"message.{MODID}.torpedo.loading": "Reloading torpedo tube ...",
+        f"message.{MODID}.torpedo.none": "This ship has no torpedo launchers.",
+        f"message.{MODID}.torpedo.no_quantum": "Only the Enterprise-E carries quantum torpedoes.",
+        f"key.{MODID}.photon": "Photon torpedo (camera view)",
+        f"key.{MODID}.quantum": "Quantum torpedo (camera view)",
+        f"key.category.{MODID}.weapons": "Simon Space Mod – Weapons",
         f"message.{MODID}.phaser.power.1": "Phaser power 1: stun – damage without block damage",
         f"message.{MODID}.phaser.power.2": "Phaser power 2: more damage and block damage",
         f"message.{MODID}.phaser.power.3": "Phaser power 3: full power – heavy block damage",

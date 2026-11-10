@@ -18,7 +18,7 @@ import org.jspecify.annotations.Nullable;
 public final class WeaponsData extends SavedData {
     /** Phaser einer Station und ihre Kamerapunkte (Position, Blickziel, Name). */
     public record Battery(BlockPos console, List<BlockPos> phasers, List<BlockPos> cameras, List<BlockPos> focus, List<String> names, int tier,
-                          BlockPos shipMin, BlockPos shipMax) {
+                          BlockPos shipMin, BlockPos shipMax, List<BlockPos> torpedoes, List<BlockPos> quantums) {
         public static final Codec<Battery> CODEC = RecordCodecBuilder.create(i -> i.group(
             BlockPos.CODEC.fieldOf("console").forGetter(Battery::console),
             BlockPos.CODEC.listOf().fieldOf("phasers").forGetter(Battery::phasers),
@@ -27,11 +27,14 @@ public final class WeaponsData extends SavedData {
             Codec.STRING.listOf().optionalFieldOf("names", List.of()).forGetter(Battery::names),
             Codec.INT.optionalFieldOf("tier", 0).forGetter(Battery::tier),
             BlockPos.CODEC.optionalFieldOf("ship_min", BlockPos.ZERO).forGetter(Battery::shipMin),
-            BlockPos.CODEC.optionalFieldOf("ship_max", BlockPos.ZERO).forGetter(Battery::shipMax)
+            BlockPos.CODEC.optionalFieldOf("ship_max", BlockPos.ZERO).forGetter(Battery::shipMax),
+            BlockPos.CODEC.listOf().optionalFieldOf("torpedoes", List.of()).forGetter(Battery::torpedoes),
+            BlockPos.CODEC.listOf().optionalFieldOf("quantums", List.of()).forGetter(Battery::quantums)
         ).apply(i, Battery::new));
 
         Battery copy() {
-            return new Battery(console, new ArrayList<>(phasers), new ArrayList<>(cameras), new ArrayList<>(focus), new ArrayList<>(names), tier, shipMin, shipMax);
+            return new Battery(console, new ArrayList<>(phasers), new ArrayList<>(cameras), new ArrayList<>(focus), new ArrayList<>(names), tier, shipMin, shipMax,
+                new ArrayList<>(torpedoes), new ArrayList<>(quantums));
         }
 
         /** Hat die Station einen gespeicherten Schiffsbereich (gespawntes Schiff)? */
@@ -68,13 +71,14 @@ public final class WeaponsData extends SavedData {
     }
 
     public void set(BlockPos console, List<BlockPos> phasers) {
-        set(console, phasers, List.of(), List.of(), List.of(), 0, BlockPos.ZERO, BlockPos.ZERO);
+        set(console, phasers, List.of(), List.of(), List.of(), 0, BlockPos.ZERO, BlockPos.ZERO, List.of(), List.of());
     }
 
     /** @param tier Waffenstärke des Schiffs: 1 = NX-01 ... 7 = Enterprise-E (0 = aus den Phasern ableiten) */
     public void set(BlockPos console, List<BlockPos> phasers, List<BlockPos> cameras, List<BlockPos> focus, List<String> names, int tier,
-                    BlockPos shipMin, BlockPos shipMax) {
-        batteries.put(console.immutable(), new Battery(console.immutable(), phasers, cameras, focus, names, tier, shipMin, shipMax).copy());
+                    BlockPos shipMin, BlockPos shipMax, List<BlockPos> torpedoes, List<BlockPos> quantums) {
+        batteries.put(console.immutable(),
+            new Battery(console.immutable(), phasers, cameras, focus, names, tier, shipMin, shipMax, torpedoes, quantums).copy());
         setDirty();
     }
 }

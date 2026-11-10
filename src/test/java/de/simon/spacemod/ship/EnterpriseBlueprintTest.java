@@ -56,6 +56,8 @@ class EnterpriseBlueprintTest {
         assertTrue(guns >= (gun == ShipPart.PHASER_EMITTER || design.tng ? 8 : 4), "zu wenige Phaser: " + guns);
         assertEquals(guns, bp.phasers.size(), "Phaserliste unvollständig");
         assertTrue(bp.cameras.size() >= 7, "zu wenige Kameras: " + bp.cameraNames);
+        assertTrue(bp.torpedoes.size() >= 2, "Torpedowerfer fehlen: " + bp.torpedoes.size());
+        assertEquals(design == ShipDesign.NCC_1701_E, !bp.quantums.isEmpty(), "Quantentorpedos nur bei der E");
         for (BlockPos c : bp.cameras)
             for (int dy = -1; dy <= 2; dy++) {
                 var cp = bp.get(c.getX(), c.getY() + dy, c.getZ());

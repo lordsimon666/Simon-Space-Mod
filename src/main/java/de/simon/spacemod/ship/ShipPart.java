@@ -133,7 +133,9 @@ public enum ShipPart {
     PHASER_BANK(0x30343C),
     PHASER_EMITTER(0x6A3A30),
     // Waffenstation auf der Brücke (Variante = Stil der Epoche)
-    WEAPONS_CONSOLE(0xC02020);
+    WEAPONS_CONSOLE(0xC02020),
+    // Quantentorpedo-Werfer (nur Enterprise-E), blau leuchtend
+    QUANTUM_LAUNCHER(0x4A90FF);
 
     /** Farbe für Vorschaubilder. */
     public final int color;

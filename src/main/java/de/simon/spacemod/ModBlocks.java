@@ -21,6 +21,8 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraftforge.common.extensions.IForgeMenuType;
 import de.simon.spacemod.item.CommunicatorItem;
 import de.simon.spacemod.block.PhaserBlock;
+import de.simon.spacemod.block.TorpedoLauncherBlock;
+import de.simon.spacemod.entity.TorpedoEntity;
 import de.simon.spacemod.block.WeaponsConsoleBlock;
 import java.util.Map;
 import net.minecraft.resources.Identifier;
@@ -86,7 +88,8 @@ public final class ModBlocks {
     public static final RegistryObject<Block> BUSSARD_RED = block("bussard_red",
         p -> new GlowParticleBlock(p, GlowParticleBlock.Kind.BUSSARD), glowing(metal(MapColor.COLOR_RED), 15));
     public static final RegistryObject<Block> IMPULSE_ENGINE = block("impulse_engine", Block::new, glowing(metal(MapColor.COLOR_RED), 13));
-    public static final RegistryObject<Block> TORPEDO_LAUNCHER = block("torpedo_launcher", Block::new, glowing(metal(MapColor.COLOR_ORANGE), 9));
+    public static final RegistryObject<Block> TORPEDO_LAUNCHER = block("torpedo_launcher",
+        p -> new TorpedoLauncherBlock(p, false), glowing(metal(MapColor.COLOR_ORANGE), 9));
     public static final RegistryObject<Block> BRIDGE_RAILING_GRAY = block("bridge_railing_gray", RailingBlock::new,
         metal(MapColor.COLOR_GRAY).noOcclusion());
     public static final RegistryObject<Block> BRIDGE_TRIM_BLUE = block("bridge_trim_blue", Block::new, glowing(metal(MapColor.COLOR_BLUE), 8));
@@ -239,6 +242,8 @@ public final class ModBlocks {
         p -> new PhaserBlock(p, PhaserBlock.Kind.PHASER_BANK), glowing(metal(MapColor.COLOR_BLACK), 3));
     public static final RegistryObject<Block> PHASER_EMITTER = block("phaser_emitter",
         p -> new PhaserBlock(p, PhaserBlock.Kind.PHASER_EMITTER), glowing(metal(MapColor.COLOR_RED), 4));
+    public static final RegistryObject<Block> QUANTUM_LAUNCHER = block("quantum_launcher",
+        p -> new TorpedoLauncherBlock(p, true), glowing(metal(MapColor.COLOR_BLUE), 10));
     public static final RegistryObject<Block> WEAPONS_CONSOLE = block("weapons_console", WeaponsConsoleBlock::new,
         glowing(metal(MapColor.COLOR_RED), 7).noOcclusion());
 
@@ -274,6 +279,11 @@ public final class ModBlocks {
     public static final RegistryObject<EntityType<SeatEntity>> SEAT = ENTITIES.register("seat",
         () -> EntityType.Builder.<SeatEntity>of(SeatEntity::new, MobCategory.MISC).sized(0.001F, 0.001F)
             .noSummon().clientTrackingRange(10).build(ENTITIES.key("seat")));
+
+    /** Photonen-/Quantentorpedo im Flug. */
+    public static final RegistryObject<EntityType<TorpedoEntity>> TORPEDO = ENTITIES.register("torpedo",
+        () -> EntityType.Builder.<TorpedoEntity>of(TorpedoEntity::new, MobCategory.MISC).sized(0.5F, 0.5F)
+            .noSummon().noSave().clientTrackingRange(16).updateInterval(1).build(ENTITIES.key("torpedo")));
 
     // --- Menüs ---
     public static final RegistryObject<MenuType<TurboliftMenu>> TURBOLIFT_MENU = MENUS.register("turbolift",

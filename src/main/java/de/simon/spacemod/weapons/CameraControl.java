@@ -134,6 +134,15 @@ public final class CameraControl {
         player.sendOverlayMessage(Component.translatable("message.simonspacemod.phaser.power." + s.power));
     }
 
+    /** Torpedo auf das Fadenkreuz (P = Photonen, O = Quanten). */
+    public static void torpedo(ServerPlayer player, boolean quantum, float yRot, float xRot) {
+        Session s = SESSIONS.get(player.getUUID());
+        if (s == null) return;
+        player.setYRot(yRot);
+        player.setXRot(xRot);
+        PhaserControl.torpedo(player.level(), s.console, player, quantum);
+    }
+
     /** Feuern auf das Fadenkreuz (Linksklick in der Kamerasicht). */
     public static void fire(ServerPlayer player, float yRot, float xRot) {
         Session s = SESSIONS.get(player.getUUID());

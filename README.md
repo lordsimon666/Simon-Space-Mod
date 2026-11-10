@@ -213,6 +213,15 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
   eigenes Schiff. Eine selbst
   gesetzte Waffenstation verbindet sich beim ersten Schuss mit allen Phaser-Blöcken im Umkreis von
   40 Blöcken; ihre Kameras liegen dann an den sechs Seiten rund um diese Phaser.
+* **Torpedos** (in der Kamerasicht der Waffenstation): **P** feuert einen Photonentorpedo, **O** einen
+  Quantentorpedo – Quantentorpedos hat nur die Enterprise-E. Die Tasten lassen sich in den
+  Steuerungs-Einstellungen unter „Simon Space Mod – Waffen“ ändern. Der Torpedo startet aus dem
+  Werfer, der dem Ziel am nächsten ist, fliegt als leuchtende Kugel (Photonen rot-orange, Quanten
+  blau) auf das Fadenkreuz zu, folgt einer anvisierten Kreatur und explodiert beim Aufprall mit
+  Blockschaden (das eigene Schiff bleibt heil). Werfer: vorne am Hals über der Sekundärhülle und
+  hinten am Heck; NX-01 vorne unter und hinten an der Untertasse; bei der E zusätzlich der
+  Quantentorpedo-Werfer. Explosionsradius Photonentorpedo 3,4 (NX-01) bis 5,8 (E), Quantentorpedo 8.
+  Nachladen: Photonen 1,5 s, Quanten 2,5 s.
 * **Uniformen**: Für jede Epoche gibt es Uniformen in den drei Abteilungsfarben, dazu Hosen und Stiefel:
   NX-01 (dunkelblauer Overall mit farbiger Paspel, dunkelblaue Hose), Originalserie (gold / blau / rot),
   Kinofilme der 2280er und 90er (rote Jacke, Kragen weiß / grau / gelb, für A und B),
@@ -230,7 +239,7 @@ E = Eisenbarren        G = Goldbarren
 F = roter Farbstoff, P = Enderperle, R = Redstone
 ```
 
-## Neue Blöcke (107)
+## Neue Blöcke (108)
 
 * **Hülle**: Hüllenpanzerung (+ Stufe), Hüllenplatte, dunkle Hüllenplatte, Hüllenfenster,
   Kennungsmarkierung (+ Stufe), roter Zierstreifen, Positionslicht rot/grün, Deflektorschüssel,
@@ -256,7 +265,8 @@ F = roter Farbstoff, P = Enderperle, R = Redstone
 * **NX-01**: Metallwand, Konsole, Sitz, Kommandantensessel, Dekontaminations-Leuchte
 * **Turbolifte**: Turbolift und Turbolift-Tür im Stil von NX-01, Refit, Excelsior und Next Generation
 * **Waffen**: Phasenkanone (NX-01), Phaserbank (Originalserie), Phaser-Emitter (Refit/Excelsior),
-  Phaserstreifen (Next Generation), Waffenstation (4 Varianten je Epoche)
+  Phaserstreifen (Next Generation), Photonentorpedo-Werfer, Quantentorpedo-Werfer (E), Waffenstation
+  (4 Varianten je Epoche)
 * **Allgemein**: Deckboden, Korridorwand, Deckenverkleidung, Deckenleuchte, Maschinenraum-Konsole,
   Warpkern, Plasmaleitung
 

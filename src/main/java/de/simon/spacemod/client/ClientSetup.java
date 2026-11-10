@@ -11,6 +11,8 @@ public final class ClientSetup {
     /** Der Sitz ist unsichtbar. */
     public static void onRegisterRenderers(net.minecraftforge.client.event.EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModBlocks.SEAT.get(), net.minecraft.client.renderer.entity.NoopRenderer::new);
+        // Torpedos bestehen nur aus Leuchtpartikeln
+        event.registerEntityRenderer(ModBlocks.TORPEDO.get(), net.minecraft.client.renderer.entity.NoopRenderer::new);
     }
 
     public static void onClientSetup(FMLClientSetupEvent event) {

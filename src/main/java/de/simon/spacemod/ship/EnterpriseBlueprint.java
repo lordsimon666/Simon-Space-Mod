@@ -70,6 +70,9 @@ public final class EnterpriseBlueprint {
     public final List<BlockPos> cameras = new ArrayList<>();
     public final List<BlockPos> cameraFocus = new ArrayList<>();
     public final List<String> cameraNames = new ArrayList<>();
+    /** Photonentorpedo-Werfer und (nur E) Quantentorpedo-Werfer (lokal). */
+    public final List<BlockPos> torpedoes = new ArrayList<>();
+    public final List<BlockPos> quantums = new ArrayList<>();
     /** Waffenstationen auf der Brücke (lokal). */
     public final List<BlockPos> weaponStations = new ArrayList<>();
     /** Position (lokal) vor dem Kommandantensessel, für den Teleport zur Brücke. */
@@ -166,7 +169,7 @@ public final class EnterpriseBlueprint {
         registryLettering();
         hullDetails();
         placePhasers();
-        if (refit) torpedoLaunchers();
+        if (model != null || refit) torpedoLaunchers();
         if (model == null) smoothSaucer(); // das Modell ist schon glatt
         boolean fullDecks = s >= 0.75;
         if (fullDecks) {
@@ -1446,6 +1449,8 @@ public final class EnterpriseBlueprint {
             if (p == ShipPart.PHASER_STRIP || p == ShipPart.PHASE_CANNON || p == ShipPart.PHASER_BANK || p == ShipPart.PHASER_EMITTER)
                 phasers.add(new BlockPos(x, y, z));
             else if (p == ShipPart.WEAPONS_CONSOLE) weaponStations.add(new BlockPos(x, y, z));
+            else if (p == ShipPart.TORPEDO_LAUNCHER) torpedoes.add(new BlockPos(x, y, z));
+            else if (p == ShipPart.QUANTUM_LAUNCHER) quantums.add(new BlockPos(x, y, z));
         });
     }
 
@@ -1673,20 +1678,77 @@ public final class EnterpriseBlueprint {
     }
 
     /** Refit: zwei Photonentorpedo-Werfer vorne am unteren Ende des Halses. */
+    /**
+     * Torpedowerfer wie bei den Originalen: vorne unten am Hals über der Sekundärhülle (bei der E
+     * darüber zusätzlich der Quantentorpedo-Werfer) und hinten am Heck der Sekundärhülle. Die NX-01
+     * hat ihre Werfer vorne unter der Untertasse und hinten am Untertassenrand.
+     */
     private void torpedoLaunchers() {
+        if (nx) {
+            for (int z : new int[] {-1, 1}) {
+                surfaceWeapon((int) Math.round(polX(0.55 * sR, 0)), z, false, ShipPart.TORPEDO_LAUNCHER, SAUCER);
+                rearLauncher(z, (int) Math.round(sMid), SAUCER, ShipPart.TORPEDO_LAUNCHER);
+            }
+            return;
+        }
         // die untersten zwei sichtbaren Zeilen der Halsvorderseite (über der Sekundärhülle)
+        int top = -1;
         for (int z : new int[] {-2, -1, 1, 2}) {
             int placed = 0;
             for (int y = (int) eY; y < sizeY && placed < 2; y++)
                 for (int x = 0; x < sizeX; x++) {
-                    if (compAt(x, y, z) != NECK) continue;
-                    if (hull[idx(x, y, z)] && compAt(x - 1, y, z) == NONE) {
+                    byte c = compAt(x, y, z);
+                    if (c == NONE) continue;
+                    if (c != NECK) break; // nur die von vorne sichtbare Halsfront
+                    if (hull[idx(x, y, z)]) {
                         set(x, y, z, ShipPart.TORPEDO_LAUNCHER);
                         placed++;
+                        top = Math.max(top, y);
                     }
                     break;
                 }
         }
+        if (top < 0) // kein Hals im Modell: vorne unter der Untertasse
+            for (int z : new int[] {-1, 1})
+                surfaceWeapon((int) Math.round(polX(0.3 * sR, 0)), z, false, ShipPart.TORPEDO_LAUNCHER, SAUCER);
+        // Enterprise-E: Quantentorpedo-Werfer oben am Hals, über den Photonentorpedos
+        if (design == ShipDesign.NCC_1701_E) {
+            int qy = top >= 0 ? top + 3 : -1;
+            for (int z = -1; z <= 1; z++) {
+                boolean done = false;
+                for (int y = Math.max(qy, (int) eY); y < sizeY && !done; y++)
+                    for (int x = 0; x < sizeX; x++) {
+                        byte c = compAt(x, y, z);
+                        if (c == NONE) continue;
+                        if (c == NECK && hull[idx(x, y, z)] && get(x, y, z) != ShipPart.TORPEDO_LAUNCHER) {
+                            set(x, y, z, ShipPart.QUANTUM_LAUNCHER);
+                            done = true;
+                        }
+                        break;
+                    }
+                // sonst unter der Untertasse vor dem Hals
+                for (double rf = 0.2; !done && rf <= 0.6; rf += 0.05)
+                    done = surfaceWeapon((int) Math.round(polX(rf * sR, 0)), z, false, ShipPart.QUANTUM_LAUNCHER, NONE);
+            }
+        }
+        // hinten am Heck der Sekundärhülle
+        for (int z : new int[] {-1, 1}) rearLauncher(z, (int) Math.round(eY), SECONDARY, ShipPart.TORPEDO_LAUNCHER);
+    }
+
+    /** Hinterste Hüllenzelle des Bauteils bei (y, z) – sucht auch ein paar Zeilen darüber/darunter. */
+    private void rearLauncher(int z, int y0, byte component, ShipPart part) {
+        for (int dy = 0; dy <= 8; dy++)
+            for (int y : new int[] {y0 + dy, y0 - dy})
+                for (int x = sizeX - 1; x >= 0; x--) {
+                    if (!inBounds(x, y, z)) break;
+                    byte c = comp[idx(x, y, z)];
+                    if (c == NONE) continue;
+                    if (c == component && hull[idx(x, y, z)]) {
+                        set(x, y, z, part);
+                        return;
+                    }
+                    break;
+                }
     }
 
     /** Glättet Ober- und Unterseite der Untertasse mit Halbstufen. */

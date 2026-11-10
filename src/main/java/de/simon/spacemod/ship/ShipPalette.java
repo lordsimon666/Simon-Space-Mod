@@ -144,6 +144,7 @@ public final class ShipPalette {
             case DEFLECTOR_RING -> ModBlocks.DEFLECTOR_RING.get().defaultBlockState();
             case DEFLECTOR_VIOLET -> ModBlocks.DEFLECTOR_VIOLET.get().defaultBlockState();
             case PHASE_CANNON -> ModBlocks.PHASE_CANNON.get().defaultBlockState();
+            case QUANTUM_LAUNCHER -> ModBlocks.QUANTUM_LAUNCHER.get().defaultBlockState();
             case PHASER_BANK -> ModBlocks.PHASER_BANK.get().defaultBlockState();
             case PHASER_EMITTER -> ModBlocks.PHASER_EMITTER.get().defaultBlockState();
             case WEAPONS_CONSOLE -> ModBlocks.WEAPONS_CONSOLE.get().defaultBlockState()

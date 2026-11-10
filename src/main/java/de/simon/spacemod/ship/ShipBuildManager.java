@@ -155,9 +155,12 @@ public final class ShipBuildManager {
             BlockPos a = placement.toWorld(blueprint, 0, 0, -zo), b = placement.toWorld(blueprint, blueprint.sizeX - 1, blueprint.sizeY - 1, zo);
             BlockPos shipMin = new BlockPos(Math.min(a.getX(), b.getX()), Math.min(a.getY(), b.getY()), Math.min(a.getZ(), b.getZ()));
             BlockPos shipMax = new BlockPos(Math.max(a.getX(), b.getX()), Math.max(a.getY(), b.getY()), Math.max(a.getZ(), b.getZ()));
+            java.util.List<BlockPos> torps = new java.util.ArrayList<>(), quants = new java.util.ArrayList<>();
+            for (BlockPos p : blueprint.torpedoes) torps.add(placement.toWorld(blueprint, p.getX(), p.getY(), p.getZ()));
+            for (BlockPos p : blueprint.quantums) quants.add(placement.toWorld(blueprint, p.getX(), p.getY(), p.getZ()));
             for (BlockPos st : blueprint.weaponStations)
                 weapons.set(placement.toWorld(blueprint, st.getX(), st.getY(), st.getZ()), phasers, cams, focus, blueprint.cameraNames,
-                    blueprint.design.ordinal() + 1, shipMin, shipMax); // Stärke: NX-01 = 1 ... Enterprise-E = 7
+                    blueprint.design.ordinal() + 1, shipMin, shipMax, torps, quants); // Stärke: NX-01 = 1 ... Enterprise-E = 7
             onDone.accept(this);
         }
     }

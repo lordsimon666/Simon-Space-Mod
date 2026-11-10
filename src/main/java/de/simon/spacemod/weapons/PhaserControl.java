@@ -1,6 +1,11 @@
 package de.simon.spacemod.weapons;
 
+import de.simon.spacemod.ModBlocks;
 import de.simon.spacemod.block.PhaserBlock;
+import de.simon.spacemod.block.TorpedoLauncherBlock;
+import de.simon.spacemod.entity.TorpedoEntity;
+import net.minecraft.world.entity.EntitySpawnReason;
+import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -59,37 +64,9 @@ public final class PhaserControl {
             return;
         }
         AABB own = ownShip(data.battery(console), console, phasers);
-        Vec3 eye = player.getEyePosition(), look = player.getLookAngle();
-        Vec3 end = eye.add(look.scale(RANGE));
-        Vec3 target = end;
-        boolean hit = false;
-        // 1. erster Block im Fadenkreuz (das eigene Schiff zählt nicht, andere Schiffe schon)
-        double blockDist = BLOCK_RANGE;
-        BlockPos prev = null;
-        for (double t = 0.5; t < BLOCK_RANGE; t += 0.2) {
-            Vec3 v = eye.add(look.scale(t));
-            BlockPos bp = BlockPos.containing(v);
-            if (bp.equals(prev)) continue;
-            prev = bp;
-            BlockState st = level.getBlockState(bp);
-            if (st.isAir() || own.contains(v) || st.getCollisionShape(level, bp).isEmpty()) continue;
-            target = v;
-            blockDist = t;
-            hit = true;
-            break;
-        }
-        // 2. Kreatur im Blick, wenn sie vor dem Block steht
-        double best = Math.min(RANGE, blockDist);
-        for (Entity e : level.getEntities(player, new AABB(eye, end).inflate(2), e -> e instanceof LivingEntity le && le.isAlive())) {
-            Optional<Vec3> h = e.getBoundingBox().inflate(0.6).clip(eye, end);
-            if (h.isEmpty()) continue;
-            double d = h.get().distanceTo(eye);
-            if (d < best) {
-                best = d;
-                target = e.getBoundingBox().getCenter();
-                hit = true;
-            }
-        }
+        Aim aim = aim(level, player, own);
+        boolean hit = aim.hit();
+        Vec3 target = aim.point();
         // Phaser mit freier Schussbahn, am nächsten zum Ziel, mind. 6 Blöcke auseinander, höchstens 2
         final Vec3 tgt = target;
         List<BlockPos> sorted = new ArrayList<>(phasers);
@@ -118,8 +95,92 @@ public final class PhaserControl {
         player.sendOverlayMessage(Component.translatable("message.simonspacemod.phaser.fire"));
     }
 
+    /** Ziel im Fadenkreuz: Punkt, ggf. Kreatur, und ob überhaupt etwas getroffen wird. */
+    private record Aim(Vec3 point, @Nullable Entity entity, boolean hit) {}
+
+    private static Aim aim(ServerLevel level, ServerPlayer player, AABB own) {
+        Vec3 eye = player.getEyePosition(), look = player.getLookAngle();
+        Vec3 end = eye.add(look.scale(RANGE));
+        Vec3 target = end;
+        Entity entity = null;
+        boolean hit = false;
+        // 1. erster Block im Fadenkreuz (das eigene Schiff zählt nicht, andere Schiffe schon)
+        double blockDist = BLOCK_RANGE;
+        BlockPos prev = null;
+        for (double t = 0.5; t < BLOCK_RANGE; t += 0.2) {
+            Vec3 v = eye.add(look.scale(t));
+            BlockPos bp = BlockPos.containing(v);
+            if (bp.equals(prev)) continue;
+            prev = bp;
+            BlockState st = level.getBlockState(bp);
+            if (st.isAir() || own.contains(v) || st.getCollisionShape(level, bp).isEmpty()) continue;
+            target = v;
+            blockDist = t;
+            hit = true;
+            break;
+        }
+        // 2. Kreatur im Blick, wenn sie vor dem Block steht
+        double best = Math.min(RANGE, blockDist);
+        for (Entity e : level.getEntities(player, new AABB(eye, end).inflate(2), e -> e instanceof LivingEntity le && le.isAlive())) {
+            Optional<Vec3> h = e.getBoundingBox().inflate(0.6).clip(eye, end);
+            if (h.isEmpty()) continue;
+            double d = h.get().distanceTo(eye);
+            if (d < best) {
+                best = d;
+                target = e.getBoundingBox().getCenter();
+                entity = e;
+                hit = true;
+            }
+        }
+        if (!hit) target = eye.add(look.scale(BLOCK_RANGE));
+        return new Aim(target, entity, hit);
+    }
+
+    /**
+     * Feuert einen Photonen- (P) bzw. Quantentorpedo (O, nur Enterprise-E) aus dem Werfer, der dem
+     * Ziel am nächsten ist und freie Bahn hat.
+     */
+    public static void torpedo(ServerLevel level, BlockPos console, ServerPlayer player, boolean quantum) {
+        String key = level.dimension().identifier() + "@" + console.asLong() + (quantum ? "q" : "t");
+        long now = level.getGameTime();
+        Long last = LAST_SHOT.get(key);
+        if (last != null && now - last < (quantum ? 50 : 30)) {
+            player.sendOverlayMessage(Component.translatable("message.simonspacemod.torpedo.loading"));
+            return;
+        }
+        WeaponsData data = WeaponsData.get(level);
+        WeaponsData.Battery b = data.battery(console);
+        if (b == null) {
+            linkPhasers(level, console);
+            b = data.battery(console);
+        }
+        List<BlockPos> launchers = new ArrayList<>(quantum ? b.quantums() : b.torpedoes());
+        launchers.removeIf(p -> !(level.getBlockState(p).getBlock() instanceof TorpedoLauncherBlock t) || t.quantum != quantum);
+        if (launchers.isEmpty()) {
+            player.sendOverlayMessage(Component.translatable(quantum ? "message.simonspacemod.torpedo.no_quantum" : "message.simonspacemod.torpedo.none"));
+            return;
+        }
+        AABB own = ownShip(b, console, b.phasers().isEmpty() ? launchers : b.phasers());
+        Aim aim = aim(level, player, own);
+        Vec3 tgt = aim.point();
+        launchers.sort(Comparator.comparingDouble(p -> Vec3.atCenterOf(p).distanceToSqr(tgt)));
+        BlockPos from = launchers.stream().filter(p -> clear(level, p, tgt)).findFirst().orElse(launchers.get(0));
+        LAST_SHOT.put(key, now);
+        int tier = b.tier() > 0 ? b.tier() : quantum ? 7 : 3;
+        float radius = quantum ? 8.0F : 3.0F + 0.4F * tier;
+        Vec3 c = Vec3.atCenterOf(from);
+        Vec3 start = c.add(tgt.subtract(c).normalize().scale(1.0));
+        TorpedoEntity t = ModBlocks.TORPEDO.get().create(level, EntitySpawnReason.TRIGGERED);
+        if (t == null) return;
+        t.setPos(start.x, start.y, start.z);
+        t.setup(quantum, radius, tgt, aim.entity(), own, player.getUUID());
+        level.addFreshEntity(t);
+        level.playSound(null, from, SoundEvents.BLAZE_SHOOT, SoundSource.BLOCKS, 3.0F, quantum ? 0.6F : 0.8F);
+        player.sendOverlayMessage(Component.translatable(quantum ? "message.simonspacemod.torpedo.quantum" : "message.simonspacemod.torpedo.photon"));
+    }
+
     /** Explosionen lassen alles im Bereich des eigenen Schiffs heil. */
-    private static ExplosionDamageCalculator spare(AABB own) {
+    public static ExplosionDamageCalculator spare(AABB own) {
         return new ExplosionDamageCalculator() {
             @Override
             public boolean shouldBlockExplode(Explosion explosion, BlockGetter level, BlockPos pos, BlockState state, float power) {
@@ -146,7 +207,13 @@ public final class PhaserControl {
 
     /** Selbst gebaute Station: Phaser im Umkreis suchen und speichern. */
     public static void linkPhasers(ServerLevel level, BlockPos console) {
-        WeaponsData.get(level).set(console, scan(level, console));
+        List<BlockPos> phasers = new ArrayList<>(), torps = new ArrayList<>(), quants = new ArrayList<>();
+        for (BlockPos p : scan(level, console)) {
+            var block = level.getBlockState(p).getBlock();
+            if (block instanceof PhaserBlock) phasers.add(p);
+            else if (block instanceof TorpedoLauncherBlock t) (t.quantum ? quants : torps).add(p);
+        }
+        WeaponsData.get(level).set(console, phasers, List.of(), List.of(), List.of(), 0, BlockPos.ZERO, BlockPos.ZERO, torps, quants);
     }
 
     /** Ist der Weg vom Phaser in Richtung Ziel frei (nicht durch die eigene Hülle)? */
@@ -206,7 +273,8 @@ public final class PhaserControl {
                 for (int z = -SCAN_RADIUS; z <= SCAN_RADIUS; z++) {
                     m.set(console.getX() + x, console.getY() + y, console.getZ() + z);
                     if (!level.isLoaded(m)) continue;
-                    if (level.getBlockState(m).getBlock() instanceof PhaserBlock) found.add(m.immutable());
+                    var block = level.getBlockState(m).getBlock();
+                    if (block instanceof PhaserBlock || block instanceof TorpedoLauncherBlock) found.add(m.immutable());
                 }
         return found;
     }

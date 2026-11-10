@@ -2,7 +2,13 @@ package de.simon.spacemod.client;
 
 import de.simon.spacemod.turbolift.TurboliftNetwork;
 import de.simon.spacemod.weapons.CameraAction;
+import de.simon.spacemod.SimonSpaceMod;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.resources.Identifier;
+import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
+import net.minecraftforge.event.TickEvent;
+import org.lwjgl.glfw.GLFW;
 import net.minecraft.world.entity.player.Input;
 import net.minecraft.world.phys.Vec2;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
@@ -20,7 +26,18 @@ public final class ClientCamera {
         active = value;
     }
 
+    /** P = Photonentorpedo, O = Quantentorpedo (in den Steuerungs-Einstellungen änderbar). */
+    public static final KeyMapping.Category CATEGORY =
+        KeyMapping.Category.register(Identifier.fromNamespaceAndPath(SimonSpaceMod.MODID, "weapons"));
+    public static final KeyMapping PHOTON = new KeyMapping("key.simonspacemod.photon", GLFW.GLFW_KEY_P, CATEGORY);
+    public static final KeyMapping QUANTUM = new KeyMapping("key.simonspacemod.quantum", GLFW.GLFW_KEY_O, CATEGORY);
+
     public static void init() {
+        RegisterKeyMappingsEvent.BUS.addListener(e -> {
+            e.register(PHOTON);
+            e.register(QUANTUM);
+        });
+        TickEvent.ClientTickEvent.Pre.BUS.addListener(e -> onTick());
         InputEvent.InteractionKeyMappingTriggered.BUS.addListener(ClientCamera::onInteract);
         MovementInputUpdateEvent.BUS.addListener(ClientCamera::onMovement);
         // Mausrad: Phaserstärke (statt Hotbar wechseln)
@@ -42,6 +59,19 @@ public final class ClientCamera {
         if (e.isAttack()) TurboliftNetwork.sendToServer(new CameraAction(CameraAction.FIRE, 0, player.getYRot(), player.getXRot()));
         else if (e.isUseItem()) TurboliftNetwork.sendToServer(new CameraAction(CameraAction.NEXT, 0, 0, 0));
         return true;
+    }
+
+    private static void onTick() {
+        var mc = Minecraft.getInstance();
+        var player = mc.player;
+        boolean photon = false, quantum = false;
+        while (PHOTON.consumeClick()) photon = true;
+        while (QUANTUM.consumeClick()) quantum = true;
+        if (!active || player == null) return;
+        if (PHOTON.getKey().equals(mc.options.keySocialInteractions.getKey()))
+            while (mc.options.keySocialInteractions.consumeClick()) {} // P öffnet in der Kamerasicht nicht die Spielerliste
+        if (photon) TurboliftNetwork.sendToServer(new CameraAction(CameraAction.PHOTON, 0, player.getYRot(), player.getXRot()));
+        if (quantum) TurboliftNetwork.sendToServer(new CameraAction(CameraAction.QUANTUM, 0, player.getYRot(), player.getXRot()));
     }
 
     private static void onMovement(MovementInputUpdateEvent e) {
