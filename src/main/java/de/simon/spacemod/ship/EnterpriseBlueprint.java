@@ -734,6 +734,14 @@ public final class EnterpriseBlueprint {
         java.util.Collections.sort(fronts);
         int xp = fronts.get(fronts.size() / 2); // Ebene der Scheibe: mittlere Lage der Rumpffront
         // Excelsior: die Schüssel sitzt in einem herausstehenden Rahmen, deshalb darf sie tiefer gefüllt werden
+        // in einer Vertiefung nur deren Boden färben, nicht den Rand davor
+        int deep = Integer.MIN_VALUE;
+        if (recessed)
+            for (int y = (int) Math.floor(cy - ry * 0.5); y <= cy + ry * 0.5; y++)
+                for (int z = (int) -Math.ceil(rz * 0.5); z <= rz * 0.5; z++) {
+                    int x = frontHull(y, z, true);
+                    if (x >= 0 && Math.hypot((y - cy) / ry, z / rz) <= 0.5) deep = Math.max(deep, x);
+                }
         int maxFill = (int) Math.ceil(Math.max(2, rmin * (design == ShipDesign.NCC_1701_B ? 2.5 : 1)));
         int frontX = Integer.MAX_VALUE;
         for (int y = (int) Math.floor(cy - reach); y <= cy + reach; y++)
@@ -743,6 +751,7 @@ public final class EnterpriseBlueprint {
                 if (e > 1 && !inRing) continue;
                 int x = frontHull(y, z, true);
                 if (x < 0 || x > xp + maxFill) continue; // zu weit hinten = Seitenfläche
+                if (recessed && x < deep - 2) continue; // Rand der Vertiefung
                 ShipPart part = inRing ? ringPart
                     : core != null && e <= inner && e > 0.5 ? core : outer;
                 if (design == ShipDesign.NCC_1701 && !inRing) {
