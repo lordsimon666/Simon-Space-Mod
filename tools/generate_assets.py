@@ -2465,12 +2465,14 @@ def main():
         f"message.{MODID}.phaser.recharging": "Phaser laden nach ...",
         f"message.{MODID}.phaser.none": "Keine Phaser mit dieser Waffenstation verbunden.",
         f"message.{MODID}.phaser.no_arc": "Kein Phaser hat freie Schussbahn zum Ziel.",
+        f"message.{MODID}.camera.show": "Kamera %s/%s: %s – Linksklick: Phaser, Rechtsklick: nächste Kamera, Shift: zurück",
     })
     en.update({
         f"message.{MODID}.phaser.fire": "Firing phasers!",
         f"message.{MODID}.phaser.recharging": "Phasers recharging ...",
         f"message.{MODID}.phaser.none": "No phasers linked to this weapons console.",
         f"message.{MODID}.phaser.no_arc": "No phaser has a clear line of fire to the target.",
+        f"message.{MODID}.camera.show": "Camera %s/%s: %s – left click: fire phasers, right click: next camera, shift: leave",
     })
     uniform_assets(de, en)
     write_json(os.path.join(ASSETS, "lang", "de_de.json"), de)

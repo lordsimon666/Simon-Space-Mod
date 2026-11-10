@@ -130,6 +130,7 @@
   "message.simonspacemod.phaser.recharging": "Phaser laden nach ...",
   "message.simonspacemod.phaser.none": "Keine Phaser mit dieser Waffenstation verbunden.",
   "message.simonspacemod.phaser.no_arc": "Kein Phaser hat freie Schussbahn zum Ziel.",
+  "message.simonspacemod.camera.show": "Kamera %s/%s: %s – Linksklick: Phaser, Rechtsklick: nächste Kamera, Shift: zurück",
   "item.simonspacemod.uniform_nx_command": "Uniform (NX-01, 2150er) – Kommando, goldene Paspel",
   "item.simonspacemod.uniform_nx_science": "Uniform (NX-01, 2150er) – Wissenschaft, blaue Paspel",
   "item.simonspacemod.uniform_nx_operations": "Uniform (NX-01, 2150er) – Technik & Sicherheit, rote Paspel",

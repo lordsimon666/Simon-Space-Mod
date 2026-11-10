@@ -144,8 +144,14 @@ public final class ShipBuildManager {
             java.util.List<BlockPos> phasers = new java.util.ArrayList<>();
             for (BlockPos p : blueprint.phasers) phasers.add(placement.toWorld(blueprint, p.getX(), p.getY(), p.getZ()));
             de.simon.spacemod.weapons.WeaponsData weapons = de.simon.spacemod.weapons.WeaponsData.get(level);
+            java.util.List<BlockPos> cams = new java.util.ArrayList<>(), focus = new java.util.ArrayList<>();
+            for (int i = 0; i < blueprint.cameras.size(); i++) {
+                BlockPos c = blueprint.cameras.get(i), f = blueprint.cameraFocus.get(i);
+                cams.add(placement.toWorld(blueprint, c.getX(), c.getY(), c.getZ()));
+                focus.add(placement.toWorld(blueprint, f.getX(), f.getY(), f.getZ()));
+            }
             for (BlockPos st : blueprint.weaponStations)
-                weapons.set(placement.toWorld(blueprint, st.getX(), st.getY(), st.getZ()), phasers);
+                weapons.set(placement.toWorld(blueprint, st.getX(), st.getY(), st.getZ()), phasers, cams, focus, blueprint.cameraNames);
             onDone.accept(this);
         }
     }

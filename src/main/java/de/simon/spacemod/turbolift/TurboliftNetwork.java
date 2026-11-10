@@ -13,7 +13,7 @@ import net.minecraftforge.network.ChannelBuilder;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.SimpleChannel;
 
-/** Netzwerkkanal der Mod: der Client schickt geänderte Deck-/Netznamen eines Turbolifts. */
+/** Netzwerkkanal der Mod: Turbolift-Namen und die Kamerasicht der Waffenstation. */
 public final class TurboliftNetwork {
     private TurboliftNetwork() {}
 
@@ -46,6 +46,11 @@ public final class TurboliftNetwork {
             .play()
                 .serverbound()
                     .addMain(Rename.class, Rename.STREAM_CODEC, Rename::handle)
+                    .addMain(de.simon.spacemod.weapons.CameraAction.class, de.simon.spacemod.weapons.CameraAction.STREAM_CODEC,
+                        de.simon.spacemod.weapons.CameraAction::handle)
+                .clientbound()
+                    .addMain(de.simon.spacemod.weapons.CameraState.class, de.simon.spacemod.weapons.CameraState.STREAM_CODEC,
+                        de.simon.spacemod.weapons.CameraState::handle)
         .build();
 
     public static void init() {

@@ -1,7 +1,7 @@
 package de.simon.spacemod.block;
 
 import com.mojang.serialization.MapCodec;
-import de.simon.spacemod.weapons.PhaserControl;
+import de.simon.spacemod.weapons.CameraControl;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -15,8 +15,8 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
- * Waffenstation: Rechtsklick feuert die Phaser des Schiffs auf das Ziel, das man anschaut
- * (Kreatur im Blick, sonst der Block dahinter). Variante = Stil der Epoche.
+ * Waffenstation: Rechtsklick wechselt in die Kamerasicht außen am Schiff. Dort wechselt Rechtsklick die
+ * Kamera, Linksklick feuert die Phaser auf das Fadenkreuz, Shift kehrt zurück. Variante = Stil der Epoche.
  */
 public class WeaponsConsoleBlock extends VariantFacingBlock {
     public static final VoxelShape SHAPE = box(0, 0, 2, 16, 13, 14);
@@ -32,7 +32,7 @@ public class WeaponsConsoleBlock extends VariantFacingBlock {
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (level instanceof ServerLevel server && player instanceof ServerPlayer sp) PhaserControl.fire(server, pos, sp);
+        if (level instanceof ServerLevel server && player instanceof ServerPlayer sp) CameraControl.enter(server, pos, sp);
         return InteractionResult.SUCCESS;
     }
 }

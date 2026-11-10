@@ -44,8 +44,7 @@ public final class PhaserControl {
         WeaponsData data = WeaponsData.get(level);
         List<BlockPos> phasers = data.phasers(console);
         if (phasers == null) {
-            phasers = scan(level, console);
-            data.set(console, phasers);
+            linkPhasers(level, console);
             phasers = data.phasers(console);
         }
         phasers.removeIf(p -> !(level.getBlockState(p).getBlock() instanceof PhaserBlock));
@@ -106,6 +105,11 @@ public final class PhaserControl {
         for (BlockPos p : chosen) beam(level, player, p, tgt, ((PhaserBlock) level.getBlockState(p).getBlock()).kind);
         if (hit) level.explode(null, tgt.x, tgt.y, tgt.z, 1.5F, false, Level.ExplosionInteraction.NONE);
         player.sendOverlayMessage(Component.translatable("message.simonspacemod.phaser.fire"));
+    }
+
+    /** Selbst gebaute Station: Phaser im Umkreis suchen und speichern. */
+    public static void linkPhasers(ServerLevel level, BlockPos console) {
+        WeaponsData.get(level).set(console, scan(level, console));
     }
 
     /** Ist der Weg vom Phaser in Richtung Ziel frei (nicht durch die eigene Hülle)? */

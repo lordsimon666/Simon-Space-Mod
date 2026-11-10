@@ -189,12 +189,18 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
   * NCC-1701-C/-D/-E: die Phaserstreifen auf der Untertasse (oranger Strahl); Taktikstation in der
     Mitte des Holzgeländers hinter dem Captain.
 
-  Rechtsklick auf die Waffenstation feuert auf das, was man gerade anschaut: eine Kreatur im Blick,
+  **Kamerasicht:** Rechtsklick auf die Waffenstation schaltet auf eine von mehreren unsichtbaren
+  Kameras außen am Schiff (Bug, Untertasse oben/unten, Backbord, Steuerbord, beide Warpgondeln,
+  Sekundärhülle unten, Heck). In der Kamerasicht: **Rechtsklick** = nächste Kamera,
+  **Linksklick** = Phaser feuern auf das Fadenkreuz, **Shift** = zurück zur Station. Du bist dabei
+  unsichtbar und unverwundbar und kannst dich nur umsehen.
+
+  Gezielt wird auf das, was im Fadenkreuz ist: eine Kreatur im Blick,
   sonst den ersten Block außerhalb des Schiffs. Es feuern bis zu zwei Phaser, die freie Schussbahn
   zum Ziel haben und am nächsten dran sind. Treffer verursachen Schaden und setzen in Brand, am Ziel
   gibt es eine kleine Explosion, die keine Blöcke zerstört. Nachladen: 1 Sekunde. Eine selbst
   gesetzte Waffenstation verbindet sich beim ersten Schuss mit allen Phaser-Blöcken im Umkreis von
-  40 Blöcken.
+  40 Blöcken; ihre Kameras liegen dann an den sechs Seiten rund um diese Phaser.
 * **Uniformen**: Für jede Epoche gibt es Uniformen in den drei Abteilungsfarben, dazu Hosen und Stiefel:
   NX-01 (dunkelblauer Overall mit farbiger Paspel, dunkelblaue Hose), Originalserie (gold / blau / rot),
   Kinofilme der 2280er und 90er (rote Jacke, Kragen weiß / grau / gelb, für A und B),

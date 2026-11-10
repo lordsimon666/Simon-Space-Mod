@@ -130,6 +130,7 @@
   "message.simonspacemod.phaser.recharging": "Phasers recharging ...",
   "message.simonspacemod.phaser.none": "No phasers linked to this weapons console.",
   "message.simonspacemod.phaser.no_arc": "No phaser has a clear line of fire to the target.",
+  "message.simonspacemod.camera.show": "Camera %s/%s: %s – left click: fire phasers, right click: next camera, shift: leave",
   "item.simonspacemod.uniform_nx_command": "Uniform (NX-01, 2150s) – Command, gold piping",
   "item.simonspacemod.uniform_nx_science": "Uniform (NX-01, 2150s) – Sciences, blue piping",
   "item.simonspacemod.uniform_nx_operations": "Uniform (NX-01, 2150s) – Engineering & Security, red piping",

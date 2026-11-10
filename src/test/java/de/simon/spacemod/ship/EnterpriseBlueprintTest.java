@@ -55,6 +55,12 @@ class EnterpriseBlueprintTest {
         int guns = counts.getOrDefault(gun, 0);
         assertTrue(guns >= (gun == ShipPart.PHASER_EMITTER || design.tng ? 8 : 4), "zu wenige Phaser: " + guns);
         assertEquals(guns, bp.phasers.size(), "Phaserliste unvollständig");
+        assertTrue(bp.cameras.size() >= 7, "zu wenige Kameras: " + bp.cameraNames);
+        for (BlockPos c : bp.cameras)
+            for (int dy = -1; dy <= 2; dy++) {
+                var cp = bp.get(c.getX(), c.getY() + dy, c.getZ());
+                assertTrue(cp == null || cp == ShipPart.AIR, "Kamera steckt in der Hülle: " + c);
+            }
         assertTrue(bp.liftStops.size() >= 3, "zu wenige Turbolift-Halte");
         if (scale >= 0.75) assertTrue(bp.liftStops.size() >= (design.nx ? 5 : 8), "Decks fehlen: " + bp.liftStops.size());
         assertTrue(counts.getOrDefault(ShipPart.BIOBED, 0) > 0 || scale < 0.75, "Krankenstation fehlt");

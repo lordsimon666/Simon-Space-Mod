@@ -66,6 +66,10 @@ public final class EnterpriseBlueprint {
     public final List<LiftStop> liftStops = new ArrayList<>();
     /** Alle Phaser (lokal), die von der Waffenstation aus feuern. */
     public final List<BlockPos> phasers = new ArrayList<>();
+    /** Unauffällige Kamerapunkte rund um das Schiff (lokal, außerhalb der Hülle) mit Blickziel und Name. */
+    public final List<BlockPos> cameras = new ArrayList<>();
+    public final List<BlockPos> cameraFocus = new ArrayList<>();
+    public final List<String> cameraNames = new ArrayList<>();
     /** Waffenstationen auf der Brücke (lokal). */
     public final List<BlockPos> weaponStations = new ArrayList<>();
     /** Position (lokal) vor dem Kommandantensessel, für den Teleport zur Brücke. */
@@ -179,6 +183,7 @@ public final class EnterpriseBlueprint {
         connectBars();
         seal();
         collectWeapons();
+        placeCameras();
     }
 
     // =====================================================================================
@@ -1393,6 +1398,45 @@ public final class EnterpriseBlueprint {
         } else if (!tng) {
             for (double a : new double[] {-0.85, -0.3, 0.3, 0.85}) saucerWeapon(a, 0.92, false, ShipPart.PHASER_BANK, false);
         }
+    }
+
+    /**
+     * Kamerapunkte für die Waffenstation: von außen auf das Schiff zu "fliegen", beim ersten Treffer
+     * ein Stück zurück. Dort ist kein Block – die Kamera ist unsichtbar.
+     */
+    private void placeCameras() {
+        int far = 20;
+        camera("Bug", -far, sMid, 0, 1, 0, 0);
+        camera("Untertasse oben", sCx - 0.5 * sR, sizeY + far, 0, 0, -1, 0);
+        camera("Untertasse unten", sCx - 0.3 * sR, -far, 0, 0, 1, 0);
+        camera("Backbord", sCx, sMid, -zOffset - far, 0, 0, 1);
+        camera("Steuerbord", sCx, sMid, zOffset + far, 0, 0, -1);
+        camera("Warpgondel Backbord", (nX0 + nX1) / 2, sizeY + far, -nZ, 0, -1, 0);
+        camera("Warpgondel Steuerbord", (nX0 + nX1) / 2, sizeY + far, nZ, 0, -1, 0);
+        if (!nx) camera("Sekundärhülle unten", (eXf + eXr) / 2, -far, 0, 0, 1, 0);
+        camera("Heck", sizeX + far, nx ? sMid : eY, 0, -1, 0, 0);
+    }
+
+    private void camera(String name, double x0, double y0, double z0, double dx, double dy, double dz) {
+        double back = Math.max(4, 7 * s);
+        for (double t = 0; t < sizeX + sizeY + 2 * zOffset + 100; t += 0.5) {
+            int x = (int) Math.floor(x0 + dx * t), y = (int) Math.floor(y0 + dy * t), z = (int) Math.floor(z0 + dz * t);
+            if (open(x, y, z)) continue;
+            for (double b = back; b < back + 15; b += 1) {
+                int cx = (int) Math.floor(x0 + dx * (t - b)), cy = (int) Math.floor(y0 + dy * (t - b)), cz = (int) Math.floor(z0 + dz * (t - b));
+                if (!open(cx, cy - 1, cz) || !open(cx, cy, cz) || !open(cx, cy + 1, cz) || !open(cx, cy + 2, cz)) continue;
+                cameras.add(new BlockPos(cx, cy, cz));
+                cameraFocus.add(new BlockPos((int) Math.floor(cx - dx * 20), (int) Math.floor(cy - dy * 20), (int) Math.floor(cz - dz * 20)));
+                cameraNames.add(name);
+                return;
+            }
+            return;
+        }
+    }
+
+    /** Liegt (x, y, z) außerhalb des Schiffs? */
+    private boolean open(int x, int y, int z) {
+        return !inBounds(x, y, z) || (comp[idx(x, y, z)] == NONE && cell[idx(x, y, z)] == 0);
     }
 
     /** Sammelt alle Phaser und Waffenstationen für die Feuerleitung. */
