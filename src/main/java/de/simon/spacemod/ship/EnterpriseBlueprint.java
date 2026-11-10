@@ -1147,7 +1147,7 @@ public final class EnterpriseBlueprint {
                                 else if (refit && x < nX0 + nR * 2.6) st = plating; // graue Frontkappe
                                 else if (tng && x < nX0 + nR * 1.2) st = bussard; // TNG: rote Bussard-Kuppel vorne
                                 else if (nx && x < nX0 + nR * 0.8) st = bussard; // NX: rot-orange leuchtende Gondelspitze
-                                else if ((inner || refit || tng || nx) && mid && x < nX1 - (refit ? 9 : 6) * s) st = grille; // Refit/TNG/NX: Gitter beidseitig
+                                else if ((tng || nx) && mid && x < nX1 - 6 * s) st = grille; // TNG/NX: Gitter beidseitig (Originalserie/Refit: keine blauen Linien)
                                 else if ((refit || tng) && aztecXY(x, y)) st = ShipPart.HULL_AZTEC;
                                 else if (Math.floorMod(x, 10) == 0) st = panel;
                             }
@@ -1400,7 +1400,7 @@ public final class EnterpriseBlueprint {
                 int ey = (int) Math.round(eY + eR * 0.25);
                 int ex = (int) Math.round(eXf + 0.3 * (eXr - eXf));
                 sideText(regText, side > 0 ? ex + reg : ex, ey + 2, side);
-                if (design != ShipDesign.NCC_1701_C && colors == null) {
+                if (design != ShipDesign.NCC_1701_C) {
                     int ny = (int) Math.round(nY + nR * 0.5);
                     int x0 = (int) Math.round(nX0 + nR * 1.6);
                     pennant(x0, (int) Math.round(nX0 + 0.7 * (nX1 - nX0)), ny, side, (int) Math.max(1, nR * 0.15));
@@ -1412,15 +1412,13 @@ public final class EnterpriseBlueprint {
             int textFront = (int) Math.round(nX0 + nR * (refit ? 3.2 : 1.5)); // Refit: hinter den Bussard-Fenstern
             int start = side > 0 ? textFront + reg : textFront;
             sideText(regText, start, ny + 2, side);
-            if (colors == null) for (int x = textFront + reg + 3; x < nX1 - 6 * s; x++) markSide(x, ny, side, ShipPart.HULL_PENNANT);
+            for (int x = textFront + reg + 3; x < nX1 - 6 * s; x++) markSide(x, ny, side, ShipPart.HULL_PENNANT);
             // Sekundärhülle: Text vor dem Pylon, roter Streifen darunter
             int ey = (int) Math.round(eY + eR * 0.25);
             int ex = (int) Math.round(eXf + (excelsior ? 0.25 : 0.5) * (eXr - eXf)); // Excelsior: vor den Gondeln
             if (design != ShipDesign.NCC_1701) sideText(regText, side > 0 ? ex + reg : ex, ey + 2, side); // Originalserie: keine Kennung am Unterrumpf
             int px0 = (int) Math.round(eXf + 0.15 * (eXr - eXf));
-            if (colors != null) {
-                // Streifen und Wimpel kommen aus dem Farbmodell
-            } else if (design == ShipDesign.NCC_1701) {
+            if (design == ShipDesign.NCC_1701) {
                 // Originalserie: Wimpel mit Pfeilspitze und drei roten Streifen (nach unten kürzer)
                 // kurz, vorne am Rumpf (wie am Studiomodell)
                 double L = eXr - eXf;
@@ -1431,7 +1429,7 @@ public final class EnterpriseBlueprint {
             } else if (refit) pennant(px0, ex + reg + 2, ey - 5, side, 1); // Refit: Wimpel mit Pfeilspitze vorne
             else for (int x = px0; x < ex + reg + 2; x++) markSide(x, ey - 5, side, ShipPart.HULL_PENNANT);
         }
-        if (design == ShipDesign.NCC_1701_D && colors == null) {
+        if (design == ShipDesign.NCC_1701_D) {
             // zwei parallele rote Linien hinten den Hals hinunter
             for (int x = 0; x < sizeX; x++)
                 for (int y = 0; y < sizeY; y++)
@@ -2867,21 +2865,18 @@ public final class EnterpriseBlueprint {
         }
         return switch (k) {
             case ShipColors.LIGHT -> st == ShipPart.HULL_AZTEC || st == ShipPart.HULL_PANEL || st == ShipPart.HULL_WINDOW ? st : ShipPart.HULL_PLATING;
-            case ShipColors.MID -> ShipPart.HULL_PANEL;
-            case ShipColors.DARK -> nacelle && !excelsior ? ShipPart.NACELLE_GRILLE : ShipPart.HULL_DARK;
-            // dunkle Flecken: an Gondeln die (unbeleuchteten) Warpgitter, bei der D die Fenster
-            case ShipColors.BLACK -> nacelle && design != ShipDesign.NCC_1701 ? ShipPart.NACELLE_GRILLE
-                : design == ShipDesign.NCC_1701_D ? ShipPart.HULL_WINDOW : ShipPart.HULL_MARKING;
-            case ShipColors.RED -> nacelle && x < nX0 + nR * 1.5 ? (refit || tng ? ShipPart.BUSSARD_RED : ShipPart.BUSSARD_COLLECTOR) : ShipPart.HULL_PENNANT;
+            case ShipColors.MID -> st == ShipPart.HULL_WINDOW ? st : ShipPart.HULL_PANEL;
+            case ShipColors.DARK -> st == ShipPart.HULL_WINDOW ? st : ShipPart.HULL_DARK;
             case ShipColors.TEAL -> ShipPart.HULL_TEAL;
             case ShipColors.BLUEPAINT -> ShipPart.HULL_AZTEC;
-            case ShipColors.COPPER -> st; // braune Flecken der Texturen nicht übernehmen (Schüsseln/Phaser baut die Mod)
             case ShipColors.RED_GLOW -> nacelle ? (design == ShipDesign.NCC_1701 ? ShipPart.BUSSARD_COLLECTOR : ShipPart.BUSSARD_RED) : ShipPart.IMPULSE_ENGINE;
-            case ShipColors.ORANGE_GLOW -> nacelle ? ShipPart.BUSSARD_COLLECTOR : ShipPart.DEFLECTOR_DISH;
-            case ShipColors.BLUE_GLOW -> nacelle ? (c == BUSSARD || excelsior && x < nX0 + nR * 1.5 ? ShipPart.BUSSARD_BLUE : ShipPart.NACELLE_GRILLE)
-                : ShipPart.DEFLECTOR_DISH_BLUE;
+            case ShipColors.ORANGE_GLOW -> nacelle ? ShipPart.BUSSARD_COLLECTOR : st;
+            // Blau leuchtend: an Gondeln nur bei Excelsior/TNG (Warpgitter), sonst nur als Deflektor
+            case ShipColors.BLUE_GLOW -> nacelle ? (refit || design == ShipDesign.NCC_1701 ? st
+                    : c == BUSSARD || excelsior && x < nX0 + nR * 1.5 ? ShipPart.BUSSARD_BLUE : ShipPart.NACELLE_GRILLE)
+                : c == SECONDARY || c == NECK ? ShipPart.DEFLECTOR_DISH_BLUE : st;
             case ShipColors.VIOLET_GLOW -> ShipPart.DEFLECTOR_VIOLET;
-            case ShipColors.WINDOW -> ShipPart.HULL_WINDOW;
+            // rote Streifen, Schrift, Fenster und Kupfer werden auf 1 m pro Block krumm – die baut die Mod selbst gerade
             default -> st;
         };
     }
