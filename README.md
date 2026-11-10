@@ -224,13 +224,13 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
 
   | Schiff | Werfer | Torpedo | Tempo | Explosionsradius |
   |---|---|---|---|---|
-  | NX-01 | 2 vorne und 2 hinten auf F-Deck in der unteren Untertasse | Photonik-Torpedo: klein, gelb-orange | 1,6 | 4,8 |
-  | NCC-1701 | 2 an der unteren Sensorkuppel der Untertasse | rot-rosa pulsierender Lichtball ohne Schweif | 1,8 | 5,5 |
-  | NCC-1701-A | Doppelwerfer vorne am Hals, kein Heckwerfer | roter Glutball mit Strahlenkranz | 2,0 | 6,0 |
-  | NCC-1701-B | 2 vorne über dem Deflektor, 2 hinten über dem Hangar | roter Glutball mit Strahlenkranz | 2,0 | 6,5 |
-  | NCC-1701-C | 2 vorne am Hals | rot-orange mit Leuchtschweif | 2,2 | 7,0 |
-  | NCC-1701-D | vorne am Hals über dem Deflektor, hinten am Heck | rot-orange mit Leuchtschweif | 2,2 | 7,5 |
-  | NCC-1701-E | Photonen: je 2 unten vorne und unten hinten an der Sekundärhülle | kräftig orange | 2,4 | 8,0 |
+  | NX-01 | 2 vorne und 2 hinten auf F-Deck in der unteren Untertasse | Photonik-Torpedo: klein, gelb-orange | 3,2 | 4,8 |
+  | NCC-1701 | 2 an der unteren Sensorkuppel der Untertasse | rot-rosa pulsierender Lichtball ohne Schweif | 3,6 | 5,5 |
+  | NCC-1701-A | Doppelwerfer vorne am Hals, kein Heckwerfer | roter Glutball mit Strahlenkranz | 4,0 | 6,0 |
+  | NCC-1701-B | 2 vorne über dem Deflektor, 2 hinten über dem Hangar | roter Glutball mit Strahlenkranz | 4,0 | 6,5 |
+  | NCC-1701-C | 2 vorne am Hals | rot-orange mit Leuchtschweif | 4,4 | 7,0 |
+  | NCC-1701-D | vorne am Hals über dem Deflektor, hinten am Heck | rot-orange mit Leuchtschweif | 4,4 | 7,5 |
+  | NCC-1701-E | Photonen: je 2 unten vorne und unten hinten an der Sekundärhülle | kräftig orange | 4,8 | 8,0 |
   | NCC-1701-E | Quanten: Schnellfeuerwerfer unter der Untertasse | großer blau-weißer Ball | 2,8 | 11,0 |
 
   Quellen: Memory Alpha, Ex Astris Scientia und die Technical Manuals. Nicht alles davon ist im

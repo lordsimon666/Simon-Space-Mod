@@ -118,7 +118,7 @@ public class TorpedoEntity extends Entity {
         DustParticleOptions glow = new DustParticleOptions(style.glow, Math.min(4F, size));
         DustParticleOptions core = new DustParticleOptions(style.core, Math.min(4F, size * 0.5F));
         Vec3 d = to.subtract(from);
-        int n = 4;
+        int n = Math.max(4, (int) Math.ceil(d.length() / 0.6)); // dichte Spur auch bei hohem Tempo
         for (int i = 0; i < n; i++) {
             Vec3 v = from.add(d.scale(i / (double) n));
             level.sendParticles(glow, true, true, v.x, v.y, v.z, 2, 0.1 * size / 3, 0.1 * size / 3, 0.1 * size / 3, 0);
