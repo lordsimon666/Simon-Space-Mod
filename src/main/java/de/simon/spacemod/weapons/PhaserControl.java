@@ -18,6 +18,9 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Explosion;
+import net.minecraft.world.level.ExplosionDamageCalculator;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -28,7 +31,8 @@ import net.minecraftforge.registries.ForgeRegistries;
 public final class PhaserControl {
     private PhaserControl() {}
 
-    private static final double RANGE = 192;
+    private static final double RANGE = 192;      // Kreaturen
+    private static final double BLOCK_RANGE = 400; // Blöcke
     private static final int COOLDOWN_TICKS = 20;
     private static final int SCAN_RADIUS = 40;
     private static final Map<String, Long> LAST_SHOT = new HashMap<>();
@@ -57,17 +61,27 @@ public final class PhaserControl {
             player.sendOverlayMessage(Component.translatable("message.simonspacemod.phaser.none"));
             return;
         }
-        // Schiffsbereich: Kasten um alle Phaser (darin werden Blöcke beim Zielen ignoriert)
-        AABB ship = new AABB(phasers.get(0));
-        for (BlockPos p : phasers) ship = ship.minmax(new AABB(p));
-        ship = ship.inflate(4);
-
         Vec3 eye = player.getEyePosition(), look = player.getLookAngle();
         Vec3 end = eye.add(look.scale(RANGE));
         Vec3 target = end;
         boolean hit = false;
-        // 1. Kreatur im Blick
-        double best = RANGE;
+        // 1. erster Block im Fadenkreuz (Schiffsblöcke und was direkt daran hängt zählen nicht)
+        double blockDist = BLOCK_RANGE;
+        BlockPos prev = null;
+        for (double t = 0.5; t < BLOCK_RANGE; t += 0.2) {
+            Vec3 v = eye.add(look.scale(t));
+            BlockPos bp = BlockPos.containing(v);
+            if (bp.equals(prev)) continue;
+            prev = bp;
+            BlockState st = level.getBlockState(bp);
+            if (st.isAir() || isShipBlock(st) || st.getCollisionShape(level, bp).isEmpty() || touchesShip(level, bp)) continue;
+            target = v;
+            blockDist = t;
+            hit = true;
+            break;
+        }
+        // 2. Kreatur im Blick, wenn sie vor dem Block steht
+        double best = Math.min(RANGE, blockDist);
         for (Entity e : level.getEntities(player, new AABB(eye, end).inflate(2), e -> e instanceof LivingEntity le && le.isAlive())) {
             Optional<Vec3> h = e.getBoundingBox().inflate(0.6).clip(eye, end);
             if (h.isEmpty()) continue;
@@ -76,18 +90,6 @@ public final class PhaserControl {
                 best = d;
                 target = e.getBoundingBox().getCenter();
                 hit = true;
-            }
-        }
-        // 2. sonst der erste Block außerhalb des Schiffs
-        if (!hit) {
-            for (double t = 1; t < RANGE; t += 0.5) {
-                Vec3 v = eye.add(look.scale(t));
-                BlockPos bp = BlockPos.containing(v);
-                BlockState st = level.getBlockState(bp);
-                if (st.isAir() || isShipBlock(st) || ship.contains(v) || st.getCollisionShape(level, bp).isEmpty()) continue;
-                target = v;
-                hit = true;
-                break;
             }
         }
         // Phaser mit freier Schussbahn, am nächsten zum Ziel, mind. 6 Blöcke auseinander, höchstens 2
@@ -109,14 +111,28 @@ public final class PhaserControl {
         WeaponsData.Battery battery = data.battery(console);
         int tier = battery != null && battery.tier() > 0 ? battery.tier() : tierOf(level, chosen.get(0));
         float damage = (6 + 2 * tier) * (power == 1 ? 1F : power == 2 ? 1.6F : 2.2F);
-        float radius = power == 1 ? 1.0F : power == 2 ? 1.2F + 0.25F * tier : 2.0F + 0.5F * tier;
-        // Blockschaden ab Stufe 2 – aber nie so nah am eigenen Schiff, dass die Explosion es trifft
-        boolean breakBlocks = power >= 2 && !ship.inflate(radius + 2).contains(tgt);
+        float radius = power == 1 ? 1.0F : power == 2 ? 1.8F + 0.3F * tier : 2.5F + 0.6F * tier;
         level.playSound(null, console, SoundEvents.BEACON_DEACTIVATE, SoundSource.BLOCKS, 1.0F, 1.8F);
         for (BlockPos p : chosen) beam(level, player, p, tgt, ((PhaserBlock) level.getBlockState(p).getBlock()).kind, damage, power);
-        if (hit) level.explode(null, tgt.x, tgt.y, tgt.z, radius, power == 3,
-            breakBlocks ? Level.ExplosionInteraction.TNT : Level.ExplosionInteraction.NONE);
+        // Blockschaden ab Stufe 2; die Blöcke des Schiffs selbst bleiben immer heil
+        if (hit) level.explode(null, null, SPARE_SHIP, tgt.x, tgt.y, tgt.z, radius, power == 3,
+            power >= 2 ? Level.ExplosionInteraction.TNT : Level.ExplosionInteraction.NONE);
         player.sendOverlayMessage(Component.translatable("message.simonspacemod.phaser.fire"));
+    }
+
+    /** Explosionen zerstören keine Blöcke der Mod (Hülle, Einrichtung). */
+    private static final ExplosionDamageCalculator SPARE_SHIP = new ExplosionDamageCalculator() {
+        @Override
+        public boolean shouldBlockExplode(Explosion explosion, BlockGetter level, BlockPos pos, BlockState state, float power) {
+            return !isShipBlock(state) && super.shouldBlockExplode(explosion, level, pos, state, power);
+        }
+    };
+
+    /** Hängt der Block direkt am Schiff (Fenster, Gitter, Pflanzen im Arboretum)? */
+    private static boolean touchesShip(ServerLevel level, BlockPos pos) {
+        for (net.minecraft.core.Direction d : net.minecraft.core.Direction.values())
+            if (isShipBlock(level.getBlockState(pos.relative(d)))) return true;
+        return false;
     }
 
     /** Selbst gebaute Station: Phaser im Umkreis suchen und speichern. */

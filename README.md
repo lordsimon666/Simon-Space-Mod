@@ -205,9 +205,9 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
   * Stufe 3: 2,2-facher Schaden, große Explosion mit Feuer (Nachladen 2 s)
 
   Neuere Schiffe haben stärkere Waffen. Grundschaden pro Treffer / Explosionsradius auf Stufe 3:
-  NX-01 8 / 2,5 – NCC-1701 10 / 3 – A 12 / 3,5 – B 14 / 4 – C 16 / 4,5 – D 18 / 5 – E 20 / 5,5.
-  Liegt das Ziel so nah am eigenen Schiff, dass die Explosion es treffen würde, gibt es keinen
-  Blockschaden. Eine selbst
+  NX-01 8 / 3,1 – NCC-1701 10 / 3,7 – A 12 / 4,3 – B 14 / 4,9 – C 16 / 5,5 – D 18 / 6,1 – E 20 / 6,7.
+  Gezielt wird auf den Block im Fadenkreuz (bis 400 Blöcke weit), Kreaturen bis 192 Blöcke.
+  Die Explosionen zerstören nie Blöcke des eigenen Schiffs. Eine selbst
   gesetzte Waffenstation verbindet sich beim ersten Schuss mit allen Phaser-Blöcken im Umkreis von
   40 Blöcken; ihre Kameras liegen dann an den sechs Seiten rund um diese Phaser.
 * **Uniformen**: Für jede Epoche gibt es Uniformen in den drei Abteilungsfarben, dazu Hosen und Stiefel:
