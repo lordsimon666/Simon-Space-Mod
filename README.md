@@ -295,9 +295,16 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
   Captain-Karte. Rechtsklick ohne Karte zeigt, ob und womit die Tür verschlossen ist.
 * **Zweiseitige Wände und Decken**: Grenzen zwei Räume mit verschiedener Ausstattung aneinander
   (Holodeck, Krankenstation, Transporterraum ...), zeigt die Wand auf jeder Seite das Material
-  ihres Raums – im Flur neben dem Holodeck also Korridorwand statt Holodeck-Gitter. Genauso bei
-  Decken: unten die Decke des unteren Raums, oben der Boden des oberen. Räume mit eigenem Boden
+  ihres Raums – im Flur neben dem Holodeck also Korridorwand statt Holodeck-Gitter, auch dort, wo
+  ein Holodeck offen in den Gang übergeht (entscheidend ist der Boden davor). Schräge Wände der
+  runden Untertasse bekommen diagonal geteilte Eckstücke, damit jede Treppenstufe von jeder Seite
+  ganz im richtigen Material erscheint. Genauso bei Decken: unten die Decke des unteren Raums, oben
+  der Boden des oberen; Holodeck-Gitter nur im Holodeck. Räume mit eigenem Boden
   (Teppich, Krankenstation ...) enden sauber an der Tür und reichen nicht mehr in den Korridor.
+* **Deckenleuchten**: flache Paneele (1/8 Block) direkt unter der Decke. Sie brauchen Strom: In
+  einem gespawnten Schiff leuchten sie, solange noch ein Warpkern-Block steht – ohne Warpkern geht
+  das Licht im ganzen Schiff aus (Prüfung etwa alle 5 Sekunden). Selbst gebaute Leuchten brauchen
+  eine Verbindung über Mod-Blöcke zu einem Warpkern.
 * **Uniformen**: Für jede Epoche gibt es Uniformen in den drei Abteilungsfarben, dazu Hosen und Stiefel:
   NX-01 (dunkelblauer Overall mit farbiger Paspel, dunkelblaue Hose), Originalserie (gold / blau / rot),
   Kinofilme der 2280er und 90er (rote Jacke, Kragen weiß / grau / gelb, für A und B),

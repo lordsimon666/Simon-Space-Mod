@@ -15,11 +15,14 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 public class DualWallBlock extends FacingBlock {
     public static final EnumProperty<DualMaterial> FRONT = EnumProperty.create("front", DualMaterial.class);
     public static final EnumProperty<DualMaterial> BACK = EnumProperty.create("back", DualMaterial.class);
+    /** Eckstück einer schrägen Wand: Vorder- und linke Seite vorne, Rück- und rechte Seite hinten. */
+    public static final net.minecraft.world.level.block.state.properties.BooleanProperty CORNER =
+        net.minecraft.world.level.block.state.properties.BooleanProperty.create("corner");
     public static final MapCodec<DualWallBlock> CODEC = simpleCodec(DualWallBlock::new);
 
     public DualWallBlock(BlockBehaviour.Properties properties) {
         super(properties);
-        registerDefaultState(defaultBlockState().setValue(FRONT, DualMaterial.CORRIDOR_WALL).setValue(BACK, DualMaterial.TNG_WALL));
+        registerDefaultState(defaultBlockState().setValue(FRONT, DualMaterial.CORRIDOR_WALL).setValue(BACK, DualMaterial.TNG_WALL).setValue(CORNER, false));
     }
 
     @Override
@@ -29,6 +32,6 @@ public class DualWallBlock extends FacingBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, FRONT, BACK);
+        builder.add(FACING, FRONT, BACK, CORNER);
     }
 }

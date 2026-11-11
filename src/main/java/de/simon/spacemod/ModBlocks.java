@@ -230,7 +230,9 @@ public final class ModBlocks {
         BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_RED).strength(1.5F, 6F).sound(SoundType.WOOL));
     public static final RegistryObject<Block> CORRIDOR_WALL = block("corridor_wall", Block::new, metal(MapColor.SAND));
     public static final RegistryObject<Block> CEILING_PANEL = block("ceiling_panel", Block::new, metal(MapColor.SNOW));
-    public static final RegistryObject<Block> CEILING_LIGHT = block("ceiling_light", Block::new, glowing(glass(MapColor.SNOW), 15));
+    public static final RegistryObject<Block> CEILING_LIGHT = block("ceiling_light", de.simon.spacemod.block.CeilingLightBlock::new,
+        glass(MapColor.SNOW).noOcclusion().lightLevel(s -> s.getValue(de.simon.spacemod.block.CeilingLightBlock.LIT) ? 15 : 0)
+            .emissiveRendering(s -> s.getValue(de.simon.spacemod.block.CeilingLightBlock.LIT)));
     public static final RegistryObject<Block> BRIDGE_CONSOLE = block("bridge_console", FacingBlock::new, glowing(metal(MapColor.COLOR_BLACK), 7));
     public static final RegistryObject<Block> ENGINEERING_CONSOLE = block("engineering_console", FacingBlock::new, glowing(metal(MapColor.COLOR_BLACK), 7));
     public static final RegistryObject<Block> LCARS_PANEL = block("lcars_panel", FacingBlock::new, glowing(metal(MapColor.COLOR_BLACK), 8));

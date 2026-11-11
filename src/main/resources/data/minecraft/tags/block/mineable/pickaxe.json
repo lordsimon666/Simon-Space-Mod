@@ -51,7 +51,6 @@
     "simonspacemod:deck_floor",
     "simonspacemod:bridge_deck",
     "simonspacemod:corridor_wall",
-    "simonspacemod:ceiling_light",
     "simonspacemod:ceiling_panel",
     "simonspacemod:plasma_conduit",
     "simonspacemod:bridge_console",
@@ -112,6 +111,21 @@
     "simonspacemod:phaser_holder",
     "simonspacemod:charging_station",
     "simonspacemod:warp_core_nx",
-    "simonspacemod:warp_core_e"
+    "simonspacemod:warp_core_e",
+    "simonspacemod:ceiling_light",
+    "simonspacemod:dual_wall",
+    "simonspacemod:dual_floor",
+    "simonspacemod:door_nx_normal",
+    "simonspacemod:door_nx_security",
+    "simonspacemod:door_nx_command",
+    "simonspacemod:door_tos_normal",
+    "simonspacemod:door_tos_security",
+    "simonspacemod:door_tos_command",
+    "simonspacemod:door_refit_normal",
+    "simonspacemod:door_refit_security",
+    "simonspacemod:door_refit_command",
+    "simonspacemod:door_tng_normal",
+    "simonspacemod:door_tng_security",
+    "simonspacemod:door_tng_command"
   ]
 }

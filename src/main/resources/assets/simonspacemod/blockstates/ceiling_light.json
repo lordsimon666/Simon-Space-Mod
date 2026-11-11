@@ -1,7 +1,10 @@
 {
   "variants": {
-    "": {
+    "lit=true": {
       "model": "simonspacemod:block/ceiling_light"
+    },
+    "lit=false": {
+      "model": "simonspacemod:block/ceiling_light_off"
     }
   }
 }

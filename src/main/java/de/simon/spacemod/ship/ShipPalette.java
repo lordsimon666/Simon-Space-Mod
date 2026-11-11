@@ -35,7 +35,7 @@ public final class ShipPalette {
             case DECK_FLOOR -> ModBlocks.DECK_FLOOR.get().defaultBlockState();
             case BRIDGE_DECK -> ModBlocks.BRIDGE_DECK.get().defaultBlockState();
             case CORRIDOR_WALL -> ModBlocks.CORRIDOR_WALL.get().defaultBlockState();
-            case CEILING_LIGHT -> ModBlocks.CEILING_LIGHT.get().defaultBlockState();
+            case CEILING_LIGHT -> ModBlocks.CEILING_LIGHT.get().defaultBlockState().setValue(de.simon.spacemod.block.CeilingLightBlock.LIT, true);
             case CEILING_PANEL -> ModBlocks.CEILING_PANEL.get().defaultBlockState();
             case BRIDGE_CONSOLE -> ModBlocks.BRIDGE_CONSOLE.get().defaultBlockState();
             case ENGINEERING_CONSOLE -> ModBlocks.ENGINEERING_CONSOLE.get().defaultBlockState();
@@ -152,7 +152,8 @@ public final class ShipPalette {
             case CHARGING_STATION -> ModBlocks.CHARGING_STATION.get().defaultBlockState();
             case DUAL_WALL -> ModBlocks.DUAL_WALL.get().defaultBlockState()
                 .setValue(de.simon.spacemod.block.DualWallBlock.FRONT, de.simon.spacemod.block.DualMaterial.values()[EnterpriseBlueprint.dualA(cellCode)])
-                .setValue(de.simon.spacemod.block.DualWallBlock.BACK, de.simon.spacemod.block.DualMaterial.values()[EnterpriseBlueprint.dualB(cellCode)]);
+                .setValue(de.simon.spacemod.block.DualWallBlock.BACK, de.simon.spacemod.block.DualMaterial.values()[EnterpriseBlueprint.dualB(cellCode)])
+                .setValue(de.simon.spacemod.block.DualWallBlock.CORNER, EnterpriseBlueprint.variant(cellCode) == 1);
             case DUAL_FLOOR -> ModBlocks.DUAL_FLOOR.get().defaultBlockState()
                 .setValue(de.simon.spacemod.block.DualFloorBlock.TOP, de.simon.spacemod.block.DualMaterial.values()[EnterpriseBlueprint.dualA(cellCode)])
                 .setValue(de.simon.spacemod.block.DualFloorBlock.BOTTOM, de.simon.spacemod.block.DualMaterial.values()[EnterpriseBlueprint.dualB(cellCode)]);

@@ -105,6 +105,13 @@ public final class ShipBuildManager {
                 states[i[0]] = cache.computeIfAbsent(code, c -> ShipPalette.toState(c).rotate(rot));
                 i[0]++;
             });
+            // Schiff mit Umriss und Warpkernen eintragen: Lampen fragen nur, ob noch ein Kern steht
+            BlockPos ca = placement.toWorld(bp, 0, 0, -bp.zOffset), cb = placement.toWorld(bp, bp.sizeX - 1, bp.sizeY - 1, bp.zOffset);
+            java.util.List<BlockPos> shipCores = new java.util.ArrayList<>();
+            for (BlockPos p : bp.warpCores) shipCores.add(placement.toWorld(bp, p.getX(), p.getY(), p.getZ()));
+            de.simon.spacemod.power.PowerData.get(placement.level()).addShip(
+                new BlockPos(Math.min(ca.getX(), cb.getX()), Math.min(ca.getY(), cb.getY()), Math.min(ca.getZ(), cb.getZ())),
+                new BlockPos(Math.max(ca.getX(), cb.getX()), Math.max(ca.getY(), cb.getY()), Math.max(ca.getZ(), cb.getZ())), shipCores);
         }
 
         public int placed() {

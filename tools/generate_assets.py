@@ -2155,11 +2155,20 @@ def dual_assets(de, en):
             n = f"dual_wall_{'front' if front else 'back'}_{m}"
             write_json(os.path.join(ASSETS, "models", "block", n + ".json"),
                        {"parent": "minecraft:block/block", "textures": {"particle": t, "t": t}, "elements": [wall_half(front)]})
+            # Eckstück (schräge Wand): vorne Nord- und Westseite, hinten Süd- und Ostseite
+            nc = f"dual_wall_corner_{'front' if front else 'back'}_{m}"
+            faces = {"north": {"texture": "#t", "cullface": "north"}, "west": {"texture": "#t", "cullface": "west"},
+                     "up": {"texture": "#t", "cullface": "up"}} if front else \
+                    {"south": {"texture": "#t", "cullface": "south"}, "east": {"texture": "#t", "cullface": "east"},
+                     "down": {"texture": "#t", "cullface": "down"}}
+            write_json(os.path.join(ASSETS, "models", "block", nc + ".json"),
+                       {"parent": "minecraft:block/block", "textures": {"particle": t, "t": t}, "elements": [half([0, 0, 0], [16, 16, 16], faces)]})
             for d, r in rot.items():
-                mm = {"model": b(n)}
-                if r:
-                    mm["y"] = r
-                wall_parts.append({"when": {"facing": d, "front" if front else "back": m}, "apply": mm})
+                for corner, model in (("false", n), ("true", nc)):
+                    mm = {"model": b(model)}
+                    if r:
+                        mm["y"] = r
+                    wall_parts.append({"when": {"facing": d, "corner": corner, "front" if front else "back": m}, "apply": mm})
         for top in (True, False):
             n = f"dual_floor_{'top' if top else 'bottom'}_{m}"
             write_json(os.path.join(ASSETS, "models", "block", n + ".json"),
@@ -2179,6 +2188,31 @@ def dual_assets(de, en):
         write_json(os.path.join(DATA, "loot_table", "blocks", name + ".json"), loot(name))
     de[f"block.{MODID}.dual_wall"], en[f"block.{MODID}.dual_wall"] = "Zweiseitige Wand", "Two-Sided Wall"
     de[f"block.{MODID}.dual_floor"], en[f"block.{MODID}.dual_floor"] = "Boden/Decke (zweiseitig)", "Floor/Ceiling (two-sided)"
+
+
+
+def ceiling_light_assets(de, en):
+    """Deckenleuchte: Paneel 1/8 Block unter der Decke, an (hell) und aus (dunkel)."""
+    img = tex_ceiling_light()
+    off = img.copy()
+    px = off.load()
+    for x in range(16):
+        for y in range(16):
+            r, g, b_, a = px[x, y]
+            px[x, y] = (int(r * 0.45), int(g * 0.47), int(b_ * 0.5), a)
+    save(off, "ceiling_light_off")
+    frame = b("ceiling_panel")
+    for name, tex in (("ceiling_light", b("ceiling_light")), ("ceiling_light_off", b("ceiling_light_off"))):
+        write_json(os.path.join(ASSETS, "models", "block", name + ".json"), {
+            "parent": "minecraft:block/block", "textures": {"particle": tex, "l": tex, "f": frame},
+            "elements": [{"from": [0, 14, 0], "to": [16, 16, 16], "faces": {
+                "down": {"texture": "#l"}, "up": {"texture": "#f", "cullface": "up"},
+                "north": {"texture": "#f", "uv": [0, 0, 16, 2]}, "south": {"texture": "#f", "uv": [0, 0, 16, 2]},
+                "east": {"texture": "#f", "uv": [0, 0, 16, 2]}, "west": {"texture": "#f", "uv": [0, 0, 16, 2]}}}]})
+    write_json(os.path.join(ASSETS, "blockstates", "ceiling_light.json"),
+               {"variants": {"lit=true": {"model": b("ceiling_light")}, "lit=false": {"model": b("ceiling_light_off")}}})
+    write_json(os.path.join(ASSETS, "items", "ceiling_light.json"), item_def(b("ceiling_light")))
+    write_json(os.path.join(DATA, "loot_table", "blocks", "ceiling_light.json"), loot("ceiling_light"))
 
 
 
@@ -2417,7 +2451,7 @@ SIMPLE = ["quantum_launcher", "phase_cannon", "phaser_bank", "phaser_emitter", "
           "transporter_energizer", "transporter_emitter", "nav_light_red", "nav_light_green", "hull_pennant",
           "hull_plating", "hull_panel", "hull_dark", "hull_window", "hull_marking", "deflector_dish",
           "bussard_collector", "nacelle_grille", "deck_floor", "bridge_deck", "corridor_wall",
-          "ceiling_light", "ceiling_panel", "plasma_conduit"]
+          "ceiling_panel", "plasma_conduit"]
 
 # Blöcke mit Blickrichtung: Name -> Modell-JSON
 FACING = {
@@ -2972,6 +3006,8 @@ def main():
 
     armory_de, armory_en = {}, {}
     models_extra += armory_assets(armory_de, armory_en)
+    models_extra += ["ceiling_light", "dual_wall", "dual_floor"]
+    models_extra += [f"door_{e}_{k}" for e in DOOR_ERAS for k in DOOR_KINDS]
     # Mit der Spitzhacke abbaubar
     write_json(os.path.join(ROOT, "data", "minecraft", "tags", "block", "mineable", "pickaxe.json"),
                {"values": [f"{MODID}:{n}" for n in list(models) + models_extra]})
@@ -3079,6 +3115,7 @@ def main():
     uniform_assets(de, en)
     door_assets(de, en)
     dual_assets(de, en)
+    ceiling_light_assets(de, en)
     de.update(armory_de)
     en.update(armory_en)
     de.update({

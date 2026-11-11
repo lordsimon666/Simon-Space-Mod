@@ -48,6 +48,27 @@ public final class ShipPower {
         return g;
     }
 
+    private static final Map<String, long[]> SHIP_POWER = new HashMap<>();
+
+    /**
+     * Hat ein Verbraucher (Lampe) Strom? In gespawnten Schiffen: steht noch einer ihrer Warpkerne
+     * (nicht geladene Kerne zählen als vorhanden); sonst Suche über leitende Blöcke.
+     */
+    public static boolean powered(ServerLevel level, BlockPos pos) {
+        PowerData.Ship ship = PowerData.get(level).shipAt(pos);
+        if (ship == null) return grid(level, pos).output() > 0;
+        String key = level.dimension().identifier() + "!" + ship.min().asLong() + "/" + ship.max().asLong();
+        long now = level.getGameTime();
+        long[] c = SHIP_POWER.get(key);
+        if (c != null && now - c[0] < 40) return c[1] != 0;
+        boolean on = false;
+        for (BlockPos core : ship.cores()) {
+            if (!level.isLoaded(core) || level.getBlockState(core).getBlock() instanceof WarpCoreBlock) { on = true; break; }
+        }
+        SHIP_POWER.put(key, new long[] {now, on ? 1 : 0});
+        return on;
+    }
+
     /** Holt bis zu {@code want} RF aus dem Netz (in diesem Tick). */
     public static int draw(ServerLevel level, Grid grid, int want) {
         String key = level.dimension().identifier() + "#" + grid.key();

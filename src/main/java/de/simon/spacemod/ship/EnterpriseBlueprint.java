@@ -191,6 +191,7 @@ public final class EnterpriseBlueprint {
         placeDoors();
         BlockPos armoryLift = sealArmory();
         if (armoryLift != null) liftStops.add(new LiftStop(armoryLift, deckLabel(deckNumber(armoryLift.getY() - 1)) + " – Waffenkammer"));
+        fixLights();
         fixRoomFloors();
         dualWalls();
         dualFloors();
@@ -266,7 +267,13 @@ public final class EnterpriseBlueprint {
     }
 
     private void setDual(int x, int y, int z, ShipPart part, Direction facing, int a, int b) {
-        if (inBounds(x, y, z)) cell[idx(x, y, z)] = (part.ordinal() + 1) | (facing.get2DDataValue() << 8) | (a << 16) | (b << 20);
+        setDual(x, y, z, part, facing, a, b, false);
+    }
+
+    /** @param corner Eckstück einer schrägen Wand: Vorder- und Westseite (lokal) zeigen a, die anderen b */
+    private void setDual(int x, int y, int z, ShipPart part, Direction facing, int a, int b, boolean corner) {
+        if (inBounds(x, y, z))
+            cell[idx(x, y, z)] = (part.ordinal() + 1) | (facing.get2DDataValue() << 8) | ((corner ? 1 : 0) << 10) | (a << 16) | (b << 20);
     }
 
     /** Raum-Zelle: nur Luft. Möbel, Leuchten und Wanddisplays zählen als Trennung (sie sitzen oft in einer Wand). */
@@ -314,6 +321,29 @@ public final class EnterpriseBlueprint {
     private static final int[][] DIRS = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
 
     /**
+     * Leuchten sind dünne Paneele unter der Decke. Sitzt eine Leuchte im Boden oder in einer Wand
+     * (darunter keine Luft oder darüber keine Decke), wird sie durch das Material ringsum ersetzt.
+     */
+    private void fixLights() {
+        for (int x = 0; x < sizeX; x++)
+            for (int y = 1; y < sizeY - 1; y++)
+                for (int z = -zOffset; z <= zOffset; z++) {
+                    if (get(x, y, z) != ShipPart.CEILING_LIGHT) continue;
+                    ShipPart above = get(x, y + 1, z), below = get(x, y - 1, z);
+                    boolean ceiling = above != null && above != ShipPart.AIR && above != ShipPart.CEILING_LIGHT;
+                    if (ceiling && below == ShipPart.AIR) continue;
+                    int[] counts = new int[DUAL_MATERIALS.length];
+                    for (int[] d : DIRS) {
+                        int m = mat(get(x + d[0], y, z + d[1]));
+                        if (m >= 0) counts[m]++;
+                    }
+                    int m = argmax(counts);
+                    if (m < 0) m = above == ShipPart.AIR ? mat(tng ? ShipPart.TNG_CARPET : nx ? ShipPart.DECK_PLATE : ShipPart.DECK_FLOOR) : defaultWall();
+                    set(x, y, z, DUAL_MATERIALS[m]);
+                }
+    }
+
+    /**
      * Ein Raum mit eigenem Boden (Teppich, Krankenstation ...) reicht manchmal eine Zelle durch die
      * Tür in den Korridor. Solche Zellen bekommen den Boden ihres eigenen Bereichs.
      */
@@ -349,12 +379,59 @@ public final class EnterpriseBlueprint {
         }
     }
 
-    /** Wände zwischen zwei Räumen: jede Seite im Wandmaterial ihres Raums (z. B. Holodeck / Korridor). */
+    private static final int M_GRID = MAT_INDEX[ShipPart.HOLODECK_GRID.ordinal()];
+    private static final int M_SICK_WALL = MAT_INDEX[ShipPart.SICKBAY_WALL.ordinal()];
+    private static final int M_SICK_FLOOR = MAT_INDEX[ShipPart.SICKBAY_FLOOR.ordinal()];
+
+    /** Sonderräume: Holodeck-Gitter und Krankenstations-Wand gehören nur in Räume mit passendem Boden. */
+    private static boolean special(int m) {
+        return m == M_GRID || m == M_SICK_WALL;
+    }
+
+    private int defaultWall() {
+        return mat(tng ? ShipPart.TNG_WALL : nx ? ShipPart.ENT_WALL : ShipPart.CORRIDOR_WALL);
+    }
+
+    /** Boden unter einer Raumzelle (bis zu 4 Blöcke tiefer): Material seiner Oberseite oder -1. */
+    private int floorBelow(int x, int y, int z) {
+        for (int yy = y - 1; yy >= Math.max(0, y - 12); yy--) {
+            ShipPart p = get(x, yy, z);
+            if (p == null) return -1;
+            if (p == ShipPart.DUAL_FLOOR) return dualA(codeAt(x, yy, z));
+            if (p != ShipPart.AIR) return mat(p);
+        }
+        return -1;
+    }
+
+    /** Decke über einer Raumzelle (bis zu 4 Blöcke höher): Material ihrer Unterseite oder -1. */
+    private int ceilingAbove(int x, int y, int z) {
+        for (int yy = y + 1; yy <= Math.min(sizeY - 1, y + 12); yy++) {
+            ShipPart p = get(x, yy, z);
+            if (p == null) return -1;
+            if (p == ShipPart.DUAL_FLOOR) return dualB(codeAt(x, yy, z));
+            if (p != ShipPart.AIR && p != ShipPart.CEILING_LIGHT) return mat(p);
+        }
+        return -1;
+    }
+
+    /** Wandmaterial für die Seite eines Raums: Holodeck/Krankenstation nach Boden, sonst Raum-Mehrheit. */
+    private int sideWall(int regionMajority, int m, int floor) {
+        if (floor == M_GRID) return M_GRID;
+        if (floor == M_SICK_FLOOR) return M_SICK_WALL;
+        if (regionMajority >= 0) return regionMajority;
+        return special(m) ? defaultWall() : m;
+    }
+
+    /**
+     * Wände zwischen zwei Räumen: jede Seite im Wandmaterial ihres Raums (z. B. Holodeck / Korridor).
+     * Holodeck-Gitter und Krankenstations-Wand zeigen nur zur Seite mit Holodeck- bzw. Krankenstations-
+     * Boden – auch dort, wo ein Holodeck ohne Tür offen in den Gang übergeht.
+     */
     private void dualWalls() {
         int[] lab = new int[sizeX * sizeZ];
         for (int y = 1; y < sizeY - 1; y++) {
             int n = regions(y, lab)[0];
-            if (n < 2) continue;
+            if (n == 0) continue;
             int[][] counts = new int[n][DUAL_MATERIALS.length];
             for (int x = 0; x < sizeX; x++)
                 for (int z = -zOffset; z <= zOffset; z++) {
@@ -362,7 +439,7 @@ public final class EnterpriseBlueprint {
                     if (r < 0) continue;
                     for (int[] d : DIRS) {
                         int m = wallMat(get(x + d[0], y, z + d[1]));
-                        if (m >= 0) counts[r][m]++;
+                        if (m >= 0 && !special(m)) counts[r][m]++;
                     }
                 }
             int[] maj = new int[n];
@@ -371,53 +448,93 @@ public final class EnterpriseBlueprint {
                 for (int z = -zOffset + 1; z < zOffset; z++) {
                     int m = wallMat(get(x, y, z));
                     if (m < 0 || !isInterior(x, y, z)) continue;
-                    int ra = -1, rb = -1;
-                    Direction face = null;
-                    int ax = lab[lidx(x - 1, z)], bx = lab[lidx(x + 1, z)], az = lab[lidx(x, z - 1)], bz = lab[lidx(x, z + 1)];
-                    boolean onX = ax >= 0 && bx >= 0 && ax != bx, onZ = az >= 0 && bz >= 0 && az != bz;
-                    if (!onX && !onZ) continue;
-                    // schräge Wand: beide Achsen trennen dieselben zwei Räume -> egal welche; sonst mehrdeutig
-                    if (onX && onZ && !(Math.min(ax, bx) == Math.min(az, bz) && Math.max(ax, bx) == Math.max(az, bz))) continue;
-                    if (onX) { ra = ax; rb = bx; face = Direction.NORTH; }
-                    else { ra = az; rb = bz; face = Direction.WEST; }
-                    int ma = maj[ra] >= 0 ? maj[ra] : m, mb = maj[rb] >= 0 ? maj[rb] : m;
-                    if (ma == mb) {
-                        if (ma != m) set(x, y, z, DUAL_MATERIALS[ma]);
-                    } else {
-                        setDual(x, y, z, ShipPart.DUAL_WALL, face, ma, mb);
+                    // Seiten: N (-x), S (+x), W (-z), O (+z)
+                    int[][] sc = {{x - 1, z}, {x + 1, z}, {x, z - 1}, {x, z + 1}};
+                    // jede Seite bekommt das Material ihres Raums; gruppiert wird nach Material
+                    int ma = -1, mb = -1, aMask = 0, bMask = 0, sides = 0;
+                    boolean three = false;
+                    for (int i = 0; i < 4; i++) {
+                        int r = lab[lidx(sc[i][0], sc[i][1])];
+                        if (r < 0) continue;
+                        sides++;
+                        int sm = sideWall(maj[r], m, floorBelow(sc[i][0], y, sc[i][1]));
+                        if (ma < 0 || sm == ma) { ma = sm; aMask |= 1 << i; }
+                        else if (mb < 0 || sm == mb) { mb = sm; bMask |= 1 << i; }
+                        else three = true;
                     }
+                    if (ma < 0 || three) continue;
+                    if (mb < 0) {
+                        // alle angrenzenden Seiten wollen dasselbe Material
+                        if (ma != m && (special(m) || sides >= 2)) set(x, y, z, DUAL_MATERIALS[ma]);
+                        continue;
+                    }
+                    final int N = 1, S = 2, W = 4, E = 8;
+                    // gerade Wand: a genau auf einer Seite, b gegenüber
+                    if ((aMask == N && bMask == S) || (aMask == S && bMask == N) || (aMask == W && bMask == E) || (aMask == E && bMask == W)) {
+                        Direction f = aMask == N ? Direction.NORTH : aMask == S ? Direction.SOUTH : aMask == W ? Direction.WEST : Direction.EAST;
+                        setDual(x, y, z, ShipPart.DUAL_WALL, f, ma, mb);
+                        continue;
+                    }
+                    // Eckstück: Modell zeigt a auf Nord+West; gedreht: OST -> Ost+Nord, SÜD -> Süd+Ost, WEST -> West+Süd
+                    Direction[] fs = {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
+                    int[] pairs = {N | W, E | N, S | E, W | S};
+                    boolean done = false;
+                    for (int k = 0; k < 4 && !done; k++)
+                        if ((aMask & ~pairs[k]) == 0 && (bMask & pairs[k]) == 0) {
+                            setDual(x, y, z, ShipPart.DUAL_WALL, fs[k], ma, mb, true);
+                            done = true;
+                        }
+                    if (!done && (aMask & (N | S)) != 0 && (bMask & (N | S)) != 0) // sonst gerade entlang x
+                        setDual(x, y, z, ShipPart.DUAL_WALL, (aMask & N) != 0 ? Direction.NORTH : Direction.SOUTH, ma, mb);
                 }
         }
     }
 
-    /** Decke/Boden zwischen zwei Räumen: oben der Boden des oberen, unten die Decke des unteren Raums. */
+    /**
+     * Decke/Boden zwischen zwei Räumen: oben der Boden des oberen, unten die Decke des unteren Raums.
+     * Holodeck-Gitter nur oben, wenn darüber ein Holodeck ist, und nur unten, wenn der Raum darunter
+     * einen Holodeck-Boden hat.
+     */
     private void dualFloors() {
         int[] up = new int[sizeX * sizeZ], down = new int[sizeX * sizeZ];
+        int defFloor = mat(tng ? ShipPart.TNG_CARPET : nx ? ShipPart.DECK_PLATE : ShipPart.DECK_FLOOR);
         for (int y = 1; y < sizeY - 1; y++) {
             int nu = regions(y + 1, up)[0], nd = regions(y - 1, down)[0];
-            if (nu == 0 || nd == 0) continue;
+            if (nu == 0 && nd == 0) continue;
             int[][] fc = new int[nu][DUAL_MATERIALS.length], cc = new int[nd][DUAL_MATERIALS.length];
             for (int x = 0; x < sizeX; x++)
                 for (int z = -zOffset; z <= zOffset; z++) {
                     int m = mat(get(x, y, z));
-                    if (m < 0) continue;
+                    if (m < 0 || m == M_GRID) continue;
                     if (up[lidx(x, z)] >= 0) fc[up[lidx(x, z)]][m]++;
                     if (down[lidx(x, z)] >= 0) cc[down[lidx(x, z)]][m]++;
                 }
             int[] fm = new int[nu], cm = new int[nd];
             for (int r = 0; r < nu; r++) fm[r] = argmax(fc[r]);
             for (int r = 0; r < nd; r++) cm[r] = argmax(cc[r]);
+            // erst entscheiden, dann setzen (die Nachbarschaft soll den Originalzustand sehen)
+            List<int[]> changes = new ArrayList<>();
             for (int x = 0; x < sizeX; x++)
                 for (int z = -zOffset; z <= zOffset; z++) {
                     int m = mat(get(x, y, z)), u = up[lidx(x, z)], d = down[lidx(x, z)];
-                    if (m < 0 || u < 0 || d < 0 || !isInterior(x, y, z)) continue;
-                    int top = fm[u] >= 0 ? fm[u] : m, bottom = cm[d] >= 0 ? cm[d] : m;
-                    if (top == bottom) {
-                        if (top != m) set(x, y, z, DUAL_MATERIALS[top]);
-                    } else {
-                        setDual(x, y, z, ShipPart.DUAL_FLOOR, Direction.NORTH, top, bottom);
+                    if (m < 0 || u < 0 && d < 0 || !isInterior(x, y, z)) continue;
+                    // Holodeck darüber: Gitterboden mit Gitterdecke darüber
+                    // Gitter ist Holodeck-Boden – außer es ist nur die Decke eines Holodecks darunter
+                    boolean lowerHolo = floorBelow(x, y - 1, z) == M_GRID;
+                    boolean upperHolo = m == M_GRID && (!lowerHolo || ceilingAbove(x, y + 1, z) == M_GRID);
+                    int top = upperHolo ? M_GRID : u >= 0 && fm[u] >= 0 ? fm[u] : m != M_GRID ? m : defFloor;
+                    int bottom = lowerHolo ? M_GRID : d >= 0 && cm[d] >= 0 ? cm[d] : m != M_GRID ? m : defFloor;
+                    if (u < 0 || d < 0) {
+                        // Raum nur auf einer Seite: nur falsches Holodeck-Gitter ersetzen
+                        if (m != M_GRID || (u < 0 ? lowerHolo : upperHolo)) continue;
+                        top = bottom = u < 0 ? bottom : top;
                     }
+                    changes.add(new int[] {x, z, m, top, bottom});
                 }
+            for (int[] c : changes) {
+                if (c[3] == c[4]) { if (c[3] != c[2]) set(c[0], y, c[1], DUAL_MATERIALS[c[3]]); }
+                else setDual(c[0], y, c[1], ShipPart.DUAL_FLOOR, Direction.NORTH, c[3], c[4]);
+            }
         }
     }
 
