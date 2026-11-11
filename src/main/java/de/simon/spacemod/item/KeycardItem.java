@@ -42,6 +42,23 @@ public class KeycardItem extends Item {
         return false;
     }
 
+    /**
+     * Shift + Rechtsklick auf eine Tür: verschließen / entriegeln. Beim Schleichen mit einem Gegenstand
+     * in der Hand gibt Minecraft den Klick an den Gegenstand weiter (nicht an den Block), daher hier.
+     */
+    @Override
+    public net.minecraft.world.InteractionResult useOn(net.minecraft.world.item.context.UseOnContext context) {
+        var level = context.getLevel();
+        var pos = context.getClickedPos();
+        var state = level.getBlockState(pos);
+        Player player = context.getPlayer();
+        if (player == null || !player.isShiftKeyDown() || !(state.getBlock() instanceof de.simon.spacemod.block.StarshipDoorBlock))
+            return super.useOn(context);
+        if (!level.isClientSide() && level.getBlockEntity(de.simon.spacemod.block.StarshipDoorBlock.origin(pos, state))
+                instanceof de.simon.spacemod.block.entity.DoorBlockEntity be) be.toggleLock(player, this.level);
+        return net.minecraft.world.InteractionResult.SUCCESS;
+    }
+
     @Override
     public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay display, Consumer<Component> out, TooltipFlag flag) {
         out.accept(Component.translatable("tooltip.simonspacemod.keycard." + level.name().toLowerCase()).withStyle(ChatFormatting.GRAY));

@@ -53,9 +53,37 @@ class EnterpriseBlueprintTest {
         // zweiseitige Wände zwischen Räumen mit verschiedenem Wandmaterial (Krankenstation, Holodeck ...)
         if (scale >= 0.75) assertTrue(counts.getOrDefault(ShipPart.DUAL_WALL, 0) > 0, "keine zweiseitigen Wände");
         // Türen: Waffenkammer mit Sicherheitstür, bei voller Deckaufteilung Türen in vielen Räumen
-        assertNotNull(bp.armoryDoor, "Waffenkammer ohne Tür");
-        int ai = bp.doors.indexOf(bp.armoryDoor);
-        assertTrue(ai >= 0 && bp.doorKinds.get(ai) == EnterpriseBlueprint.DOOR_SECURITY, "Waffenkammer braucht eine Sicherheitstür");
+        boolean armoryLift = bp.liftStops.stream().anyMatch(st -> st.name().endsWith("Waffenkammer"));
+        if (scale >= 0.75) assertTrue(bp.armoryDoor != null && !armoryLift, "Waffenkammer: nur über eine Tür vom Gang, kein eigener Lift");
+        assertTrue(bp.armoryDoor != null || armoryLift, "Waffenkammer ohne Zugang");
+        int[] ab = bp.armoryBounds();
+        assertNotNull(ab, "keine Waffenkammer");
+        if (bp.armoryDoor != null) {
+            int ai = bp.doors.indexOf(bp.armoryDoor);
+            assertTrue(ai >= 0 && bp.doorKinds.get(ai) == EnterpriseBlueprint.DOOR_SECURITY, "Waffenkammer braucht eine Sicherheitstür");
+            // genau eine Tür in den Wänden der Kammer
+            long inWalls = bp.doors.stream().filter(d -> d.getX() >= ab[0] && d.getX() <= ab[1] && d.getZ() >= ab[2] && d.getZ() <= ab[3]
+                && d.getY() > ab[4] && d.getY() < ab[4] + 4).count();
+            assertEquals(1, inWalls, "Waffenkammer darf nur eine Tür haben");
+        }
+        // bei geschlossener Tür kommt man aus der Kammer nirgendwohin (Luft-Flutung in Kopf- und Fußhöhe)
+        for (int y = ab[4] + 1; y <= ab[4] + 3; y++) {
+            java.util.ArrayDeque<int[]> q = new java.util.ArrayDeque<>();
+            java.util.Set<Long> seen = new java.util.HashSet<>();
+            int cx = (ab[0] + ab[1]) / 2, cz = (ab[2] + ab[3]) / 2;
+            for (int x = ab[0] + 1; x < ab[1]; x++) for (int z = ab[2] + 1; z < ab[3]; z++)
+                if (bp.get(x, y, z) == ShipPart.AIR) { q.add(new int[] {x, z}); seen.add(((long) x << 32) | (z & 0xffffffffL)); }
+            while (!q.isEmpty()) {
+                int[] c = q.poll();
+                assertTrue(c[0] > ab[0] && c[0] < ab[1] && c[1] > ab[2] && c[1] < ab[3], "Waffenkammer undicht bei " + c[0] + "," + y + "," + c[1]);
+                for (int[] d : new int[][] {{1, 0}, {-1, 0}, {0, 1}, {0, -1}}) {
+                    int nx = c[0] + d[0], nz = c[1] + d[1];
+                    ShipPart np = bp.get(nx, y, nz);
+                    if (np == null || np != ShipPart.AIR && !np.name().contains("CHAIR") && np != ShipPart.CEILING_LIGHT) continue;
+                    if (seen.add(((long) nx << 32) | (nz & 0xffffffffL))) q.add(new int[] {nx, nz});
+                }
+            }
+        }
         if (scale >= 0.75) assertTrue(bp.doors.size() >= 15, "zu wenige Türen: " + bp.doors.size());
         for (BlockPos d : bp.doors) {
             int code = bp.codeAt(d.getX(), d.getY(), d.getZ());
@@ -65,7 +93,6 @@ class EnterpriseBlueprintTest {
                 if (EnterpriseBlueprint.isDoor(bp.get(d.getX() + dx, d.getY() + dy, d.getZ() + dz))) parts++;
             assertTrue(parts >= 4, "Tür unvollständig bei " + d);
         }
-        assertTrue(bp.liftStops.stream().anyMatch(st -> st.name().endsWith("Waffenkammer")), "Waffenkammer ohne Turbolift");
         assertEquals(design.nx ? 1 : 6, counts.get(ShipPart.TRANSPORTER_PAD), "Transporterraum fehlt");
         // Turbolift-Halte: mindestens Brücke, Maschinenraum, Transporterraum; in Originalgröße alle Decks
         assertEquals(1, bp.weaponStations.size(), "Waffenstation fehlt");

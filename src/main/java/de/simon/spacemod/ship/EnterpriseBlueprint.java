@@ -184,12 +184,13 @@ public final class EnterpriseBlueprint {
         buildBridge();
         BlockPos eng = buildEngineering();
         BlockPos transporter = buildTransporterRoom(fullDecks);
-        BlockPos armory = buildArmory();
+        buildArmory();
         linkTurbolifts(eng, transporter);
-        if (armory != null) liftStops.add(new LiftStop(armory, deckLabel(deckNumber(armory.getY() - 1)) + " – Waffenkammer"));
         if (tng) tngInterior();
         if (nx) nxInterior();
         placeDoors();
+        BlockPos armoryLift = sealArmory();
+        if (armoryLift != null) liftStops.add(new LiftStop(armoryLift, deckLabel(deckNumber(armoryLift.getY() - 1)) + " – Waffenkammer"));
         fixRoomFloors();
         dualWalls();
         dualFloors();
@@ -2795,21 +2796,49 @@ public final class EnterpriseBlueprint {
         int[] sec = nx ? null : secondaryRange();
         int xa = sec != null ? sec[0] + 6 : (int) Math.round(sCx - 0.5 * sR);
         int xb = sec != null ? sec[1] - 6 : (int) Math.round(sCx + 0.7 * sR);
-        for (int zc : new int[] {7, -7, 0})
-            for (int x = xa; x <= xb; x++)
-                for (int f = sizeY - 6; f > 0; f--) {
-                    if (!boxInterior(x - 3, x + 3, f + 1, f + 3, zc - 3, zc + 3)) continue;
-                    if (blocked(x - 5, x + 5, f - 1, f + 5, zc - 5, zc + 5)) continue;
-                    return armoryAt(x, zc, f, 3);
-                }
-        // Ausweichlösung (kleine Größen): irgendwo im Schiff, auch in der Untertasse
-        for (int zc : new int[] {0, 6, -6})
-            for (int x = 6; x < sizeX - 6; x++)
-                for (int f = sizeY - 6; f > 0; f--)
-                    for (int w = 3; w >= 2; w--) // notfalls die kleine Waffenkammer (5 x 5 innen)
-                        if (boxInterior(x - w, x + w, f + 1, f + 3, zc - w, zc + w) && !blocked(x - w - 1, x + w + 1, f, f + 4, zc - w - 1, zc + w + 1))
-                            return armoryAt(x, zc, f, w);
+        // 1. Wahl: auf Deckhöhe, direkt an einem Gang; 2.: irgendwo auf Deckhöhe am Gang; 3.: irgendwo
+        for (int pass = 0; pass < 3; pass++) {
+            if (pass == 0) {
+                for (int zc : new int[] {7, -7, 0})
+                    for (int x = xa; x <= xb; x++)
+                        for (int f = sizeY - 6; f > 0; f--)
+                            if (armoryFits(x, zc, f, 3, true)) return armoryAt(x, zc, f, 3);
+            } else {
+                for (int zc : new int[] {0, 6, -6, 10, -10, 14, -14})
+                    for (int x = 6; x < sizeX - 6; x++)
+                        for (int f = sizeY - 6; f > 0; f--)
+                            for (int w = 3; w >= 2; w--) // notfalls die kleine Waffenkammer (5 x 5 innen)
+                                if (armoryFits(x, zc, f, w, pass == 1)) return armoryAt(x, zc, f, w);
+            }
+        }
         return null;
+    }
+
+    private boolean armoryFits(int x, int zc, int f, int w, boolean needCorridor) {
+        if (Math.floorMod(f - floorBase, DECK_HEIGHT) != 0) return false;
+        if (!boxInterior(x - w, x + w, f + 1, f + 3, zc - w, zc + w)) return false;
+        if (blocked(x - w - 1, x + w + 1, f, f + 4, zc - w - 1, zc + w + 1)) return false;
+        return !needCorridor || corridorBeside(x, zc, f, w);
+    }
+
+    /** Liegt außen an einer Wand der Kammer ein begehbarer Bereich (2 breit, 2 tief, mit Boden)? */
+    private boolean corridorBeside(int x, int zc, int f, int w) {
+        int d = w + 2;
+        for (int t = -w; t <= w - 1; t++) {
+            int[][] spots = {{x - d, zc + t, -1, 0}, {x + d, zc + t, 1, 0}, {x + t, zc - d, 0, -1}, {x + t, zc + d, 0, 1}};
+            for (int[] sp : spots) {
+                int sx = sp[2] == 0 ? 1 : 0, sz = sp[2] == 0 ? 0 : 1;
+                boolean ok = true;
+                for (int k = 0; k <= 1 && ok; k++)
+                    for (int depth = 0; depth <= 1 && ok; depth++) {
+                        int cx = sp[0] + sx * k + sp[2] * depth, cz = sp[1] + sz * k + sp[3] * depth;
+                        ShipPart floor = get(cx, f, cz);
+                        ok = airAt(cx, f + 1, cz) && floor != null && floor != ShipPart.AIR && isInterior(cx, f + 1, cz);
+                    }
+                if (ok) return true;
+            }
+        }
+        return false;
     }
 
     /** Liegt im Kasten etwas, das nicht überbaut werden darf (Lifte, Brücke, Maschinen-, Transporterraum ...)? */
@@ -2855,21 +2884,111 @@ public final class EnterpriseBlueprint {
             for (int z : spots) set(x + w, f + 2, z, ShipPart.PHASER_HOLDER, Direction.NORTH);
         }
         // Phaser-Wandhalter an den Seitenwänden
-        for (int dx : w >= 3 ? new int[] {1, 2} : new int[] {1}) {
+        for (int dx : w >= 3 ? new int[] {0, 2} : new int[] {0, 1}) {
             set(x + dx, f + 2, zc + w, ShipPart.PHASER_HOLDER, Direction.WEST);
             set(x + dx, f + 2, zc - w, ShipPart.PHASER_HOLDER, Direction.EAST);
         }
         // zwei Ladestationen an der Wand, einen Block über dem Boden, daneben frei für ein hängendes Gewehr
-        int xc = x - w + 2;
-        set(xc, f + 2, zc + w, ShipPart.CHARGING_STATION, Direction.WEST);
-        set(xc, f + 2, zc - w, ShipPart.CHARGING_STATION, Direction.EAST);
-        // Vorraum am Turbolift, abgetrennt durch eine Wand mit Sicherheitstür (gelbe Karte)
-        for (int z = zc - w; z <= zc + w; z++)
-            for (int y = f + 1; y <= f + 3; y++) set(x - w + 1, y, z, wall);
-        door(x - w + 1, f + 1, zc, true, DOOR_SECURITY);
-        armoryDoor = new BlockPos(x - w + 1, f + 1, zc);
-        // eigener Turbolift an der Bugwand
-        BlockPos lift = new BlockPos(x - w - 1, f + 1, zc);
+        set(x - w, f + 2, zc + w, ShipPart.CHARGING_STATION, Direction.WEST);
+        set(x - w, f + 2, zc - w, ShipPart.CHARGING_STATION, Direction.EAST);
+        // Zugang: genau eine Sicherheitstür zum Gang, gesetzt erst nach allen anderen Türen (sealArmory)
+        armoryBox = new int[] {x, zc, f, w};
+        armoryWall = wall;
+        return null;
+    }
+
+    /** Waffenkammer (außen, lokal): {x0, x1, z0, z1, Boden} oder null. */
+    public int[] armoryBounds() {
+        if (armoryBox == null) return null;
+        int w = armoryBox[3];
+        return new int[] {armoryBox[0] - w - 1, armoryBox[0] + w + 1, armoryBox[1] - w - 1, armoryBox[1] + w + 1, armoryBox[2]};
+    }
+
+    /** Waffenkammer: Mitte x, Mitte z, Boden, halbe Innenbreite. */
+    private int[] armoryBox;
+    private ShipPart armoryWall;
+
+    /** Entfernt eine ganze 2x2-Tür, zu der die Zelle gehört, und mauert die Öffnung zu. */
+    private void removeDoorAt(int x, int y, int z, ShipPart wall) {
+        int code = codeAt(x, y, z);
+        int part = variant(code), col = part % 2, row = part / 2;
+        boolean alongZ = facing(code) == Direction.SOUTH;
+        int ox = alongZ ? x : x + col, oy = y - row, oz = alongZ ? z - col : z;
+        for (int p = 0; p < 4; p++) {
+            int cx = alongZ ? ox : ox - p % 2, cz = alongZ ? oz + p % 2 : oz;
+            if (isDoor(get(cx, oy + p / 2, cz))) set(cx, oy + p / 2, cz, wall);
+        }
+        int i = doors.indexOf(new BlockPos(ox, oy, oz));
+        if (i >= 0) { doors.remove(i); doorKinds.remove(i); }
+    }
+
+    /**
+     * Waffenkammer abdichten: alle Türen und Lücken in ihren Wänden schließen, dann genau eine
+     * Sicherheitstür (gelbe Karte) zum größten angrenzenden Bereich – dem Gang – setzen. Kein Raum ist
+     * nur durch die Waffenkammer erreichbar. Gibt es keinen Gang daneben (sehr kleine Schiffe), bekommt
+     * sie notfalls einen eigenen Turbolift.
+     * @return Position dieses Turbolifts oder null
+     */
+    private BlockPos sealArmory() {
+        if (armoryBox == null) return null;
+        int ax = armoryBox[0], zc = armoryBox[1], f = armoryBox[2], w = armoryBox[3];
+        int x0 = ax - w - 1, x1 = ax + w + 1, z0 = zc - w - 1, z1 = zc + w + 1;
+        ShipPart wall = armoryWall;
+        // Türen, die die Kammer berühren, entfernen
+        for (int x = x0 - 1; x <= x1 + 1; x++)
+            for (int y = f; y <= f + 4; y++)
+                for (int z = z0 - 1; z <= z1 + 1; z++)
+                    if (isDoor(get(x, y, z)) && x >= x0 && x <= x1 && z >= z0 && z <= z1) removeDoorAt(x, y, z, wall);
+        // Wände, Boden und Decke lückenlos schließen
+        for (int x = x0; x <= x1; x++)
+            for (int y = f; y <= f + 4; y++)
+                for (int z = z0; z <= z1; z++) {
+                    boolean shell = x == x0 || x == x1 || z == z0 || z == z1 || y == f || y == f + 4;
+                    if (!shell) continue;
+                    ShipPart p = get(x, y, z);
+                    if (y == f + 4 && p == ShipPart.CEILING_LIGHT) continue;
+                    if (p == null || p == ShipPart.AIR || !wallLike(p) && mat(p) < 0) set(x, y, z, y == f ? (tng ? ShipPart.TNG_CARPET : nx ? ShipPart.DECK_PLATE : ShipPart.DECK_FLOOR) : wall);
+                }
+        // beste Stelle für die Tür: draußen begehbar, möglichst großer Bereich (Gang)
+        int[] lab = new int[sizeX * sizeZ];
+        int n = regions(f + 1, lab)[0];
+        int[] area = new int[Math.max(1, n)];
+        for (int v : lab) if (v >= 0) area[v]++;
+        int best = -1, bx = 0, bz = 0;
+        boolean bestAlongZ = true;
+        // Kandidaten: {Wandzelle x, z, alongZ, Richtung nach außen dx, dz}
+        List<int[]> cand = new ArrayList<>();
+        for (int z = zc - w; z <= zc + w - 1; z++) {
+            cand.add(new int[] {x0, z, 1, -1, 0});
+            cand.add(new int[] {x1, z, 1, 1, 0});
+        }
+        for (int x = ax - w; x <= ax + w - 1; x++) {
+            cand.add(new int[] {x, z0, 0, 0, -1});
+            cand.add(new int[] {x, z1, 0, 0, 1});
+        }
+        for (int[] c : cand) {
+            int ox = c[3], oz = c[4];
+            int sx = c[2] == 1 ? 0 : 1, sz = c[2] == 1 ? 1 : 0; // zweite Türzelle entlang der Wand
+            boolean ok = true;
+            int reg = -1;
+            for (int k = 0; k <= 1 && ok; k++) {
+                int wx = c[0] + sx * k, wz = c[1] + sz * k;
+                // innen frei, außen zwei Zellen tief frei mit Boden
+                ok = airAt(wx - ox, f + 1, wz - oz) && airAt(wx + ox, f + 1, wz + oz) && airAt(wx + 2 * ox, f + 1, wz + 2 * oz)
+                    && get(wx + ox, f, wz + oz) != null && get(wx + ox, f, wz + oz) != ShipPart.AIR
+                    && isInterior(wx + ox, f + 1, wz + oz);
+                if (ok) reg = lab[lidx(wx + ox, wz + oz)];
+            }
+            if (!ok || reg < 0) continue;
+            if (area[reg] > best) { best = area[reg]; bx = c[0]; bz = c[1]; bestAlongZ = c[2] == 1; }
+        }
+        if (best > 0) {
+            door(bx, f + 1, bz, bestAlongZ, DOOR_SECURITY);
+            armoryDoor = new BlockPos(bestAlongZ ? bx : bx + 1, f + 1, bz);
+            return null;
+        }
+        // kein Gang daneben: eigener Turbolift an der Bugwand
+        BlockPos lift = new BlockPos(x0, f + 1, zc);
         set(lift.getX(), lift.getY(), lift.getZ(), ShipPart.TURBOLIFT, Direction.SOUTH);
         set(lift.getX(), lift.getY() + 1, lift.getZ(), ShipPart.TURBOLIFT_DOOR, Direction.SOUTH);
         return lift;

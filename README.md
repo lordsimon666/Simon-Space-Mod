@@ -259,7 +259,10 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
   200 (Abbauen) bzw. 300 RF (Töten), Gewehre das 1,5-Fache. Die Energiezelle nutzt die
   Standard-Energieschnittstelle von Forge (FE/RF), Ladegeräte anderer Mods können die Waffen also
   auch laden. Die Modelle sind echte 3D-Modelle (auch in der Hand) mit schrägen Griffen und Nasen.
-* **Waffenkammer**: Jedes Schiff hat eine Waffenkammer mit eigenem Turbolift-Halt. Drei
+* **Waffenkammer**: Jedes Schiff hat eine abgeschlossene Waffenkammer auf Deckhöhe, die nur über
+  eine einzige Sicherheitstür (gelbe Karte) vom Gang aus erreichbar ist – kein eigener Turbolift,
+  kein Durchgang in andere Räume. Nur bei sehr kleinen Schiffen ohne Gang neben der Kammer gibt es
+  ersatzweise einen Turbolift-Halt. Drei
   Gewehrständer (2 Blöcke hoch, 4 Gewehre stehen aufrecht nebeneinander; nur in Epochen mit
   Gewehren), Phaser-Wandhalter (1 Block, 4 Phaser) und zwei Ladestationen. Die Waffen sind in den
   Haltern zu sehen. Beim Spawnen ist die Kammer zufällig leer bis ganz voll mit den voll geladenen
@@ -284,7 +287,7 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
   einem kleinen Rahmen eingesetzt. **Sicherheitstüren** (gelb-schwarzer Streifen) öffnen nur mit der
   gelben **Sicherheitskarte**, **Kommandotüren** (roter Streifen, an Brücke und Besprechungsraum) nur
   mit der roten **Kommandokarte**; die **Captain-Karte** öffnet beide. Es reicht, die Karte im Inventar
-  zu haben. Die Waffenkammer hat einen kleinen Vorraum am Turbolift mit einer Sicherheitstür;
+  zu haben. Die Waffenkammer hat genau eine Sicherheitstür zum Gang;
   Maschinenraum und Arrest bekommen ebenfalls Sicherheitstüren.
   **Verschließen**: Shift + Rechtsklick mit einer Karte in der Hand verschließt eine Tür bzw. öffnet
   sie wieder. Sicherheits- und Kommandokarte sind dabei gleichwertig (die eine öffnet, was die
