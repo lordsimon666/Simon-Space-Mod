@@ -73,6 +73,9 @@ public class ChargingStationBlockEntity extends WeaponHolderBlockEntity {
             int moved = stack.getCapability(ForgeCapabilities.ENERGY)
                 .map(e -> e.receiveEnergy(Math.min(be.energy.getEnergyStored(), 2000), false)).orElse(0);
             if (moved > 0) {
+                if (level.getGameTime() % 8 == 0) // Funken hinter der Glasfront zeigen, dass geladen wird
+                    server.sendParticles(net.minecraft.core.particles.ParticleTypes.ELECTRIC_SPARK,
+                        pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 3, 0.25, 0.3, 0.25, 0.05);
                 be.energy.extractEnergyInternal(moved);
                 if (level.getGameTime() % 10 == 0) be.changed(); // Ladestand für die Anzeige
                 else be.setChanged();

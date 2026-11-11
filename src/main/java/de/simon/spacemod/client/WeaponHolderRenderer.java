@@ -32,6 +32,7 @@ public class WeaponHolderRenderer implements BlockEntityRenderer<WeaponHolderBlo
         public Direction facing = Direction.NORTH;
         public int kind; // 0 = Ständer, 1 = Wandhalter, 2 = Ladestation
         public boolean rifle; // Ladestation: Gewehr hängt außen an der Seite
+        public boolean rifleLeft; // rechts ist ein Block im Weg -> links aufhängen
     }
 
     private final ItemModelResolver resolver;
@@ -55,6 +56,14 @@ public class WeaponHolderRenderer implements BlockEntityRenderer<WeaponHolderBlo
         var items = be.items();
         state.items = new ItemStackRenderState[items.size()];
         state.rifle = !items.isEmpty() && items.get(0).getItem() instanceof de.simon.spacemod.item.HandWeaponItem w && w.rifle;
+        if (state.rifle && be.getLevel() != null) {
+            // rechts (vom Betrachter aus) bevorzugt; ist dort ein Block, hängt das Gewehr links
+            var lvl = be.getLevel();
+            var right = be.getBlockPos().relative(state.facing.getCounterClockWise());
+            var left = be.getBlockPos().relative(state.facing.getClockWise());
+            state.rifleLeft = !lvl.getBlockState(right).getCollisionShape(lvl, right).isEmpty()
+                && lvl.getBlockState(left).getCollisionShape(lvl, left).isEmpty();
+        }
         int seed = (int) be.getBlockPos().asLong();
         for (int i = 0; i < items.size(); i++) {
             ItemStack stack = items.get(i);
@@ -85,14 +94,15 @@ public class WeaponHolderRenderer implements BlockEntityRenderer<WeaponHolderBlo
                     pose.scale(0.42F, 0.42F, 0.42F);
                 }
                 default -> {
-                    if (state.rifle) { // Gewehr hängt außen an der rechten Seite, Lauf nach oben
-                        pose.translate(0.43F, 0.32F, -0.05F);
+                    if (state.rifle) { // Gewehr hängt mittig außen an der rechten Seite, ragt oben und unten über
+                        pose.translate(state.rifleLeft ? -0.43F : 0.43F, 0.0F, -0.05F);
                         pose.mulPose(Axis.YP.rotationDegrees(90));
                         pose.mulPose(Axis.ZP.rotationDegrees(90));
                         pose.scale(0.85F, 0.85F, 0.85F);
                     } else { // Phaser steht in der Halterung hinter der Glasfront, Seite nach vorne
-                        pose.translate(0F, -0.12F, 0.02F);
-                        pose.scale(0.6F, 0.6F, 0.6F);
+                        pose.translate(0F, -0.1F, 0.02F);
+                        pose.mulPose(Axis.YP.rotationDegrees(90)); // Seitenansicht zur Glasfront
+                        pose.scale(0.7F, 0.7F, 0.7F);
                     }
                 }
             }

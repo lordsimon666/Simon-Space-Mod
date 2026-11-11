@@ -2379,13 +2379,13 @@ public final class EnterpriseBlueprint {
             for (int z : spots) set(x + w, f + 2, z, ShipPart.PHASER_HOLDER, Direction.NORTH);
         }
         // Phaser-Wandhalter an den Seitenwänden
-        for (int dx : new int[] {-1, 1}) {
+        for (int dx : w >= 3 ? new int[] {0, 2} : new int[] {0, 1}) {
             set(x + dx, f + 2, zc + w, ShipPart.PHASER_HOLDER, Direction.WEST);
             set(x + dx, f + 2, zc - w, ShipPart.PHASER_HOLDER, Direction.EAST);
         }
-        // zwei Ladestationen
-        set(x - w + 1, f + 1, zc + w, ShipPart.CHARGING_STATION, Direction.WEST);
-        set(x - w + 1, f + 1, zc - w, ShipPart.CHARGING_STATION, Direction.EAST);
+        // zwei Ladestationen an der Wand, einen Block über dem Boden, daneben frei für ein hängendes Gewehr
+        set(x - w, f + 2, zc + w, ShipPart.CHARGING_STATION, Direction.WEST);
+        set(x - w, f + 2, zc - w, ShipPart.CHARGING_STATION, Direction.EAST);
         // eigener Turbolift an der Bugwand
         BlockPos lift = new BlockPos(x - w - 1, f + 1, zc);
         set(lift.getX(), lift.getY(), lift.getZ(), ShipPart.TURBOLIFT, Direction.SOUTH);

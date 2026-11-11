@@ -263,8 +263,10 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
 * **Strom (RF)**: Die Warpkerne erzeugen Strom, pro Block und Tick: NX-01 5 RF, Originalserie bis
   B 10 RF, C/D 20 RF, E 30 RF. Alle Blöcke der Mod leiten ihn weiter – Hülle, Wände, Böden und
   die Warpkerne selbst –, so versorgt der ganze Kern das Schiff, nicht nur der Block an der Hülle.
-  Die Ladestation (Speicher 200 000 RF) ist ein Schrank mit Glasfront: ein Phaser steht sichtbar
-  darin, ein Gewehr hängt außen an der Seite. Sie lädt alles mit Forge-Energie (auch Geräte anderer
+  Die Ladestation (Speicher 200 000 RF) ist ein Schrank mit Glasfront, in der Waffenkammer einen
+  Block über dem Boden an der Wand: ein Phaser steht sichtbar darin, ein Gewehr hängt mittig außen
+  an der Seite und ragt oben und unten über – bevorzugt rechts, ist rechts ein Block im Weg, links.
+  Während geladen wird, sprühen Funken hinter dem Glas. Sie lädt alles mit Forge-Energie (auch Geräte anderer
   Mods) und nimmt selbst RF von Kabeln anderer Mods an. Rechtsklick mit leerer Hand auf eine leere Station zeigt Ladestand und
   Leistung des Bordnetzes. Bei gespawnten Schiffen ist die Station fest mit dem Warpkern
   verbunden; selbst gebaute Stationen suchen über leitende Blöcke (bis 60 000 Blöcke weit) nach

@@ -21,6 +21,7 @@ public final class SimonSpaceMod {
         RegisterCommandsEvent.BUS.addListener(EnterpriseCommand::onRegisterCommands);
         ShipBuildManager.init();
         de.simon.spacemod.weapons.CameraControl.init();
+        net.minecraftforge.event.AttachCapabilitiesEvent.ItemStacks.BUS.addListener(de.simon.spacemod.item.HandWeaponItem::attachEnergy);
         if (FMLLoader.getDist().isClient()) {
             FMLClientSetupEvent.getBus(modBus).addListener(de.simon.spacemod.client.ClientSetup::onClientSetup);
             net.minecraftforge.client.event.EntityRenderersEvent.RegisterRenderers.BUS.addListener(de.simon.spacemod.client.ClientSetup::onRegisterRenderers);

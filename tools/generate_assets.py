@@ -1916,10 +1916,12 @@ WEAPON_MODELS = {
 def weapon_display(rifle):
     s = 0.62 if rifle else 1.0
     return {
-        "thirdperson_righthand": {"rotation": [0, -90, 55], "translation": [0, 4.0, 0.5], "scale": [0.85 * s] * 3},
-        "thirdperson_lefthand": {"rotation": [0, 90, -55], "translation": [0, 4.0, 0.5], "scale": [0.85 * s] * 3},
-        "firstperson_righthand": {"rotation": [0, -90, 25], "translation": [1.13, 3.2, 1.13], "scale": [0.68 * s] * 3},
-        "firstperson_lefthand": {"rotation": [0, 90, -25], "translation": [1.13, 3.2, 1.13], "scale": [0.68 * s] * 3},
+        # Außenansicht: Lauf waagerecht nach vorne statt wie ein Schwert nach oben; Gewehre größer
+        "thirdperson_righthand": {"rotation": [90, -90, 0], "translation": [0, 3.0, 1.0], "scale": [0.75 if rifle else 0.85] * 3},
+        "thirdperson_lefthand": {"rotation": [90, 90, 0], "translation": [0, 3.0, 1.0], "scale": [0.75 if rifle else 0.85] * 3},
+        # Lauf zeigt nach vorne (vom Spieler weg), leicht angehoben
+        "firstperson_righthand": {"rotation": [0, 180, 5], "translation": [1.5, 2.5, 0], "scale": [0.5 * s] * 3},
+        "firstperson_lefthand": {"rotation": [0, 180, -5], "translation": [1.5, 2.5, 0], "scale": [0.5 * s] * 3},
         "gui": {"rotation": [10, -20, 0], "translation": [0, 0, 0], "scale": [0.9 * s] * 3},
         "ground": {"rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": [0.5 * s] * 3},
         "fixed": {"rotation": [0, 0, 0], "scale": [1, 1, 1]},
@@ -1993,7 +1995,8 @@ def armory_assets(de, en):
                             el([2, 14, 2], [14, 16, 13], {"north": "#m", "south": "#m", "east": "#m", "west": "#m", "up": "#t", "down": "#t"}),
                             el([5, 2, 7], [11, 3, 10], all6("#d")),                        # Halterung innen
                             el([3, 2, 2], [13, 14, 2.5], all6("#g")),                      # Glasfront
-                            el([0.5, 9, 6], [2, 10, 10], all6("#d")), el([0.5, 3, 6], [2, 4, 10], all6("#d"))]}  # Gewehrhaken
+                            el([0.5, 9, 6], [2, 10, 10], all6("#d")), el([0.5, 3, 6], [2, 4, 10], all6("#d")),     # Gewehrhaken rechts
+                            el([14, 9, 6], [15.5, 10, 10], all6("#d")), el([14, 3, 6], [15.5, 4, 10], all6("#d"))]}  # und links
     for name, model in (("phaser_holder", holder), ("charging_station", charger)):
         write_json(os.path.join(ASSETS, "models", "block", name + ".json"), model)
         write_json(os.path.join(ASSETS, "blockstates", name + ".json"), facing_blockstate(name))

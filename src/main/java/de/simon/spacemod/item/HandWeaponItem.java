@@ -111,10 +111,15 @@ public class HandWeaponItem extends Item {
         player.level().playSound(null, player.blockPosition(), SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.PLAYERS, 0.4F, 1.6F);
     }
 
-    /** Energiezelle als Forge-Energie (FE/RF) – Ladegeräte anderer Mods können die Waffe laden. */
-    @Override
-    public net.minecraftforge.common.capabilities.ICapabilityProvider getCapabilityProvider(ItemStack stack) {
-        return new WeaponEnergy(stack, this);
+    /**
+     * Energiezelle als Forge-Energie (FE/RF) anhängen – Ladegeräte anderer Mods können die Waffe laden.
+     * (Über das Anhänge-Ereignis: Forge wertet {@code getCapabilityProvider} nur aus, wenn jemand darauf hört.)
+     */
+    public static void attachEnergy(net.minecraftforge.event.AttachCapabilitiesEvent.ItemStacks event) {
+        ItemStack stack = event.getObject();
+        if (stack.getItem() instanceof HandWeaponItem w)
+            event.addCapability(net.minecraft.resources.Identifier.fromNamespaceAndPath(de.simon.spacemod.SimonSpaceMod.MODID, "energy"),
+                new WeaponEnergy(stack, w));
     }
 
     @Override
