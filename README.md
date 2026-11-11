@@ -303,13 +303,16 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
   unter der Decke hängen würden, werden entfernt. Räume mit eigenem Boden
   (Teppich, Krankenstation ...) enden sauber an der Tür und reichen nicht mehr in den Korridor.
 * **Alles erreichbar**: Jedes Deck hat einen Turbolift-Halt (auch in der kompakten Größe, für
-  Untertasse und Sekundärrumpf getrennt), und jeder Raum ist über Türen vom Hauptflur aus zu
-  erreichen – Räume ohne Zugang bekommen beim Bau eine Tür, auch durch schräge Wände.
+  Untertasse und Sekundärrumpf getrennt; immer an einer Wand, nie auf der Brücke), und jeder Raum
+  ist über Türen vom Hauptflur aus zu erreichen – Räume ohne Zugang bekommen beim Bau eine Tür,
+  auch durch schräge Wände. Der Halt auf dem Deck der Waffenkammer trägt ihren Namen
+  („…, Waffenkammer“). Türen sind immer ebenerdig und auf beiden Seiten frei (keine Möbel, Wände
+  oder Lampen davor); Löcher im Boden werden geschlossen.
 * **Wände bis zur Decke**: Eingesetzte Räume in Originalgröße (Maschinenraum, Transporterraum,
   Waffenkammer ...) sind Kästen mit eigenem Dach. Liegt die Decke ringsum höher, wird der Raum über
   dem Dach bis zur Decke geschlossen und dünne Wände werden hochgezogen – keine halbhohen Wände mehr.
-* **Licht in jedem Raum**: zusätzlich zu den Leuchten der Raumausstattung hängt überall im
-  4er-Raster eine Deckenleuchte, wo noch keine in der Nähe ist.
+* **Licht in jedem Raum**: zusätzlich zu den Leuchten der Raumausstattung bekommt jede begehbare
+  Stelle eine Deckenleuchte im Umkreis von 3 Blöcken – auch schmale Gänge.
 * **Deckenleuchten**: flache Paneele (1/8 Block) direkt unter der Decke. Sie brauchen Strom: In
   einem gespawnten Schiff leuchten sie, solange noch ein Warpkern-Block steht – ohne Warpkern geht
   das Licht im ganzen Schiff aus (Prüfung etwa alle 5 Sekunden). Selbst gebaute Leuchten brauchen

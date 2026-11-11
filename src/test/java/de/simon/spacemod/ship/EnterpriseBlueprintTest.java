@@ -53,7 +53,18 @@ class EnterpriseBlueprintTest {
         // zweiseitige Wände zwischen Räumen mit verschiedenem Wandmaterial (Krankenstation, Holodeck ...)
         if (scale >= 0.75) assertTrue(counts.getOrDefault(ShipPart.DUAL_WALL, 0) > 0, "keine zweiseitigen Wände");
         // Türen: Waffenkammer mit Sicherheitstür, bei voller Deckaufteilung Türen in vielen Räumen
-        boolean armoryLift = bp.liftStops.stream().anyMatch(st -> st.name().endsWith("Waffenkammer"));
+        boolean armoryLift = bp.liftStops.stream().anyMatch(st -> st.name().endsWith("– Waffenkammer"));
+        assertTrue(bp.liftStops.stream().anyMatch(st -> st.name().contains("Waffenkammer")), "kein Turbolift-Halt nennt die Waffenkammer");
+        // Türen sind auf beiden Seiten frei
+        for (BlockPos o : bp.doors) {
+            int c = bp.codeAt(o.getX(), o.getY(), o.getZ());
+            boolean alongZ = EnterpriseBlueprint.facing(c) == net.minecraft.core.Direction.SOUTH;
+            int px = alongZ ? 1 : 0, pz = alongZ ? 0 : 1;
+            for (int side : new int[] {1, -1}) for (int col = 0; col <= 1; col++) for (int dy = 0; dy <= 1; dy++) {
+                int cx = alongZ ? o.getX() : o.getX() - col, cz = alongZ ? o.getZ() + col : o.getZ();
+                assertEquals(ShipPart.AIR, bp.get(cx + side * px, o.getY() + dy, cz + side * pz), "Tür zugestellt bei " + o);
+            }
+        }
         if (scale >= 0.75) assertTrue(bp.armoryDoor != null && !armoryLift, "Waffenkammer: nur über eine Tür vom Gang, kein eigener Lift");
         assertTrue(bp.armoryDoor != null || armoryLift, "Waffenkammer ohne Zugang");
         int[] ab = bp.armoryBounds();
