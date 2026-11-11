@@ -41,6 +41,12 @@ public class ChargingStationBlockEntity extends WeaponHolderBlockEntity {
         super(ModBlocks.CHARGING_STATION_BE.get(), pos, state, 1);
     }
 
+    /** Alles mit Forge-Energie, das Strom annimmt, darf auf die Station. */
+    @Override
+    public boolean accepts(ItemStack stack) {
+        return stack.getCapability(ForgeCapabilities.ENERGY).map(IEnergyStorage::canReceive).orElse(false);
+    }
+
     public int stored() {
         return energy.getEnergyStored();
     }
@@ -61,10 +67,11 @@ public class ChargingStationBlockEntity extends WeaponHolderBlockEntity {
                 be.energy.receiveEnergy(got, false);
             }
         }
-        // Waffe laden
+        // Waffe (oder jedes andere Gerät mit Forge-Energie) laden
         ItemStack stack = be.items.get(0);
-        if (stack.getItem() instanceof HandWeaponItem w && be.energy.getEnergyStored() > 0) {
-            int moved = w.receive(stack, be.energy.getEnergyStored());
+        if (!stack.isEmpty() && be.energy.getEnergyStored() > 0) {
+            int moved = stack.getCapability(ForgeCapabilities.ENERGY)
+                .map(e -> e.receiveEnergy(Math.min(be.energy.getEnergyStored(), 2000), false)).orElse(0);
             if (moved > 0) {
                 be.energy.extractEnergyInternal(moved);
                 if (level.getGameTime() % 10 == 0) be.changed(); // Ladestand für die Anzeige

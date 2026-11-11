@@ -31,6 +31,7 @@ public class WeaponHolderRenderer implements BlockEntityRenderer<WeaponHolderBlo
         public @Nullable ItemStackRenderState[] items = new ItemStackRenderState[0];
         public Direction facing = Direction.NORTH;
         public int kind; // 0 = Ständer, 1 = Wandhalter, 2 = Ladestation
+        public boolean rifle; // Ladestation: Gewehr hängt außen an der Seite
     }
 
     private final ItemModelResolver resolver;
@@ -53,6 +54,7 @@ public class WeaponHolderRenderer implements BlockEntityRenderer<WeaponHolderBlo
         state.kind = bs.getBlock() instanceof RifleRackBlock ? 0 : bs.getBlock() instanceof PhaserHolderBlock ? 1 : 2;
         var items = be.items();
         state.items = new ItemStackRenderState[items.size()];
+        state.rifle = !items.isEmpty() && items.get(0).getItem() instanceof de.simon.spacemod.item.HandWeaponItem w && w.rifle;
         int seed = (int) be.getBlockPos().asLong();
         for (int i = 0; i < items.size(); i++) {
             ItemStack stack = items.get(i);
@@ -82,10 +84,16 @@ public class WeaponHolderRenderer implements BlockEntityRenderer<WeaponHolderBlo
                     pose.translate((i % 2 == 0 ? -0.22F : 0.22F), (i < 2 ? 0.22F : -0.2F), 0.08F);
                     pose.scale(0.42F, 0.42F, 0.42F);
                 }
-                default -> { // liegend auf der Ladefläche
-                    pose.translate(0F, 0.28F, 0F);
-                    pose.mulPose(Axis.XP.rotationDegrees(-90));
-                    pose.scale(0.55F, 0.55F, 0.55F);
+                default -> {
+                    if (state.rifle) { // Gewehr hängt außen an der rechten Seite, Lauf nach oben
+                        pose.translate(0.43F, 0.32F, -0.05F);
+                        pose.mulPose(Axis.YP.rotationDegrees(90));
+                        pose.mulPose(Axis.ZP.rotationDegrees(90));
+                        pose.scale(0.85F, 0.85F, 0.85F);
+                    } else { // Phaser steht in der Halterung hinter der Glasfront, Seite nach vorne
+                        pose.translate(0F, -0.12F, 0.02F);
+                        pose.scale(0.6F, 0.6F, 0.6F);
+                    }
                 }
             }
             rs.submit(pose, collector, state.lightCoords, OverlayTexture.NO_OVERLAY, 0);

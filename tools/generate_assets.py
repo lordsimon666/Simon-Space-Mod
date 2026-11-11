@@ -1801,6 +1801,17 @@ def tex_charger_side():
     return img
 
 
+def tex_charger_glass():
+    """Durchsichtiges Glas mit leichtem Blaustich und Rahmenkante."""
+    img = Image.new("RGBA", (16, 16), (170, 220, 255, 60))
+    px = img.load()
+    for i in range(16):
+        px[i, 0] = px[i, 15] = px[0, i] = px[15, i] = (120, 150, 170, 200)
+    for i in range(3, 7):
+        px[i, i - 1] = (230, 245, 255, 120)  # Lichtreflex
+    return img
+
+
 def tex_charger_top():
     img = new((40, 46, 56))
     px = img.load()
@@ -1833,50 +1844,72 @@ def tex_weapon_palette():
     return img
 
 
-def wbox(fr, to, color):
+def wbox(fr, to, color, rot=None):
     x0, y0 = (color % 4) * 4, (color // 4) * 4
     uv = [x0 + 1, y0 + 1, x0 + 3, y0 + 3]
-    return {"from": fr, "to": to, "faces": {f: {"texture": "#p", "uv": uv} for f in ("north", "south", "east", "west", "up", "down")}}
+    e = {"from": fr, "to": to, "faces": {f: {"texture": "#p", "uv": uv} for f in ("north", "south", "east", "west", "up", "down")}}
+    if rot:
+        axis, angle, origin = rot
+        e["rotation"] = {"axis": axis, "angle": angle, "origin": origin}
+    return e
 
 
 GM, BK, SV, LG, DG, BE, TG, OR, BL, RD, GD, WH, DB, GN = range(14)
 
-# Seitenansicht in der x/y-Ebene, Lauf nach +x, Griff nach unten, Dicke um z = 8
+
+def grip(x0, x1, y0, y1, c, angle=-22.5, z0=7, z1=9):
+    """Schräg nach hinten geneigter Griff (dreht um die Oberkante)."""
+    return ([x0, y0, z0], [x1, y1, z1], c, ("z", angle, [(x0 + x1) / 2, y1, 8]))
+
+
+def slope(x0, x1, y0, y1, c, angle, ox, oy, z0=6.6, z1=9.4):
+    return ([x0, y0, z0], [x1, y1, z1], c, ("z", angle, [ox, oy, 8]))
+
+
+# Seitenansicht in der x/y-Ebene, Lauf nach +x, Griff nach unten, Dicke um z = 8; Schrägen über gedrehte Teile
 WEAPON_MODELS = {
-    # NX-01: Phasenpistole EM-33 – kantig, metallgrau, blaue Mündung
-    "phaser_nx": [([3, 2, 7], [6, 8, 9], BK), ([2, 8, 6.5], [12, 11, 9.5], GM), ([3, 11, 7], [10, 12, 9], DG),
-                  ([12, 8.5, 7], [15, 10.5, 9], GM), ([15, 9, 7.5], [15.5, 10, 8.5], BL), ([6, 6.5, 7.5], [8, 8, 8.5], BK),
-                  ([5, 9, 9.5], [9, 10, 9.8], SV)],
-    # Originalserie: Typ-2-Phaser mit aufgestecktem Typ 1
-    "phaser_tos": [([2, 1, 7], [5, 8, 9], BK), ([1, 8, 6.5], [9, 10.5, 9.5], BK), ([2, 10.5, 6.8], [8, 12, 9.2], BK),
-                   ([2.5, 12, 7.2], [7.5, 12.4, 8.8], SV), ([9, 8.5, 7.3], [11.5, 10, 8.7], SV),
-                   ([11.5, 8.9, 7.6], [12, 9.6, 8.4], BL), ([4, 8.2, 9.5], [6, 9.4, 9.8], SV)],
-    # Kinofilme: grauer Phaser mit dunklem Griff, Anzeige oben
-    "phaser_movie": [([2, 1, 7], [5.5, 8, 9], DG), ([1.5, 8, 6.5], [11, 11, 9.5], LG), ([11, 8.8, 7.2], [13, 10.2, 8.8], BK),
-                     ([13, 9.2, 7.6], [13.4, 9.8, 8.4], RD), ([4, 11, 7], [8, 11.5, 9], GN), ([5.5, 7, 7.2], [8, 8, 8.8], GD)],
-    # Next Generation: Typ 2 ("Cobra Head")
-    "phaser_tng": [([2, 1, 7], [5, 6, 9], TG), ([4.4, 1, 7.2], [5.2, 6, 8.8], BK), ([3, 6, 7], [7, 9, 9], TG),
-                   ([6, 8, 6.6], [12, 11, 9.4], TG), ([12, 9, 7.2], [13, 10.4, 8.8], BK), ([13, 9.3, 7.6], [13.3, 10.1, 8.4], OR),
-                   ([7, 11, 7.5], [10, 11.3, 8.5], BK)],
-    # Enterprise-E: Typ 2 der 2370er – dunkel, schlank, Goldstreifen
-    "phaser_fc": [([2, 1, 7], [5, 7, 9], BK), ([2, 7, 6.6], [12, 10, 9.4], DG), ([3, 10, 7], [10, 10.8, 9], GM),
-                  ([12, 7.8, 7.2], [14, 9.4, 8.8], BK), ([14, 8.2, 7.6], [14.3, 9, 8.4], OR), ([4, 8, 9.4], [10, 8.6, 9.6], GD)],
-    # NX-01: Phasengewehr der MACOs
-    "rifle_nx": [([-6, 5, 7], [0, 9, 9], BK), ([0, 6, 6.5], [12, 10, 9.5], GM), ([3, 1.5, 7], [6, 6, 9], BK),
-                 ([7, 3, 7.2], [9.5, 6, 8.8], DG), ([12, 7, 7], [21, 9, 9], GM), ([12, 6, 7.3], [18, 7, 8.7], BK),
-                 ([3, 10, 7.2], [10, 12, 8.8], BK), ([10, 10.5, 7.5], [10.4, 11.5, 8.5], BL), ([21, 7.4, 7.4], [21.5, 8.6, 8.6], BL)],
-    # Originalserie: Phasergewehr mit großem Emitter
-    "rifle_tos": [([-6, 4, 7], [-1, 9, 9], BK), ([-1, 6, 6.5], [10, 10, 9.5], LG), ([2, 1.5, 7], [5, 6, 9], BK),
-                  ([10, 7, 7], [19, 9.5, 9], LG), ([19, 6.5, 6.6], [22, 10, 9.4], SV), ([22, 7.6, 7.6], [22.4, 8.9, 8.4], BL),
+    # NX-01: Phasenpistole EM-33 – kantig, metallgrau, schräger Griff, abgeschrägte Front, blaue Mündung
+    "phaser_nx": [grip(3, 6, 2, 8.6, BK), ([2, 8, 6.5], [11, 11, 9.5], GM), slope(9, 12.5, 9.2, 11, GM, -22.5, 12.5, 9.2),
+                  ([3, 11, 7], [9, 12, 9], DG), ([11, 8.4, 7], [14.5, 10.2, 9], GM), ([14.5, 8.7, 7.3], [15.2, 9.9, 8.7], DG),
+                  ([15.2, 8.9, 7.5], [15.6, 9.7, 8.5], BL), ([6, 6.6, 7.6], [8, 8, 8.4], BK), ([4.5, 9, 9.5], [8.5, 10, 9.8], SV),
+                  ([4.5, 9, 6.2], [8.5, 10, 6.5], SV)],
+    # Originalserie: Typ-2-Phaser (Pistolengriff schräg) mit aufgestecktem Typ 1
+    "phaser_tos": [grip(2, 5, 1, 8.4, BK), ([1, 8, 6.5], [9, 10.5, 9.5], BK), ([2, 10.5, 6.8], [7, 12, 9.2], BK),
+                   slope(6, 8.6, 10.5, 12, BK, -22.5, 8.6, 10.5, 6.8, 9.2), ([2.5, 12, 7.2], [6.5, 12.4, 8.8], SV),
+                   ([9, 8.6, 7.3], [11, 10, 8.7], SV), ([11, 8.9, 7.6], [12, 9.7, 8.4], SV), ([12, 9.0, 7.7], [12.4, 9.6, 8.3], BL),
+                   ([3.5, 8.3, 9.5], [5.5, 9.5, 9.8], SV), ([3.5, 8.3, 6.2], [5.5, 9.5, 6.5], SV)],
+    # Kinofilme: grauer Phaser mit dunklem, schrägem Griff, abgeschrägte Nase, Anzeige oben
+    "phaser_movie": [grip(2, 5.5, 1, 8.4, DG), ([1.5, 8, 6.5], [9.5, 11, 9.5], LG), slope(8.5, 12, 8.6, 11, LG, -22.5, 12, 8.6),
+                     ([11, 8.8, 7.2], [13, 10.2, 8.8], BK), ([13, 9.1, 7.5], [13.5, 9.9, 8.5], RD), ([3.5, 11, 7], [7.5, 11.5, 9], GN),
+                     grip(5.5, 8, 6.8, 8, GD, -22.5, 7.2, 8.8)],
+    # Next Generation: Typ 2 ("Cobra Head") – langer, schräg nach vorne steigender Körper mit Kopf
+    "phaser_tng": [grip(2.5, 5.5, 1, 7, TG, -22.5), grip(5.1, 5.7, 1, 7, BK, -22.5, 7.2, 8.8),
+                   slope(4.5, 9, 6, 9, TG, 22.5, 4.5, 6, 7, 9), ([7, 8.6, 6.6], [12, 11.4, 9.4], TG),
+                   slope(11, 13, 8.9, 11.4, TG, -22.5, 13, 8.9), ([12.5, 9.2, 7.2], [13.4, 10.6, 8.8], BK),
+                   ([13.4, 9.5, 7.6], [13.8, 10.3, 8.4], OR), ([7.5, 11.4, 7.5], [10.5, 11.7, 8.5], BK)],
+    # Enterprise-E: Typ 2 der 2370er – dunkel, schlank, schräger Griff, Goldstreifen
+    "phaser_fc": [grip(2, 5, 1, 7.4, BK), ([2, 7, 6.6], [10.5, 10, 9.4], DG), slope(9.5, 13, 7.6, 10, DG, -22.5, 13, 7.6),
+                  ([3, 10, 7], [9, 10.8, 9], GM), ([12, 7.9, 7.2], [14, 9.3, 8.8], BK), ([14, 8.2, 7.6], [14.4, 9, 8.4], OR),
+                  ([3.5, 8, 9.4], [10, 8.6, 9.6], GD), ([3.5, 8, 6.4], [10, 8.6, 6.6], GD)],
+    # NX-01: Phasengewehr der MACOs – schräger Schaft, Magazin, Zielfernrohr
+    "rifle_nx": [slope(-6, 0.5, 4.5, 9, BK, 22.5, 0.5, 9, 7, 9), ([0, 6, 6.5], [12, 10, 9.5], GM), grip(3, 6, 1.5, 6.2, BK),
+                 grip(7, 9.5, 2.5, 6.2, DG, 22.5, 7.2, 8.8), ([12, 7, 7], [20, 9, 9], GM), ([12, 6, 7.3], [17, 7, 8.7], BK),
+                 slope(19, 21, 7, 9, GM, -22.5, 21, 7, 7.2, 8.8), ([3, 10, 7.2], [10, 11.8, 8.8], BK),
+                 ([10, 10.4, 7.5], [10.4, 11.4, 8.5], BL), ([20.6, 7.5, 7.5], [21.3, 8.5, 8.5], BL)],
+    # Originalserie: Phasergewehr – langer grauer Lauf, großer Emitter, schräger Schaft
+    "rifle_tos": [slope(-6, 0, 4, 8.5, BK, 22.5, 0, 8.5, 7, 9), ([-1, 6, 6.5], [10, 10, 9.5], LG), grip(2, 5, 1.5, 6.2, BK),
+                  ([10, 7, 7], [18.5, 9.5, 9], LG), ([18.5, 6.4, 6.6], [21.5, 10.1, 9.4], SV),
+                  slope(21, 22.6, 6.8, 9.7, SV, -22.5, 22.6, 6.8, 6.9, 9.1), ([22.2, 7.7, 7.6], [22.7, 8.8, 8.4], BL),
                   ([1, 10, 7.4], [7, 11.5, 8.6], BK)],
-    # Next Generation: Typ-3-Phasergewehr mit vorderem Griff, ohne Schaft
-    "rifle_tng": [([-4, 6, 6.6], [2, 10, 9.4], TG), ([2, 6.5, 6.6], [14, 10, 9.4], TG), ([0, 1.5, 7], [3, 6.5, 9], BK),
-                  ([9, 2.5, 7], [11, 6.5, 9], BK), ([14, 7, 7], [20, 9.5, 9], TG), ([20, 7.6, 7.5], [20.4, 9, 8.5], OR),
-                  ([3, 10, 7.4], [12, 10.8, 8.6], BK)],
-    # Enterprise-E: Kompressions-Phasergewehr – dunkel mit orangen Streifen
-    "rifle_fc": [([-6, 5, 7], [0, 9.5, 9], BK), ([0, 6, 6.5], [13, 10.5, 9.5], DG), ([2.5, 1.5, 7], [5.5, 6, 9], BK),
-                 ([9, 3, 7.2], [11, 6, 8.8], BK), ([13, 7, 7], [21, 9.5, 9], DG), ([21, 7.3, 7.4], [21.5, 9.2, 8.6], OR),
-                 ([1, 9, 9.5], [12, 9.6, 9.7], OR), ([4, 10.5, 7.4], [10, 12, 8.6], BK)],
+    # Next Generation: Typ-3-Phasergewehr – schräger hinterer und vorderer Griff, kein Schaft
+    "rifle_tng": [slope(-4, 2, 6, 10, TG, -22.5, -4, 10, 6.6, 9.4), ([1, 6.5, 6.6], [14, 10, 9.4], TG), grip(0.5, 3.5, 1.5, 6.6, BK),
+                  grip(9, 11, 2.5, 6.6, BK, 22.5), ([14, 7, 7], [19, 9.5, 9], TG), slope(18.5, 20.5, 7, 9.5, TG, -22.5, 20.5, 7, 7.2, 8.8),
+                  ([20, 7.6, 7.5], [20.5, 9, 8.5], OR), ([3, 10, 7.4], [12, 10.8, 8.6], BK)],
+    # Enterprise-E: Kompressions-Phasergewehr – dunkel, schräger Schaft und Vordergriff, orange Streifen
+    "rifle_fc": [slope(-6, 0.5, 4.5, 9.5, BK, 22.5, 0.5, 9.5, 7, 9), ([0, 6, 6.5], [13, 10.5, 9.5], DG), grip(2.5, 5.5, 1.5, 6.2, BK),
+                 grip(9, 11, 3, 6.2, BK, 22.5, 7.2, 8.8), ([13, 7, 7], [20, 9.5, 9], DG), slope(19.5, 21.5, 7, 9.5, DG, -22.5, 21.5, 7, 7.2, 8.8),
+                 ([21, 7.4, 7.4], [21.5, 9.1, 8.6], OR), ([1, 9, 9.5], [12, 9.6, 9.7], OR), ([1, 9, 6.3], [12, 9.6, 6.5], OR),
+                 ([4, 10.5, 7.4], [10, 12, 8.6], BK)],
 }
 
 
@@ -1913,7 +1946,7 @@ def armory_assets(de, en):
         write_json(os.path.join(ASSETS, "models", "item", name + ".json"), {
             "textures": {"p": tex, "particle": tex},
             "display": weapon_display(name.startswith("rifle")),
-            "elements": [wbox(fr, to, c) for fr, to, c in boxes]})
+            "elements": [wbox(*e) for e in boxes]})
         write_json(os.path.join(ASSETS, "items", name + ".json"), item_def(f"{MODID}:item/{name}"))
         de[f"item.{MODID}.{name}"], en[f"item.{MODID}.{name}"] = WEAPON_NAMES[name]
 
@@ -1950,10 +1983,17 @@ def armory_assets(de, en):
     holder = {"parent": "minecraft:block/block", "textures": {"particle": plate, "p": plate, "m": metal},
               "elements": [el([0, 0, 14], [16, 16, 16], {"north": "#p", "south": "#m", "east": "#m", "west": "#m", "up": "#m", "down": "#m"})]
               + [el([x, y, 12], [x + 6, y + 0.8, 14], all6("#m")) for x in (1, 9) for y in (1.2, 9.2)]}
-    charger = {"parent": "minecraft:block/block",
-               "textures": {"particle": b("charger_side"), "s": b("charger_side"), "t": b("charger_top"), "m": metal},
-               "elements": [el([1, 0, 1], [15, 10, 15], {"north": "#s", "south": "#s", "east": "#s", "west": "#s", "up": "#m", "down": "#m"}),
-                            el([2, 10, 2], [14, 12, 14], {"north": "#m", "south": "#m", "east": "#m", "west": "#m", "up": "#t", "down": "#m"})]}
+    # Ladestation: Schrank mit Glasfront (man sieht den Phaser darin), Haken für ein Gewehr an der Seite
+    glass, side, top = b("charger_glass"), b("charger_side"), b("charger_top")
+    charger = {"parent": "minecraft:block/block", "render_type": "minecraft:translucent",
+               "textures": {"particle": side, "s": side, "t": top, "m": metal, "g": glass, "d": b("trim_black")},
+               "elements": [el([2, 0, 13], [14, 16, 15], all6("#s")),                       # Rückwand
+                            el([2, 0, 2], [3, 16, 13], all6("#s")), el([13, 0, 2], [14, 16, 13], all6("#s")),
+                            el([2, 0, 2], [14, 2, 13], all6("#m")),                        # Boden
+                            el([2, 14, 2], [14, 16, 13], {"north": "#m", "south": "#m", "east": "#m", "west": "#m", "up": "#t", "down": "#t"}),
+                            el([5, 2, 7], [11, 3, 10], all6("#d")),                        # Halterung innen
+                            el([3, 2, 2], [13, 14, 2.5], all6("#g")),                      # Glasfront
+                            el([0.5, 9, 6], [2, 10, 10], all6("#d")), el([0.5, 3, 6], [2, 4, 10], all6("#d"))]}  # Gewehrhaken
     for name, model in (("phaser_holder", holder), ("charging_station", charger)):
         write_json(os.path.join(ASSETS, "models", "block", name + ".json"), model)
         write_json(os.path.join(ASSETS, "blockstates", name + ".json"), facing_blockstate(name))
@@ -2100,6 +2140,7 @@ TEXTURES = {
     "holder_plate": tex_holder_plate,
     "charger_side": tex_charger_side,
     "charger_top": tex_charger_top,
+    "charger_glass": tex_charger_glass,
     "item/weapon_palette": tex_weapon_palette,
     **{f"weapons_console_top_{v}": (lambda v=v: tex_weapons_top(v)) for v in range(4)},
     "turbolift_door_nx": tex_door_nx,

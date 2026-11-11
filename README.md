@@ -251,7 +251,9 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
   Schaden im Töten-Modus: Handphaser 6 (NX-01) bis 14 (E), Gewehre 11,6 bis 24,4; Gewehre
   reichen weiter und bauen härtere Blöcke ab. Jede Waffe hat eine Energiezelle (RF, Balken am
   Item): Handphaser 6 000 bis 14 000 RF, Gewehre das 2,5-Fache; ein Schuss kostet 100 (Betäuben),
-  200 (Abbauen) bzw. 300 RF (Töten), Gewehre das 1,5-Fache.
+  200 (Abbauen) bzw. 300 RF (Töten), Gewehre das 1,5-Fache. Die Energiezelle nutzt die
+  Standard-Energieschnittstelle von Forge (FE/RF), Ladegeräte anderer Mods können die Waffen also
+  auch laden. Die Modelle sind echte 3D-Modelle (auch in der Hand) mit schrägen Griffen und Nasen.
 * **Waffenkammer**: Jedes Schiff hat eine Waffenkammer mit eigenem Turbolift-Halt. Drei
   Gewehrständer (2 Blöcke hoch, 4 Gewehre stehen aufrecht nebeneinander; nur in Epochen mit
   Gewehren), Phaser-Wandhalter (1 Block, 4 Phaser) und zwei Ladestationen. Die Waffen sind in den
@@ -261,8 +263,9 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
 * **Strom (RF)**: Die Warpkerne erzeugen Strom, pro Block und Tick: NX-01 5 RF, Originalserie bis
   B 10 RF, C/D 20 RF, E 30 RF. Alle Blöcke der Mod leiten ihn weiter – Hülle, Wände, Böden und
   die Warpkerne selbst –, so versorgt der ganze Kern das Schiff, nicht nur der Block an der Hülle.
-  Die Ladestation (Speicher 200 000 RF) lädt eine aufgelegte Waffe. Sie nimmt auch RF von Kabeln
-  anderer Mods an. Rechtsklick mit leerer Hand auf eine leere Station zeigt Ladestand und
+  Die Ladestation (Speicher 200 000 RF) ist ein Schrank mit Glasfront: ein Phaser steht sichtbar
+  darin, ein Gewehr hängt außen an der Seite. Sie lädt alles mit Forge-Energie (auch Geräte anderer
+  Mods) und nimmt selbst RF von Kabeln anderer Mods an. Rechtsklick mit leerer Hand auf eine leere Station zeigt Ladestand und
   Leistung des Bordnetzes. Bei gespawnten Schiffen ist die Station fest mit dem Warpkern
   verbunden; selbst gebaute Stationen suchen über leitende Blöcke (bis 60 000 Blöcke weit) nach
   Warpkernen. Mehrere Stationen am selben Kern teilen sich seine Leistung.

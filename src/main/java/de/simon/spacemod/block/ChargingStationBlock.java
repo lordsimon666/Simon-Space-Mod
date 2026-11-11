@@ -23,9 +23,12 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
-/** Ladestation: Phaser oder Gewehr drauflegen, sie wird aus dem Bordnetz geladen. */
+/**
+ * Ladestation: ein Schrank mit Glasfront. Ein Phaser steht sichtbar darin, ein Gewehr hängt außen
+ * an der Seite. Geladen wird aus dem Bordnetz.
+ */
 public class ChargingStationBlock extends WeaponHolderBlock {
-    private static final VoxelShape SHAPE = Block.box(1, 0, 1, 15, 12, 15);
+    private static final VoxelShape SHAPE = Block.box(1, 0, 1, 15, 16, 15);
 
     public ChargingStationBlock(BlockBehaviour.Properties properties) {
         super(properties);

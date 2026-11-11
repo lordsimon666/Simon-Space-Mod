@@ -111,12 +111,10 @@ public class HandWeaponItem extends Item {
         player.level().playSound(null, player.blockPosition(), SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.PLAYERS, 0.4F, 1.6F);
     }
 
-    /** Lädt das Item; gibt zurück, wie viel aufgenommen wurde. */
-    public int receive(ItemStack stack, int amount) {
-        int e = energy(stack);
-        int add = Math.min(amount, Math.min(chargeRate(), capacity() - e));
-        if (add > 0) setEnergy(stack, e + add);
-        return Math.max(0, add);
+    /** Energiezelle als Forge-Energie (FE/RF) – Ladegeräte anderer Mods können die Waffe laden. */
+    @Override
+    public net.minecraftforge.common.capabilities.ICapabilityProvider getCapabilityProvider(ItemStack stack) {
+        return new WeaponEnergy(stack, this);
     }
 
     @Override
