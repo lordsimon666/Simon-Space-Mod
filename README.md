@@ -305,6 +305,9 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
 * **Alles erreichbar**: Jedes Deck hat einen Turbolift-Halt (auch in der kompakten Größe, für
   Untertasse und Sekundärrumpf getrennt), und jeder Raum ist über Türen vom Hauptflur aus zu
   erreichen – Räume ohne Zugang bekommen beim Bau eine Tür, auch durch schräge Wände.
+* **Wände bis zur Decke**: Eingesetzte Räume in Originalgröße (Maschinenraum, Transporterraum,
+  Waffenkammer ...) sind Kästen mit eigenem Dach. Liegt die Decke ringsum höher, wird der Raum über
+  dem Dach bis zur Decke geschlossen und dünne Wände werden hochgezogen – keine halbhohen Wände mehr.
 * **Licht in jedem Raum**: zusätzlich zu den Leuchten der Raumausstattung hängt überall im
   4er-Raster eine Deckenleuchte, wo noch keine in der Nähe ist.
 * **Deckenleuchten**: flache Paneele (1/8 Block) direkt unter der Decke. Sie brauchen Strom: In

@@ -92,5 +92,19 @@ class RoomsTest {
             100.0 * unreachable / walkTotal, dark, 100.0 * dark / walkTotal, ex);
         assertTrue(unreachable * 100 < walkTotal * maxUnreachablePercent, "zu viele unerreichbare Räume: " + unreachable + ex);
         assertTrue(dark * 10 < walkTotal, "zu viele dunkle Stellen: " + dark);
+
+        // keine halbhohen Wände: eine Wand (mind. 2 hoch, beidseitig Luft) endet nicht unter der Decke
+        int half = 0;
+        for (int x = 1; x < bp.sizeX - 1; x++) for (int z = -bp.zOffset + 1; z < bp.zOffset; z++) for (int y = 2; y < bp.sizeY - 2; y++) {
+            ShipPart p = bp.get(x, y, z), b = bp.get(x, y - 1, z);
+            if (p == null || b == null || !p.name().contains("WALL") || p.name().startsWith("HULL") || !b.name().contains("WALL")) continue;
+            if (bp.get(x, y + 1, z) != ShipPart.AIR) continue;
+            boolean thin = bp.get(x - 1, y, z) == ShipPart.AIR && bp.get(x + 1, y, z) == ShipPart.AIR
+                || bp.get(x, y, z - 1) == ShipPart.AIR && bp.get(x, y, z + 1) == ShipPart.AIR;
+            int k = 1; while (k < 10 && bp.get(x, y + k, z) == ShipPart.AIR) k++;
+            if (thin && k < 10 && bp.get(x, y + k, z) != null) half++;
+        }
+        System.out.println("HALFWALLS " + d + " " + s + " " + half);
+        assertTrue(half < 40, "halbhohe Wände: " + half);
     }
 }

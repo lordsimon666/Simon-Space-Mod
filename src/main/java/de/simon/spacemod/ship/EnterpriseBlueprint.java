@@ -198,6 +198,7 @@ public final class EnterpriseBlueprint {
         if (armoryLift != null) liftStops.add(new LiftStop(armoryLift, deckLabel(deckNumber(armoryLift.getY() - 1)) + " – Waffenkammer"));
         brightenBridge();
         removeBeams();
+        wallsToCeiling();
         fixLights();
         fixRoomFloors();
         dualFloors();   // zuerst: die Wände richten sich nach dem (korrigierten) Boden davor
@@ -620,6 +621,52 @@ public final class EnterpriseBlueprint {
                     y = top;
                 }
             }
+    }
+
+    /**
+     * Wände bis zur Decke: eingesetzte Räume (Maschinenraum, Transporterraum, Waffenkammer ...) sind
+     * Kästen mit eigenem Dach. Liegt die Decke ringsum höher, endet die Wand sonst mitten in der Luft.
+     * Dünne Wände (beidseitig Luft) und Dachränder werden bis zur Decke (höchstens 8 Blöcke) verlängert.
+     */
+    private void wallsToCeiling() {
+        for (int x = 1; x < sizeX - 1; x++)
+            for (int z = -zOffset + 1; z < zOffset; z++)
+                for (int y = 1; y < sizeY - 2; y++) {
+                    ShipPart p = get(x, y, z);
+                    if (p == null || get(x, y + 1, z) != ShipPart.AIR || !isInterior(x, y, z)) continue;
+                    ShipPart wall;
+                    if (wallLike(p) && !p.name().startsWith("HULL") && p != ShipPart.CEILING_PANEL) {
+                        boolean thin = get(x - 1, y, z) == ShipPart.AIR && get(x + 1, y, z) == ShipPart.AIR
+                            || get(x, y, z - 1) == ShipPart.AIR && get(x, y, z + 1) == ShipPart.AIR;
+                        // nur echte Wände (mind. 2 hoch), keine Stufen oder Brüstungen
+                        if (!thin || !wallLike(get(x, y - 1, z))) continue;
+                        wall = p;
+                    } else if (p == ShipPart.CEILING_PANEL && Math.floorMod(y - floorBase, DECK_HEIGHT) != 0
+                               && compAt(x, y, z) != BRIDGE && !nearLiftOrDoor(x, y + 1, z)
+                               && (get(x, y - 1, z) == ShipPart.AIR || wallLike(get(x, y - 1, z)) && !get(x, y - 1, z).name().startsWith("HULL"))) {
+                        // Dach eines eingesetzten Raums unterhalb der Decke (ein Dach auf Deckhöhe ist der Boden
+                        // des nächsten Decks): den Raum darüber bis zur Decke füllen, außen Wandmaterial
+                        ShipPart below = get(x, y - 1, z);
+                        wall = wallLike(below) ? below : mat(defaultWall() >= 0 ? DUAL_MATERIALS[defaultWall()] : ShipPart.CORRIDOR_WALL) >= 0
+                            ? DUAL_MATERIALS[defaultWall()] : ShipPart.CORRIDOR_WALL;
+                    } else continue;
+                    int k = 1;
+                    while (k <= 9 && get(x, y + k, z) == ShipPart.AIR) k++;
+                    ShipPart top = get(x, y + k, z);
+                    if (k > 9 || top == null || k - 1 > 8) continue;
+                    for (int i = 1; i < k; i++) if (isInterior(x, y + i, z)) set(x, y + i, z, wall);
+                    y += k - 1;
+                }
+    }
+
+    private boolean nearLiftOrDoor(int x, int y, int z) {
+        for (int dx = -1; dx <= 1; dx++)
+            for (int dz = -1; dz <= 1; dz++)
+                for (int dy = -1; dy <= 1; dy++) {
+                    ShipPart q = get(x + dx, y + dy, z + dz);
+                    if (isLift(q) || q == ShipPart.TURBOLIFT_DOOR || isDoor(q)) return true;
+                }
+        return false;
     }
 
     /** Mehr Licht auf der Brücke: Deckenleuchten im Raster 3 x 3 überall, wo die Decke hoch genug ist. */
