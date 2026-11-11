@@ -1917,11 +1917,12 @@ def weapon_display(rifle):
     s = 0.62 if rifle else 1.0
     return {
         # Außenansicht: Lauf waagerecht nach vorne statt wie ein Schwert nach oben; Gewehre größer
-        "thirdperson_righthand": {"rotation": [90, -90, 0], "translation": [0, 3.0, 1.0], "scale": [0.75 if rifle else 0.85] * 3},
-        "thirdperson_lefthand": {"rotation": [90, 90, 0], "translation": [0, 3.0, 1.0], "scale": [0.75 if rifle else 0.85] * 3},
-        # Lauf zeigt nach vorne (vom Spieler weg), leicht angehoben
-        "firstperson_righthand": {"rotation": [0, 180, 5], "translation": [1.5, 2.5, 0], "scale": [0.5 * s] * 3},
-        "firstperson_lefthand": {"rotation": [0, 180, -5], "translation": [1.5, 2.5, 0], "scale": [0.5 * s] * 3},
+        # Außenansicht mit nach vorne gestrecktem Arm (siehe WeaponClientExtensions): Lauf verlängert den Arm, Griff nach unten
+        "thirdperson_righthand": {"rotation": [0, 90, 0], "translation": [0, 0, 0], "scale": [0.75 if rifle else 0.85] * 3},
+        "thirdperson_lefthand": {"rotation": [0, -90, 0], "translation": [0, 0, 0], "scale": [0.75 if rifle else 0.85] * 3},
+        # Ego-Ansicht: Lauf zeigt gerade nach vorne (im Spiel geprüft)
+        "firstperson_righthand": {"rotation": [0, 90, 0], "translation": [1.5, 2.5, 0], "scale": [0.5 * s] * 3},
+        "firstperson_lefthand": {"rotation": [0, -90, 0], "translation": [1.5, 2.5, 0], "scale": [0.5 * s] * 3},
         "gui": {"rotation": [10, -20, 0], "translation": [0, 0, 0], "scale": [0.9 * s] * 3},
         "ground": {"rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": [0.5 * s] * 3},
         "fixed": {"rotation": [0, 0, 0], "scale": [1, 1, 1]},
@@ -2840,6 +2841,7 @@ def main():
         f"tooltip.{MODID}.weapon.energy": "Energie: %s / %s RF",
         f"tooltip.{MODID}.weapon.mode": "Modus: %s",
         f"tooltip.{MODID}.weapon.keys": "Rechtsklick: feuern, V: Modus wechseln",
+        f"tooltip.{MODID}.rifle.keys": "Rechtsklick halten: zielen, Linksklick: feuern, V: Modus wechseln",
         f"message.{MODID}.charger.status": "Ladestation: %s / %s RF, Bordnetz: %s RF/t",
     })
     en.update({
@@ -2852,6 +2854,7 @@ def main():
         f"tooltip.{MODID}.weapon.energy": "Energy: %s / %s RF",
         f"tooltip.{MODID}.weapon.mode": "Mode: %s",
         f"tooltip.{MODID}.weapon.keys": "Right click: fire, V: switch mode",
+        f"tooltip.{MODID}.rifle.keys": "Hold right click: aim, left click: fire, V: switch mode",
         f"message.{MODID}.charger.status": "Charging station: %s / %s RF, ship grid: %s RF/t",
     })
     write_json(os.path.join(ASSETS, "lang", "de_de.json"), de)

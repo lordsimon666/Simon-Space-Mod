@@ -50,6 +50,8 @@ public final class TurboliftNetwork {
                         de.simon.spacemod.weapons.CameraAction::handle)
                     .addMain(de.simon.spacemod.item.WeaponModeMessage.class, de.simon.spacemod.item.WeaponModeMessage.STREAM_CODEC,
                         de.simon.spacemod.item.WeaponModeMessage::handle)
+                    .addMain(de.simon.spacemod.item.FireWeaponMessage.class, de.simon.spacemod.item.FireWeaponMessage.STREAM_CODEC,
+                        de.simon.spacemod.item.FireWeaponMessage::handle)
                 .clientbound()
                     .addMain(de.simon.spacemod.weapons.CameraState.class, de.simon.spacemod.weapons.CameraState.STREAM_CODEC,
                         de.simon.spacemod.weapons.CameraState::handle)

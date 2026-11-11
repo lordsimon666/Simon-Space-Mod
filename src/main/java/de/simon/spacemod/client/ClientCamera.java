@@ -50,6 +50,11 @@ public final class ClientCamera {
             return true;
         });
         RenderHandEvent.BUS.addListener(e -> active);
+        // beim Zielen mit dem Gewehr leicht heranzoomen
+        net.minecraftforge.client.event.ComputeFovModifierEvent.BUS.addListener(e -> {
+            if (WeaponClientExtensions.aiming(e.getPlayer(), e.getPlayer().getUseItem()))
+                e.setNewFovModifier(e.getFovModifier() * 0.6F);
+        });
         ClientPlayerNetworkEvent.LoggingOut.BUS.addListener(e -> active = false);
     }
 
@@ -67,6 +72,16 @@ public final class ClientCamera {
     private static void onTick() {
         var mc = Minecraft.getInstance();
         var player = mc.player;
+        // Phasergewehr: Linksklick feuert (beim Zielen und aus der Hüfte) statt zu schlagen/abzubauen
+        if (!active && player != null && mc.gui.screen() == null
+            && player.getMainHandItem().getItem() instanceof de.simon.spacemod.item.HandWeaponItem w && w.rifle) {
+            boolean shot = false;
+            while (mc.options.keyAttack.consumeClick()) shot = true;
+            if (shot) {
+                TurboliftNetwork.sendToServer(new de.simon.spacemod.item.FireWeaponMessage(player.getYRot(), player.getXRot()));
+                player.swing(net.minecraft.world.InteractionHand.MAIN_HAND);
+            }
+        }
         boolean mode = false;
         while (WEAPON_MODE.consumeClick()) mode = true;
         if (mode && player != null && mc.gui.screen() == null

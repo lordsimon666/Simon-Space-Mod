@@ -142,15 +142,44 @@ public class HandWeaponItem extends Item {
         out.accept(Component.translatable("tooltip.simonspacemod.weapon.energy", energy(stack), capacity()).withStyle(ChatFormatting.AQUA));
         out.accept(Component.translatable("tooltip.simonspacemod.weapon.mode",
             Component.translatable("mode.simonspacemod." + mode(stack).name().toLowerCase())).withStyle(ChatFormatting.GRAY));
-        out.accept(Component.translatable("tooltip.simonspacemod.weapon.keys").withStyle(ChatFormatting.DARK_GRAY));
+        out.accept(Component.translatable(rifle ? "tooltip.simonspacemod.rifle.keys" : "tooltip.simonspacemod.weapon.keys")
+            .withStyle(ChatFormatting.DARK_GRAY));
     }
 
     // ---- Feuern ----
 
+    /** Haltung und Zielen (nur auf dem Client). */
+    @Override
+    public void initializeClient(java.util.function.Consumer<net.minecraftforge.client.extensions.common.IClientItemExtensions> consumer) {
+        consumer.accept(de.simon.spacemod.client.WeaponClientExtensions.create(this));
+    }
+
+    /** Gewehre: Rechtsklick halten = zielen (gefeuert wird mit Linksklick); Phaser: Rechtsklick feuert. */
     @Override
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
-        ItemStack stack = player.getItemInHand(hand);
+        if (rifle) {
+            player.startUsingItem(hand);
+            return InteractionResult.CONSUME;
+        }
         if (!(level instanceof ServerLevel server) || !(player instanceof ServerPlayer sp)) return InteractionResult.SUCCESS;
+        return fire(server, sp, player.getItemInHand(hand));
+    }
+
+    @Override
+    public int getUseDuration(ItemStack stack, LivingEntity user) {
+        return rifle ? 72000 : 0;
+    }
+
+    @Override
+    public net.minecraft.world.item.ItemUseAnimation getUseAnimation(ItemStack stack) {
+        return net.minecraft.world.item.ItemUseAnimation.NONE;
+    }
+
+    /** Schuss (Phaser per Rechtsklick, Gewehr per Linksklick über das Netzwerk). */
+    public InteractionResult fire(ServerLevel server, ServerPlayer sp, ItemStack stack) {
+        Player player = sp;
+        Level level = server;
+        if (player.getCooldowns().isOnCooldown(stack)) return InteractionResult.FAIL;
         Mode m = mode(stack);
         int cost = cost(m);
         if (!player.getAbilities().instabuild && energy(stack) < cost) {

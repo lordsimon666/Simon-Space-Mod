@@ -246,7 +246,12 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
   | Next Generation (C, D) | Typ 2 („Cobra Head“) | Typ-3-Phasergewehr (nur D) |
   | Enterprise-E | Typ 2 der 2370er | Kompressions-Phasergewehr |
 
-  **Rechtsklick** feuert, **V** schaltet zwischen **Betäuben** (langsam und schwach machen),
+  **Phaser:** Rechtsklick feuert; in der Außenansicht streckt die Figur den Arm nach vorne und der
+  Lauf verlängert den Arm. **Gewehre:** Linksklick feuert, **Rechtsklick halten zielt** – in der
+  Ego-Ansicht wandert das Gewehr in die Bildmitte, man schaut über das Visier (leichter Zoom); in der
+  Außenansicht wird es mit beiden Händen gerade nach vorne gehalten. In der Ego-Ansicht zeigt der Lauf
+  immer nach vorne.
+  **V** schaltet zwischen **Betäuben** (langsam und schwach machen),
   **Töten** (Schaden und Feuer) und **Abbauen** (baut den Block ab, Gewehre eine 3x3-Fläche).
   Schaden im Töten-Modus: Handphaser 6 (NX-01) bis 14 (E), Gewehre 11,6 bis 24,4; Gewehre
   reichen weiter und bauen härtere Blöcke ab. Jede Waffe hat eine Energiezelle (RF, Balken am
