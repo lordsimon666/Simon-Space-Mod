@@ -20,7 +20,17 @@ import de.simon.spacemod.turbolift.TurboliftMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraftforge.common.extensions.IForgeMenuType;
 import de.simon.spacemod.item.CommunicatorItem;
+import de.simon.spacemod.item.HandWeaponItem;
+import com.mojang.serialization.Codec;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import de.simon.spacemod.block.PhaserBlock;
+import de.simon.spacemod.block.WarpCoreBlock;
+import de.simon.spacemod.block.RifleRackBlock;
+import de.simon.spacemod.block.PhaserHolderBlock;
+import de.simon.spacemod.block.ChargingStationBlock;
+import de.simon.spacemod.block.entity.ChargingStationBlockEntity;
 import de.simon.spacemod.block.TorpedoLauncherBlock;
 import de.simon.spacemod.entity.TorpedoEntity;
 import de.simon.spacemod.block.WeaponsConsoleBlock;
@@ -59,6 +69,8 @@ public final class ModBlocks {
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, SimonSpaceMod.MODID);
     public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, SimonSpaceMod.MODID);
     public static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, SimonSpaceMod.MODID);
+    public static final DeferredRegister<DataComponentType<?>> COMPONENTS = DeferredRegister.create(Registries.DATA_COMPONENT_TYPE, SimonSpaceMod.MODID);
+    public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, SimonSpaceMod.MODID);
     public static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, SimonSpaceMod.MODID);
 
     private static final List<RegistryObject<? extends Item>> TAB_ITEMS = new ArrayList<>();
@@ -133,7 +145,7 @@ public final class ModBlocks {
     public static final RegistryObject<Block> CAPTAINS_CHAIR_TNG = block("captains_chair_tng", CaptainsChairBlock::new,
         BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BROWN).strength(1.5F).sound(SoundType.WOOL).noOcclusion());
     public static final RegistryObject<Block> WARP_CORE_TNG = block("warp_core_tng",
-        p -> new GlowParticleBlock(p, GlowParticleBlock.Kind.WARP_CORE), glowing(glass(MapColor.COLOR_BLUE), 15));
+        p -> new WarpCoreBlock(p, 20), glowing(glass(MapColor.COLOR_BLUE), 15));
     public static final RegistryObject<Block> MSD_DISPLAY = block("msd_display", VariantFacingBlock::new, glowing(metal(MapColor.COLOR_BLACK), 10));
     public static final RegistryObject<Block> SITUATION_TABLE = block("situation_table",
         p -> new ShapedBlock(p, Block.box(0, 0, 0, 16, 14, 16)), glowing(metal(MapColor.COLOR_BLACK), 8).noOcclusion());
@@ -221,8 +233,13 @@ public final class ModBlocks {
     public static final RegistryObject<Block> LCARS_PANEL = block("lcars_panel", FacingBlock::new, glowing(metal(MapColor.COLOR_BLACK), 8));
     public static final RegistryObject<Block> VIEWSCREEN = block("viewscreen", FacingBlock::new, glowing(metal(MapColor.COLOR_BLACK), 6));
     public static final RegistryObject<Block> CAPTAINS_CHAIR = block("captains_chair", CaptainsChairBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion());
+    // Warpkerne liefern Strom fürs Bordnetz (RF pro Tick und Block): NX-01 5, Originalserie bis B 10, C/D 20, E 30
     public static final RegistryObject<Block> WARP_CORE = block("warp_core",
-        p -> new GlowParticleBlock(p, GlowParticleBlock.Kind.WARP_CORE), glowing(glass(MapColor.COLOR_BLUE), 15));
+        p -> new WarpCoreBlock(p, 10), glowing(glass(MapColor.COLOR_BLUE), 15));
+    public static final RegistryObject<Block> WARP_CORE_NX = block("warp_core_nx",
+        p -> new WarpCoreBlock(p, 5), glowing(glass(MapColor.COLOR_LIGHT_BLUE), 13));
+    public static final RegistryObject<Block> WARP_CORE_E = block("warp_core_e",
+        p -> new WarpCoreBlock(p, 30), glowing(glass(MapColor.COLOR_BLUE), 15));
     public static final RegistryObject<Block> PLASMA_CONDUIT = block("plasma_conduit", Block::new, glowing(metal(MapColor.COLOR_BLUE), 10));
     public static final RegistryObject<Block> TRANSPORTER_PAD = block("transporter_pad", TransporterPadBlock::new, glowing(metal(MapColor.METAL), 9).noOcclusion());
     public static final RegistryObject<Block> TURBOLIFT = block("turbolift", TurboliftBlock::new, glowing(metal(MapColor.COLOR_YELLOW), 8));
@@ -247,10 +264,51 @@ public final class ModBlocks {
     public static final RegistryObject<Block> WEAPONS_CONSOLE = block("weapons_console", WeaponsConsoleBlock::new,
         glowing(metal(MapColor.COLOR_RED), 7).noOcclusion());
 
+    // --- Waffenkammer ---
+    public static final RegistryObject<Block> RIFLE_RACK = block("rifle_rack", RifleRackBlock::new, metal(MapColor.COLOR_GRAY).noOcclusion());
+    public static final RegistryObject<Block> PHASER_HOLDER = block("phaser_holder", PhaserHolderBlock::new, metal(MapColor.COLOR_GRAY).noOcclusion());
+    public static final RegistryObject<Block> CHARGING_STATION = block("charging_station", ChargingStationBlock::new,
+        glowing(metal(MapColor.COLOR_LIGHT_BLUE), 6).noOcclusion());
+    public static final RegistryObject<BlockEntityType<RifleRackBlock.RackBE>> RIFLE_RACK_BE = BLOCK_ENTITIES.register("rifle_rack",
+        () -> new BlockEntityType<>(RifleRackBlock.RackBE::new, java.util.Set.of(RIFLE_RACK.get())));
+    public static final RegistryObject<BlockEntityType<PhaserHolderBlock.HolderBE>> PHASER_HOLDER_BE = BLOCK_ENTITIES.register("phaser_holder",
+        () -> new BlockEntityType<>(PhaserHolderBlock.HolderBE::new, java.util.Set.of(PHASER_HOLDER.get())));
+    public static final RegistryObject<BlockEntityType<ChargingStationBlockEntity>> CHARGING_STATION_BE = BLOCK_ENTITIES.register("charging_station",
+        () -> new BlockEntityType<>(ChargingStationBlockEntity::new, java.util.Set.of(CHARGING_STATION.get())));
+
     // --- Items ---
     public static final RegistryObject<Item> COMMUNICATOR = ITEMS.register("communicator",
         () -> new CommunicatorItem(new Item.Properties().setId(ITEMS.key("communicator")).stacksTo(1)));
     static { TAB_ITEMS.add(COMMUNICATOR); }
+
+    // --- Handwaffen: Ladung (RF) und Modus am Item ---
+    public static final RegistryObject<DataComponentType<Integer>> WEAPON_ENERGY = COMPONENTS.register("weapon_energy",
+        () -> DataComponentType.<Integer>builder().persistent(Codec.INT).networkSynchronized(ByteBufCodecs.VAR_INT).build());
+    public static final RegistryObject<DataComponentType<Integer>> WEAPON_MODE = COMPONENTS.register("weapon_mode",
+        () -> DataComponentType.<Integer>builder().persistent(Codec.INT).networkSynchronized(ByteBufCodecs.VAR_INT).build());
+
+    /**
+     * Handphaser und Phasergewehre je Epoche (Gewehre nur, wo es im Original welche gab):
+     * NX-01: Phasenpistole EM-33 und Phasengewehr der MACOs; Originalserie: Typ-2-Phaser und
+     * Phasergewehr; Kinofilme (A, B): Handphaser; Next Generation (C, D): Typ-2 und Typ-3-Gewehr;
+     * Enterprise-E: Typ-2 und Kompressions-Phasergewehr.
+     */
+    public static final RegistryObject<Item> PHASER_NX = weapon("phaser_nx", 1, false, 0x7FC8FF, 0xE8F8FF, true);
+    public static final RegistryObject<Item> PHASER_TOS = weapon("phaser_tos", 2, false, 0x4F8CFF, 0xD8E6FF, false);
+    public static final RegistryObject<Item> PHASER_MOVIE = weapon("phaser_movie", 3, false, 0xFF4A20, 0xFFD8B0, false);
+    public static final RegistryObject<Item> PHASER_TNG = weapon("phaser_tng", 4, false, 0xFF8418, 0xFFE8B0, false);
+    public static final RegistryObject<Item> PHASER_FC = weapon("phaser_fc", 5, false, 0xFF6A18, 0xFFF0C8, false);
+    public static final RegistryObject<Item> RIFLE_NX = weapon("rifle_nx", 1, true, 0x7FC8FF, 0xE8F8FF, true);
+    public static final RegistryObject<Item> RIFLE_TOS = weapon("rifle_tos", 2, true, 0x4F8CFF, 0xD8E6FF, false);
+    public static final RegistryObject<Item> RIFLE_TNG = weapon("rifle_tng", 4, true, 0xFF8418, 0xFFE8B0, false);
+    public static final RegistryObject<Item> RIFLE_FC = weapon("rifle_fc", 5, true, 0xFF6A18, 0xFFF0C8, false);
+
+    private static RegistryObject<Item> weapon(String name, int tier, boolean rifle, int color, int core, boolean pulse) {
+        RegistryObject<Item> item = ITEMS.register(name,
+            () -> new HandWeaponItem(new Item.Properties().setId(ITEMS.key(name)), tier, rifle, color, core, pulse));
+        TAB_ITEMS.add(item);
+        return item;
+    }
 
     // --- Uniformen: je Epoche Kommando, Wissenschaft und Betrieb, dazu Hosen und Stiefel ---
     public static final String[] UNIFORM_ERAS = {"nx", "tos", "movie", "tng", "fc"};
@@ -301,6 +359,8 @@ public final class ModBlocks {
         ITEMS.register(modBus);
         MENUS.register(modBus);
         ENTITIES.register(modBus);
+        COMPONENTS.register(modBus);
+        BLOCK_ENTITIES.register(modBus);
         TABS.register(modBus);
     }
 

@@ -73,6 +73,11 @@ public final class EnterpriseBlueprint {
     /** Photonentorpedo-Werfer und (nur E) Quantentorpedo-Werfer (lokal). */
     public final List<BlockPos> torpedoes = new ArrayList<>();
     public final List<BlockPos> quantums = new ArrayList<>();
+    /** Waffenkammer: Gewehrständer (unterer Block), Phaser-Wandhalter, Ladestationen; alle Warpkern-Blöcke. */
+    public final List<BlockPos> armoryRacks = new ArrayList<>();
+    public final List<BlockPos> armoryHolders = new ArrayList<>();
+    public final List<BlockPos> armoryChargers = new ArrayList<>();
+    public final List<BlockPos> warpCores = new ArrayList<>();
     /** Waffenstationen auf der Brücke (lokal). */
     public final List<BlockPos> weaponStations = new ArrayList<>();
     /** Position (lokal) vor dem Kommandantensessel, für den Teleport zur Brücke. */
@@ -179,7 +184,9 @@ public final class EnterpriseBlueprint {
         buildBridge();
         BlockPos eng = buildEngineering();
         BlockPos transporter = buildTransporterRoom(fullDecks);
+        BlockPos armory = buildArmory();
         linkTurbolifts(eng, transporter);
+        if (armory != null) liftStops.add(new LiftStop(armory, deckLabel(deckNumber(armory.getY() - 1)) + " – Waffenkammer"));
         if (tng) tngInterior();
         if (nx) nxInterior();
         liftStyle();
@@ -1450,6 +1457,10 @@ public final class EnterpriseBlueprint {
                 phasers.add(new BlockPos(x, y, z));
             else if (p == ShipPart.WEAPONS_CONSOLE) weaponStations.add(new BlockPos(x, y, z));
             else if (p == ShipPart.TORPEDO_LAUNCHER) torpedoes.add(new BlockPos(x, y, z));
+            else if (isWarpCore(p)) warpCores.add(new BlockPos(x, y, z));
+            else if (p == ShipPart.RIFLE_RACK && variant(code) == 0) armoryRacks.add(new BlockPos(x, y, z));
+            else if (p == ShipPart.PHASER_HOLDER) armoryHolders.add(new BlockPos(x, y, z));
+            else if (p == ShipPart.CHARGING_STATION) armoryChargers.add(new BlockPos(x, y, z));
             else if (p == ShipPart.QUANTUM_LAUNCHER) quantums.add(new BlockPos(x, y, z));
         });
     }
@@ -2164,7 +2175,8 @@ public final class EnterpriseBlueprint {
         int yF = box[2];
         room(x0 - 10, x0 + 10, yF, yF + 7, -6, 6, tng ? ShipPart.TNG_WALL : ShipPart.CORRIDOR_WALL);
 
-        ShipPart core = tng ? ShipPart.WARP_CORE_TNG : ShipPart.WARP_CORE;
+        ShipPart core = nx ? ShipPart.WARP_CORE_NX : design == ShipDesign.NCC_1701_E ? ShipPart.WARP_CORE_E
+            : tng ? ShipPart.WARP_CORE_TNG : ShipPart.WARP_CORE;
         ShipPart conduit = ShipPart.PLASMA_CONDUIT;
         ShipPart console = tng ? ShipPart.TNG_CONSOLE : ShipPart.ENGINEERING_CONSOLE;
         ShipPart lcars = ShipPart.LCARS_PANEL;
@@ -2290,13 +2302,104 @@ public final class EnterpriseBlueprint {
         return null;
     }
 
+    public static boolean isWarpCore(ShipPart p) {
+        return p == ShipPart.WARP_CORE || p == ShipPart.WARP_CORE_TNG || p == ShipPart.WARP_CORE_NX || p == ShipPart.WARP_CORE_E;
+    }
+
+    /** Hatte die Epoche Phasergewehre? (NX-01, Originalserie, D und E – Kinofilme und C nicht) */
+    public boolean hasRifles() {
+        return nx || design == ShipDesign.NCC_1701 || design == ShipDesign.NCC_1701_D || design == ShipDesign.NCC_1701_E;
+    }
+
+    /**
+     * Waffenkammer (9 x 9 außen, ein Deck hoch) mit eigenem Turbolift: an der Heckwand drei
+     * Gewehrständer (je 4 Gewehre, nur in Epochen mit Gewehren), an den Seitenwänden
+     * Phaser-Wandhalter, dazu zwei Ladestationen. Gesucht wird in der Sekundärhülle (NX-01: Untertasse)
+     * abseits der Mittellinie, wo nur Quartiere und Lager liegen.
+     * @return Position des Turbolifts oder {@code null}
+     */
+    private BlockPos buildArmory() {
+        int[] sec = nx ? null : secondaryRange();
+        int xa = sec != null ? sec[0] + 6 : (int) Math.round(sCx - 0.5 * sR);
+        int xb = sec != null ? sec[1] - 6 : (int) Math.round(sCx + 0.7 * sR);
+        for (int zc : new int[] {7, -7, 0})
+            for (int x = xa; x <= xb; x++)
+                for (int f = sizeY - 6; f > 0; f--) {
+                    if (!boxInterior(x - 3, x + 3, f + 1, f + 3, zc - 3, zc + 3)) continue;
+                    if (blocked(x - 5, x + 5, f - 1, f + 5, zc - 5, zc + 5)) continue;
+                    return armoryAt(x, zc, f, 3);
+                }
+        // Ausweichlösung (kleine Größen): irgendwo im Schiff, auch in der Untertasse
+        for (int zc : new int[] {0, 6, -6})
+            for (int x = 6; x < sizeX - 6; x++)
+                for (int f = sizeY - 6; f > 0; f--)
+                    for (int w = 3; w >= 2; w--) // notfalls die kleine Waffenkammer (5 x 5 innen)
+                        if (boxInterior(x - w, x + w, f + 1, f + 3, zc - w, zc + w) && !blocked(x - w - 1, x + w + 1, f, f + 4, zc - w - 1, zc + w + 1))
+                            return armoryAt(x, zc, f, w);
+        return null;
+    }
+
+    /** Liegt im Kasten etwas, das nicht überbaut werden darf (Lifte, Brücke, Maschinen-, Transporterraum ...)? */
+    private boolean blocked(int x0, int x1, int y0, int y1, int z0, int z1) {
+        for (LiftStop st : liftStops) {
+            BlockPos p = st.pos();
+            if (p.getX() >= x0 && p.getX() <= x1 && p.getY() >= y0 && p.getY() <= y1 && p.getZ() >= z0 && p.getZ() <= z1) return true;
+        }
+        for (int x = x0; x <= x1; x++)
+            for (int y = y0; y <= y1; y++)
+                for (int z = z0; z <= z1; z++) {
+                    if (compAt(x, y, z) == BRIDGE) return true;
+                    ShipPart p = get(x, y, z);
+                    if (p == null) continue;
+                    switch (p) {
+                        case TURBOLIFT, TURBOLIFT_DOOR, TURBOLIFT_FRAME, TRANSPORTER_PAD, TRANSPORTER_WALL, TRANSPORTER_PLATFORM,
+                             ENGINEERING_CONSOLE, TNG_CONSOLE, ENT_CONSOLE, LADDER, BIOBED, CONFERENCE_TABLE, VIEWSCREEN,
+                             HOLODECK_GRID, IRON_BARS, FORCE_FIELD, PLASMA_CONDUIT, WARP_CORE, WARP_CORE_TNG, WARP_CORE_NX, WARP_CORE_E,
+                             TURBOLIFT_NX, TURBOLIFT_REFIT, TURBOLIFT_EXCELSIOR, TURBOLIFT_TNG -> { return true; }
+                        default -> {}
+                    }
+                }
+        return false;
+    }
+
+    /** @param w halbe Innenbreite (3 = 7 x 7 innen, 2 = kleine Kammer 5 x 5) */
+    private BlockPos armoryAt(int x, int zc, int f, int w) {
+        ShipPart wall = tng ? ShipPart.TNG_WALL : nx ? ShipPart.ENT_WALL : ShipPart.CORRIDOR_WALL;
+        room(x - w - 1, x + w + 1, f, f + 4, zc - w - 1, zc + w + 1, wall);
+        for (int dx : new int[] {-w + 1, w - 1})
+            for (int dz : new int[] {-w + 1, w - 1}) set(x + dx, f + 4, zc + dz, ShipPart.CEILING_LIGHT);
+        // Gewehrständer an der Heckwand (2 hoch, Front zum Bug)
+        int[] spots = {zc - 2, zc, zc + 2};
+        if (hasRifles()) {
+            for (int z : spots) {
+                set(x + w, f + 1, z, ShipPart.RIFLE_RACK, Direction.NORTH, 0);
+                set(x + w, f + 2, z, ShipPart.RIFLE_RACK, Direction.NORTH, 1);
+            }
+        } else {
+            for (int z : spots) set(x + w, f + 2, z, ShipPart.PHASER_HOLDER, Direction.NORTH);
+        }
+        // Phaser-Wandhalter an den Seitenwänden
+        for (int dx : new int[] {-1, 1}) {
+            set(x + dx, f + 2, zc + w, ShipPart.PHASER_HOLDER, Direction.WEST);
+            set(x + dx, f + 2, zc - w, ShipPart.PHASER_HOLDER, Direction.EAST);
+        }
+        // zwei Ladestationen
+        set(x - w + 1, f + 1, zc + w, ShipPart.CHARGING_STATION, Direction.WEST);
+        set(x - w + 1, f + 1, zc - w, ShipPart.CHARGING_STATION, Direction.EAST);
+        // eigener Turbolift an der Bugwand
+        BlockPos lift = new BlockPos(x - w - 1, f + 1, zc);
+        set(lift.getX(), lift.getY(), lift.getZ(), ShipPart.TURBOLIFT, Direction.SOUTH);
+        set(lift.getX(), lift.getY() + 1, lift.getZ(), ShipPart.TURBOLIFT_DOOR, Direction.SOUTH);
+        return lift;
+    }
+
     /** Liegt schon ein besonderer Raum (Maschinenraum, Brücke) im Kasten? */
     private boolean boxTouches(int x0, int x1, int y0, int y1, int z0, int z1) {
         for (int x = x0; x <= x1; x++)
             for (int y = y0; y <= y1; y++)
                 for (int z = z0; z <= z1; z++) {
                     ShipPart p = get(x, y, z);
-                    if (p == ShipPart.WARP_CORE || p == ShipPart.WARP_CORE_TNG || p == ShipPart.ENGINEERING_CONSOLE || p == ShipPart.TNG_CONSOLE
+                    if (isWarpCore(p) || p == ShipPart.ENGINEERING_CONSOLE || p == ShipPart.TNG_CONSOLE
                         || p == ShipPart.TURBOLIFT || compAt(x, y, z) == BRIDGE) return true;
                 }
         return false;

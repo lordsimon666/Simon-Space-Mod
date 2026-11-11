@@ -107,6 +107,11 @@
     "simonspacemod:biobed",
     "simonspacemod:hull_plating_slab",
     "simonspacemod:hull_marking_slab",
-    "simonspacemod:step_slab"
+    "simonspacemod:step_slab",
+    "simonspacemod:rifle_rack",
+    "simonspacemod:phaser_holder",
+    "simonspacemod:charging_station",
+    "simonspacemod:warp_core_nx",
+    "simonspacemod:warp_core_e"
   ]
 }

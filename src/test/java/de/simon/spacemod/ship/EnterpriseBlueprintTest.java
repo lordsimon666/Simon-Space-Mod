@@ -46,7 +46,11 @@ class EnterpriseBlueprintTest {
         assertTrue(counts.getOrDefault(ShipPart.BRIDGE_STATION, 0) + counts.getOrDefault(ShipPart.EXCELSIOR_CONSOLE, 0)
             + counts.getOrDefault(ShipPart.TNG_CONSOLE, 0) + counts.getOrDefault(ShipPart.ENT_CONSOLE, 0) > 10, "Stationen fehlen");
         assertTrue(counts.getOrDefault(ShipPart.TRANSPORTER_ENERGIZER, 0) > 0 || design.nx, "Energiewand fehlt");
-        assertTrue(counts.getOrDefault(design.tng ? ShipPart.WARP_CORE_TNG : ShipPart.WARP_CORE, 0) >= 30, "Warpkern fehlt");
+        assertTrue(bp.warpCores.size() >= 30, "Warpkern fehlt");
+        assertEquals(2, bp.armoryChargers.size(), "Waffenkammer: Ladestationen fehlen");
+        assertEquals(bp.hasRifles() ? 3 : 0, bp.armoryRacks.size(), "Waffenkammer: Gewehrständer");
+        assertTrue(bp.armoryHolders.size() >= 4, "Waffenkammer: Phaserhalter fehlen");
+        assertTrue(bp.liftStops.stream().anyMatch(st -> st.name().endsWith("Waffenkammer")), "Waffenkammer ohne Turbolift");
         assertEquals(design.nx ? 1 : 6, counts.get(ShipPart.TRANSPORTER_PAD), "Transporterraum fehlt");
         // Turbolift-Halte: mindestens Brücke, Maschinenraum, Transporterraum; in Originalgröße alle Decks
         assertEquals(1, bp.weaponStations.size(), "Waffenstation fehlt");

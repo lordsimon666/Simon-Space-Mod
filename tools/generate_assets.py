@@ -1718,6 +1718,262 @@ def uniform_assets(de, en):
                "Sternenflotten-Stiefel", "Starfleet Boots")
 
 
+# ---------------------------------------------------------------------------------------------
+#  Warpkerne der NX-01 und der E, Waffenkammer und Handwaffen
+# ---------------------------------------------------------------------------------------------
+
+def tex_warp_core_nx():
+    """NX-01: waagerechter Reaktor, hellblau mit dunklen Ringen (schwächer)."""
+    img = new((0, 0, 0))
+    px = img.load()
+    for x in range(16):
+        for y in range(16):
+            center = 1 - abs(y - 7.5) / 8
+            ring = x % 5 == 0
+            px[x, y] = (40, 60, 80, 255) if ring else (clamp(70 + 80 * center), clamp(150 + 80 * center), clamp(200 + 55 * center), 255)
+    return img
+
+
+def tex_warp_core_nx_top():
+    img = new((60, 70, 86))
+    px = img.load()
+    for x in range(16):
+        for y in range(16):
+            d = math.hypot(x - 7.5, y - 7.5)
+            if d < 5:
+                px[x, y] = (clamp(120 + 20 * (5 - d)), clamp(190 + 10 * (5 - d)), 255, 255)
+    return img
+
+
+def tex_warp_core_e():
+    """Enterprise-E: kräftig blau mit hellen Energiebändern (am stärksten)."""
+    img = new((0, 0, 0))
+    px = img.load()
+    for x in range(16):
+        for y in range(16):
+            band = (math.sin(y * math.pi / 2) + 1) / 2
+            center = 1 - abs(x - 7.5) / 8
+            px[x, y] = (clamp(40 + 160 * band * center), clamp(80 + 150 * center * (0.5 + band / 2)), 255, 255)
+    for y in range(16):
+        px[0, y] = px[15, y] = (50, 60, 90, 255)
+    return img
+
+
+def tex_warp_core_e_top():
+    img = new((50, 60, 90))
+    px = img.load()
+    for x in range(16):
+        for y in range(16):
+            d = math.hypot(x - 7.5, y - 7.5)
+            if d < 6.5:
+                px[x, y] = (clamp(120 + 20 * (6.5 - d)), clamp(170 + 13 * (6.5 - d)), 255, 255)
+    return img
+
+
+def tex_armory_metal():
+    img = noise(new((78, 82, 92)), 4, 500)
+    px = img.load()
+    for i in range(16):
+        px[i, 0] = px[i, 15] = px[0, i] = px[15, i] = (56, 60, 68, 255)
+    for x in (4, 8, 12):
+        for y in range(2, 14):
+            px[x, y] = (60, 64, 72, 255)
+    return img
+
+
+def tex_holder_plate():
+    img = noise(new((96, 102, 112)), 3, 501)
+    px = img.load()
+    for (x0, y0) in ((1, 1), (9, 1), (1, 9), (9, 9)):
+        for x in range(x0, x0 + 6):
+            for y in range(y0, y0 + 6):
+                px[x, y] = (64, 68, 76, 255)
+    return img
+
+
+def tex_charger_side():
+    img = noise(new((70, 76, 86)), 3, 502)
+    px = img.load()
+    for x in range(3, 13):
+        px[x, 5] = (90, 200, 255, 255)
+    for x in range(3, 13, 3):
+        px[x, 9] = (255, 180, 60, 255)
+    return img
+
+
+def tex_charger_top():
+    img = new((40, 46, 56))
+    px = img.load()
+    for x in range(16):
+        for y in range(16):
+            if 2 <= x <= 13 and 3 <= y <= 12:
+                g = 1 - abs(y - 7.5) / 6
+                px[x, y] = (clamp(60 + 60 * g), clamp(150 + 80 * g), 255, 255)
+    return img
+
+
+# Farbfelder für die Handwaffen (4 x 4 Felder je 4 x 4 Pixel)
+WEAPON_COLORS = [
+    (70, 74, 80), (28, 28, 32), (180, 184, 190), (150, 150, 154),
+    (90, 90, 96), (196, 186, 160), (132, 130, 126), (255, 140, 40),
+    (110, 190, 255), (255, 60, 40), (210, 170, 70), (230, 230, 235),
+    (50, 60, 75), (60, 200, 120), (90, 60, 40), (230, 200, 60),
+]
+
+
+def tex_weapon_palette():
+    img = Image.new("RGBA", (16, 16))
+    px = img.load()
+    rnd = random.Random(510)
+    for i, c in enumerate(WEAPON_COLORS):
+        x0, y0 = (i % 4) * 4, (i // 4) * 4
+        for x in range(x0, x0 + 4):
+            for y in range(y0, y0 + 4):
+                px[x, y] = shade(c, rnd.randint(-5, 5))
+    return img
+
+
+def wbox(fr, to, color):
+    x0, y0 = (color % 4) * 4, (color // 4) * 4
+    uv = [x0 + 1, y0 + 1, x0 + 3, y0 + 3]
+    return {"from": fr, "to": to, "faces": {f: {"texture": "#p", "uv": uv} for f in ("north", "south", "east", "west", "up", "down")}}
+
+
+GM, BK, SV, LG, DG, BE, TG, OR, BL, RD, GD, WH, DB, GN = range(14)
+
+# Seitenansicht in der x/y-Ebene, Lauf nach +x, Griff nach unten, Dicke um z = 8
+WEAPON_MODELS = {
+    # NX-01: Phasenpistole EM-33 – kantig, metallgrau, blaue Mündung
+    "phaser_nx": [([3, 2, 7], [6, 8, 9], BK), ([2, 8, 6.5], [12, 11, 9.5], GM), ([3, 11, 7], [10, 12, 9], DG),
+                  ([12, 8.5, 7], [15, 10.5, 9], GM), ([15, 9, 7.5], [15.5, 10, 8.5], BL), ([6, 6.5, 7.5], [8, 8, 8.5], BK),
+                  ([5, 9, 9.5], [9, 10, 9.8], SV)],
+    # Originalserie: Typ-2-Phaser mit aufgestecktem Typ 1
+    "phaser_tos": [([2, 1, 7], [5, 8, 9], BK), ([1, 8, 6.5], [9, 10.5, 9.5], BK), ([2, 10.5, 6.8], [8, 12, 9.2], BK),
+                   ([2.5, 12, 7.2], [7.5, 12.4, 8.8], SV), ([9, 8.5, 7.3], [11.5, 10, 8.7], SV),
+                   ([11.5, 8.9, 7.6], [12, 9.6, 8.4], BL), ([4, 8.2, 9.5], [6, 9.4, 9.8], SV)],
+    # Kinofilme: grauer Phaser mit dunklem Griff, Anzeige oben
+    "phaser_movie": [([2, 1, 7], [5.5, 8, 9], DG), ([1.5, 8, 6.5], [11, 11, 9.5], LG), ([11, 8.8, 7.2], [13, 10.2, 8.8], BK),
+                     ([13, 9.2, 7.6], [13.4, 9.8, 8.4], RD), ([4, 11, 7], [8, 11.5, 9], GN), ([5.5, 7, 7.2], [8, 8, 8.8], GD)],
+    # Next Generation: Typ 2 ("Cobra Head")
+    "phaser_tng": [([2, 1, 7], [5, 6, 9], TG), ([4.4, 1, 7.2], [5.2, 6, 8.8], BK), ([3, 6, 7], [7, 9, 9], TG),
+                   ([6, 8, 6.6], [12, 11, 9.4], TG), ([12, 9, 7.2], [13, 10.4, 8.8], BK), ([13, 9.3, 7.6], [13.3, 10.1, 8.4], OR),
+                   ([7, 11, 7.5], [10, 11.3, 8.5], BK)],
+    # Enterprise-E: Typ 2 der 2370er – dunkel, schlank, Goldstreifen
+    "phaser_fc": [([2, 1, 7], [5, 7, 9], BK), ([2, 7, 6.6], [12, 10, 9.4], DG), ([3, 10, 7], [10, 10.8, 9], GM),
+                  ([12, 7.8, 7.2], [14, 9.4, 8.8], BK), ([14, 8.2, 7.6], [14.3, 9, 8.4], OR), ([4, 8, 9.4], [10, 8.6, 9.6], GD)],
+    # NX-01: Phasengewehr der MACOs
+    "rifle_nx": [([-6, 5, 7], [0, 9, 9], BK), ([0, 6, 6.5], [12, 10, 9.5], GM), ([3, 1.5, 7], [6, 6, 9], BK),
+                 ([7, 3, 7.2], [9.5, 6, 8.8], DG), ([12, 7, 7], [21, 9, 9], GM), ([12, 6, 7.3], [18, 7, 8.7], BK),
+                 ([3, 10, 7.2], [10, 12, 8.8], BK), ([10, 10.5, 7.5], [10.4, 11.5, 8.5], BL), ([21, 7.4, 7.4], [21.5, 8.6, 8.6], BL)],
+    # Originalserie: Phasergewehr mit großem Emitter
+    "rifle_tos": [([-6, 4, 7], [-1, 9, 9], BK), ([-1, 6, 6.5], [10, 10, 9.5], LG), ([2, 1.5, 7], [5, 6, 9], BK),
+                  ([10, 7, 7], [19, 9.5, 9], LG), ([19, 6.5, 6.6], [22, 10, 9.4], SV), ([22, 7.6, 7.6], [22.4, 8.9, 8.4], BL),
+                  ([1, 10, 7.4], [7, 11.5, 8.6], BK)],
+    # Next Generation: Typ-3-Phasergewehr mit vorderem Griff, ohne Schaft
+    "rifle_tng": [([-4, 6, 6.6], [2, 10, 9.4], TG), ([2, 6.5, 6.6], [14, 10, 9.4], TG), ([0, 1.5, 7], [3, 6.5, 9], BK),
+                  ([9, 2.5, 7], [11, 6.5, 9], BK), ([14, 7, 7], [20, 9.5, 9], TG), ([20, 7.6, 7.5], [20.4, 9, 8.5], OR),
+                  ([3, 10, 7.4], [12, 10.8, 8.6], BK)],
+    # Enterprise-E: Kompressions-Phasergewehr – dunkel mit orangen Streifen
+    "rifle_fc": [([-6, 5, 7], [0, 9.5, 9], BK), ([0, 6, 6.5], [13, 10.5, 9.5], DG), ([2.5, 1.5, 7], [5.5, 6, 9], BK),
+                 ([9, 3, 7.2], [11, 6, 8.8], BK), ([13, 7, 7], [21, 9.5, 9], DG), ([21, 7.3, 7.4], [21.5, 9.2, 8.6], OR),
+                 ([1, 9, 9.5], [12, 9.6, 9.7], OR), ([4, 10.5, 7.4], [10, 12, 8.6], BK)],
+}
+
+
+def weapon_display(rifle):
+    s = 0.62 if rifle else 1.0
+    return {
+        "thirdperson_righthand": {"rotation": [0, -90, 55], "translation": [0, 4.0, 0.5], "scale": [0.85 * s] * 3},
+        "thirdperson_lefthand": {"rotation": [0, 90, -55], "translation": [0, 4.0, 0.5], "scale": [0.85 * s] * 3},
+        "firstperson_righthand": {"rotation": [0, -90, 25], "translation": [1.13, 3.2, 1.13], "scale": [0.68 * s] * 3},
+        "firstperson_lefthand": {"rotation": [0, 90, -25], "translation": [1.13, 3.2, 1.13], "scale": [0.68 * s] * 3},
+        "gui": {"rotation": [10, -20, 0], "translation": [0, 0, 0], "scale": [0.9 * s] * 3},
+        "ground": {"rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": [0.5 * s] * 3},
+        "fixed": {"rotation": [0, 0, 0], "scale": [1, 1, 1]},
+        "on_shelf": {"rotation": [0, 0, 0], "scale": [1, 1, 1]},
+    }
+
+
+WEAPON_NAMES = {
+    "phaser_nx": ("Phasenpistole EM-33 (NX-01)", "EM-33 Phase Pistol (NX-01)"),
+    "phaser_tos": ("Handphaser Typ 2 (Originalserie)", "Type 2 Phaser (Original Series)"),
+    "phaser_movie": ("Handphaser (Kinofilme)", "Hand Phaser (Movie Era)"),
+    "phaser_tng": ("Handphaser Typ 2 (Next Generation)", "Type 2 Phaser (Next Generation)"),
+    "phaser_fc": ("Handphaser Typ 2 (Enterprise-E)", "Type 2 Phaser (Enterprise-E)"),
+    "rifle_nx": ("Phasengewehr der MACOs (NX-01)", "MACO Phase Rifle (NX-01)"),
+    "rifle_tos": ("Phasergewehr (Originalserie)", "Phaser Rifle (Original Series)"),
+    "rifle_tng": ("Phasergewehr Typ 3 (Next Generation)", "Type 3 Phaser Rifle (Next Generation)"),
+    "rifle_fc": ("Kompressions-Phasergewehr (Enterprise-E)", "Compression Phaser Rifle (Enterprise-E)"),
+}
+
+
+def armory_assets(de, en):
+    tex = f"{MODID}:item/weapon_palette"
+    for name, boxes in WEAPON_MODELS.items():
+        write_json(os.path.join(ASSETS, "models", "item", name + ".json"), {
+            "textures": {"p": tex, "particle": tex},
+            "display": weapon_display(name.startswith("rifle")),
+            "elements": [wbox(fr, to, c) for fr, to, c in boxes]})
+        write_json(os.path.join(ASSETS, "items", name + ".json"), item_def(f"{MODID}:item/{name}"))
+        de[f"item.{MODID}.{name}"], en[f"item.{MODID}.{name}"] = WEAPON_NAMES[name]
+
+    # Gewehrständer: zwei Hälften
+    metal = b("armory_metal")
+    lower = {"parent": "minecraft:block/block", "textures": {"particle": metal, "m": metal, "d": b("trim_black")},
+             "elements": [el([0, 0, 4], [16, 3, 16], all6("#m")), el([0, 0, 13], [16, 16, 16], all6("#m"))]
+             + [el([x, 3, 5], [x + 0.6, 6, 13], all6("#d")) for x in (0, 3.7, 7.7, 11.7, 15.4)]}
+    upper = {"parent": "minecraft:block/block", "textures": {"particle": metal, "m": metal, "d": b("trim_black")},
+             "elements": [el([0, 0, 13], [16, 16, 16], all6("#m")), el([0, 6, 10], [16, 8, 13], all6("#d"))]
+             + [el([x, 5, 9], [x + 0.6, 9, 13], all6("#m")) for x in (0, 3.7, 7.7, 11.7, 15.4)]}
+    write_json(os.path.join(ASSETS, "models", "block", "rifle_rack_lower.json"), lower)
+    write_json(os.path.join(ASSETS, "models", "block", "rifle_rack_upper.json"), upper)
+    rot = {"north": 0, "east": 90, "south": 180, "west": 270}
+    variants = {}
+    for d, r in rot.items():
+        for half in ("lower", "upper"):
+            m = {"model": b("rifle_rack_" + half)}
+            if r:
+                m["y"] = r
+            variants[f"facing={d},half={half}"] = m
+    write_json(os.path.join(ASSETS, "blockstates", "rifle_rack.json"), {"variants": variants})
+    write_json(os.path.join(ASSETS, "items", "rifle_rack.json"), item_def(b("rifle_rack_lower")))
+    write_json(os.path.join(DATA, "loot_table", "blocks", "rifle_rack.json"), {
+        "type": "minecraft:block",
+        "pools": [{"rolls": 1, "entries": [{"type": "minecraft:item", "name": f"{MODID}:rifle_rack"}],
+                   "conditions": [{"condition": "minecraft:survives_explosion"},
+                                  {"condition": "minecraft:block_state_property", "block": f"{MODID}:rifle_rack",
+                                   "properties": {"half": "lower"}}]}],
+        "random_sequence": f"{MODID}:blocks/rifle_rack"})
+
+    # Phaser-Wandhalter und Ladestation (mit Blickrichtung)
+    plate = b("holder_plate")
+    holder = {"parent": "minecraft:block/block", "textures": {"particle": plate, "p": plate, "m": metal},
+              "elements": [el([0, 0, 14], [16, 16, 16], {"north": "#p", "south": "#m", "east": "#m", "west": "#m", "up": "#m", "down": "#m"})]
+              + [el([x, y, 12], [x + 6, y + 0.8, 14], all6("#m")) for x in (1, 9) for y in (1.2, 9.2)]}
+    charger = {"parent": "minecraft:block/block",
+               "textures": {"particle": b("charger_side"), "s": b("charger_side"), "t": b("charger_top"), "m": metal},
+               "elements": [el([1, 0, 1], [15, 10, 15], {"north": "#s", "south": "#s", "east": "#s", "west": "#s", "up": "#m", "down": "#m"}),
+                            el([2, 10, 2], [14, 12, 14], {"north": "#m", "south": "#m", "east": "#m", "west": "#m", "up": "#t", "down": "#m"})]}
+    for name, model in (("phaser_holder", holder), ("charging_station", charger)):
+        write_json(os.path.join(ASSETS, "models", "block", name + ".json"), model)
+        write_json(os.path.join(ASSETS, "blockstates", name + ".json"), facing_blockstate(name))
+        write_json(os.path.join(ASSETS, "items", name + ".json"), item_def(b(name)))
+        write_json(os.path.join(DATA, "loot_table", "blocks", name + ".json"), loot(name))
+    for name in ("warp_core_nx", "warp_core_e"):
+        write_json(os.path.join(ASSETS, "models", "block", name + ".json"),
+                   {"parent": "minecraft:block/cube_column", "textures": {"end": b(name + "_top"), "side": b(name)}})
+        write_json(os.path.join(ASSETS, "blockstates", name + ".json"), {"variants": {"": {"model": b(name)}}})
+        write_json(os.path.join(ASSETS, "items", name + ".json"), item_def(b(name)))
+        write_json(os.path.join(DATA, "loot_table", "blocks", name + ".json"), loot(name))
+    for k, v in {"rifle_rack": ("Gewehrständer (4 Gewehre, 2 hoch)", "Rifle Rack (4 rifles, 2 high)"),
+                 "phaser_holder": ("Phaser-Wandhalter (4 Phaser)", "Phaser Wall Holder (4 phasers)"),
+                 "charging_station": ("Ladestation", "Charging Station"),
+                 "warp_core_nx": ("Warpkern (NX-01)", "Warp Core (NX-01)"),
+                 "warp_core_e": ("Warpkern (Enterprise-E)", "Warp Core (Enterprise-E)")}.items():
+        de[f"block.{MODID}.{k}"], en[f"block.{MODID}.{k}"] = v
+    return ["rifle_rack", "phaser_holder", "charging_station", "warp_core_nx", "warp_core_e"]
+
+
 TEXTURES = {
     "hull_plating": tex_hull_plating,
     "hull_panel": tex_hull_panel,
@@ -1836,6 +2092,15 @@ TEXTURES = {
     "phaser_bank": tex_phaser_bank,
     "phaser_emitter": tex_phaser_emitter,
     "quantum_launcher": tex_quantum_launcher,
+    "warp_core_nx": tex_warp_core_nx,
+    "warp_core_nx_top": tex_warp_core_nx_top,
+    "warp_core_e": tex_warp_core_e,
+    "warp_core_e_top": tex_warp_core_e_top,
+    "armory_metal": tex_armory_metal,
+    "holder_plate": tex_holder_plate,
+    "charger_side": tex_charger_side,
+    "charger_top": tex_charger_top,
+    "item/weapon_palette": tex_weapon_palette,
     **{f"weapons_console_top_{v}": (lambda v=v: tex_weapons_top(v)) for v in range(4)},
     "turbolift_door_nx": tex_door_nx,
     "turbolift_door_refit": tex_door_refit,
@@ -2412,6 +2677,8 @@ def main():
                {"parent": "minecraft:item/generated", "textures": {"layer0": f"{MODID}:item/communicator"}})
     write_json(os.path.join(ASSETS, "items", "communicator.json"), item_def(f"{MODID}:item/communicator"))
 
+    armory_de, armory_en = {}, {}
+    models_extra += armory_assets(armory_de, armory_en)
     # Mit der Spitzhacke abbaubar
     write_json(os.path.join(ROOT, "data", "minecraft", "tags", "block", "mineable", "pickaxe.json"),
                {"values": [f"{MODID}:{n}" for n in list(models) + models_extra]})
@@ -2517,6 +2784,32 @@ def main():
         f"message.{MODID}.phaser.power.3": "Phaser power 3: full power – heavy block damage",
     })
     uniform_assets(de, en)
+    de.update(armory_de)
+    en.update(armory_en)
+    de.update({
+        f"key.{MODID}.weapon_mode": "Phaser-Modus wechseln",
+        f"mode.{MODID}.stun": "Betäuben",
+        f"mode.{MODID}.kill": "Töten",
+        f"mode.{MODID}.mining": "Abbauen",
+        f"message.{MODID}.weapon.mode": "Phaser-Modus: %s",
+        f"message.{MODID}.weapon.empty": "Energiezelle leer – an der Ladestation aufladen.",
+        f"tooltip.{MODID}.weapon.energy": "Energie: %s / %s RF",
+        f"tooltip.{MODID}.weapon.mode": "Modus: %s",
+        f"tooltip.{MODID}.weapon.keys": "Rechtsklick: feuern, V: Modus wechseln",
+        f"message.{MODID}.charger.status": "Ladestation: %s / %s RF, Bordnetz: %s RF/t",
+    })
+    en.update({
+        f"key.{MODID}.weapon_mode": "Switch phaser mode",
+        f"mode.{MODID}.stun": "Stun",
+        f"mode.{MODID}.kill": "Kill",
+        f"mode.{MODID}.mining": "Mining",
+        f"message.{MODID}.weapon.mode": "Phaser mode: %s",
+        f"message.{MODID}.weapon.empty": "Power cell empty – recharge at a charging station.",
+        f"tooltip.{MODID}.weapon.energy": "Energy: %s / %s RF",
+        f"tooltip.{MODID}.weapon.mode": "Mode: %s",
+        f"tooltip.{MODID}.weapon.keys": "Right click: fire, V: switch mode",
+        f"message.{MODID}.charger.status": "Charging station: %s / %s RF, ship grid: %s RF/t",
+    })
     write_json(os.path.join(ASSETS, "lang", "de_de.json"), de)
     write_json(os.path.join(ASSETS, "lang", "en_us.json"), en)
 

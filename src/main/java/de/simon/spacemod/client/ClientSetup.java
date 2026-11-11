@@ -13,6 +13,10 @@ public final class ClientSetup {
         event.registerEntityRenderer(ModBlocks.SEAT.get(), net.minecraft.client.renderer.entity.NoopRenderer::new);
         // Torpedos bestehen nur aus Leuchtpartikeln
         event.registerEntityRenderer(ModBlocks.TORPEDO.get(), net.minecraft.client.renderer.entity.NoopRenderer::new);
+        // Waffen in Ständern, Wandhaltern und auf Ladestationen
+        event.registerBlockEntityRenderer(ModBlocks.RIFLE_RACK_BE.get(), WeaponHolderRenderer::new);
+        event.registerBlockEntityRenderer(ModBlocks.PHASER_HOLDER_BE.get(), WeaponHolderRenderer::new);
+        event.registerBlockEntityRenderer(ModBlocks.CHARGING_STATION_BE.get(), WeaponHolderRenderer::new);
     }
 
     public static void onClientSetup(FMLClientSetupEvent event) {

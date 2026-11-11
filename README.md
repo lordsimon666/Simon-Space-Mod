@@ -235,6 +235,37 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
 
   Quellen: Memory Alpha, Ex Astris Scientia und die Technical Manuals. Nicht alles davon ist im
   Kanon eindeutig belegt, besonders die Werferzahlen von B, C und E.
+* **Handphaser und Phasergewehre** je Epoche (Gewehre nur, wo es im Original welche gab), als
+  3D-Modelle:
+
+  | Epoche | Handphaser | Gewehr |
+  |---|---|---|
+  | NX-01 | Phasenpistole EM-33 (blaue Pulse) | Phasengewehr der MACOs |
+  | Originalserie | Typ-2-Phaser mit Typ 1 | Phasergewehr |
+  | Kinofilme (A, B) | Handphaser | – |
+  | Next Generation (C, D) | Typ 2 („Cobra Head“) | Typ-3-Phasergewehr (nur D) |
+  | Enterprise-E | Typ 2 der 2370er | Kompressions-Phasergewehr |
+
+  **Rechtsklick** feuert, **V** schaltet zwischen **Betäuben** (langsam und schwach machen),
+  **Töten** (Schaden und Feuer) und **Abbauen** (baut den Block ab, Gewehre eine 3x3-Fläche).
+  Schaden im Töten-Modus: Handphaser 6 (NX-01) bis 14 (E), Gewehre 11,6 bis 24,4; Gewehre
+  reichen weiter und bauen härtere Blöcke ab. Jede Waffe hat eine Energiezelle (RF, Balken am
+  Item): Handphaser 6 000 bis 14 000 RF, Gewehre das 2,5-Fache; ein Schuss kostet 100 (Betäuben),
+  200 (Abbauen) bzw. 300 RF (Töten), Gewehre das 1,5-Fache.
+* **Waffenkammer**: Jedes Schiff hat eine Waffenkammer mit eigenem Turbolift-Halt. Drei
+  Gewehrständer (2 Blöcke hoch, 4 Gewehre stehen aufrecht nebeneinander; nur in Epochen mit
+  Gewehren), Phaser-Wandhalter (1 Block, 4 Phaser) und zwei Ladestationen. Die Waffen sind in den
+  Haltern zu sehen. Beim Spawnen ist die Kammer zufällig leer bis ganz voll mit den voll geladenen
+  Waffen der Epoche. Waffe in der Hand + Rechtsklick auf einen Halter = einsetzen, leere Hand =
+  herausnehmen. Ständer, Halter und Ladestation gibt es auch einzeln im Kreativ-Tab.
+* **Strom (RF)**: Die Warpkerne erzeugen Strom, pro Block und Tick: NX-01 5 RF, Originalserie bis
+  B 10 RF, C/D 20 RF, E 30 RF. Alle Blöcke der Mod leiten ihn weiter – Hülle, Wände, Böden und
+  die Warpkerne selbst –, so versorgt der ganze Kern das Schiff, nicht nur der Block an der Hülle.
+  Die Ladestation (Speicher 200 000 RF) lädt eine aufgelegte Waffe. Sie nimmt auch RF von Kabeln
+  anderer Mods an. Rechtsklick mit leerer Hand auf eine leere Station zeigt Ladestand und
+  Leistung des Bordnetzes. Bei gespawnten Schiffen ist die Station fest mit dem Warpkern
+  verbunden; selbst gebaute Stationen suchen über leitende Blöcke (bis 60 000 Blöcke weit) nach
+  Warpkernen. Mehrere Stationen am selben Kern teilen sich seine Leistung.
 * **Uniformen**: Für jede Epoche gibt es Uniformen in den drei Abteilungsfarben, dazu Hosen und Stiefel:
   NX-01 (dunkelblauer Overall mit farbiger Paspel, dunkelblaue Hose), Originalserie (gold / blau / rot),
   Kinofilme der 2280er und 90er (rote Jacke, Kragen weiß / grau / gelb, für A und B),
@@ -252,7 +283,7 @@ E = Eisenbarren        G = Goldbarren
 F = roter Farbstoff, P = Enderperle, R = Redstone
 ```
 
-## Neue Blöcke (108)
+## Neue Blöcke (113)
 
 * **Hülle**: Hüllenpanzerung (+ Stufe), Hüllenplatte, dunkle Hüllenplatte, Hüllenfenster,
   Kennungsmarkierung (+ Stufe), roter Zierstreifen, Positionslicht rot/grün, Deflektorschüssel,
@@ -280,10 +311,13 @@ F = roter Farbstoff, P = Enderperle, R = Redstone
 * **Waffen**: Phasenkanone (NX-01), Phaserbank (Originalserie), Phaser-Emitter (Refit/Excelsior),
   Phaserstreifen (Next Generation), Photonentorpedo-Werfer, Quantentorpedo-Werfer (E), Waffenstation
   (4 Varianten je Epoche)
+* **Waffenkammer und Strom**: Gewehrständer, Phaser-Wandhalter, Ladestation, Warpkern der NX-01
+  und der Enterprise-E
 * **Allgemein**: Deckboden, Korridorwand, Deckenverkleidung, Deckenleuchte, Maschinenraum-Konsole,
   Warpkern, Plasmaleitung
 
-Dazu das Item Kommunikator, 15 Uniformen, 2 Uniformhosen und Sternenflotten-Stiefel. Alles ist im Kreativ-Tab „Simon Space Mod“ zu finden.
+Dazu das Item Kommunikator, 5 Handphaser, 4 Phasergewehre, 15 Uniformen, 2 Uniformhosen und
+Sternenflotten-Stiefel. Alles ist im Kreativ-Tab „Simon Space Mod“ zu finden.
 
 ## Außenform aus echten 3D-Modellen
 

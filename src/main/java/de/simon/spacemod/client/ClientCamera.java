@@ -31,11 +31,14 @@ public final class ClientCamera {
         KeyMapping.Category.register(Identifier.fromNamespaceAndPath(SimonSpaceMod.MODID, "weapons"));
     public static final KeyMapping PHOTON = new KeyMapping("key.simonspacemod.photon", GLFW.GLFW_KEY_P, CATEGORY);
     public static final KeyMapping QUANTUM = new KeyMapping("key.simonspacemod.quantum", GLFW.GLFW_KEY_O, CATEGORY);
+    /** V = Modus des Handphasers (Betäuben / Töten / Abbauen). */
+    public static final KeyMapping WEAPON_MODE = new KeyMapping("key.simonspacemod.weapon_mode", GLFW.GLFW_KEY_V, CATEGORY);
 
     public static void init() {
         RegisterKeyMappingsEvent.BUS.addListener(e -> {
             e.register(PHOTON);
             e.register(QUANTUM);
+            e.register(WEAPON_MODE);
         });
         TickEvent.ClientTickEvent.Pre.BUS.addListener(e -> onTick());
         InputEvent.InteractionKeyMappingTriggered.BUS.addListener(ClientCamera::onInteract);
@@ -64,6 +67,12 @@ public final class ClientCamera {
     private static void onTick() {
         var mc = Minecraft.getInstance();
         var player = mc.player;
+        boolean mode = false;
+        while (WEAPON_MODE.consumeClick()) mode = true;
+        if (mode && player != null && mc.gui.screen() == null
+            && (player.getMainHandItem().getItem() instanceof de.simon.spacemod.item.HandWeaponItem
+                || player.getOffhandItem().getItem() instanceof de.simon.spacemod.item.HandWeaponItem))
+            TurboliftNetwork.sendToServer(new de.simon.spacemod.item.WeaponModeMessage());
         boolean photon = false, quantum = false;
         while (PHOTON.consumeClick()) photon = true;
         while (QUANTUM.consumeClick()) quantum = true;

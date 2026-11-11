@@ -144,6 +144,12 @@ public final class ShipPalette {
             case DEFLECTOR_RING -> ModBlocks.DEFLECTOR_RING.get().defaultBlockState();
             case DEFLECTOR_VIOLET -> ModBlocks.DEFLECTOR_VIOLET.get().defaultBlockState();
             case PHASE_CANNON -> ModBlocks.PHASE_CANNON.get().defaultBlockState();
+            case WARP_CORE_NX -> ModBlocks.WARP_CORE_NX.get().defaultBlockState();
+            case WARP_CORE_E -> ModBlocks.WARP_CORE_E.get().defaultBlockState();
+            case RIFLE_RACK -> ModBlocks.RIFLE_RACK.get().defaultBlockState().setValue(de.simon.spacemod.block.RifleRackBlock.HALF,
+                EnterpriseBlueprint.variant(cellCode) == 1 ? DoubleBlockHalf.UPPER : DoubleBlockHalf.LOWER);
+            case PHASER_HOLDER -> ModBlocks.PHASER_HOLDER.get().defaultBlockState();
+            case CHARGING_STATION -> ModBlocks.CHARGING_STATION.get().defaultBlockState();
             case QUANTUM_LAUNCHER -> ModBlocks.QUANTUM_LAUNCHER.get().defaultBlockState();
             case PHASER_BANK -> ModBlocks.PHASER_BANK.get().defaultBlockState();
             case PHASER_EMITTER -> ModBlocks.PHASER_EMITTER.get().defaultBlockState();

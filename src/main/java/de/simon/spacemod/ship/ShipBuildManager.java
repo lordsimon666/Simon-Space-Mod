@@ -127,6 +127,46 @@ public final class ShipBuildManager {
             return true;
         }
 
+        /**
+         * Waffenkammer: zufällig von leer bis ganz voll mit den Waffen der Epoche (voll geladen) und
+         * Ladestationen ans Bordnetz (alle Warpkern-Blöcke des Schiffs) anschließen.
+         */
+        private void stockArmory(ServerLevel level) {
+            EnterpriseBlueprint bp = blueprint;
+            net.minecraft.world.item.Item phaser = switch (bp.design) {
+                case NX_01 -> ModBlocks.PHASER_NX.get();
+                case NCC_1701 -> ModBlocks.PHASER_TOS.get();
+                case NCC_1701_A, NCC_1701_B -> ModBlocks.PHASER_MOVIE.get();
+                case NCC_1701_C, NCC_1701_D -> ModBlocks.PHASER_TNG.get();
+                case NCC_1701_E -> ModBlocks.PHASER_FC.get();
+            };
+            net.minecraft.world.item.Item rifle = switch (bp.design) {
+                case NX_01 -> ModBlocks.RIFLE_NX.get();
+                case NCC_1701 -> ModBlocks.RIFLE_TOS.get();
+                case NCC_1701_D -> ModBlocks.RIFLE_TNG.get();
+                case NCC_1701_E -> ModBlocks.RIFLE_FC.get();
+                default -> null;
+            };
+            var rnd = level.getRandom();
+            double fill = rnd.nextDouble(); // 0 = leer ... 1 = ganz voll
+            java.util.function.Function<BlockPos, BlockPos> world = p -> placement.toWorld(bp, p.getX(), p.getY(), p.getZ());
+            java.util.function.BiConsumer<BlockPos, net.minecraft.world.item.Item> stock = (pos, item) -> {
+                if (item == null || !(level.getBlockEntity(pos) instanceof de.simon.spacemod.block.entity.WeaponHolderBlockEntity be)) return;
+                for (int i = 0; i < be.items().size(); i++) {
+                    if (rnd.nextDouble() >= fill) continue;
+                    net.minecraft.world.item.ItemStack stack = new net.minecraft.world.item.ItemStack(item);
+                    if (item instanceof de.simon.spacemod.item.HandWeaponItem w) de.simon.spacemod.item.HandWeaponItem.setEnergy(stack, w.capacity());
+                    be.setItem(i, stack);
+                }
+            };
+            for (BlockPos p : bp.armoryRacks) stock.accept(world.apply(p), rifle);
+            for (BlockPos p : bp.armoryHolders) stock.accept(world.apply(p), phaser);
+            java.util.List<BlockPos> cores = new java.util.ArrayList<>();
+            for (BlockPos p : bp.warpCores) cores.add(world.apply(p));
+            de.simon.spacemod.power.PowerData power = de.simon.spacemod.power.PowerData.get(level);
+            for (BlockPos p : bp.armoryChargers) power.set(world.apply(p), cores);
+        }
+
         void finish() {
             // Alle Turbolifte des Schiffs in ein eigenes Netz eintragen und benennen
             ServerLevel level = placement.level();
@@ -161,6 +201,7 @@ public final class ShipBuildManager {
             for (BlockPos st : blueprint.weaponStations)
                 weapons.set(placement.toWorld(blueprint, st.getX(), st.getY(), st.getZ()), phasers, cams, focus, blueprint.cameraNames,
                     blueprint.design.ordinal() + 1, shipMin, shipMax, torps, quants); // Stärke: NX-01 = 1 ... Enterprise-E = 7
+            stockArmory(level);
             onDone.accept(this);
         }
     }

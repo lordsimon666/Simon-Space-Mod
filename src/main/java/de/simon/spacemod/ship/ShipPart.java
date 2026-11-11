@@ -135,7 +135,14 @@ public enum ShipPart {
     // Waffenstation auf der Brücke (Variante = Stil der Epoche)
     WEAPONS_CONSOLE(0xC02020),
     // Quantentorpedo-Werfer (nur Enterprise-E), blau leuchtend
-    QUANTUM_LAUNCHER(0x4A90FF);
+    QUANTUM_LAUNCHER(0x4A90FF),
+    // Warpkerne der NX-01 und der Enterprise-E (liefern weniger bzw. mehr Strom)
+    WARP_CORE_NX(0x70B8FF),
+    WARP_CORE_E(0x3060FF),
+    // Waffenkammer: Gewehrständer (Variante 0 unten, 1 oben), Phaser-Wandhalter, Ladestation
+    RIFLE_RACK(0x50545C),
+    PHASER_HOLDER(0x606670),
+    CHARGING_STATION(0x60A0D0);
 
     /** Farbe für Vorschaubilder. */
     public final int color;
