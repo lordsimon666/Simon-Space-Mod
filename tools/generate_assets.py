@@ -7,6 +7,7 @@ import json
 import math
 import os
 import random
+import zlib
 
 from PIL import Image
 
@@ -1943,6 +1944,177 @@ WEAPON_NAMES = {
 }
 
 
+# ---------------------------------------------------------------------------------------------
+#  Türen (2 x 2) je Epoche und Art, Schlüsselkarten
+# ---------------------------------------------------------------------------------------------
+
+DOOR_ERAS = {
+    # Grundfarbe, Rahmen/Fuge, Akzent
+    "nx": ((108, 114, 122), (44, 48, 54), (150, 158, 168)),
+    "tos": ((176, 72, 54), (92, 34, 28), (214, 120, 70)),
+    "refit": ((156, 160, 170), (62, 66, 76), (90, 150, 230)),
+    "tng": ((184, 172, 150), (96, 88, 74), (150, 140, 120)),
+}
+DOOR_KINDS = {"normal": None, "security": (236, 196, 40), "command": (200, 40, 36)}
+
+
+def tex_door_full(era, kind):
+    base, dark, accent = DOOR_ERAS[era]
+    rnd = random.Random(zlib.crc32(f"door_{era}_{kind}".encode()))
+    img = Image.new("RGBA", (32, 32), base + (255,))
+    px = img.load()
+    for x in range(32):
+        for y in range(32):
+            c = base
+            if x in (0, 31) or y in (0, 31):
+                c = dark                                   # Rahmen
+            elif x in (15, 16):
+                c = dark                                   # Mittelfuge (Schiebetür)
+            elif era == "nx" and y % 6 == 3:
+                c = shade(base, -18)[:3]                   # Rippen
+            elif era == "tos" and (x in (1, 14, 17, 30)):
+                c = shade(base, -30)[:3]                   # Kanten der Flügel
+            elif era == "refit" and (abs(x - 15.5) + abs(y - 16) < 6 and abs(x - 15.5) > 1.5):
+                c = shade(base, -22)[:3]                   # Raute um die Fuge
+            elif era == "tng" and y in (11, 12, 21, 22):
+                c = dark                                   # dunkle Querstreifen
+            px[x, y] = shade(c, rnd.randint(-4, 4))
+    # Akzent: kleine Lichter an der Fuge
+    for y in (6, 7, 25, 26):
+        px[13, y] = accent + (255,)
+        px[18, y] = accent + (255,)
+    k = DOOR_KINDS[kind]
+    if k:
+        for x in range(2, 30):
+            if x in (15, 16):
+                continue
+            for y in (15, 16, 17):
+                stripe = kind == "security" and (x + y) % 6 < 3
+                px[x, y] = ((30, 30, 30) if stripe else k) + (255,)
+        # Kartenleser
+        for y in range(9, 12):
+            for x in (3, 4):
+                px[x, y] = (40, 40, 44, 255)
+        px[3, 10] = k + (255,)
+    return img
+
+
+def tex_keycard(color, captain=False):
+    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    px = img.load()
+    for x in range(1, 15):
+        for y in range(4, 13):
+            corner = (x in (1, 14)) and (y in (4, 12))
+            if corner:
+                continue
+            px[x, y] = (232, 232, 228, 255)
+    for x in range(1, 15):
+        for y in (5, 6):
+            px[x, y] = color + (255,)
+    for x in range(3, 6):
+        for y in range(8, 11):
+            px[x, y] = (210, 170, 60, 255)              # Chip
+    for x, y in ((10, 8), (11, 9), (12, 10), (10, 10), (11, 11)):
+        px[x, y] = (color if not captain else (230, 190, 40)) + (255,)   # Delta-Abzeichen
+    if captain:
+        for x in range(8, 14, 2):
+            px[x, 11] = (230, 190, 40, 255)
+    return img
+
+
+def door_assets(de, en):
+    names_de = {"nx": "NX-01", "tos": "Originalserie", "refit": "Kinofilme", "tng": "Next Generation"}
+    names_en = {"nx": "NX-01", "tos": "Original Series", "refit": "Movie Era", "tng": "Next Generation"}
+    kind_de = {"normal": "Tür", "security": "Sicherheitstür", "command": "Kommandotür"}
+    kind_en = {"normal": "Door", "security": "Security Door", "command": "Command Door"}
+    rot = {"north": 0, "east": 90, "south": 180, "west": 270}
+    out = []
+    for era in DOOR_ERAS:
+        frame = b(f"door_{era}_frame")
+        fr = Image.new("RGBA", (16, 16), DOOR_ERAS[era][1] + (255,))
+        save(noise(fr, 5, zlib.crc32(era.encode())), f"door_{era}_frame")
+        for kind in DOOR_KINDS:
+            name = f"door_{era}_{kind}"
+            save(tex_door_full(era, kind), name)
+            img = tex_door_full(era, kind)
+            save(img, "item/" + name)
+            t = b(name)
+            for part in range(4):
+                col, row = part % 2, part // 2
+                u0, v0 = col * 8, (1 - row) * 8
+                front = {"texture": "#d", "uv": [u0, v0, u0 + 8, v0 + 8]}
+                back = {"texture": "#d", "uv": [u0 + 8, v0, u0, v0 + 8]}
+                closed = {"parent": "minecraft:block/block", "textures": {"particle": t, "d": t, "f": frame},
+                          "elements": [{"from": [0, 0, 6], "to": [16, 16, 10], "faces": {
+                              "north": front, "south": back, "east": {"texture": "#f"}, "west": {"texture": "#f"},
+                              "up": {"texture": "#f"}, "down": {"texture": "#f"}}}]}
+                # offen: Flügel in die Wand geschoben, nur der Rand bleibt sichtbar
+                jx = [13, 16] if col == 0 else [0, 3]
+                elems = [{"from": [jx[0], 0, 6], "to": [jx[1], 16, 10], "faces": {
+                    "north": {"texture": "#d", "uv": [u0 + (0 if col == 0 else 6.5), v0, u0 + (1.5 if col == 0 else 8), v0 + 8]},
+                    "south": {"texture": "#f"}, "east": {"texture": "#f"}, "west": {"texture": "#f"},
+                    "up": {"texture": "#f"}, "down": {"texture": "#f"}}}]
+                if row == 1:
+                    elems.append(el([0, 14, 6], [16, 16, 10], all6("#f")))
+                opened = {"parent": "minecraft:block/block", "textures": {"particle": t, "d": t, "f": frame}, "elements": elems}
+                write_json(os.path.join(ASSETS, "models", "block", f"{name}_{part}.json"), closed)
+                write_json(os.path.join(ASSETS, "models", "block", f"{name}_{part}_open.json"), opened)
+            variants = {}
+            for d, r in rot.items():
+                for part in range(4):
+                    for op in ("false", "true"):
+                        m = {"model": b(f"{name}_{part}" + ("_open" if op == "true" else ""))}
+                        if r:
+                            m["y"] = r
+                        variants[f"facing={d},open={op},part={part}"] = m
+            write_json(os.path.join(ASSETS, "blockstates", name + ".json"), {"variants": variants})
+            write_json(os.path.join(ASSETS, "models", "item", name + ".json"),
+                       {"parent": "minecraft:item/generated", "textures": {"layer0": f"{MODID}:item/{name}"}})
+            write_json(os.path.join(ASSETS, "items", name + ".json"), item_def(f"{MODID}:item/{name}"))
+            write_json(os.path.join(DATA, "loot_table", "blocks", name + ".json"), loot(name))
+            de[f"block.{MODID}.{name}"] = f"{kind_de[kind]} ({names_de[era]}, 2 x 2)"
+            en[f"block.{MODID}.{name}"] = f"{kind_en[kind]} ({names_en[era]}, 2 x 2)"
+            out.append(name)
+    cards = {"security": ((236, 196, 40), "Schlüsselkarte Sicherheit (gelb)", "Security Keycard (yellow)"),
+             "command": ((200, 40, 36), "Schlüsselkarte Kommando (rot)", "Command Keycard (red)"),
+             "captain": ((40, 60, 140), "Schlüsselkarte Captain", "Captain's Keycard")}
+    for k, (color, nde, nen) in cards.items():
+        name = "keycard_" + k
+        save(tex_keycard(color, k == "captain"), "item/" + name)
+        write_json(os.path.join(ASSETS, "models", "item", name + ".json"),
+                   {"parent": "minecraft:item/generated", "textures": {"layer0": f"{MODID}:item/{name}"}})
+        write_json(os.path.join(ASSETS, "items", name + ".json"), item_def(f"{MODID}:item/{name}"))
+        de[f"item.{MODID}.{name}"], en[f"item.{MODID}.{name}"] = nde, nen
+    de.update({
+        f"keycard.{MODID}.security": "Sicherheit", f"keycard.{MODID}.command": "Kommando", f"keycard.{MODID}.captain": "Captain",
+        f"tooltip.{MODID}.keycard.security": "Öffnet Sicherheitstüren (gelb)",
+        f"tooltip.{MODID}.keycard.command": "Öffnet Kommandotüren (rot)",
+        f"tooltip.{MODID}.keycard.captain": "Öffnet alle Türen, auch vom Captain verschlossene",
+        f"tooltip.{MODID}.keycard.lock": "Shift + Rechtsklick auf eine Tür: verschließen / öffnen",
+        f"message.{MODID}.door.locked": "Tür verschlossen (%s)",
+        f"message.{MODID}.door.unlocked": "Tür entriegelt",
+        f"message.{MODID}.door.denied_captain": "Vom Captain verschlossen – nur die Captain-Karte öffnet diese Tür.",
+        f"message.{MODID}.door.is_locked": "Verschlossen (%s)",
+        f"message.{MODID}.door.need_security": "Zugang nur mit Sicherheitskarte (gelb)",
+        f"message.{MODID}.door.need_command": "Zugang nur mit Kommandokarte (rot)",
+    })
+    en.update({
+        f"keycard.{MODID}.security": "Security", f"keycard.{MODID}.command": "Command", f"keycard.{MODID}.captain": "Captain",
+        f"tooltip.{MODID}.keycard.security": "Opens security doors (yellow)",
+        f"tooltip.{MODID}.keycard.command": "Opens command doors (red)",
+        f"tooltip.{MODID}.keycard.captain": "Opens every door, including ones the captain locked",
+        f"tooltip.{MODID}.keycard.lock": "Shift + right click a door: lock / unlock",
+        f"message.{MODID}.door.locked": "Door locked (%s)",
+        f"message.{MODID}.door.unlocked": "Door unlocked",
+        f"message.{MODID}.door.denied_captain": "Locked by the captain – only the captain's keycard opens this door.",
+        f"message.{MODID}.door.is_locked": "Locked (%s)",
+        f"message.{MODID}.door.need_security": "Access requires a security keycard (yellow)",
+        f"message.{MODID}.door.need_command": "Access requires a command keycard (red)",
+    })
+    return out
+
+
+
 def armory_assets(de, en):
     tex = f"{MODID}:item/weapon_palette"
     for name, boxes in WEAPON_MODELS.items():
@@ -2829,6 +3001,7 @@ def main():
         f"message.{MODID}.phaser.power.3": "Phaser power 3: full power – heavy block damage",
     })
     uniform_assets(de, en)
+    door_assets(de, en)
     de.update(armory_de)
     en.update(armory_en)
     de.update({

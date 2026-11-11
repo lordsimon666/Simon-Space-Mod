@@ -276,6 +276,18 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
   Leistung des Bordnetzes. Bei gespawnten Schiffen ist die Station fest mit dem Warpkern
   verbunden; selbst gebaute Stationen suchen über leitende Blöcke (bis 60 000 Blöcke weit) nach
   Warpkernen. Mehrere Stationen am selben Kern teilen sich seine Leistung.
+* **Türen**: Jeder Raum hat eine 2 x 2 große Schiebetür im Stil seiner Epoche (NX-01, Originalserie,
+  Kinofilme für A und B, Next Generation für C, D und E). Sie öffnet sich von selbst, wenn du davor
+  stehst (beim Schleichen nicht). In schräge Wände der runden Untertasse wird die Tür gerade mit
+  einem kleinen Rahmen eingesetzt. **Sicherheitstüren** (gelb-schwarzer Streifen) öffnen nur mit der
+  gelben **Sicherheitskarte**, **Kommandotüren** (roter Streifen, an Brücke und Besprechungsraum) nur
+  mit der roten **Kommandokarte**; die **Captain-Karte** öffnet beide. Es reicht, die Karte im Inventar
+  zu haben. Die Waffenkammer hat einen kleinen Vorraum am Turbolift mit einer Sicherheitstür;
+  Maschinenraum und Arrest bekommen ebenfalls Sicherheitstüren.
+  **Verschließen**: Shift + Rechtsklick mit einer Karte in der Hand verschließt eine Tür bzw. öffnet
+  sie wieder. Sicherheits- und Kommandokarte sind dabei gleichwertig (die eine öffnet, was die
+  andere verschlossen hat); was mit der Captain-Karte verschlossen wurde, öffnet nur die
+  Captain-Karte. Rechtsklick ohne Karte zeigt, ob und womit die Tür verschlossen ist.
 * **Uniformen**: Für jede Epoche gibt es Uniformen in den drei Abteilungsfarben, dazu Hosen und Stiefel:
   NX-01 (dunkelblauer Overall mit farbiger Paspel, dunkelblaue Hose), Originalserie (gold / blau / rot),
   Kinofilme der 2280er und 90er (rote Jacke, Kragen weiß / grau / gelb, für A und B),
@@ -293,7 +305,7 @@ E = Eisenbarren        G = Goldbarren
 F = roter Farbstoff, P = Enderperle, R = Redstone
 ```
 
-## Neue Blöcke (113)
+## Neue Blöcke (125)
 
 * **Hülle**: Hüllenpanzerung (+ Stufe), Hüllenplatte, dunkle Hüllenplatte, Hüllenfenster,
   Kennungsmarkierung (+ Stufe), roter Zierstreifen, Positionslicht rot/grün, Deflektorschüssel,
@@ -323,10 +335,12 @@ F = roter Farbstoff, P = Enderperle, R = Redstone
   (4 Varianten je Epoche)
 * **Waffenkammer und Strom**: Gewehrständer, Phaser-Wandhalter, Ladestation, Warpkern der NX-01
   und der Enterprise-E
+* **Türen**: 2 x 2 Schiebetür, Sicherheitstür und Kommandotür im Stil von NX-01, Originalserie,
+  Kinofilmen und Next Generation (12 Stück)
 * **Allgemein**: Deckboden, Korridorwand, Deckenverkleidung, Deckenleuchte, Maschinenraum-Konsole,
   Warpkern, Plasmaleitung
 
-Dazu das Item Kommunikator, 5 Handphaser, 4 Phasergewehre, 15 Uniformen, 2 Uniformhosen und
+Dazu das Item Kommunikator, 3 Schlüsselkarten (Sicherheit, Kommando, Captain), 5 Handphaser, 4 Phasergewehre, 15 Uniformen, 2 Uniformhosen und
 Sternenflotten-Stiefel. Alles ist im Kreativ-Tab „Simon Space Mod“ zu finden.
 
 ## Außenform aus echten 3D-Modellen

@@ -142,7 +142,12 @@ public enum ShipPart {
     // Waffenkammer: Gewehrständer (Variante 0 unten, 1 oben), Phaser-Wandhalter, Ladestation
     RIFLE_RACK(0x50545C),
     PHASER_HOLDER(0x606670),
-    CHARGING_STATION(0x60A0D0);
+    CHARGING_STATION(0x60A0D0),
+    // Türen 2 x 2 (Variante = Teil 0-3, Bits 12-13 = Art: normal / Sicherheit / Kommando)
+    DOOR_NX(0x707880),
+    DOOR_TOS(0xB04040),
+    DOOR_REFIT(0xA8A8B0),
+    DOOR_TNG(0xC8B898);
 
     /** Farbe für Vorschaubilder. */
     public final int color;

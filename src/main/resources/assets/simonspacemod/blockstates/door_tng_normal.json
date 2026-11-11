@@ -1,0 +1,124 @@
+{
+  "variants": {
+    "facing=north,open=false,part=0": {
+      "model": "simonspacemod:block/door_tng_normal_0"
+    },
+    "facing=north,open=true,part=0": {
+      "model": "simonspacemod:block/door_tng_normal_0_open"
+    },
+    "facing=north,open=false,part=1": {
+      "model": "simonspacemod:block/door_tng_normal_1"
+    },
+    "facing=north,open=true,part=1": {
+      "model": "simonspacemod:block/door_tng_normal_1_open"
+    },
+    "facing=north,open=false,part=2": {
+      "model": "simonspacemod:block/door_tng_normal_2"
+    },
+    "facing=north,open=true,part=2": {
+      "model": "simonspacemod:block/door_tng_normal_2_open"
+    },
+    "facing=north,open=false,part=3": {
+      "model": "simonspacemod:block/door_tng_normal_3"
+    },
+    "facing=north,open=true,part=3": {
+      "model": "simonspacemod:block/door_tng_normal_3_open"
+    },
+    "facing=east,open=false,part=0": {
+      "model": "simonspacemod:block/door_tng_normal_0",
+      "y": 90
+    },
+    "facing=east,open=true,part=0": {
+      "model": "simonspacemod:block/door_tng_normal_0_open",
+      "y": 90
+    },
+    "facing=east,open=false,part=1": {
+      "model": "simonspacemod:block/door_tng_normal_1",
+      "y": 90
+    },
+    "facing=east,open=true,part=1": {
+      "model": "simonspacemod:block/door_tng_normal_1_open",
+      "y": 90
+    },
+    "facing=east,open=false,part=2": {
+      "model": "simonspacemod:block/door_tng_normal_2",
+      "y": 90
+    },
+    "facing=east,open=true,part=2": {
+      "model": "simonspacemod:block/door_tng_normal_2_open",
+      "y": 90
+    },
+    "facing=east,open=false,part=3": {
+      "model": "simonspacemod:block/door_tng_normal_3",
+      "y": 90
+    },
+    "facing=east,open=true,part=3": {
+      "model": "simonspacemod:block/door_tng_normal_3_open",
+      "y": 90
+    },
+    "facing=south,open=false,part=0": {
+      "model": "simonspacemod:block/door_tng_normal_0",
+      "y": 180
+    },
+    "facing=south,open=true,part=0": {
+      "model": "simonspacemod:block/door_tng_normal_0_open",
+      "y": 180
+    },
+    "facing=south,open=false,part=1": {
+      "model": "simonspacemod:block/door_tng_normal_1",
+      "y": 180
+    },
+    "facing=south,open=true,part=1": {
+      "model": "simonspacemod:block/door_tng_normal_1_open",
+      "y": 180
+    },
+    "facing=south,open=false,part=2": {
+      "model": "simonspacemod:block/door_tng_normal_2",
+      "y": 180
+    },
+    "facing=south,open=true,part=2": {
+      "model": "simonspacemod:block/door_tng_normal_2_open",
+      "y": 180
+    },
+    "facing=south,open=false,part=3": {
+      "model": "simonspacemod:block/door_tng_normal_3",
+      "y": 180
+    },
+    "facing=south,open=true,part=3": {
+      "model": "simonspacemod:block/door_tng_normal_3_open",
+      "y": 180
+    },
+    "facing=west,open=false,part=0": {
+      "model": "simonspacemod:block/door_tng_normal_0",
+      "y": 270
+    },
+    "facing=west,open=true,part=0": {
+      "model": "simonspacemod:block/door_tng_normal_0_open",
+      "y": 270
+    },
+    "facing=west,open=false,part=1": {
+      "model": "simonspacemod:block/door_tng_normal_1",
+      "y": 270
+    },
+    "facing=west,open=true,part=1": {
+      "model": "simonspacemod:block/door_tng_normal_1_open",
+      "y": 270
+    },
+    "facing=west,open=false,part=2": {
+      "model": "simonspacemod:block/door_tng_normal_2",
+      "y": 270
+    },
+    "facing=west,open=true,part=2": {
+      "model": "simonspacemod:block/door_tng_normal_2_open",
+      "y": 270
+    },
+    "facing=west,open=false,part=3": {
+      "model": "simonspacemod:block/door_tng_normal_3",
+      "y": 270
+    },
+    "facing=west,open=true,part=3": {
+      "model": "simonspacemod:block/door_tng_normal_3_open",
+      "y": 270
+    }
+  }
+}

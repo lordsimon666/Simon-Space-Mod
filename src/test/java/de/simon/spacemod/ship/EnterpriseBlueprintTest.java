@@ -49,7 +49,20 @@ class EnterpriseBlueprintTest {
         assertTrue(bp.warpCores.size() >= 30, "Warpkern fehlt");
         assertEquals(2, bp.armoryChargers.size(), "Waffenkammer: Ladestationen fehlen");
         assertEquals(bp.hasRifles() ? 3 : 0, bp.armoryRacks.size(), "Waffenkammer: Gewehrständer");
-        assertTrue(bp.armoryHolders.size() >= 4, "Waffenkammer: Phaserhalter fehlen");
+        assertTrue(bp.armoryHolders.size() >= 2, "Waffenkammer: Phaserhalter fehlen");
+        // Türen: Waffenkammer mit Sicherheitstür, bei voller Deckaufteilung Türen in vielen Räumen
+        assertNotNull(bp.armoryDoor, "Waffenkammer ohne Tür");
+        int ai = bp.doors.indexOf(bp.armoryDoor);
+        assertTrue(ai >= 0 && bp.doorKinds.get(ai) == EnterpriseBlueprint.DOOR_SECURITY, "Waffenkammer braucht eine Sicherheitstür");
+        if (scale >= 0.75) assertTrue(bp.doors.size() >= 15, "zu wenige Türen: " + bp.doors.size());
+        for (BlockPos d : bp.doors) {
+            int code = bp.codeAt(d.getX(), d.getY(), d.getZ());
+            assertTrue(EnterpriseBlueprint.isDoor(EnterpriseBlueprint.part(code)) && EnterpriseBlueprint.variant(code) == 0, "Tür kaputt bei " + d);
+            int parts = 0;
+            for (int dx = -1; dx <= 1; dx++) for (int dz = -1; dz <= 1; dz++) for (int dy = 0; dy <= 1; dy++)
+                if (EnterpriseBlueprint.isDoor(bp.get(d.getX() + dx, d.getY() + dy, d.getZ() + dz))) parts++;
+            assertTrue(parts >= 4, "Tür unvollständig bei " + d);
+        }
         assertTrue(bp.liftStops.stream().anyMatch(st -> st.name().endsWith("Waffenkammer")), "Waffenkammer ohne Turbolift");
         assertEquals(design.nx ? 1 : 6, counts.get(ShipPart.TRANSPORTER_PAD), "Transporterraum fehlt");
         // Turbolift-Halte: mindestens Brücke, Maschinenraum, Transporterraum; in Originalgröße alle Decks

@@ -189,6 +189,7 @@ public final class EnterpriseBlueprint {
         if (armory != null) liftStops.add(new LiftStop(armory, deckLabel(deckNumber(armory.getY() - 1)) + " – Waffenkammer"));
         if (tng) tngInterior();
         if (nx) nxInterior();
+        placeDoors();
         liftStyle();
         connectBars();
         seal();
@@ -224,6 +225,279 @@ public final class EnterpriseBlueprint {
 
     public static int variant(int code) {
         return (code >> 10) & 3;
+    }
+
+    /** Türart (0 = normal, 1 = Sicherheit, 2 = Kommando) einer Türzelle. */
+    public static int doorKind(int code) {
+        return (code >> 12) & 3;
+    }
+
+    public static boolean isDoor(ShipPart p) {
+        return p == ShipPart.DOOR_NX || p == ShipPart.DOOR_TOS || p == ShipPart.DOOR_REFIT || p == ShipPart.DOOR_TNG;
+    }
+
+    // =====================================================================================
+    //  Türen (2 x 2) in jedem Durchgang
+    // =====================================================================================
+
+    public static final int DOOR_NORMAL = 0, DOOR_SECURITY = 1, DOOR_COMMAND = 2;
+
+    /** Türen dieses Schiffs (unteres linkes Teil, lokal) und ihre Art. */
+    public final List<BlockPos> doors = new ArrayList<>();
+    public final List<Integer> doorKinds = new ArrayList<>();
+
+    private ShipPart doorPart() {
+        return switch (design) {
+            case NX_01 -> ShipPart.DOOR_NX;
+            case NCC_1701 -> ShipPart.DOOR_TOS;
+            case NCC_1701_A, NCC_1701_B -> ShipPart.DOOR_REFIT;
+            default -> ShipPart.DOOR_TNG;
+        };
+    }
+
+    /**
+     * Setzt eine 2 x 2-Tür. {@code along} ist die Richtung der Wand (+x oder +z), (x, y, z) die
+     * untere Zelle mit dem kleineren Wert entlang der Wand.
+     */
+    private void door(int x, int y, int z, boolean alongZ, int kind) {
+        // Durchgang entlang x: Front nach Süden (+x), rechts = Osten (+z) -> Teil 0 beim kleineren z.
+        // Durchgang entlang z: Front nach Osten (+z), rechts = Norden (-x) -> Teil 0 beim größeren x.
+        Direction facing = alongZ ? Direction.SOUTH : Direction.EAST;
+        int ox = alongZ ? x : x + 1, oz = z;
+        ShipPart part = doorPart();
+        for (int p = 0; p < 4; p++) {
+            int col = p % 2, row = p / 2;
+            int cx = alongZ ? ox : ox - col, cz = alongZ ? oz + col : oz;
+            if (!inBounds(cx, y + row, cz)) return;
+            cell[idx(cx, y + row, cz)] = (short) ((part.ordinal() + 1) | (facing.get2DDataValue() << 8) | (p << 10) | (kind << 12));
+        }
+        doors.add(new BlockPos(ox, y, oz));
+        doorKinds.add(kind);
+    }
+
+    private static boolean wallLike(ShipPart p) {
+        return p != null && (p.name().contains("WALL") || p.name().startsWith("HULL") || p == ShipPart.CEILING_PANEL);
+    }
+
+    private boolean airAt(int x, int y, int z) {
+        return get(x, y, z) == ShipPart.AIR && get(x, y + 1, z) == ShipPart.AIR;
+    }
+
+    private boolean wallAt(int x, int y, int z) {
+        return wallLike(get(x, y, z)) && wallLike(get(x, y + 1, z));
+    }
+
+    /** Durchgangszelle: 2 hoch frei, darüber Wand (Sturz), darunter Boden. */
+    private boolean opening(int x, int y, int z) {
+        ShipPart below = get(x, y - 1, z);
+        ShipPart lintel = get(x, y + 2, z);
+        return airAt(x, y, z) && wallLike(lintel) && !lintel.name().startsWith("HULL") && lintel != ShipPart.CEILING_PANEL
+            && below != null && below != ShipPart.AIR
+            && isInterior(x, y, z);
+    }
+
+    /** Ist quer zur Wand (beidseitig) Platz zum Durchgehen? */
+    private boolean passable(int x, int y, int z, boolean alongZ) {
+        int px = alongZ ? 1 : 0, pz = alongZ ? 0 : 1;
+        return walkable(x + px, y, z + pz) && walkable(x - px, y, z - pz);
+    }
+
+    /** Begehbar oder zumindest keine Wand (Mobiliar vor der Tür ist erlaubt). */
+    private boolean walkable(int x, int y, int z) {
+        ShipPart a = get(x, y, z), b = get(x, y + 1, z);
+        return a != null && b != null && !wallLike(a) && !wallLike(b) && isInterior(x, y, z);
+    }
+
+    /**
+     * Sucht alle Durchgänge (2 hoch frei unter einem Wandsturz) und setzt 2 x 2-Türen der Epoche.
+     * Gerade Durchgänge: 1 breit wird verbreitert, 3 breit um eine Spalte zugemauert. Schräge
+     * Durchgänge (runde Wände der Untertasse) werden zugemauert und durch eine achsparallele Tür
+     * mit kleinem Rahmen ersetzt.
+     */
+    /** Beim Türensetzen schon behandelte Zellen (auch frei geräumte vor schrägen Türen). */
+    private boolean[] doorSeen;
+
+    private void placeDoors() {
+        boolean[] seen = new boolean[cell.length];
+        doorSeen = seen;
+        for (int y = 2; y < sizeY - 3; y++)
+            for (int x = 1; x < sizeX - 1; x++)
+                for (int z = -zOffset + 1; z < zOffset; z++) {
+                    if (seen[idx(x, y, z)] || !opening(x, y, z)) continue;
+                    // zusammenhängende Durchgangszellen sammeln
+                    List<int[]> comp = new ArrayList<>();
+                    java.util.ArrayDeque<int[]> queue = new java.util.ArrayDeque<>();
+                    queue.add(new int[] {x, z});
+                    seen[idx(x, y, z)] = true;
+                    while (!queue.isEmpty() && comp.size() <= 8) {
+                        int[] c = queue.poll();
+                        comp.add(c);
+                        for (int[] d : new int[][] {{1, 0}, {-1, 0}, {0, 1}, {0, -1}}) {
+                            int nx = c[0] + d[0], nz = c[1] + d[1];
+                            if (!inBounds(nx, y, nz) || seen[idx(nx, y, nz)] || !opening(nx, y, nz)) continue;
+                            seen[idx(nx, y, nz)] = true;
+                            queue.add(new int[] {nx, nz});
+                        }
+                    }
+                    if (comp.size() > 6) continue; // kein Türdurchgang, sondern ein niedriger Bereich
+                    if (!straightDoor(comp, y)) slantedDoor(comp, y);
+                }
+    }
+
+    /** Gerader Durchgang (1-3 breit, beidseitig Wand): Tür direkt hinein. */
+    private boolean straightDoor(List<int[]> comp, int y) {
+        int minX = Integer.MAX_VALUE, maxX = Integer.MIN_VALUE, minZ = Integer.MAX_VALUE, maxZ = Integer.MIN_VALUE;
+        for (int[] c : comp) {
+            minX = Math.min(minX, c[0]); maxX = Math.max(maxX, c[0]);
+            minZ = Math.min(minZ, c[1]); maxZ = Math.max(maxZ, c[1]);
+        }
+        boolean alongZ;
+        if (minX == maxX && maxZ - minZ + 1 == comp.size()) alongZ = true;
+        else if (minZ == maxZ && maxX - minX + 1 == comp.size()) alongZ = false;
+        else return false;
+        int ax = alongZ ? 0 : 1, az = alongZ ? 1 : 0, px = az, pz = ax;
+        int x = minX, z = minZ, len = comp.size();
+        if (len > 3 || !wallAt(x - ax, y, z - az) || !wallAt(x + ax * len, y, z + az * len)) return false;
+        for (int i = 0; i < len; i++) if (!passable(x + ax * i, y, z + az * i, alongZ)) return false;
+        int sx = x, sz = z;
+        if (len == 1) {
+            // verbreitern: eine Wandspalte daneben öffnen, wenn dahinter wieder Wand kommt
+            int[][] tries = {{x + ax, z + az, x + 2 * ax, z + 2 * az, x, z}, {x - ax, z - az, x - 2 * ax, z - 2 * az, x - ax, z - az}};
+            boolean done = false;
+            for (int[] t : tries) {
+                if (wallLike(get(t[0], y + 2, t[1])) && walkable(t[0] + px, y, t[1] + pz) && walkable(t[0] - px, y, t[1] - pz)
+                    && wallAt(t[2], y, t[3]) && !get(t[0], y, t[1]).name().startsWith("HULL")) {
+                    sx = t[4]; sz = t[5];
+                    done = true;
+                    break;
+                }
+            }
+            if (!done) return false;
+        } else if (len == 3) {
+            ShipPart w = get(x, y + 2, z);
+            set(x + 2 * ax, y, z + 2 * az, w);
+            set(x + 2 * ax, y + 1, z + 2 * az, w);
+        }
+        door(sx, y, sz, alongZ, doorKindNear(sx, y, sz));
+        return true;
+    }
+
+    /** Darf an dieser Zelle für eine Tür umgebaut werden (Luft oder Innenwand)? */
+    private boolean rebuildable(int x, int y, int z) {
+        ShipPart p = get(x, y, z);
+        return isInterior(x, y, z) && (p == ShipPart.AIR || wallLike(p) && !p.name().startsWith("HULL"));
+    }
+
+    /**
+     * Schräger Durchgang: Richtung der Wand aus den Wandzellen am Sturz bestimmen, Lücke zumauern,
+     * dann eine 2 breite Tür quer hindurch, frei geräumt auf je 2 Zellen davor und dahinter; wo dabei
+     * Wand weggenommen wird, schließt ein Rahmen seitlich ab.
+     */
+    private void slantedDoor(List<int[]> comp, int y) {
+        double cx = 0, cz = 0;
+        for (int[] c : comp) { cx += c[0]; cz += c[1]; }
+        cx /= comp.size();
+        cz /= comp.size();
+        // Hauptrichtung der Wand (Kovarianz der Wandzellen in Sturzhöhe)
+        double sxx = 0, szz = 0, sxz = 0;
+        int n = 0;
+        for (int dx = -3; dx <= 3; dx++)
+            for (int dz = -3; dz <= 3; dz++) {
+                int wx = (int) Math.round(cx) + dx, wz = (int) Math.round(cz) + dz;
+                if (!wallLike(get(wx, y + 2, wz))) continue;
+                double ex = wx - cx, ez = wz - cz;
+                sxx += ex * ex; szz += ez * ez; sxz += ex * ez;
+                n++;
+            }
+        if (n < 3) return;
+        boolean alongZ = szz >= sxx; // Wand verläuft eher entlang z -> Durchgang entlang x
+        int ax = alongZ ? 0 : 1, az = alongZ ? 1 : 0, px = az, pz = ax;
+        double cA = alongZ ? cz : cx, cP = alongZ ? cx : cz;
+        ShipPart wall = get((int) Math.round(cx), y + 2, (int) Math.round(cz));
+        if (!wallLike(wall)) wall = ShipPart.CORRIDOR_WALL;
+        int ra = (int) Math.round(cA - 0.5), rp = (int) Math.round(cP);
+        int a0 = 0, p0 = 0;
+        boolean found = false;
+        search:
+        for (int da : new int[] {0, -1, 1})
+            for (int dp : new int[] {0, -1, 1})
+                if (slantedFits(ra + da, rp + dp, y, alongZ)) { a0 = ra + da; p0 = rp + dp; found = true; break search; }
+        if (!found) return;
+        java.util.function.IntBinaryOperator X = (aa, pp) -> alongZ ? pp : aa;
+        java.util.function.IntBinaryOperator Z = (aa, pp) -> alongZ ? aa : pp;
+        // Lücke zumauern
+        for (int[] c : comp) { set(c[0], y, c[1], wall); set(c[0], y + 1, c[1], wall); }
+        // Gang quer durch die Wand freiräumen, Rahmen dort, wo Wand wegfällt
+        for (int pp = p0 - 2; pp <= p0 + 2; pp++) {
+            if (pp == p0) continue;
+            boolean cleared = false;
+            for (int aa = a0; aa <= a0 + 1; aa++) {
+                int wx = X.applyAsInt(aa, pp), wz = Z.applyAsInt(aa, pp);
+                doorSeen[idx(wx, y, wz)] = true;
+                for (int dy = 0; dy <= 1; dy++)
+                    if (wallLike(get(wx, y + dy, wz))) {
+                        set(wx, y + dy, wz, ShipPart.AIR);
+                        cleared = true;
+                    }
+            }
+            if (!cleared) continue;
+            for (int aa : new int[] {a0 - 1, a0 + 2}) {
+                int wx = X.applyAsInt(aa, pp), wz = Z.applyAsInt(aa, pp);
+                set(wx, y, wz, wall);
+                set(wx, y + 1, wz, wall);
+            }
+        }
+        // Rahmen direkt neben der Tür und Sturz darüber
+        for (int aa = a0 - 1; aa <= a0 + 2; aa++) {
+            int wx = X.applyAsInt(aa, p0), wz = Z.applyAsInt(aa, p0);
+            if (aa == a0 - 1 || aa == a0 + 2) { set(wx, y, wz, wall); set(wx, y + 1, wz, wall); }
+            if (!wallLike(get(wx, y + 2, wz))) set(wx, y + 2, wz, wall);
+        }
+        int dx = alongZ ? p0 : a0, dz = alongZ ? a0 : p0;
+        door(dx, y, dz, alongZ, doorKindNear(dx, y, dz));
+    }
+
+    /** Passt eine schräge Ersatztür bei (a0, p0) (a = entlang der Wand, p = quer)? */
+    private boolean slantedFits(int a0, int p0, int y, boolean alongZ) {
+        java.util.function.IntBinaryOperator X = (aa, pp) -> alongZ ? pp : aa;
+        java.util.function.IntBinaryOperator Z = (aa, pp) -> alongZ ? aa : pp;
+        // prüfen: Tür und Durchgang (je 1 Zelle davor/dahinter) frei umbaubar, Rahmen nur wo nötig
+        for (int pp = p0 - 2; pp <= p0 + 2; pp++) {
+            boolean wallInRow = false;
+            for (int aa = a0; aa <= a0 + 1; aa++)
+                for (int dy = 0; dy <= 1; dy++) {
+                    int wx = X.applyAsInt(aa, pp), wz = Z.applyAsInt(aa, pp);
+                    ShipPart q = get(wx, y + dy, wz);
+                    if (isLift(q) || q == ShipPart.TURBOLIFT_DOOR || q == ShipPart.TURBOLIFT_FRAME) return false;
+                    // Tür selbst umbaubar; davor/dahinter darf Mobiliar stehen, nur keine Außenhülle
+                    if (pp == p0 ? !rebuildable(wx, y + dy, wz) : q == null || wallLike(q) && !rebuildable(wx, y + dy, wz)) return false;
+                    if (wallLike(q)) wallInRow = true;
+                }
+            if (pp == p0 || wallInRow)
+                for (int aa : new int[] {a0 - 1, a0 + 2})
+                    for (int dy = 0; dy <= 1; dy++)
+                        if (!rebuildable(X.applyAsInt(aa, pp), y + dy, Z.applyAsInt(aa, pp))) return false;
+        }
+        for (int aa = a0; aa <= a0 + 1; aa++) {
+            ShipPart below = get(X.applyAsInt(aa, p0), y - 1, Z.applyAsInt(aa, p0));
+            if (below == null || below == ShipPart.AIR) return false;
+        }
+        return true;
+    }
+
+    /** Kommandotür nahe Brücke/Besprechungsraum, Sicherheitstür bei Arrest und Maschinenraum. */
+    private int doorKindNear(int x, int y, int z) {
+        int kind = DOOR_NORMAL;
+        for (int dx = -6; dx <= 6; dx++)
+            for (int dz = -6; dz <= 6; dz++)
+                for (int dy = 0; dy <= 2; dy++) {
+                    if (compAt(x + dx, y + dy, z + dz) == BRIDGE) return DOOR_COMMAND;
+                    ShipPart p = get(x + dx, y + dy, z + dz);
+                    if (p == null) continue;
+                    if (p == ShipPart.CONFERENCE_TABLE || p == ShipPart.CAPTAINS_CHAIR || p == ShipPart.CAPTAINS_CHAIR_TNG) return DOOR_COMMAND;
+                    if (p == ShipPart.FORCE_FIELD || isWarpCore(p)) kind = DOOR_SECURITY;
+                }
+        return kind;
     }
 
     /** @return Bauteil der Zelle oder {@code null}, wenn dort nichts gesetzt wird */
@@ -2362,6 +2636,9 @@ public final class EnterpriseBlueprint {
         return false;
     }
 
+    /** Sicherheitstür der Waffenkammer (lokal, unteres linkes Teil) oder null. */
+    public BlockPos armoryDoor;
+
     /** @param w halbe Innenbreite (3 = 7 x 7 innen, 2 = kleine Kammer 5 x 5) */
     private BlockPos armoryAt(int x, int zc, int f, int w) {
         ShipPart wall = tng ? ShipPart.TNG_WALL : nx ? ShipPart.ENT_WALL : ShipPart.CORRIDOR_WALL;
@@ -2379,13 +2656,19 @@ public final class EnterpriseBlueprint {
             for (int z : spots) set(x + w, f + 2, z, ShipPart.PHASER_HOLDER, Direction.NORTH);
         }
         // Phaser-Wandhalter an den Seitenwänden
-        for (int dx : w >= 3 ? new int[] {0, 2} : new int[] {0, 1}) {
+        for (int dx : w >= 3 ? new int[] {1, 2} : new int[] {1}) {
             set(x + dx, f + 2, zc + w, ShipPart.PHASER_HOLDER, Direction.WEST);
             set(x + dx, f + 2, zc - w, ShipPart.PHASER_HOLDER, Direction.EAST);
         }
         // zwei Ladestationen an der Wand, einen Block über dem Boden, daneben frei für ein hängendes Gewehr
-        set(x - w, f + 2, zc + w, ShipPart.CHARGING_STATION, Direction.WEST);
-        set(x - w, f + 2, zc - w, ShipPart.CHARGING_STATION, Direction.EAST);
+        int xc = x - w + 2;
+        set(xc, f + 2, zc + w, ShipPart.CHARGING_STATION, Direction.WEST);
+        set(xc, f + 2, zc - w, ShipPart.CHARGING_STATION, Direction.EAST);
+        // Vorraum am Turbolift, abgetrennt durch eine Wand mit Sicherheitstür (gelbe Karte)
+        for (int z = zc - w; z <= zc + w; z++)
+            for (int y = f + 1; y <= f + 3; y++) set(x - w + 1, y, z, wall);
+        door(x - w + 1, f + 1, zc, true, DOOR_SECURITY);
+        armoryDoor = new BlockPos(x - w + 1, f + 1, zc);
         // eigener Turbolift an der Bugwand
         BlockPos lift = new BlockPos(x - w - 1, f + 1, zc);
         set(lift.getX(), lift.getY(), lift.getZ(), ShipPart.TURBOLIFT, Direction.SOUTH);

@@ -26,6 +26,9 @@ import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import de.simon.spacemod.block.PhaserBlock;
+import de.simon.spacemod.block.StarshipDoorBlock;
+import de.simon.spacemod.block.entity.DoorBlockEntity;
+import de.simon.spacemod.item.KeycardItem;
 import de.simon.spacemod.block.WarpCoreBlock;
 import de.simon.spacemod.block.RifleRackBlock;
 import de.simon.spacemod.block.PhaserHolderBlock;
@@ -275,6 +278,37 @@ public final class ModBlocks {
         () -> new BlockEntityType<>(PhaserHolderBlock.HolderBE::new, java.util.Set.of(PHASER_HOLDER.get())));
     public static final RegistryObject<BlockEntityType<ChargingStationBlockEntity>> CHARGING_STATION_BE = BLOCK_ENTITIES.register("charging_station",
         () -> new BlockEntityType<>(ChargingStationBlockEntity::new, java.util.Set.of(CHARGING_STATION.get())));
+
+    // --- Türen: 2 x 2, je Epoche normal / Sicherheit / Kommando ---
+    public static final String[] DOOR_ERAS = {"nx", "tos", "refit", "tng"};
+    public static final java.util.Map<String, RegistryObject<Block>> DOORS = new java.util.LinkedHashMap<>();
+    static {
+        for (String era : DOOR_ERAS)
+            for (StarshipDoorBlock.Kind kind : StarshipDoorBlock.Kind.values()) {
+                String name = "door_" + era + "_" + kind.name().toLowerCase();
+                DOORS.put(era + "_" + kind.name().toLowerCase(), block(name, p -> new StarshipDoorBlock(p, kind),
+                    metal(kind == StarshipDoorBlock.Kind.COMMAND ? MapColor.COLOR_RED : kind == StarshipDoorBlock.Kind.SECURITY
+                        ? MapColor.COLOR_YELLOW : MapColor.COLOR_LIGHT_GRAY).noOcclusion()));
+            }
+    }
+
+    public static Block door(String era, StarshipDoorBlock.Kind kind) {
+        return DOORS.get(era + "_" + kind.name().toLowerCase()).get();
+    }
+
+    public static final RegistryObject<BlockEntityType<DoorBlockEntity>> DOOR_BE = BLOCK_ENTITIES.register("door",
+        () -> new BlockEntityType<>(DoorBlockEntity::new, DOORS.values().stream().map(RegistryObject::get).collect(java.util.stream.Collectors.toSet())));
+
+    // --- Schlüsselkarten: Sicherheit (gelb), Kommando (rot), Captain (öffnet beides) ---
+    public static final RegistryObject<Item> KEYCARD_SECURITY = keycard("keycard_security", KeycardItem.Level.SECURITY);
+    public static final RegistryObject<Item> KEYCARD_COMMAND = keycard("keycard_command", KeycardItem.Level.COMMAND);
+    public static final RegistryObject<Item> KEYCARD_CAPTAIN = keycard("keycard_captain", KeycardItem.Level.CAPTAIN);
+
+    private static RegistryObject<Item> keycard(String name, KeycardItem.Level level) {
+        RegistryObject<Item> item = ITEMS.register(name, () -> new KeycardItem(new Item.Properties().setId(ITEMS.key(name)), level));
+        TAB_ITEMS.add(item);
+        return item;
+    }
 
     // --- Items ---
     public static final RegistryObject<Item> COMMUNICATOR = ITEMS.register("communicator",

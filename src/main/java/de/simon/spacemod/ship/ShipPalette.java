@@ -150,6 +150,10 @@ public final class ShipPalette {
                 EnterpriseBlueprint.variant(cellCode) == 1 ? DoubleBlockHalf.UPPER : DoubleBlockHalf.LOWER);
             case PHASER_HOLDER -> ModBlocks.PHASER_HOLDER.get().defaultBlockState();
             case CHARGING_STATION -> ModBlocks.CHARGING_STATION.get().defaultBlockState();
+            case DOOR_NX -> door("nx", cellCode);
+            case DOOR_TOS -> door("tos", cellCode);
+            case DOOR_REFIT -> door("refit", cellCode);
+            case DOOR_TNG -> door("tng", cellCode);
             case QUANTUM_LAUNCHER -> ModBlocks.QUANTUM_LAUNCHER.get().defaultBlockState();
             case PHASER_BANK -> ModBlocks.PHASER_BANK.get().defaultBlockState();
             case PHASER_EMITTER -> ModBlocks.PHASER_EMITTER.get().defaultBlockState();
@@ -165,6 +169,12 @@ public final class ShipPalette {
             st = st.setValue(BlockStateProperties.HORIZONTAL_FACING, facing);
         }
         return st;
+    }
+
+    /** Tür 2 x 2: Variante = Teil, Bits 12-13 = Art. */
+    private static BlockState door(String era, int code) {
+        var kind = de.simon.spacemod.block.StarshipDoorBlock.Kind.values()[Math.min(2, EnterpriseBlueprint.doorKind(code))];
+        return ModBlocks.door(era, kind).defaultBlockState().setValue(de.simon.spacemod.block.StarshipDoorBlock.PART, EnterpriseBlueprint.variant(code));
     }
 
     /** Turbolift: Variante 1 = obere Hälfte (Tür). */
