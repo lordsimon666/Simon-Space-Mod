@@ -38,5 +38,29 @@ class DualFacesTest {
         org.junit.jupiter.api.Assertions.assertTrue(right > 0, "kein Holodeck");
         org.junit.jupiter.api.Assertions.assertTrue(wrong * 50 < right, "Holodeck-Gitter zeigt in den Gang: " + wrong + ex);
         org.junit.jupiter.api.Assertions.assertTrue(ceilWrong * 50 < right, "Holodeck-Gitter an fremden Decken: " + ceilWrong);
+
+        // Holodecks haben Türen
+        int holoDoors = 0;
+        for (var p : bp.doors) {
+            boolean g = false;
+            for (int ddx = -2; ddx <= 2; ddx++) for (int ddz = -2; ddz <= 2; ddz++) {
+                int c = bp.codeAt(p.getX() + ddx, p.getY() - 1, p.getZ() + ddz);
+                g |= c != 0 && (EnterpriseBlueprint.part(c) == ShipPart.HOLODECK_GRID || EnterpriseBlueprint.part(c) == ShipPart.DUAL_FLOOR
+                    && EnterpriseBlueprint.DUAL_MATERIALS[EnterpriseBlueprint.dualA(c)] == ShipPart.HOLODECK_GRID);
+            }
+            if (g) holoDoors++;
+        }
+        org.junit.jupiter.api.Assertions.assertTrue(holoDoors >= 10, "Holodecks ohne Türen: " + holoDoors);
+
+        // keine hängenden Wandbalken unter der Decke (nur Stürze über Durchgängen bleiben)
+        int hanging = 0;
+        for (int x = 1; x < bp.sizeX - 1; x++) for (int y = 3; y < bp.sizeY - 1; y++) for (int z = -bp.zOffset + 1; z < bp.zOffset; z++) {
+            ShipPart p = bp.get(x, y, z);
+            if (p == null || !(p.name().contains("WALL") || p == ShipPart.HOLODECK_GRID)) continue;
+            if (bp.get(x, y - 1, z) != ShipPart.AIR || bp.get(x, y - 2, z) != ShipPart.AIR) continue;
+            ShipPart fl = bp.get(x, y - 3, z);
+            if (fl != null && fl != ShipPart.AIR) hanging++;
+        }
+        org.junit.jupiter.api.Assertions.assertTrue(hanging < 250, "hängende Wandbalken: " + hanging);
     }
 }

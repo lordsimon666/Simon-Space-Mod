@@ -191,10 +191,12 @@ public final class EnterpriseBlueprint {
         placeDoors();
         BlockPos armoryLift = sealArmory();
         if (armoryLift != null) liftStops.add(new LiftStop(armoryLift, deckLabel(deckNumber(armoryLift.getY() - 1)) + " – Waffenkammer"));
+        brightenBridge();
+        removeBeams();
         fixLights();
         fixRoomFloors();
+        dualFloors();   // zuerst: die Wände richten sich nach dem (korrigierten) Boden davor
         dualWalls();
-        dualFloors();
         liftStyle();
         connectBars();
         seal();
@@ -319,6 +321,51 @@ public final class EnterpriseBlueprint {
     }
 
     private static final int[][] DIRS = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+
+    /**
+     * Hängende Balken entfernen: ein Stück Wand unter der Decke, unter dem zwei Blöcke Luft sind und
+     * das zu beiden Seiten an Raumluft grenzt (Reste von Wänden, deren untere Reihen fehlen).
+     */
+    private void removeBeams() {
+        for (int pass = 0; pass < 6; pass++) {
+            boolean changed = false;
+            for (int x = 1; x < sizeX - 1; x++)
+                for (int y = 3; y < sizeY - 1; y++)
+                    for (int z = -zOffset + 1; z < zOffset; z++) {
+                        ShipPart p = get(x, y, z);
+                        if (!wallLike(p) || p.name().startsWith("HULL") || !isInterior(x, y, z)) continue;
+                        if (get(x, y - 1, z) != ShipPart.AIR || get(x, y - 2, z) != ShipPart.AIR) continue;
+                        // Türsturz: ein Nachbar reicht bis zum Boden (Wand oder Tür darunter)
+                        boolean supported = false, airSide = false;
+                        for (int[] d : DIRS) {
+                            ShipPart below = get(x + d[0], y - 1, z + d[1]);
+                            supported |= isDoor(below) || wallLike(below) && !below.name().startsWith("HULL");
+                            airSide |= get(x + d[0], y, z + d[1]) == ShipPart.AIR;
+                        }
+                        if (!supported && airSide) { set(x, y, z, ShipPart.AIR); changed = true; }
+                    }
+            if (!changed) break;
+        }
+    }
+
+    /** Mehr Licht auf der Brücke: Deckenleuchten im Raster 3 x 3 überall, wo die Decke hoch genug ist. */
+    private void brightenBridge() {
+        for (int x = 1; x < sizeX - 1; x++)
+            for (int z = -zOffset + 1; z < zOffset; z++) {
+                if (Math.floorMod(x, 3) != 0 || Math.floorMod(z, 3) != 0) continue;
+                for (int y = sizeY - 2; y > 3; y--) {
+                    if (compAt(x, y, z) != BRIDGE) continue;
+                    ShipPart above = get(x, y + 1, z);
+                    if (get(x, y, z) != ShipPart.AIR || above == null || above == ShipPart.AIR || above == ShipPart.CEILING_LIGHT) continue;
+                    // mindestens 2 Blöcke Luft darunter (keine Leuchte auf Kopfhöhe), keine Leuchte direkt daneben
+                    if (get(x, y - 1, z) != ShipPart.AIR || get(x, y - 2, z) != ShipPart.AIR) continue;
+                    boolean near = false;
+                    for (int[] d : DIRS) near |= get(x + d[0], y, z + d[1]) == ShipPart.CEILING_LIGHT;
+                    if (!near) set(x, y, z, ShipPart.CEILING_LIGHT);
+                    break;
+                }
+            }
+    }
 
     /**
      * Leuchten sind dünne Paneele unter der Decke. Sitzt eine Leuchte im Boden oder in einer Wand
@@ -602,8 +649,15 @@ public final class EnterpriseBlueprint {
     private boolean opening(int x, int y, int z) {
         ShipPart below = get(x, y - 1, z);
         ShipPart lintel = get(x, y + 2, z);
-        return airAt(x, y, z) && wallLike(lintel) && !lintel.name().startsWith("HULL") && lintel != ShipPart.CEILING_PANEL
-            && below != null && below != ShipPart.AIR
+        if (!airAt(x, y, z) || !wallLike(lintel) || lintel.name().startsWith("HULL") || lintel == ShipPart.CEILING_PANEL
+            || below == null || below == ShipPart.AIR) return false;
+        // ein Sturz ist ein Stück Wand: daneben (in Sturzhöhe) liegt Raumluft – eine durchgehende Decke nicht
+        boolean airBeside = false;
+        for (int[] d : DIRS) {
+            ShipPart n = get(x + d[0], y + 2, z + d[1]);
+            airBeside |= n == ShipPart.AIR || n == ShipPart.CEILING_LIGHT;
+        }
+        return airBeside
             && isInterior(x, y, z);
     }
 
@@ -750,12 +804,18 @@ public final class EnterpriseBlueprint {
                         set(wx, y + dy, wz, ShipPart.AIR);
                         cleared = true;
                     }
+                // oberste Reihe der alten Wand nicht als Balken über dem Gang hängen lassen
+                if (airAt(wx, y, wz) && wallLike(get(wx, y + 2, wz)) && !get(wx, y + 2, wz).name().startsWith("HULL")) {
+                    set(wx, y + 2, wz, ShipPart.AIR);
+                    cleared = true;
+                }
             }
             if (!cleared) continue;
             for (int aa : new int[] {a0 - 1, a0 + 2}) {
                 int wx = X.applyAsInt(aa, pp), wz = Z.applyAsInt(aa, pp);
                 frame(wx, y, wz, wall);
                 frame(wx, y + 1, wz, wall);
+                frame(wx, y + 2, wz, wall);
             }
         }
         // Rahmen direkt neben der Tür und Sturz darüber
@@ -3610,9 +3670,11 @@ public final class EnterpriseBlueprint {
             case HOLODECK -> {
                 // Schwarzer Raum mit gelbem Gitter an Wänden, Boden und Decke, Bedienfeld neben der Tür
                 recolorWalls(cells, f, ShipPart.CORRIDOR_WALL, ShipPart.HOLODECK_GRID);
+                // Gitterdecke in der Zwischendecke (f+4) – der Raum bleibt 3 hoch wie alle anderen, so
+                // werden seine Türen erkannt; die Oberseite wird später zum Boden des Raums darüber
                 for (int[] c : cells) {
                     set(c[0], f, c[1], ShipPart.HOLODECK_GRID);
-                    if (compAt(c[0], f + 4, c[1]) != NONE) set(c[0], f + 3, c[1], ShipPart.HOLODECK_GRID);
+                    if (isInterior(c[0], f + 4, c[1]) && mat(get(c[0], f + 4, c[1])) >= 0) set(c[0], f + 4, c[1], ShipPart.HOLODECK_GRID);
                 }
                 double rd = room.rIn() < 6 ? rOutUse - 1.2 : room.rIn() + 1.2; // neben der Tür
                 int[] pnl = nearest(cells, polX(rd, am + 2.2 / rd), polZ(rd, am + 2.2 / rd));
