@@ -184,12 +184,17 @@ public final class EnterpriseBlueprint {
         buildBridge();
         BlockPos eng = buildEngineering();
         BlockPos transporter = buildTransporterRoom(fullDecks);
-        buildArmory();
         linkTurbolifts(eng, transporter);
         if (tng) tngInterior();
         if (nx) nxInterior();
         placeDoors();
+        buildArmory();   // nach den Türen: so ist bekannt, wo der Hauptflur ist
         BlockPos armoryLift = sealArmory();
+        deckLifts(false);
+        ensureReachable();
+        deckLifts(true);   // große, noch unerreichbare Bereiche bekommen einen eigenen Lift
+        ensureReachable();
+        lightRooms();
         if (armoryLift != null) liftStops.add(new LiftStop(armoryLift, deckLabel(deckNumber(armoryLift.getY() - 1)) + " – Waffenkammer"));
         brightenBridge();
         removeBeams();
@@ -346,6 +351,275 @@ public final class EnterpriseBlueprint {
                     }
             if (!changed) break;
         }
+    }
+
+    /** Türen aus der Liste entfernen, die nicht mehr stehen (z. B. von der Waffenkammer überbaut). */
+    private void purgeDoors() {
+        for (int i = doors.size() - 1; i >= 0; i--) {
+            BlockPos d = doors.get(i);
+            int c = codeAt(d.getX(), d.getY(), d.getZ());
+            if (c == 0 || !isDoor(part(c)) || variant(c) != 0) { doors.remove(i); doorKinds.remove(i); }
+        }
+    }
+
+    /**
+     * Jeder Raum soll vom Hauptflur aus erreichbar sein. Je Ebene: Bereiche (Luft) über Türen
+     * verbinden; erreichbar ist, was mit dem größten Bereich oder einem Turbolift-Ausgang verbunden
+     * ist. Ein Raum ohne Verbindung bekommt eine Tür in eine Wand zu einem erreichbaren Nachbarbereich.
+     */
+    private void ensureReachable() {
+        purgeDoors();
+        int[] ab = armoryBounds();
+        int[] lab = new int[sizeX * sizeZ];
+        for (int y = 2; y < sizeY - 3; y++) {
+            int n = regions(y, lab)[0];
+            if (n < 2) continue;
+            int[] area = new int[n];
+            for (int x = 0; x < sizeX; x++)
+                for (int z = -zOffset; z <= zOffset; z++) {
+                    int r = lab[lidx(x, z)];
+                    ShipPart fl = get(x, y - 1, z);
+                    if (r >= 0 && fl != null && fl != ShipPart.AIR && get(x, y + 1, z) == ShipPart.AIR) area[r]++;
+                }
+            int[] parent = new int[n];
+            for (int r = 0; r < n; r++) parent[r] = r;
+            java.util.function.IntUnaryOperator find = new java.util.function.IntUnaryOperator() {
+                public int applyAsInt(int r) { while (parent[r] != r) r = parent[r] = parent[parent[r]]; return r; }
+            };
+            // Türen verbinden die Bereiche zu beiden Seiten
+            for (BlockPos d : doors) {
+                if (d.getY() != y) continue;
+                int code = codeAt(d.getX(), y, d.getZ());
+                boolean alongZ = facing(code) == Direction.SOUTH;
+                int px = alongZ ? 1 : 0, pz = alongZ ? 0 : 1;
+                int ra = labAt(lab, d.getX() + px, d.getZ() + pz), rb = labAt(lab, d.getX() - px, d.getZ() - pz);
+                if (ra >= 0 && rb >= 0) parent[find.applyAsInt(ra)] = find.applyAsInt(rb);
+            }
+            // erreichbar: größter Bereich und Turbolift-Ausgänge
+            boolean[] seed = new boolean[n];
+            int best = -1;
+            for (int r = 0; r < n; r++) if (area[r] > 0 && (best < 0 || area[r] > area[best])) best = r;
+            if (best < 0) continue;
+            seed[best] = true;
+            for (LiftStop st : liftStops) {
+                BlockPos p = st.pos();
+                if (p.getY() != y) continue;
+                for (int[] dd : DIRS) { int r = labAt(lab, p.getX() + dd[0], p.getZ() + dd[1]); if (r >= 0) seed[r] = true; }
+            }
+            // erreichbare Wurzeln; neue Räume werden an eine erreichbare Wurzel gehängt
+            boolean[] okRoot = new boolean[n];
+            for (int r = 0; r < n; r++) if (seed[r]) okRoot[find.applyAsInt(r)] = true;
+            for (int round = 0; round < 6; round++) {
+                boolean placedAny = false;
+                for (int x = 2; x < sizeX - 2; x++)
+                    for (int z = -zOffset + 2; z < zOffset - 2; z++)
+                        for (boolean alongZ : new boolean[] {true, false}) {
+                            int ax = alongZ ? 0 : 1, az = alongZ ? 1 : 0, px = az, pz = ax;
+                            // zwei Wandzellen nebeneinander (2 hoch + Sturz), innen nicht erreichbarer Raum, außen erreichbar
+                            boolean wall = true;
+                            for (int k = 0; k <= 1 && wall; k++) {
+                                int wx = x + ax * k, wz = z + az * k;
+                                wall = wallAt(wx, y, wz) && wallLike(get(wx, y + 2, wz)) && !get(wx, y, wz).name().startsWith("HULL")
+                                    && !isLift(get(wx, y - 1, wz))
+                                    && !get(wx, y + 1, wz).name().startsWith("HULL") && isInterior(wx, y, wz) && !inArmory(ab, wx, wz);
+                            }
+                            if (!wall) continue;
+                            int r1 = -1, r2 = -1;
+                            boolean sides = true;
+                            for (int k = 0; k <= 1 && sides; k++) {
+                                int wx = x + ax * k, wz = z + az * k;
+                                int a1 = labAt(lab, wx + px, wz + pz), b1 = labAt(lab, wx - px, wz - pz);
+                                sides = a1 >= 0 && b1 >= 0 && airAt(wx + px, y, wz + pz) && airAt(wx - px, y, wz - pz)
+                                    && (r1 < 0 || a1 == r1) && (r2 < 0 || b1 == r2) && solidBelow(wx + px, y, wz + pz) && solidBelow(wx - px, y, wz - pz);
+                                r1 = a1; r2 = b1;
+                            }
+                            if (!sides || r1 == r2) continue;
+                            int f1 = find.applyAsInt(r1), f2 = find.applyAsInt(r2);
+                            if (okRoot[f1] == okRoot[f2]) continue;
+                            int room = okRoot[f1] ? f2 : f1, reach = okRoot[f1] ? f1 : f2;
+                            if (area[okRoot[f1] ? r2 : r1] < 6) continue;
+                            door(x, y, z, alongZ, doorKindNear(x, y, z));
+                            parent[room] = reach;
+                            placedAny = true;
+                        }
+                // schräge Wände: Ersatztür quer durch die Wand (wie bei schrägen Durchgängen)
+                for (int x = 2; x < sizeX - 2; x++)
+                    for (int z = -zOffset + 2; z < zOffset - 2; z++) {
+                        ShipPart wp = get(x, y, z);
+                        if (!wallLike(wp) || wp.name().startsWith("HULL") || !wallLike(get(x, y + 1, z)) || !wallLike(get(x, y + 2, z))
+                            || !isInterior(x, y, z) || inArmory(ab, x, z)) continue;
+                        for (int[] dd : new int[][] {{1, 0}, {0, 1}, {1, 1}, {1, -1}}) {
+                            int a1 = labAt(lab, x + dd[0], z + dd[1]), b1 = labAt(lab, x - dd[0], z - dd[1]);
+                            if (a1 < 0 || b1 < 0 || a1 == b1) continue;
+                            int f1 = find.applyAsInt(a1), f2 = find.applyAsInt(b1);
+                            if (okRoot[f1] == okRoot[f2] || area[okRoot[f1] ? b1 : a1] < 6) continue;
+                            int before = doors.size();
+                            List<int[]> comp = new ArrayList<>();
+                            comp.add(new int[] {x, z});
+                            slantedDoor(comp, y);
+                            if (doors.size() > before) {
+                                parent[okRoot[f1] ? f2 : f1] = okRoot[f1] ? f1 : f2;
+                                placedAny = true;
+                            }
+                            break;
+                        }
+                    }
+                if (!placedAny) break;
+            }
+        }
+    }
+
+    /**
+     * Jedes Deck braucht einen Turbolift-Halt: Bereiche (über Türen verbunden) ab 40 begehbaren
+     * Zellen ohne eigenen Halt bekommen einen Turbolift nahe ihrer Mitte, möglichst an einer Wand.
+     */
+    /** @param extra true: auch auf Decks mit Lift, für Verbünde ab 150 Zellen ohne Verbindung */
+    private void deckLifts(boolean extra) {
+        int[] lab = new int[sizeX * sizeZ];
+        java.util.Set<String> names = new java.util.HashSet<>();
+        for (LiftStop st : liftStops) names.add(st.name());
+        for (int f = 1; f < sizeY - 4; f++) {
+            if (Math.floorMod(f - floorBase, DECK_HEIGHT) != 0) continue;
+            int y = f + 1;
+            int n = regions(y, lab)[0];
+            if (n == 0) continue;
+            int[] area = new int[n];
+            long[] sumX = new long[n], sumZ = new long[n];
+            for (int x = 0; x < sizeX; x++)
+                for (int z = -zOffset; z <= zOffset; z++) {
+                    int r = lab[lidx(x, z)];
+                    if (r < 0 || !liftFloor(x, f, z)) continue;
+                    area[r]++; sumX[r] += x; sumZ[r] += z;
+                }
+            int[] parent = new int[n];
+            for (int r = 0; r < n; r++) parent[r] = r;
+            java.util.function.IntUnaryOperator find = new java.util.function.IntUnaryOperator() {
+                public int applyAsInt(int r) { while (parent[r] != r) r = parent[r] = parent[parent[r]]; return r; }
+            };
+            for (BlockPos d : doors) {
+                if (d.getY() != y) continue;
+                boolean alongZ = facing(codeAt(d.getX(), y, d.getZ())) == Direction.SOUTH;
+                int px = alongZ ? 1 : 0, pz = alongZ ? 0 : 1;
+                int ra = labAt(lab, d.getX() + px, d.getZ() + pz), rb = labAt(lab, d.getX() - px, d.getZ() - pz);
+                if (ra >= 0 && rb >= 0) parent[find.applyAsInt(ra)] = find.applyAsInt(rb);
+            }
+            int[] compArea = new int[n];
+            for (int r = 0; r < n; r++) compArea[find.applyAsInt(r)] += area[r];
+            boolean[] hasLift = new boolean[n];
+            java.util.Set<Integer> partsWithLift = new java.util.HashSet<>();
+            for (LiftStop st : liftStops) {
+                BlockPos p = st.pos();
+                if (Math.abs(p.getY() - y) > 1) continue;
+                partsWithLift.add(hullPart(compAt(p.getX(), y, p.getZ())));
+                for (int[] dd : DIRS) {
+                    int r = labAt(lab, p.getX() + dd[0], p.getZ() + dd[1]);
+                    if (r >= 0) { hasLift[find.applyAsInt(r)] = true; partsWithLift.add(hullPart(compAt(p.getX() + dd[0], y, p.getZ() + dd[1]))); }
+                }
+            }
+            // größte Verbünde zuerst; je Deck und Rumpfteil höchstens ein neuer Lift
+            Integer[] roots = new Integer[n];
+            for (int r = 0; r < n; r++) roots[r] = r;
+            java.util.Arrays.sort(roots, (a, b) -> compArea[b] - compArea[a]);
+            for (int root : roots) {
+                if (find.applyAsInt(root) != root || hasLift[root] || compArea[root] < (extra ? 150 : 40)) continue;
+                int part0 = -1;
+                for (int r = 0; r < n && part0 < 0; r++)
+                    if (find.applyAsInt(r) == root && area[r] > 0) part0 = hullPart(compAt((int) (sumX[r] / area[r]), y, (int) (sumZ[r] / area[r])));
+                if (!extra && partsWithLift.contains(part0)) continue;
+                // größter Bereich dieses Verbunds
+                int big = -1;
+                for (int r = 0; r < n; r++) if (find.applyAsInt(r) == root && (big < 0 || area[r] > area[big])) big = r;
+                if (big < 0 || area[big] < 12) continue;
+                double cx = (double) sumX[big] / area[big], cz = (double) sumZ[big] / area[big];
+                int[] best = null;
+                double bestScore = Double.MAX_VALUE;
+                for (int x = 1; x < sizeX - 1; x++)
+                    for (int z = -zOffset + 1; z < zOffset; z++) {
+                        if (lab[lidx(x, z)] != big || !liftFloor(x, f, z) || get(x, y + 1, z) != ShipPart.AIR) continue;
+                        boolean nearDoor = false;
+                        for (int[] dd : DIRS) nearDoor |= isDoor(get(x + dd[0], y, z + dd[1])) || isDoor(get(x + 2 * dd[0], y, z + 2 * dd[1]));
+                        if (nearDoor) continue;
+                        for (int i = 0; i < 4; i++) {
+                            int[] dd = DIRS[i];
+                            int fx = x + dd[0], fz = z + dd[1];
+                            if (labAt(lab, fx, fz) != big || !liftFloor(fx, f, fz) || get(fx, y + 1, fz) != ShipPart.AIR) continue;
+                            ShipPart back = get(x - dd[0], y, z - dd[1]);
+                            boolean wallBehind = back != null && back != ShipPart.AIR;
+                            double score = Math.hypot(x - cx, z - cz) - (wallBehind ? 6 : 0);
+                            if (score < bestScore) { bestScore = score; best = new int[] {x, z, i}; }
+                        }
+                    }
+                if (best == null) continue;
+                Direction face = switch (best[2]) { case 0 -> Direction.SOUTH; case 1 -> Direction.NORTH; case 2 -> Direction.EAST; default -> Direction.WEST; };
+                partsWithLift.add(part0);
+                set(best[0], y, best[1], ShipPart.TURBOLIFT, face);
+                set(best[0], y + 1, best[1], ShipPart.TURBOLIFT_DOOR, face);
+                byte c = compAt(best[0], y, best[1]);
+                String base = deckLabel(deckNumber(f)) + (c == SECONDARY || c == SHUTTLEBAY ? " – Sekundärrumpf" : c == SAUCER || c == SENSOR ? " – Untertasse" : "");
+                String name = base;
+                for (int k = 2; names.contains(name); k++) name = base + " " + k;
+                names.add(name);
+                liftStops.add(new LiftStop(new BlockPos(best[0], y, best[1]), name));
+            }
+        }
+    }
+
+    /** Rumpfteil für die Deck-Lifte: 0 Untertasse (mit Brücke/Sensor), 1 Sekundärrumpf, 2 Rest. */
+    private static int hullPart(byte c) {
+        return c == SAUCER || c == SENSOR || c == BRIDGE ? 0 : c == SECONDARY || c == SHUTTLEBAY ? 1 : 2;
+    }
+
+    /** Begehbarer Boden für einen Deck-Lift (Schiffsinneres, nicht in Gondeln oder Pylonen). */
+    private boolean liftFloor(int x, int f, int z) {
+        ShipPart fl = get(x, f, z);
+        byte c = compAt(x, f + 1, z);
+        return fl != null && fl != ShipPart.AIR && get(x, f + 1, z) == ShipPart.AIR && isInterior(x, f + 1, z)
+            && c != NACELLE && c != PYLON && c != BUSSARD && c != NONE;
+    }
+
+    private int labAt(int[] lab, int x, int z) {
+        return x < 0 || x >= sizeX || z < -zOffset || z > zOffset ? -1 : lab[lidx(x, z)];
+    }
+
+    private boolean solidBelow(int x, int y, int z) {
+        ShipPart b = get(x, y - 1, z);
+        return b != null && b != ShipPart.AIR;
+    }
+
+    private static boolean inArmory(int[] ab, int x, int z) {
+        return ab != null && x >= ab[0] - 1 && x <= ab[1] + 1 && z >= ab[2] - 1 && z <= ab[3] + 1;
+    }
+
+    /**
+     * Licht in jedem Raum: Deckenleuchten im 4er-Raster überall, wo die Decke mindestens 3 Blöcke
+     * über dem Boden liegt und in der Nähe noch keine Leuchte hängt.
+     */
+    private void lightRooms() {
+        for (int x = 1; x < sizeX - 1; x++)
+            for (int z = -zOffset + 1; z < zOffset; z++) {
+                if (Math.floorMod(x, 4) != 2 || Math.floorMod(z, 4) != 2) continue;
+                for (int y = 1; y < sizeY - 4; y++) {
+                    ShipPart fl = get(x, y - 1, z);
+                    if (fl == null || fl == ShipPart.AIR || get(x, y, z) != ShipPart.AIR || !isInterior(x, y, z)) continue;
+                    // Decke über diesem Bodenpunkt suchen
+                    int top = y;
+                    while (top + 1 < sizeY && get(x, top + 1, z) == ShipPart.AIR) top++;
+                    ShipPart ceil = get(x, top + 1, z);
+                    if (ceil != null && ceil != ShipPart.CEILING_LIGHT && top - y >= 1 && top - y <= 6) {
+                        boolean near = false;
+                        for (int dx = -1; dx <= 1 && !near; dx++)
+                            for (int dz = -1; dz <= 1 && !near; dz++) {
+                                ShipPart q = get(x + dx, y, z + dz);
+                                near = isLift(q) || q == ShipPart.TURBOLIFT_DOOR || isDoor(q) || isDoor(get(x + dx, y + 1, z + dz));
+                            }
+                        for (int dx = -2; dx <= 2 && !near; dx++)
+                            for (int dz = -2; dz <= 2 && !near; dz++)
+                                for (int dy = -1; dy <= 1 && !near; dy++) near = get(x + dx, top + dy, z + dz) == ShipPart.CEILING_LIGHT;
+                        if (!near) set(x, top, z, ShipPart.CEILING_LIGHT);
+                    }
+                    y = top;
+                }
+            }
     }
 
     /** Mehr Licht auf der Brücke: Deckenleuchten im Raster 3 x 3 überall, wo die Decke hoch genug ist. */
@@ -629,7 +903,10 @@ public final class EnterpriseBlueprint {
             if (!inBounds(cx, y + row, cz)) return;
             cell[idx(cx, y + row, cz)] = (part.ordinal() + 1) | (facing.get2DDataValue() << 8) | (p << 10) | (kind << 12);
         }
-        doors.add(new BlockPos(ox, y, oz));
+        BlockPos origin = new BlockPos(ox, y, oz);
+        int old = doors.indexOf(origin); // eine überbaute Tür an derselben Stelle ersetzen
+        if (old >= 0) { doors.remove(old); doorKinds.remove(old); }
+        doors.add(origin);
         doorKinds.add(kind);
     }
 
@@ -750,7 +1027,7 @@ public final class EnterpriseBlueprint {
     /** Darf an dieser Zelle für eine Tür umgebaut werden (Luft oder Innenwand)? */
     private boolean rebuildable(int x, int y, int z) {
         ShipPart p = get(x, y, z);
-        return isInterior(x, y, z) && (p == ShipPart.AIR || wallLike(p) && !p.name().startsWith("HULL"));
+        return isInterior(x, y, z) && !isLift(get(x, y - 1, z)) && (p == ShipPart.AIR || wallLike(p) && !p.name().startsWith("HULL"));
     }
 
     /**
@@ -2973,36 +3250,73 @@ public final class EnterpriseBlueprint {
         int[] sec = nx ? null : secondaryRange();
         int xa = sec != null ? sec[0] + 6 : (int) Math.round(sCx - 0.5 * sR);
         int xb = sec != null ? sec[1] - 6 : (int) Math.round(sCx + 0.7 * sR);
-        // 1. Wahl: auf Deckhöhe, direkt an einem Gang; 2.: irgendwo auf Deckhöhe am Gang; 3.: irgendwo
-        for (int pass = 0; pass < 3; pass++) {
-            if (pass == 0) {
-                for (int zc : new int[] {7, -7, 0})
-                    for (int x = xa; x <= xb; x++)
-                        for (int f = sizeY - 6; f > 0; f--)
-                            if (armoryFits(x, zc, f, 3, true)) return armoryAt(x, zc, f, 3);
-            } else {
-                for (int zc : new int[] {0, 6, -6, 10, -10, 14, -14})
-                    for (int x = 6; x < sizeX - 6; x++)
-                        for (int f = sizeY - 6; f > 0; f--)
-                            for (int w = 3; w >= 2; w--) // notfalls die kleine Waffenkammer (5 x 5 innen)
-                                if (armoryFits(x, zc, f, w, pass == 1)) return armoryAt(x, zc, f, w);
-            }
+        // 1. Wahl: am Hauptflur (Mitte); 2.: irgendwo am Hauptflur; 3.: an irgendeinem Gang; 4.: irgendwo
+        int[] zcs = {7, -7, 0, 6, -6, 10, -10, 14, -14};
+        for (int pass = 0; pass < 4; pass++) {
+            int x0 = pass == 0 ? xa : 6, x1 = pass == 0 ? xb : sizeX - 6;
+            for (int zc : zcs)
+                for (int x = x0; x <= x1; x++)
+                    for (int f = sizeY - 6; f > 0; f--)
+                        for (int w = 3; w >= (pass == 0 ? 3 : 2); w--) // notfalls die kleine Waffenkammer (5 x 5 innen)
+                            if (armoryFits(x, zc, f, w, pass)) return armoryAt(x, zc, f, w);
         }
         return null;
     }
 
-    private boolean armoryFits(int x, int zc, int f, int w, boolean needCorridor) {
+    /** @param pass 0/1: am Hauptflur, 2: an irgendeinem Gang, 3: egal */
+    private boolean armoryFits(int x, int zc, int f, int w, int pass) {
         if (Math.floorMod(f - floorBase, DECK_HEIGHT) != 0) return false;
         if (!boxInterior(x - w, x + w, f + 1, f + 3, zc - w, zc + w)) return false;
         if (blocked(x - w - 1, x + w + 1, f, f + 4, zc - w - 1, zc + w + 1)) return false;
-        return !needCorridor || corridorBeside(x, zc, f, w);
+        if (pass >= 3) return true;
+        if (pass == 2) return corridorBeside(x, zc, f, w);
+        // nicht in den Hauptflur hineinbauen, aber direkt an ihm liegen
+        int[] lab = mainLabels(f + 1);
+        int main = lab[lab.length - 1];
+        if (main >= 0)
+            for (int bx = x - w - 1; bx <= x + w + 1; bx++)
+                for (int bz = zc - w - 1; bz <= zc + w + 1; bz++)
+                    if (inBounds(bx, f + 1, bz) && lab[lidx(bx, bz)] == main) return false;
+        return corridorBeside(x, zc, f, w, main >= 0 ? lab : null, main);
     }
 
-    /** Liegt außen an einer Wand der Kammer ein begehbarer Bereich (2 breit, 2 tief, mit Boden)? */
+    /** Raumbereiche einer Ebene; letzter Eintrag = Hauptflur (größter Bereich mit Boden) oder -1. */
+    private final java.util.Map<Integer, int[]> mainCache = new java.util.HashMap<>();
+
+    private int[] mainLabels(int y) {
+        return mainCache.computeIfAbsent(y, yy -> {
+            int[] lab = new int[sizeX * sizeZ + 1];
+            int[] tmp = new int[sizeX * sizeZ];
+            int n = regions(yy, tmp)[0];
+            System.arraycopy(tmp, 0, lab, 0, tmp.length);
+            int[] area = new int[Math.max(1, n)];
+            for (int x = 0; x < sizeX; x++)
+                for (int z = -zOffset; z <= zOffset; z++) {
+                    int r = tmp[lidx(x, z)];
+                    ShipPart fl = get(x, yy - 1, z);
+                    if (r >= 0 && fl != null && fl != ShipPart.AIR) area[r]++;
+                }
+            int best = -1;
+            for (int r = 0; r < n; r++) if (area[r] > 20 && (best < 0 || area[r] > area[best])) best = r;
+            lab[lab.length - 1] = best;
+            return lab;
+        });
+    }
+
     private boolean corridorBeside(int x, int zc, int f, int w) {
+        return corridorBeside(x, zc, f, w, null, -1);
+    }
+
+    /** Liegt außen an einer Wand der Kammer ein begehbarer Bereich (2 breit, 2 tief, mit Boden) – ggf. im Hauptflur? */
+    private boolean corridorBeside(int x, int zc, int f, int w, int[] lab, int main) {
         int d = w + 2;
-        for (int t = -w; t <= w - 1; t++) {
-            int[][] spots = {{x - d, zc + t, -1, 0}, {x + d, zc + t, 1, 0}, {x + t, zc - d, 0, -1}, {x + t, zc + d, 0, 1}};
+        // nur Wandstücke, an denen innen Platz für die Tür ist: Bugwand ohne die Ecken (Ladestationen),
+        // Seitenwände nur zwischen Ladestation und Phaserhalter (w = 3); Heckwand: Gewehrständer
+        List<int[]> spotList = new ArrayList<>();
+        for (int t = -w + 1; t <= w - 2; t++) spotList.add(new int[] {x - d, zc + t, -1, 0});
+        if (w >= 3) { spotList.add(new int[] {x - 2, zc - d, 0, -1}); spotList.add(new int[] {x - 2, zc + d, 0, 1}); }
+        for (int[] sp0 : spotList) {
+            int[][] spots = {sp0};
             for (int[] sp : spots) {
                 int sx = sp[2] == 0 ? 1 : 0, sz = sp[2] == 0 ? 0 : 1;
                 boolean ok = true;
@@ -3010,7 +3324,8 @@ public final class EnterpriseBlueprint {
                     for (int depth = 0; depth <= 1 && ok; depth++) {
                         int cx = sp[0] + sx * k + sp[2] * depth, cz = sp[1] + sz * k + sp[3] * depth;
                         ShipPart floor = get(cx, f, cz);
-                        ok = airAt(cx, f + 1, cz) && floor != null && floor != ShipPart.AIR && isInterior(cx, f + 1, cz);
+                        ok = airAt(cx, f + 1, cz) && floor != null && floor != ShipPart.AIR && isInterior(cx, f + 1, cz)
+                            && (lab == null || lab[lidx(cx, cz)] == main);
                     }
                 if (ok) return true;
             }
@@ -3085,6 +3400,20 @@ public final class EnterpriseBlueprint {
     private int[] armoryBox;
     private ShipPart armoryWall;
 
+    /** Sind alle vier Teile der Tür, zu der die Zelle gehört, noch da? */
+    private boolean doorComplete(int x, int y, int z) {
+        int code = codeAt(x, y, z);
+        int part = variant(code), col = part % 2, row = part / 2;
+        boolean alongZ = facing(code) == Direction.SOUTH;
+        int ox = alongZ ? x : x + col, oy = y - row, oz = alongZ ? z - col : z;
+        for (int p = 0; p < 4; p++) {
+            int cx = alongZ ? ox : ox - p % 2, cz = alongZ ? oz + p % 2 : oz;
+            int c = codeAt(cx, oy + p / 2, cz);
+            if (c == 0 || !isDoor(part(c)) || variant(c) != p) return false;
+        }
+        return true;
+    }
+
     /** Entfernt eine ganze 2x2-Tür, zu der die Zelle gehört, und mauert die Öffnung zu. */
     private void removeDoorAt(int x, int y, int z, ShipPart wall) {
         int code = codeAt(x, y, z);
@@ -3112,10 +3441,15 @@ public final class EnterpriseBlueprint {
         int x0 = ax - w - 1, x1 = ax + w + 1, z0 = zc - w - 1, z1 = zc + w + 1;
         ShipPart wall = armoryWall;
         // Türen, die die Kammer berühren, entfernen
+        // (auch Reste von Türen, die der Kasten angeschnitten hat, direkt am Rand)
         for (int x = x0 - 1; x <= x1 + 1; x++)
             for (int y = f; y <= f + 4; y++)
                 for (int z = z0 - 1; z <= z1 + 1; z++)
-                    if (isDoor(get(x, y, z)) && x >= x0 && x <= x1 && z >= z0 && z <= z1) removeDoorAt(x, y, z, wall);
+                    if (isDoor(get(x, y, z)) && !doorComplete(x, y, z)) removeDoorAt(x, y, z, wall);
+        for (int x = x0; x <= x1; x++)
+            for (int y = f; y <= f + 4; y++)
+                for (int z = z0; z <= z1; z++)
+                    if (isDoor(get(x, y, z))) removeDoorAt(x, y, z, wall);
         // Wände, Boden und Decke lückenlos schließen
         for (int x = x0; x <= x1; x++)
             for (int y = f; y <= f + 4; y++)
@@ -3126,6 +3460,7 @@ public final class EnterpriseBlueprint {
                     if (y == f + 4 && p == ShipPart.CEILING_LIGHT) continue;
                     if (p == null || p == ShipPart.AIR || !wallLike(p) && mat(p) < 0) set(x, y, z, y == f ? (tng ? ShipPart.TNG_CARPET : nx ? ShipPart.DECK_PLATE : ShipPart.DECK_FLOOR) : wall);
                 }
+        mainCache.clear();
         // beste Stelle für die Tür: draußen begehbar, möglichst großer Bereich (Gang)
         int[] lab = new int[sizeX * sizeZ];
         int n = regions(f + 1, lab)[0];
@@ -4069,7 +4404,7 @@ public final class EnterpriseBlueprint {
             for (int y = 0; y + 1 < sizeY; y++)
                 for (int z = -zOffset; z <= zOffset; z++) {
                     int code = codeAt(x, y, z);
-                    if (code != 0 && part(code) == lift && variant(code) == 0) set(x, y + 1, z, lift, facing(code), 1);
+                    if (code != 0 && part(code) == lift && variant(code) == 0 && !isDoor(get(x, y + 1, z))) set(x, y + 1, z, lift, facing(code), 1);
                 }
     }
 

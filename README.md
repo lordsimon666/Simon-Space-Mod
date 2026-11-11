@@ -259,10 +259,9 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
   200 (Abbauen) bzw. 300 RF (Töten), Gewehre das 1,5-Fache. Die Energiezelle nutzt die
   Standard-Energieschnittstelle von Forge (FE/RF), Ladegeräte anderer Mods können die Waffen also
   auch laden. Die Modelle sind echte 3D-Modelle (auch in der Hand) mit schrägen Griffen und Nasen.
-* **Waffenkammer**: Jedes Schiff hat eine abgeschlossene Waffenkammer auf Deckhöhe, die nur über
-  eine einzige Sicherheitstür (gelbe Karte) vom Gang aus erreichbar ist – kein eigener Turbolift,
-  kein Durchgang in andere Räume. Nur bei sehr kleinen Schiffen ohne Gang neben der Kammer gibt es
-  ersatzweise einen Turbolift-Halt. Drei
+* **Waffenkammer**: Jedes Schiff hat eine abgeschlossene Waffenkammer auf Deckhöhe direkt am
+  Hauptflur des Decks, die nur über eine einzige Sicherheitstür (gelbe Karte) vom Flur aus
+  erreichbar ist – kein eigener Turbolift, kein Durchgang in andere Räume. Drei
   Gewehrständer (2 Blöcke hoch, 4 Gewehre stehen aufrecht nebeneinander; nur in Epochen mit
   Gewehren), Phaser-Wandhalter (1 Block, 4 Phaser) und zwei Ladestationen. Die Waffen sind in den
   Haltern zu sehen. Beim Spawnen ist die Kammer zufällig leer bis ganz voll mit den voll geladenen
@@ -303,6 +302,11 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
   (Gitterdecke in der Zwischendecke), keine offenen Nischen zum Gang; Wandreste, die als Balken
   unter der Decke hängen würden, werden entfernt. Räume mit eigenem Boden
   (Teppich, Krankenstation ...) enden sauber an der Tür und reichen nicht mehr in den Korridor.
+* **Alles erreichbar**: Jedes Deck hat einen Turbolift-Halt (auch in der kompakten Größe, für
+  Untertasse und Sekundärrumpf getrennt), und jeder Raum ist über Türen vom Hauptflur aus zu
+  erreichen – Räume ohne Zugang bekommen beim Bau eine Tür, auch durch schräge Wände.
+* **Licht in jedem Raum**: zusätzlich zu den Leuchten der Raumausstattung hängt überall im
+  4er-Raster eine Deckenleuchte, wo noch keine in der Nähe ist.
 * **Deckenleuchten**: flache Paneele (1/8 Block) direkt unter der Decke. Sie brauchen Strom: In
   einem gespawnten Schiff leuchten sie, solange noch ein Warpkern-Block steht – ohne Warpkern geht
   das Licht im ganzen Schiff aus (Prüfung etwa alle 5 Sekunden). Selbst gebaute Leuchten brauchen
