@@ -65,7 +65,7 @@ public final class ShipPower {
     private static Grid compute(ServerLevel level, BlockPos consumer) {
         List<BlockPos> cores = PowerData.get(level).cores(consumer);
         if (cores == null) cores = search(level, consumer);
-        int out = 0;
+        long out = 0;
         long key = Long.MAX_VALUE;
         for (BlockPos p : cores) {
             BlockState st = level.getBlockState(p);
@@ -74,7 +74,7 @@ public final class ShipPower {
                 key = Math.min(key, p.asLong());
             }
         }
-        return out == 0 ? Grid.NONE : new Grid(key, out);
+        return out == 0 ? Grid.NONE : new Grid(key, (int) Math.min(Integer.MAX_VALUE, out));
     }
 
     /** Breitensuche über leitende Blöcke bis zu den Warpkernen. */

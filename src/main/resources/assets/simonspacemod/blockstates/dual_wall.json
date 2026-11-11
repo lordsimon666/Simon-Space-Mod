@@ -1,0 +1,1252 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "facing": "north",
+        "front": "deck_floor"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_deck_floor"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "deck_floor"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_deck_floor",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "deck_floor"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_deck_floor",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "deck_floor"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_deck_floor",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "deck_floor"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_deck_floor"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "deck_floor"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_deck_floor",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "deck_floor"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_deck_floor",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "deck_floor"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_deck_floor",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "bridge_deck"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_bridge_deck"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "bridge_deck"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_bridge_deck",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "bridge_deck"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_bridge_deck",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "bridge_deck"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_bridge_deck",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "bridge_deck"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_bridge_deck"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "bridge_deck"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_bridge_deck",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "bridge_deck"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_bridge_deck",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "bridge_deck"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_bridge_deck",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "corridor_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_corridor_wall"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "corridor_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_corridor_wall",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "corridor_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_corridor_wall",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "corridor_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_corridor_wall",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "corridor_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_corridor_wall"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "corridor_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_corridor_wall",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "corridor_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_corridor_wall",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "corridor_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_corridor_wall",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "ceiling_panel"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_ceiling_panel"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "ceiling_panel"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_ceiling_panel",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "ceiling_panel"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_ceiling_panel",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "ceiling_panel"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_ceiling_panel",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "ceiling_panel"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_ceiling_panel"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "ceiling_panel"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_ceiling_panel",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "ceiling_panel"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_ceiling_panel",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "ceiling_panel"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_ceiling_panel",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "bridge_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_bridge_wall"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "bridge_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_bridge_wall",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "bridge_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_bridge_wall",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "bridge_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_bridge_wall",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "bridge_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_bridge_wall"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "bridge_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_bridge_wall",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "bridge_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_bridge_wall",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "bridge_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_bridge_wall",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "transporter_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_transporter_wall"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "transporter_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_transporter_wall",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "transporter_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_transporter_wall",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "transporter_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_transporter_wall",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "transporter_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_transporter_wall"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "transporter_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_transporter_wall",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "transporter_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_transporter_wall",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "transporter_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_transporter_wall",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "sickbay_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_sickbay_wall"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "sickbay_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_sickbay_wall",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "sickbay_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_sickbay_wall",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "sickbay_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_sickbay_wall",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "sickbay_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_sickbay_wall"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "sickbay_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_sickbay_wall",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "sickbay_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_sickbay_wall",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "sickbay_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_sickbay_wall",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "sickbay_floor"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_sickbay_floor"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "sickbay_floor"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_sickbay_floor",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "sickbay_floor"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_sickbay_floor",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "sickbay_floor"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_sickbay_floor",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "sickbay_floor"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_sickbay_floor"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "sickbay_floor"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_sickbay_floor",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "sickbay_floor"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_sickbay_floor",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "sickbay_floor"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_sickbay_floor",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "bridge_carpet_teal"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_bridge_carpet_teal"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "bridge_carpet_teal"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_bridge_carpet_teal",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "bridge_carpet_teal"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_bridge_carpet_teal",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "bridge_carpet_teal"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_bridge_carpet_teal",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "bridge_carpet_teal"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_bridge_carpet_teal"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "bridge_carpet_teal"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_bridge_carpet_teal",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "bridge_carpet_teal"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_bridge_carpet_teal",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "bridge_carpet_teal"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_bridge_carpet_teal",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "deck_plate"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_deck_plate"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "deck_plate"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_deck_plate",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "deck_plate"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_deck_plate",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "deck_plate"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_deck_plate",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "deck_plate"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_deck_plate"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "deck_plate"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_deck_plate",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "deck_plate"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_deck_plate",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "deck_plate"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_deck_plate",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "bridge_wall_dark"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_bridge_wall_dark"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "bridge_wall_dark"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_bridge_wall_dark",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "bridge_wall_dark"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_bridge_wall_dark",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "bridge_wall_dark"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_bridge_wall_dark",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "bridge_wall_dark"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_bridge_wall_dark"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "bridge_wall_dark"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_bridge_wall_dark",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "bridge_wall_dark"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_bridge_wall_dark",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "bridge_wall_dark"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_bridge_wall_dark",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "tng_carpet"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_tng_carpet"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "tng_carpet"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_tng_carpet",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "tng_carpet"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_tng_carpet",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "tng_carpet"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_tng_carpet",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "tng_carpet"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_tng_carpet"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "tng_carpet"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_tng_carpet",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "tng_carpet"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_tng_carpet",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "tng_carpet"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_tng_carpet",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "tng_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_tng_wall"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "tng_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_tng_wall",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "tng_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_tng_wall",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "tng_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_tng_wall",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "tng_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_tng_wall"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "tng_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_tng_wall",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "tng_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_tng_wall",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "tng_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_tng_wall",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "holodeck_grid"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_holodeck_grid"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "holodeck_grid"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_holodeck_grid",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "holodeck_grid"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_holodeck_grid",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "holodeck_grid"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_holodeck_grid",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "holodeck_grid"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_holodeck_grid"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "holodeck_grid"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_holodeck_grid",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "holodeck_grid"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_holodeck_grid",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "holodeck_grid"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_holodeck_grid",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "ent_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_ent_wall"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "ent_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_ent_wall",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "ent_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_ent_wall",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "ent_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_ent_wall",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "ent_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_ent_wall"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "ent_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_ent_wall",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "ent_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_ent_wall",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "ent_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_ent_wall",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "transporter_platform"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_transporter_platform"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "transporter_platform"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_transporter_platform",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "transporter_platform"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_transporter_platform",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "transporter_platform"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_front_transporter_platform",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "transporter_platform"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_transporter_platform"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "transporter_platform"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_transporter_platform",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "transporter_platform"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_transporter_platform",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "transporter_platform"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_wall_back_transporter_platform",
+        "y": 270
+      }
+    }
+  ]
+}

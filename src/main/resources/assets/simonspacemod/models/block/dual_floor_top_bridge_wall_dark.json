@@ -1,0 +1,67 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "simonspacemod:block/bridge_wall_dark",
+    "t": "simonspacemod:block/bridge_wall_dark"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        8,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "up": {
+          "texture": "#t",
+          "cullface": "up"
+        },
+        "north": {
+          "texture": "#t",
+          "uv": [
+            0,
+            0,
+            16,
+            8
+          ],
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#t",
+          "uv": [
+            0,
+            0,
+            16,
+            8
+          ],
+          "cullface": "south"
+        },
+        "east": {
+          "texture": "#t",
+          "uv": [
+            0,
+            0,
+            16,
+            8
+          ],
+          "cullface": "east"
+        },
+        "west": {
+          "texture": "#t",
+          "uv": [
+            0,
+            0,
+            16,
+            8
+          ],
+          "cullface": "west"
+        }
+      }
+    }
+  ]
+}

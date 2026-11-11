@@ -1,18 +1,33 @@
 {
   "variants": {
-    "facing=north": {
+    "facing=north,red=false": {
       "model": "simonspacemod:block/charging_station"
     },
-    "facing=east": {
+    "facing=north,red=true": {
+      "model": "simonspacemod:block/charging_station_red"
+    },
+    "facing=east,red=false": {
       "model": "simonspacemod:block/charging_station",
       "y": 90
     },
-    "facing=south": {
+    "facing=east,red=true": {
+      "model": "simonspacemod:block/charging_station_red",
+      "y": 90
+    },
+    "facing=south,red=false": {
       "model": "simonspacemod:block/charging_station",
       "y": 180
     },
-    "facing=west": {
+    "facing=south,red=true": {
+      "model": "simonspacemod:block/charging_station_red",
+      "y": 180
+    },
+    "facing=west,red=false": {
       "model": "simonspacemod:block/charging_station",
+      "y": 270
+    },
+    "facing=west,red=true": {
+      "model": "simonspacemod:block/charging_station_red",
       "y": 270
     }
   }

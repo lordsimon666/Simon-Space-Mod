@@ -147,7 +147,10 @@ public enum ShipPart {
     DOOR_NX(0x707880),
     DOOR_TOS(0xB04040),
     DOOR_REFIT(0xA8A8B0),
-    DOOR_TNG(0xC8B898);
+    DOOR_TNG(0xC8B898),
+    // zweiseitige Blöcke (Materialien in Bits 16-19 / 20-23)
+    DUAL_WALL(0xD0C8B8),
+    DUAL_FLOOR(0x8A8A8A);
 
     /** Farbe für Vorschaubilder. */
     public final int color;

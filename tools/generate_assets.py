@@ -2115,6 +2115,73 @@ def door_assets(de, en):
 
 
 
+# ---------------------------------------------------------------------------------------------
+#  Zweiseitige Wand / Decke (jede Hälfte im Material ihres Raums)
+# ---------------------------------------------------------------------------------------------
+
+DUAL_MATERIALS = ["deck_floor", "bridge_deck", "corridor_wall", "ceiling_panel", "bridge_wall", "transporter_wall",
+                  "sickbay_wall", "sickbay_floor", "bridge_carpet_teal", "deck_plate", "bridge_wall_dark", "tng_carpet",
+                  "tng_wall", "holodeck_grid", "ent_wall", "transporter_platform"]
+
+
+def dual_assets(de, en):
+    rot = {"north": 0, "east": 90, "south": 180, "west": 270}
+
+    def half(fr, to, faces):
+        return {"from": fr, "to": to, "faces": faces}
+
+    def wall_half(front):
+        z0, z1 = (0, 8) if front else (8, 16)
+        outer = "north" if front else "south"
+        f = {outer: {"texture": "#t", "cullface": outer},
+             "east": {"texture": "#t", "uv": [16 - z1, 0, 16 - z0, 16], "cullface": "east"},
+             "west": {"texture": "#t", "uv": [z0, 0, z1, 16], "cullface": "west"},
+             "up": {"texture": "#t", "uv": [0, z0, 16, z1], "cullface": "up"},
+             "down": {"texture": "#t", "uv": [0, 16 - z1, 16, 16 - z0], "cullface": "down"}}
+        return half([0, 0, z0], [16, 16, z1], f)
+
+    def floor_half(top):
+        y0, y1 = (8, 16) if top else (0, 8)
+        outer = "up" if top else "down"
+        f = {outer: {"texture": "#t", "cullface": outer}}
+        for side in ("north", "south", "east", "west"):
+            f[side] = {"texture": "#t", "uv": [0, 16 - y1, 16, 16 - y0], "cullface": side}
+        return half([0, y0, 0], [16, y1, 16], f)
+
+    wall_parts, floor_parts = [], []
+    for m in DUAL_MATERIALS:
+        t = b(m)
+        for front in (True, False):
+            n = f"dual_wall_{'front' if front else 'back'}_{m}"
+            write_json(os.path.join(ASSETS, "models", "block", n + ".json"),
+                       {"parent": "minecraft:block/block", "textures": {"particle": t, "t": t}, "elements": [wall_half(front)]})
+            for d, r in rot.items():
+                mm = {"model": b(n)}
+                if r:
+                    mm["y"] = r
+                wall_parts.append({"when": {"facing": d, "front" if front else "back": m}, "apply": mm})
+        for top in (True, False):
+            n = f"dual_floor_{'top' if top else 'bottom'}_{m}"
+            write_json(os.path.join(ASSETS, "models", "block", n + ".json"),
+                       {"parent": "minecraft:block/block", "textures": {"particle": t, "t": t}, "elements": [floor_half(top)]})
+            floor_parts.append({"when": {"top" if top else "bottom": m}, "apply": {"model": b(n)}})
+    write_json(os.path.join(ASSETS, "blockstates", "dual_wall.json"), {"multipart": wall_parts})
+    write_json(os.path.join(ASSETS, "blockstates", "dual_floor.json"), {"multipart": floor_parts})
+    # Inventar: beide Hälften zusammen
+    write_json(os.path.join(ASSETS, "models", "block", "dual_wall.json"),
+               {"parent": "minecraft:block/block", "textures": {"particle": b("corridor_wall"), "a": b("corridor_wall"), "b": b("tng_wall"), "t": b("corridor_wall")},
+                "elements": [wall_half(True), dict(wall_half(False), faces={k: dict(v, texture="#b") for k, v in wall_half(False)["faces"].items()})]})
+    write_json(os.path.join(ASSETS, "models", "block", "dual_floor.json"),
+               {"parent": "minecraft:block/block", "textures": {"particle": b("deck_floor"), "t": b("deck_floor"), "b": b("ceiling_panel")},
+                "elements": [floor_half(True), dict(floor_half(False), faces={k: dict(v, texture="#b") for k, v in floor_half(False)["faces"].items()})]})
+    for name in ("dual_wall", "dual_floor"):
+        write_json(os.path.join(ASSETS, "items", name + ".json"), item_def(b(name)))
+        write_json(os.path.join(DATA, "loot_table", "blocks", name + ".json"), loot(name))
+    de[f"block.{MODID}.dual_wall"], en[f"block.{MODID}.dual_wall"] = "Zweiseitige Wand", "Two-Sided Wall"
+    de[f"block.{MODID}.dual_floor"], en[f"block.{MODID}.dual_floor"] = "Boden/Decke (zweiseitig)", "Floor/Ceiling (two-sided)"
+
+
+
 def armory_assets(de, en):
     tex = f"{MODID}:item/weapon_palette"
     for name, boxes in WEAPON_MODELS.items():
@@ -2170,9 +2237,18 @@ def armory_assets(de, en):
                             el([3, 2, 2], [13, 14, 2.5], all6("#g")),                      # Glasfront
                             el([0.5, 9, 6], [2, 10, 10], all6("#d")), el([0.5, 3, 6], [2, 4, 10], all6("#d")),     # Gewehrhaken rechts
                             el([14, 9, 6], [15.5, 10, 10], all6("#d")), el([14, 3, 6], [15.5, 4, 10], all6("#d"))]}  # und links
+    # rote Warnleuchte oben an der Front (leuchtet ohne Energie, blinkt beim Laden ohne Strom)
+    charger_red = dict(charger, textures=dict(charger["textures"], r=b("nav_light_red")),
+                       elements=charger["elements"] + [dict(el([5, 14.6, 1.2], [11, 15.6, 2.2], all6("#r")), light_emission=15)])
+    write_json(os.path.join(ASSETS, "models", "block", "charging_station_red.json"), charger_red)
     for name, model in (("phaser_holder", holder), ("charging_station", charger)):
         write_json(os.path.join(ASSETS, "models", "block", name + ".json"), model)
-        write_json(os.path.join(ASSETS, "blockstates", name + ".json"), facing_blockstate(name))
+        bs = facing_blockstate(name)
+        if name == "charging_station":
+            rot = {"north": 0, "east": 90, "south": 180, "west": 270}
+            bs = {"variants": {f"facing={d},red={str(red).lower()}": dict({"model": b(name + ("_red" if red else ""))}, **({"y": r} if r else {}))
+                               for d, r in rot.items() for red in (False, True)}}
+        write_json(os.path.join(ASSETS, "blockstates", name + ".json"), bs)
         write_json(os.path.join(ASSETS, "items", name + ".json"), item_def(b(name)))
         write_json(os.path.join(DATA, "loot_table", "blocks", name + ".json"), loot(name))
     for name in ("warp_core_nx", "warp_core_e"):
@@ -3002,6 +3078,7 @@ def main():
     })
     uniform_assets(de, en)
     door_assets(de, en)
+    dual_assets(de, en)
     de.update(armory_de)
     en.update(armory_en)
     de.update({

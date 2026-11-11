@@ -1,0 +1,126 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "simonspacemod:block/deck_floor",
+    "t": "simonspacemod:block/deck_floor",
+    "b": "simonspacemod:block/ceiling_panel"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        8,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "up": {
+          "texture": "#t",
+          "cullface": "up"
+        },
+        "north": {
+          "texture": "#t",
+          "uv": [
+            0,
+            0,
+            16,
+            8
+          ],
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#t",
+          "uv": [
+            0,
+            0,
+            16,
+            8
+          ],
+          "cullface": "south"
+        },
+        "east": {
+          "texture": "#t",
+          "uv": [
+            0,
+            0,
+            16,
+            8
+          ],
+          "cullface": "east"
+        },
+        "west": {
+          "texture": "#t",
+          "uv": [
+            0,
+            0,
+            16,
+            8
+          ],
+          "cullface": "west"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        8,
+        16
+      ],
+      "faces": {
+        "down": {
+          "texture": "#b",
+          "cullface": "down"
+        },
+        "north": {
+          "texture": "#b",
+          "uv": [
+            0,
+            8,
+            16,
+            16
+          ],
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#b",
+          "uv": [
+            0,
+            8,
+            16,
+            16
+          ],
+          "cullface": "south"
+        },
+        "east": {
+          "texture": "#b",
+          "uv": [
+            0,
+            8,
+            16,
+            16
+          ],
+          "cullface": "east"
+        },
+        "west": {
+          "texture": "#b",
+          "uv": [
+            0,
+            8,
+            16,
+            16
+          ],
+          "cullface": "west"
+        }
+      }
+    }
+  ]
+}

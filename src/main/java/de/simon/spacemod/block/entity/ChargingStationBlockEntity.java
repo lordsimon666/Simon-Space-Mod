@@ -67,8 +67,14 @@ public class ChargingStationBlockEntity extends WeaponHolderBlockEntity {
                 be.energy.receiveEnergy(got, false);
             }
         }
-        // Waffe (oder jedes andere Gerät mit Forge-Energie) laden
+        // Warnleuchte: rot ohne Energie, blinkend, wenn ein Gerät ohne Strom geladen werden soll
         ItemStack stack = be.items.get(0);
+        boolean empty = be.energy.getEnergyStored() <= 0;
+        boolean wants = !stack.isEmpty() && stack.getCapability(ForgeCapabilities.ENERGY).map(e -> e.receiveEnergy(1, true) > 0).orElse(false);
+        boolean red = empty && (!wants || (level.getGameTime() / 10) % 2 == 0);
+        if (state.hasProperty(de.simon.spacemod.block.ChargingStationBlock.RED) && state.getValue(de.simon.spacemod.block.ChargingStationBlock.RED) != red)
+            level.setBlock(pos, state.setValue(de.simon.spacemod.block.ChargingStationBlock.RED, red), net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+        // Waffe (oder jedes andere Gerät mit Forge-Energie) laden
         if (!stack.isEmpty() && be.energy.getEnergyStored() > 0) {
             int moved = stack.getCapability(ForgeCapabilities.ENERGY)
                 .map(e -> e.receiveEnergy(Math.min(be.energy.getEnergyStored(), 2000), false)).orElse(0);

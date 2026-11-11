@@ -265,13 +265,15 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
   Haltern zu sehen. Beim Spawnen ist die Kammer zufällig leer bis ganz voll mit den voll geladenen
   Waffen der Epoche. Waffe in der Hand + Rechtsklick auf einen Halter = einsetzen, leere Hand =
   herausnehmen. Ständer, Halter und Ladestation gibt es auch einzeln im Kreativ-Tab.
-* **Strom (RF)**: Die Warpkerne erzeugen Strom, pro Block und Tick: NX-01 5 RF, Originalserie bis
-  B 10 RF, C/D 20 RF, E 30 RF. Alle Blöcke der Mod leiten ihn weiter – Hülle, Wände, Böden und
+* **Strom (RF)**: Die Warpkerne erzeugen Strom, pro Block und Tick: NX-01 5 000 RF, Originalserie bis
+  B 10 000 RF, C/D 20 000 RF, E 30 000 RF. Alle Blöcke der Mod leiten ihn weiter – Hülle, Wände, Böden und
   die Warpkerne selbst –, so versorgt der ganze Kern das Schiff, nicht nur der Block an der Hülle.
   Die Ladestation (Speicher 200 000 RF) ist ein Schrank mit Glasfront, in der Waffenkammer einen
   Block über dem Boden an der Wand: ein Phaser steht sichtbar darin, ein Gewehr hängt mittig außen
   an der Seite und ragt oben und unten über – bevorzugt rechts, ist rechts ein Block im Weg, links.
-  Während geladen wird, sprühen Funken hinter dem Glas. Sie lädt alles mit Forge-Energie (auch Geräte anderer
+  Während geladen wird, sprühen Funken hinter dem Glas. Oben an der Front sitzt eine rote
+  Warnleuchte: Sie leuchtet, wenn die Station keine Energie hat, und blinkt, wenn eine Waffe darin
+  steckt, die ohne Strom nicht geladen werden kann. Sie lädt alles mit Forge-Energie (auch Geräte anderer
   Mods) und nimmt selbst RF von Kabeln anderer Mods an. Rechtsklick mit leerer Hand auf eine leere Station zeigt Ladestand und
   Leistung des Bordnetzes. Bei gespawnten Schiffen ist die Station fest mit dem Warpkern
   verbunden; selbst gebaute Stationen suchen über leitende Blöcke (bis 60 000 Blöcke weit) nach
@@ -288,6 +290,11 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
   sie wieder. Sicherheits- und Kommandokarte sind dabei gleichwertig (die eine öffnet, was die
   andere verschlossen hat); was mit der Captain-Karte verschlossen wurde, öffnet nur die
   Captain-Karte. Rechtsklick ohne Karte zeigt, ob und womit die Tür verschlossen ist.
+* **Zweiseitige Wände und Decken**: Grenzen zwei Räume mit verschiedener Ausstattung aneinander
+  (Holodeck, Krankenstation, Transporterraum ...), zeigt die Wand auf jeder Seite das Material
+  ihres Raums – im Flur neben dem Holodeck also Korridorwand statt Holodeck-Gitter. Genauso bei
+  Decken: unten die Decke des unteren Raums, oben der Boden des oberen. Räume mit eigenem Boden
+  (Teppich, Krankenstation ...) enden sauber an der Tür und reichen nicht mehr in den Korridor.
 * **Uniformen**: Für jede Epoche gibt es Uniformen in den drei Abteilungsfarben, dazu Hosen und Stiefel:
   NX-01 (dunkelblauer Overall mit farbiger Paspel, dunkelblaue Hose), Originalserie (gold / blau / rot),
   Kinofilme der 2280er und 90er (rote Jacke, Kragen weiß / grau / gelb, für A und B),
@@ -305,7 +312,7 @@ E = Eisenbarren        G = Goldbarren
 F = roter Farbstoff, P = Enderperle, R = Redstone
 ```
 
-## Neue Blöcke (125)
+## Neue Blöcke (127)
 
 * **Hülle**: Hüllenpanzerung (+ Stufe), Hüllenplatte, dunkle Hüllenplatte, Hüllenfenster,
   Kennungsmarkierung (+ Stufe), roter Zierstreifen, Positionslicht rot/grün, Deflektorschüssel,
@@ -335,6 +342,7 @@ F = roter Farbstoff, P = Enderperle, R = Redstone
   (4 Varianten je Epoche)
 * **Waffenkammer und Strom**: Gewehrständer, Phaser-Wandhalter, Ladestation, Warpkern der NX-01
   und der Enterprise-E
+* **Zweiseitig**: Wand mit zwei Seiten und Boden/Decke mit eigener Ober- und Unterseite (je 16 Materialien)
 * **Türen**: 2 x 2 Schiebetür, Sicherheitstür und Kommandotür im Stil von NX-01, Originalserie,
   Kinofilmen und Next Generation (12 Stück)
 * **Allgemein**: Deckboden, Korridorwand, Deckenverkleidung, Deckenleuchte, Maschinenraum-Konsole,

@@ -1,0 +1,260 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "top": "deck_floor"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_floor_top_deck_floor"
+      }
+    },
+    {
+      "when": {
+        "bottom": "deck_floor"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_floor_bottom_deck_floor"
+      }
+    },
+    {
+      "when": {
+        "top": "bridge_deck"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_floor_top_bridge_deck"
+      }
+    },
+    {
+      "when": {
+        "bottom": "bridge_deck"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_floor_bottom_bridge_deck"
+      }
+    },
+    {
+      "when": {
+        "top": "corridor_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_floor_top_corridor_wall"
+      }
+    },
+    {
+      "when": {
+        "bottom": "corridor_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_floor_bottom_corridor_wall"
+      }
+    },
+    {
+      "when": {
+        "top": "ceiling_panel"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_floor_top_ceiling_panel"
+      }
+    },
+    {
+      "when": {
+        "bottom": "ceiling_panel"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_floor_bottom_ceiling_panel"
+      }
+    },
+    {
+      "when": {
+        "top": "bridge_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_floor_top_bridge_wall"
+      }
+    },
+    {
+      "when": {
+        "bottom": "bridge_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_floor_bottom_bridge_wall"
+      }
+    },
+    {
+      "when": {
+        "top": "transporter_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_floor_top_transporter_wall"
+      }
+    },
+    {
+      "when": {
+        "bottom": "transporter_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_floor_bottom_transporter_wall"
+      }
+    },
+    {
+      "when": {
+        "top": "sickbay_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_floor_top_sickbay_wall"
+      }
+    },
+    {
+      "when": {
+        "bottom": "sickbay_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_floor_bottom_sickbay_wall"
+      }
+    },
+    {
+      "when": {
+        "top": "sickbay_floor"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_floor_top_sickbay_floor"
+      }
+    },
+    {
+      "when": {
+        "bottom": "sickbay_floor"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_floor_bottom_sickbay_floor"
+      }
+    },
+    {
+      "when": {
+        "top": "bridge_carpet_teal"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_floor_top_bridge_carpet_teal"
+      }
+    },
+    {
+      "when": {
+        "bottom": "bridge_carpet_teal"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_floor_bottom_bridge_carpet_teal"
+      }
+    },
+    {
+      "when": {
+        "top": "deck_plate"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_floor_top_deck_plate"
+      }
+    },
+    {
+      "when": {
+        "bottom": "deck_plate"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_floor_bottom_deck_plate"
+      }
+    },
+    {
+      "when": {
+        "top": "bridge_wall_dark"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_floor_top_bridge_wall_dark"
+      }
+    },
+    {
+      "when": {
+        "bottom": "bridge_wall_dark"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_floor_bottom_bridge_wall_dark"
+      }
+    },
+    {
+      "when": {
+        "top": "tng_carpet"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_floor_top_tng_carpet"
+      }
+    },
+    {
+      "when": {
+        "bottom": "tng_carpet"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_floor_bottom_tng_carpet"
+      }
+    },
+    {
+      "when": {
+        "top": "tng_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_floor_top_tng_wall"
+      }
+    },
+    {
+      "when": {
+        "bottom": "tng_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_floor_bottom_tng_wall"
+      }
+    },
+    {
+      "when": {
+        "top": "holodeck_grid"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_floor_top_holodeck_grid"
+      }
+    },
+    {
+      "when": {
+        "bottom": "holodeck_grid"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_floor_bottom_holodeck_grid"
+      }
+    },
+    {
+      "when": {
+        "top": "ent_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_floor_top_ent_wall"
+      }
+    },
+    {
+      "when": {
+        "bottom": "ent_wall"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_floor_bottom_ent_wall"
+      }
+    },
+    {
+      "when": {
+        "top": "transporter_platform"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_floor_top_transporter_platform"
+      }
+    },
+    {
+      "when": {
+        "bottom": "transporter_platform"
+      },
+      "apply": {
+        "model": "simonspacemod:block/dual_floor_bottom_transporter_platform"
+      }
+    }
+  ]
+}

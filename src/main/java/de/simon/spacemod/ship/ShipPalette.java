@@ -150,6 +150,12 @@ public final class ShipPalette {
                 EnterpriseBlueprint.variant(cellCode) == 1 ? DoubleBlockHalf.UPPER : DoubleBlockHalf.LOWER);
             case PHASER_HOLDER -> ModBlocks.PHASER_HOLDER.get().defaultBlockState();
             case CHARGING_STATION -> ModBlocks.CHARGING_STATION.get().defaultBlockState();
+            case DUAL_WALL -> ModBlocks.DUAL_WALL.get().defaultBlockState()
+                .setValue(de.simon.spacemod.block.DualWallBlock.FRONT, de.simon.spacemod.block.DualMaterial.values()[EnterpriseBlueprint.dualA(cellCode)])
+                .setValue(de.simon.spacemod.block.DualWallBlock.BACK, de.simon.spacemod.block.DualMaterial.values()[EnterpriseBlueprint.dualB(cellCode)]);
+            case DUAL_FLOOR -> ModBlocks.DUAL_FLOOR.get().defaultBlockState()
+                .setValue(de.simon.spacemod.block.DualFloorBlock.TOP, de.simon.spacemod.block.DualMaterial.values()[EnterpriseBlueprint.dualA(cellCode)])
+                .setValue(de.simon.spacemod.block.DualFloorBlock.BOTTOM, de.simon.spacemod.block.DualMaterial.values()[EnterpriseBlueprint.dualB(cellCode)]);
             case DOOR_NX -> door("nx", cellCode);
             case DOOR_TOS -> door("tos", cellCode);
             case DOOR_REFIT -> door("refit", cellCode);

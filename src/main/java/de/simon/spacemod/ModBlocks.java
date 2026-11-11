@@ -148,7 +148,7 @@ public final class ModBlocks {
     public static final RegistryObject<Block> CAPTAINS_CHAIR_TNG = block("captains_chair_tng", CaptainsChairBlock::new,
         BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BROWN).strength(1.5F).sound(SoundType.WOOL).noOcclusion());
     public static final RegistryObject<Block> WARP_CORE_TNG = block("warp_core_tng",
-        p -> new WarpCoreBlock(p, 20), glowing(glass(MapColor.COLOR_BLUE), 15));
+        p -> new WarpCoreBlock(p, 20_000), glowing(glass(MapColor.COLOR_BLUE), 15));
     public static final RegistryObject<Block> MSD_DISPLAY = block("msd_display", VariantFacingBlock::new, glowing(metal(MapColor.COLOR_BLACK), 10));
     public static final RegistryObject<Block> SITUATION_TABLE = block("situation_table",
         p -> new ShapedBlock(p, Block.box(0, 0, 0, 16, 14, 16)), glowing(metal(MapColor.COLOR_BLACK), 8).noOcclusion());
@@ -238,11 +238,11 @@ public final class ModBlocks {
     public static final RegistryObject<Block> CAPTAINS_CHAIR = block("captains_chair", CaptainsChairBlock::new, metal(MapColor.COLOR_BLACK).noOcclusion());
     // Warpkerne liefern Strom fürs Bordnetz (RF pro Tick und Block): NX-01 5, Originalserie bis B 10, C/D 20, E 30
     public static final RegistryObject<Block> WARP_CORE = block("warp_core",
-        p -> new WarpCoreBlock(p, 10), glowing(glass(MapColor.COLOR_BLUE), 15));
+        p -> new WarpCoreBlock(p, 10_000), glowing(glass(MapColor.COLOR_BLUE), 15));
     public static final RegistryObject<Block> WARP_CORE_NX = block("warp_core_nx",
-        p -> new WarpCoreBlock(p, 5), glowing(glass(MapColor.COLOR_LIGHT_BLUE), 13));
+        p -> new WarpCoreBlock(p, 5_000), glowing(glass(MapColor.COLOR_LIGHT_BLUE), 13));
     public static final RegistryObject<Block> WARP_CORE_E = block("warp_core_e",
-        p -> new WarpCoreBlock(p, 30), glowing(glass(MapColor.COLOR_BLUE), 15));
+        p -> new WarpCoreBlock(p, 30_000), glowing(glass(MapColor.COLOR_BLUE), 15));
     public static final RegistryObject<Block> PLASMA_CONDUIT = block("plasma_conduit", Block::new, glowing(metal(MapColor.COLOR_BLUE), 10));
     public static final RegistryObject<Block> TRANSPORTER_PAD = block("transporter_pad", TransporterPadBlock::new, glowing(metal(MapColor.METAL), 9).noOcclusion());
     public static final RegistryObject<Block> TURBOLIFT = block("turbolift", TurboliftBlock::new, glowing(metal(MapColor.COLOR_YELLOW), 8));
@@ -271,13 +271,17 @@ public final class ModBlocks {
     public static final RegistryObject<Block> RIFLE_RACK = block("rifle_rack", RifleRackBlock::new, metal(MapColor.COLOR_GRAY).noOcclusion());
     public static final RegistryObject<Block> PHASER_HOLDER = block("phaser_holder", PhaserHolderBlock::new, metal(MapColor.COLOR_GRAY).noOcclusion());
     public static final RegistryObject<Block> CHARGING_STATION = block("charging_station", ChargingStationBlock::new,
-        glowing(metal(MapColor.COLOR_LIGHT_BLUE), 6).noOcclusion());
+        metal(MapColor.COLOR_LIGHT_BLUE).lightLevel(s -> s.getValue(ChargingStationBlock.RED) ? 9 : 6).emissiveRendering(_ -> true).noOcclusion());
     public static final RegistryObject<BlockEntityType<RifleRackBlock.RackBE>> RIFLE_RACK_BE = BLOCK_ENTITIES.register("rifle_rack",
         () -> new BlockEntityType<>(RifleRackBlock.RackBE::new, java.util.Set.of(RIFLE_RACK.get())));
     public static final RegistryObject<BlockEntityType<PhaserHolderBlock.HolderBE>> PHASER_HOLDER_BE = BLOCK_ENTITIES.register("phaser_holder",
         () -> new BlockEntityType<>(PhaserHolderBlock.HolderBE::new, java.util.Set.of(PHASER_HOLDER.get())));
     public static final RegistryObject<BlockEntityType<ChargingStationBlockEntity>> CHARGING_STATION_BE = BLOCK_ENTITIES.register("charging_station",
         () -> new BlockEntityType<>(ChargingStationBlockEntity::new, java.util.Set.of(CHARGING_STATION.get())));
+
+    // --- Zweiseitige Wand / Decke zwischen verschiedenen Räumen ---
+    public static final RegistryObject<Block> DUAL_WALL = block("dual_wall", de.simon.spacemod.block.DualWallBlock::new, metal(MapColor.COLOR_LIGHT_GRAY));
+    public static final RegistryObject<Block> DUAL_FLOOR = block("dual_floor", de.simon.spacemod.block.DualFloorBlock::new, metal(MapColor.COLOR_LIGHT_GRAY));
 
     // --- Türen: 2 x 2, je Epoche normal / Sicherheit / Kommando ---
     public static final String[] DOOR_ERAS = {"nx", "tos", "refit", "tng"};

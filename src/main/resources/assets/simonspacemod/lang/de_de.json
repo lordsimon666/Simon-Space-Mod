@@ -189,6 +189,8 @@
   "message.simonspacemod.door.is_locked": "Verschlossen (%s)",
   "message.simonspacemod.door.need_security": "Zugang nur mit Sicherheitskarte (gelb)",
   "message.simonspacemod.door.need_command": "Zugang nur mit Kommandokarte (rot)",
+  "block.simonspacemod.dual_wall": "Zweiseitige Wand",
+  "block.simonspacemod.dual_floor": "Boden/Decke (zweiseitig)",
   "item.simonspacemod.phaser_nx": "Phasenpistole EM-33 (NX-01)",
   "item.simonspacemod.phaser_tos": "Handphaser Typ 2 (Originalserie)",
   "item.simonspacemod.phaser_movie": "Handphaser (Kinofilme)",

@@ -1,0 +1,67 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "simonspacemod:block/bridge_deck",
+    "t": "simonspacemod:block/bridge_deck"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        8,
+        16
+      ],
+      "faces": {
+        "down": {
+          "texture": "#t",
+          "cullface": "down"
+        },
+        "north": {
+          "texture": "#t",
+          "uv": [
+            0,
+            8,
+            16,
+            16
+          ],
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#t",
+          "uv": [
+            0,
+            8,
+            16,
+            16
+          ],
+          "cullface": "south"
+        },
+        "east": {
+          "texture": "#t",
+          "uv": [
+            0,
+            8,
+            16,
+            16
+          ],
+          "cullface": "east"
+        },
+        "west": {
+          "texture": "#t",
+          "uv": [
+            0,
+            8,
+            16,
+            16
+          ],
+          "cullface": "west"
+        }
+      }
+    }
+  ]
+}

@@ -50,6 +50,8 @@ class EnterpriseBlueprintTest {
         assertEquals(2, bp.armoryChargers.size(), "Waffenkammer: Ladestationen fehlen");
         assertEquals(bp.hasRifles() ? 3 : 0, bp.armoryRacks.size(), "Waffenkammer: Gewehrständer");
         assertTrue(bp.armoryHolders.size() >= 2, "Waffenkammer: Phaserhalter fehlen");
+        // zweiseitige Wände zwischen Räumen mit verschiedenem Wandmaterial (Krankenstation, Holodeck ...)
+        if (scale >= 0.75) assertTrue(counts.getOrDefault(ShipPart.DUAL_WALL, 0) > 0, "keine zweiseitigen Wände");
         // Türen: Waffenkammer mit Sicherheitstür, bei voller Deckaufteilung Türen in vielen Räumen
         assertNotNull(bp.armoryDoor, "Waffenkammer ohne Tür");
         int ai = bp.doors.indexOf(bp.armoryDoor);

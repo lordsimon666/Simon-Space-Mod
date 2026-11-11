@@ -60,7 +60,7 @@ public final class EnterpriseBlueprint {
     private final byte[] comp;
     private final boolean[] hull;
     /** 0 = nichts setzen, sonst (Teil+1) | Richtung << 8 | Variante bzw. Gitter-Verbindungen << 10 (16 Bit). */
-    private final short[] cell;
+    private final int[] cell;
 
     /** Turbolift-Verbindungen in lokalen Koordinaten. */
     public final List<LiftStop> liftStops = new ArrayList<>();
@@ -159,7 +159,7 @@ public final class EnterpriseBlueprint {
         int n = sizeX * sizeY * sizeZ;
         comp = new byte[n];
         hull = new boolean[n];
-        cell = new short[n];
+        cell = new int[n];
 
         buildShape();
         skinAndDecks();
@@ -190,6 +190,9 @@ public final class EnterpriseBlueprint {
         if (tng) tngInterior();
         if (nx) nxInterior();
         placeDoors();
+        fixRoomFloors();
+        dualWalls();
+        dualFloors();
         liftStyle();
         connectBars();
         seal();
@@ -220,11 +223,201 @@ public final class EnterpriseBlueprint {
     /** @param variant 0–3: Variante (Farbe/Anzeige) bzw. Halbstufe (0 = unten, 1 = oben) */
     private void set(int x, int y, int z, ShipPart part, Direction facing, int variant) {
         if (!inBounds(x, y, z)) return;
-        cell[idx(x, y, z)] = (short) ((part.ordinal() + 1) | (facing.get2DDataValue() << 8) | ((variant & 3) << 10));
+        cell[idx(x, y, z)] = (part.ordinal() + 1) | (facing.get2DDataValue() << 8) | ((variant & 3) << 10);
     }
 
     public static int variant(int code) {
         return (code >> 10) & 3;
+    }
+
+    // =====================================================================================
+    //  Zweiseitige Wände und Decken, Böden der Räume sauber an der Tür enden lassen
+    // =====================================================================================
+
+    /** Materialien zweiseitiger Blöcke (gleiche Reihenfolge wie {@code DualMaterial}). */
+    public static final ShipPart[] DUAL_MATERIALS = {ShipPart.DECK_FLOOR, ShipPart.BRIDGE_DECK, ShipPart.CORRIDOR_WALL,
+        ShipPart.CEILING_PANEL, ShipPart.BRIDGE_WALL, ShipPart.TRANSPORTER_WALL, ShipPart.SICKBAY_WALL, ShipPart.SICKBAY_FLOOR,
+        ShipPart.BRIDGE_CARPET_TEAL, ShipPart.DECK_PLATE, ShipPart.BRIDGE_WALL_DARK, ShipPart.TNG_CARPET, ShipPart.TNG_WALL,
+        ShipPart.HOLODECK_GRID, ShipPart.ENT_WALL, ShipPart.TRANSPORTER_PLATFORM};
+    private static final int[] MAT_INDEX = new int[ShipPart.values().length];
+    static {
+        java.util.Arrays.fill(MAT_INDEX, -1);
+        for (int i = 0; i < DUAL_MATERIALS.length; i++) MAT_INDEX[DUAL_MATERIALS[i].ordinal()] = i;
+    }
+
+    /** Erstes / zweites Material eines zweiseitigen Blocks (Vorder-/Rückseite bzw. oben/unten). */
+    public static int dualA(int code) {
+        return (code >> 16) & 15;
+    }
+
+    public static int dualB(int code) {
+        return (code >> 20) & 15;
+    }
+
+    private static int mat(ShipPart p) {
+        return p == null ? -1 : MAT_INDEX[p.ordinal()];
+    }
+
+    /** Material, das als Wand gilt (Böden, Stufen und Decken bleiben bei den Wänden außen vor). */
+    private static int wallMat(ShipPart p) {
+        int m = mat(p);
+        return m >= 0 && (p.name().contains("WALL") || p == ShipPart.HOLODECK_GRID) ? m : -1;
+    }
+
+    private void setDual(int x, int y, int z, ShipPart part, Direction facing, int a, int b) {
+        if (inBounds(x, y, z)) cell[idx(x, y, z)] = (part.ordinal() + 1) | (facing.get2DDataValue() << 8) | (a << 16) | (b << 20);
+    }
+
+    /** Raum-Zelle: nur Luft. Möbel, Leuchten und Wanddisplays zählen als Trennung (sie sitzen oft in einer Wand). */
+    private static boolean space(ShipPart p) {
+        return p == ShipPart.AIR;
+    }
+
+    private int lidx(int x, int z) {
+        return x * sizeZ + z + zOffset;
+    }
+
+    /** Zusammenhängende Raumbereiche einer Ebene (4er-Nachbarschaft); -1 = keine Raumzelle. Index [0] = Anzahl. */
+    private int[] regions(int y, int[] out) {
+        java.util.Arrays.fill(out, -1);
+        int n = 0;
+        int[] queue = new int[sizeX * sizeZ];
+        if (y < 0 || y >= sizeY) return new int[] {0};
+        for (int x = 0; x < sizeX; x++)
+            for (int z = -zOffset; z <= zOffset; z++) {
+                if (out[lidx(x, z)] >= 0 || !space(get(x, y, z))) continue;
+                int head = 0, tail = 0;
+                queue[tail++] = lidx(x, z);
+                out[lidx(x, z)] = n;
+                while (head < tail) {
+                    int c = queue[head++];
+                    int cx = c / sizeZ, cz = c % sizeZ - zOffset;
+                    for (int d = 0; d < 4; d++) {
+                        int nx = cx + (d == 0 ? 1 : d == 1 ? -1 : 0), nz = cz + (d == 2 ? 1 : d == 3 ? -1 : 0);
+                        if (!inBounds(nx, y, nz) || out[lidx(nx, nz)] >= 0 || !space(get(nx, y, nz))) continue;
+                        out[lidx(nx, nz)] = n;
+                        queue[tail++] = lidx(nx, nz);
+                    }
+                }
+                n++;
+            }
+        return new int[] {n};
+    }
+
+    private static int argmax(int[] counts) {
+        int best = -1, bestN = 0;
+        for (int i = 0; i < counts.length; i++) if (counts[i] > bestN) { bestN = counts[i]; best = i; }
+        return best;
+    }
+
+    private static final int[][] DIRS = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+
+    /**
+     * Ein Raum mit eigenem Boden (Teppich, Krankenstation ...) reicht manchmal eine Zelle durch die
+     * Tür in den Korridor. Solche Zellen bekommen den Boden ihres eigenen Bereichs.
+     */
+    private void fixRoomFloors() {
+        int[] lab = new int[sizeX * sizeZ];
+        for (int y = 1; y < sizeY; y++) {
+            int n = regions(y, lab)[0];
+            if (n == 0) continue;
+            int[][] counts = new int[n][DUAL_MATERIALS.length];
+            for (int x = 0; x < sizeX; x++)
+                for (int z = -zOffset; z <= zOffset; z++) {
+                    int r = lab[lidx(x, z)], m = mat(get(x, y - 1, z));
+                    if (r >= 0 && m >= 0) counts[r][m]++;
+                }
+            int[] maj = new int[n];
+            for (int r = 0; r < n; r++) maj[r] = argmax(counts[r]);
+            for (int x = 0; x < sizeX; x++)
+                for (int z = -zOffset; z <= zOffset; z++) {
+                    int r = lab[lidx(x, z)];
+                    if (r < 0 || maj[r] < 0) continue;
+                    int m = mat(get(x, y - 1, z));
+                    if (m < 0 || m == maj[r] || !isInterior(x, y - 1, z)) continue;
+                    for (int[] d : DIRS) {
+                        int x1 = x + d[0], z1 = z + d[1], x2 = x + 2 * d[0], z2 = z + 2 * d[1];
+                        if (!inBounds(x2, y, z2) || space(get(x1, y, z1)) || get(x1, y, z1) == null) continue;
+                        int r2 = lab[lidx(x2, z2)];
+                        if (r2 >= 0 && r2 != r && mat(get(x2, y - 1, z2)) == m) {
+                            set(x, y - 1, z, DUAL_MATERIALS[maj[r]]);
+                            break;
+                        }
+                    }
+                }
+        }
+    }
+
+    /** Wände zwischen zwei Räumen: jede Seite im Wandmaterial ihres Raums (z. B. Holodeck / Korridor). */
+    private void dualWalls() {
+        int[] lab = new int[sizeX * sizeZ];
+        for (int y = 1; y < sizeY - 1; y++) {
+            int n = regions(y, lab)[0];
+            if (n < 2) continue;
+            int[][] counts = new int[n][DUAL_MATERIALS.length];
+            for (int x = 0; x < sizeX; x++)
+                for (int z = -zOffset; z <= zOffset; z++) {
+                    int r = lab[lidx(x, z)];
+                    if (r < 0) continue;
+                    for (int[] d : DIRS) {
+                        int m = wallMat(get(x + d[0], y, z + d[1]));
+                        if (m >= 0) counts[r][m]++;
+                    }
+                }
+            int[] maj = new int[n];
+            for (int r = 0; r < n; r++) maj[r] = argmax(counts[r]);
+            for (int x = 1; x < sizeX - 1; x++)
+                for (int z = -zOffset + 1; z < zOffset; z++) {
+                    int m = wallMat(get(x, y, z));
+                    if (m < 0 || !isInterior(x, y, z)) continue;
+                    int ra = -1, rb = -1;
+                    Direction face = null;
+                    int ax = lab[lidx(x - 1, z)], bx = lab[lidx(x + 1, z)], az = lab[lidx(x, z - 1)], bz = lab[lidx(x, z + 1)];
+                    boolean onX = ax >= 0 && bx >= 0 && ax != bx, onZ = az >= 0 && bz >= 0 && az != bz;
+                    if (!onX && !onZ) continue;
+                    // schräge Wand: beide Achsen trennen dieselben zwei Räume -> egal welche; sonst mehrdeutig
+                    if (onX && onZ && !(Math.min(ax, bx) == Math.min(az, bz) && Math.max(ax, bx) == Math.max(az, bz))) continue;
+                    if (onX) { ra = ax; rb = bx; face = Direction.NORTH; }
+                    else { ra = az; rb = bz; face = Direction.WEST; }
+                    int ma = maj[ra] >= 0 ? maj[ra] : m, mb = maj[rb] >= 0 ? maj[rb] : m;
+                    if (ma == mb) {
+                        if (ma != m) set(x, y, z, DUAL_MATERIALS[ma]);
+                    } else {
+                        setDual(x, y, z, ShipPart.DUAL_WALL, face, ma, mb);
+                    }
+                }
+        }
+    }
+
+    /** Decke/Boden zwischen zwei Räumen: oben der Boden des oberen, unten die Decke des unteren Raums. */
+    private void dualFloors() {
+        int[] up = new int[sizeX * sizeZ], down = new int[sizeX * sizeZ];
+        for (int y = 1; y < sizeY - 1; y++) {
+            int nu = regions(y + 1, up)[0], nd = regions(y - 1, down)[0];
+            if (nu == 0 || nd == 0) continue;
+            int[][] fc = new int[nu][DUAL_MATERIALS.length], cc = new int[nd][DUAL_MATERIALS.length];
+            for (int x = 0; x < sizeX; x++)
+                for (int z = -zOffset; z <= zOffset; z++) {
+                    int m = mat(get(x, y, z));
+                    if (m < 0) continue;
+                    if (up[lidx(x, z)] >= 0) fc[up[lidx(x, z)]][m]++;
+                    if (down[lidx(x, z)] >= 0) cc[down[lidx(x, z)]][m]++;
+                }
+            int[] fm = new int[nu], cm = new int[nd];
+            for (int r = 0; r < nu; r++) fm[r] = argmax(fc[r]);
+            for (int r = 0; r < nd; r++) cm[r] = argmax(cc[r]);
+            for (int x = 0; x < sizeX; x++)
+                for (int z = -zOffset; z <= zOffset; z++) {
+                    int m = mat(get(x, y, z)), u = up[lidx(x, z)], d = down[lidx(x, z)];
+                    if (m < 0 || u < 0 || d < 0 || !isInterior(x, y, z)) continue;
+                    int top = fm[u] >= 0 ? fm[u] : m, bottom = cm[d] >= 0 ? cm[d] : m;
+                    if (top == bottom) {
+                        if (top != m) set(x, y, z, DUAL_MATERIALS[top]);
+                    } else {
+                        setDual(x, y, z, ShipPart.DUAL_FLOOR, Direction.NORTH, top, bottom);
+                    }
+                }
+        }
     }
 
     /** Türart (0 = normal, 1 = Sicherheit, 2 = Kommando) einer Türzelle. */
@@ -269,7 +462,7 @@ public final class EnterpriseBlueprint {
             int col = p % 2, row = p / 2;
             int cx = alongZ ? ox : ox - col, cz = alongZ ? oz + col : oz;
             if (!inBounds(cx, y + row, cz)) return;
-            cell[idx(cx, y + row, cz)] = (short) ((part.ordinal() + 1) | (facing.get2DDataValue() << 8) | (p << 10) | (kind << 12));
+            cell[idx(cx, y + row, cz)] = (part.ordinal() + 1) | (facing.get2DDataValue() << 8) | (p << 10) | (kind << 12);
         }
         doors.add(new BlockPos(ox, y, oz));
         doorKinds.add(kind);
@@ -435,7 +628,7 @@ public final class EnterpriseBlueprint {
                 int wx = X.applyAsInt(aa, pp), wz = Z.applyAsInt(aa, pp);
                 doorSeen[idx(wx, y, wz)] = true;
                 for (int dy = 0; dy <= 1; dy++)
-                    if (wallLike(get(wx, y + dy, wz))) {
+                    if (wallLike(get(wx, y + dy, wz)) && !isDoor(get(wx, y + dy - 1, wz))) { // Sturz einer anderen Tür bleibt
                         set(wx, y + dy, wz, ShipPart.AIR);
                         cleared = true;
                     }
@@ -443,18 +636,24 @@ public final class EnterpriseBlueprint {
             if (!cleared) continue;
             for (int aa : new int[] {a0 - 1, a0 + 2}) {
                 int wx = X.applyAsInt(aa, pp), wz = Z.applyAsInt(aa, pp);
-                set(wx, y, wz, wall);
-                set(wx, y + 1, wz, wall);
+                frame(wx, y, wz, wall);
+                frame(wx, y + 1, wz, wall);
             }
         }
         // Rahmen direkt neben der Tür und Sturz darüber
         for (int aa = a0 - 1; aa <= a0 + 2; aa++) {
             int wx = X.applyAsInt(aa, p0), wz = Z.applyAsInt(aa, p0);
-            if (aa == a0 - 1 || aa == a0 + 2) { set(wx, y, wz, wall); set(wx, y + 1, wz, wall); }
-            if (!wallLike(get(wx, y + 2, wz))) set(wx, y + 2, wz, wall);
+            if (aa == a0 - 1 || aa == a0 + 2) { frame(wx, y, wz, wall); frame(wx, y + 1, wz, wall); }
+            ShipPart above = get(wx, y + 2, wz);
+            if (above == ShipPart.AIR || above == ShipPart.CEILING_LIGHT) set(wx, y + 2, wz, wall);
         }
         int dx = alongZ ? p0 : a0, dz = alongZ ? a0 : p0;
         door(dx, y, dz, alongZ, doorKindNear(dx, y, dz));
+    }
+
+    /** Rahmenstück setzen – nur auf Luft oder Innenwand, nie auf eine andere Tür, Möbel oder Hülle. */
+    private void frame(int x, int y, int z, ShipPart wall) {
+        if (rebuildable(x, y, z)) set(x, y, z, wall);
     }
 
     /** Passt eine schräge Ersatztür bei (a0, p0) (a = entlang der Wand, p = quer)? */
@@ -503,13 +702,13 @@ public final class EnterpriseBlueprint {
     /** @return Bauteil der Zelle oder {@code null}, wenn dort nichts gesetzt wird */
     public ShipPart get(int x, int y, int z) {
         if (!inBounds(x, y, z)) return null;
-        int c = cell[idx(x, y, z)] & 0xFFFF;
+        int c = cell[idx(x, y, z)];
         return c == 0 ? null : part(c);
     }
 
     /** Roher Zellcode (0 = nichts) – siehe {@link #part(int)}, {@link #facing(int)}. */
     public int codeAt(int x, int y, int z) {
-        return inBounds(x, y, z) ? cell[idx(x, y, z)] & 0xFFFF : 0;
+        return inBounds(x, y, z) ? cell[idx(x, y, z)] : 0;
     }
 
     public static ShipPart part(int code) {
@@ -551,14 +750,14 @@ public final class EnterpriseBlueprint {
         for (int x = 0; x < sizeX; x++)
             for (int y = 0; y < sizeY; y++)
                 for (int z = -zOffset; z <= zOffset; z++) {
-                    int code = cell[idx(x, y, z)] & 0xFFFF;
+                    int code = cell[idx(x, y, z)];
                     if (code != 0) consumer.accept(x, y, z, code);
                 }
     }
 
     public int countBlocks() {
         int c = 0;
-        for (short id : cell) if (id != 0) c++;
+        for (int id : cell) if (id != 0) c++;
         return c;
     }
 
@@ -2059,7 +2258,7 @@ public final class EnterpriseBlueprint {
     }
 
     private boolean torpedoesPlaced() {
-        for (short c : cell) if (c != 0 && part(c & 0xFFFF) == ShipPart.TORPEDO_LAUNCHER) return true;
+        for (int c : cell) if (c != 0 && part(c) == ShipPart.TORPEDO_LAUNCHER) return true;
         return false;
     }
 
@@ -3716,13 +3915,13 @@ public final class EnterpriseBlueprint {
                     ShipPart self = get(x, y, z);
                     if (self != ShipPart.IRON_BARS && self != ShipPart.BRIDGE_RAILING && self != ShipPart.BRIDGE_RAILING_GRAY
                         && self != ShipPart.BRIDGE_RAILING_WOOD) continue;
-                    int code = cell[idx(x, y, z)] & 0xFFFF;
+                    int code = cell[idx(x, y, z)];
                     code &= 0x3FF; // Varianten-Bits löschen, hier stehen die Verbindungen
                     if (connects(self, get(x - 1, y, z))) code |= 1 << (10 + Direction.NORTH.get2DDataValue());
                     if (connects(self, get(x + 1, y, z))) code |= 1 << (10 + Direction.SOUTH.get2DDataValue());
                     if (connects(self, get(x, y, z + 1))) code |= 1 << (10 + Direction.EAST.get2DDataValue());
                     if (connects(self, get(x, y, z - 1))) code |= 1 << (10 + Direction.WEST.get2DDataValue());
-                    cell[idx(x, y, z)] = (short) code;
+                    cell[idx(x, y, z)] = code;
                 }
     }
 

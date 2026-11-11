@@ -189,6 +189,8 @@
   "message.simonspacemod.door.is_locked": "Locked (%s)",
   "message.simonspacemod.door.need_security": "Access requires a security keycard (yellow)",
   "message.simonspacemod.door.need_command": "Access requires a command keycard (red)",
+  "block.simonspacemod.dual_wall": "Two-Sided Wall",
+  "block.simonspacemod.dual_floor": "Floor/Ceiling (two-sided)",
   "item.simonspacemod.phaser_nx": "EM-33 Phase Pistol (NX-01)",
   "item.simonspacemod.phaser_tos": "Type 2 Phaser (Original Series)",
   "item.simonspacemod.phaser_movie": "Hand Phaser (Movie Era)",

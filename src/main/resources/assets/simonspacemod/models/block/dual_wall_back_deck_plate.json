@@ -1,0 +1,67 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "simonspacemod:block/deck_plate",
+    "t": "simonspacemod:block/deck_plate"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        8
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "south": {
+          "texture": "#t",
+          "cullface": "south"
+        },
+        "east": {
+          "texture": "#t",
+          "uv": [
+            0,
+            0,
+            8,
+            16
+          ],
+          "cullface": "east"
+        },
+        "west": {
+          "texture": "#t",
+          "uv": [
+            8,
+            0,
+            16,
+            16
+          ],
+          "cullface": "west"
+        },
+        "up": {
+          "texture": "#t",
+          "uv": [
+            0,
+            8,
+            16,
+            16
+          ],
+          "cullface": "up"
+        },
+        "down": {
+          "texture": "#t",
+          "uv": [
+            0,
+            0,
+            16,
+            8
+          ],
+          "cullface": "down"
+        }
+      }
+    }
+  ]
+}

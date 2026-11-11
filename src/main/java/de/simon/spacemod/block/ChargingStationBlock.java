@@ -29,9 +29,19 @@ import org.jspecify.annotations.Nullable;
  */
 public class ChargingStationBlock extends WeaponHolderBlock {
     private static final VoxelShape SHAPE = Block.box(1, 0, 1, 15, 16, 15);
+    /** Rote Warnleuchte: an = keine Energie; blinkt, wenn ohne Strom geladen werden soll. */
+    public static final net.minecraft.world.level.block.state.properties.BooleanProperty RED =
+        net.minecraft.world.level.block.state.properties.BooleanProperty.create("red");
 
     public ChargingStationBlock(BlockBehaviour.Properties properties) {
         super(properties);
+        registerDefaultState(defaultBlockState().setValue(RED, false));
+    }
+
+    @Override
+    protected void createBlockStateDefinition(net.minecraft.world.level.block.state.StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
+        builder.add(RED);
     }
 
     @Override
