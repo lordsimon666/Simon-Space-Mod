@@ -176,6 +176,69 @@ def torpedo(dur=1.2, f_hi=1100, f_lo=80, seed=5, shimmer=0.0, low=1.0):
     return soft(x, 1.2) * soft_env(len(t), 0.008, 0.45, dur)
 
 
+def biquad_bandpass(x, center, q):
+    """Resonanter Bandpass mit zeitlich veränderlicher Mittenfrequenz (Array in Hz)."""
+    y = np.zeros_like(x)
+    x1 = x2 = y1 = y2 = 0.0
+    for i in range(len(x)):
+        w = 2 * np.pi * center[i] / SR
+        alpha = np.sin(w) / (2 * q)
+        b0, b2 = alpha, -alpha
+        a0, a1, a2 = 1 + alpha, -2 * np.cos(w), 1 - alpha
+        v = (b0 * x[i] + b2 * x2 - a1 * y1 - a2 * y2) / a0
+        x2, x1 = x1, x[i]
+        y2, y1 = y1, v
+        y[i] = v
+    return y
+
+
+def beam_electric(base=1100, dur=2.1, seed=41, buzz=50, cutoff=3000):
+    """Variante A 'elektrisch': kurzes Hochziehen, dann gleichmäßiger Ton mit 50-Hz-Brummkörnung
+    und schmalem Rauschband um den Ton (Grundidee des Originals: Brummen + Fuzz)."""
+    t = t_axis(dur)
+    f = base * (1 - 0.5 * np.exp(-t / 0.05))
+    ph = phase(f)
+    tone = np.sin(ph) + 0.25 * np.sin(2 * ph)
+    grain = 1 - 0.35 * (0.5 + 0.5 * np.sin(2 * np.pi * buzz * t))
+    fuzz = normalize(band(pink(len(t), seed), base * 0.8, base * 1.3), 1.0)
+    x = (0.8 * tone + 0.5 * fuzz) * grain
+    return soft(smooth_lp(x, cutoff), 1.2) * soft_env(len(t), 0.03, 0.15, dur)
+
+
+def beam_resonant(base=130, lo=600, hi=1300, dur=2.1, seed=42, q=6):
+    """Variante B 'resonant': weicher Sägezahn durch einen singenden Bandpass, der schnell hochfährt
+    und dann leicht pendelt – ein 'Pjiuuu' das in ein sattes 'Zschhh' übergeht."""
+    t = t_axis(dur)
+    raw = 0.6 * saw(phase(np.full(len(t), base))) + 0.6 * saw(phase(np.full(len(t), base * 1.01))) + 0.5 * pink(len(t), seed)
+    center = lo + (hi - lo) * (1 - np.exp(-t / 0.09))
+    center = center * (1 + 0.08 * np.sin(2 * np.pi * 4 * t))
+    x = biquad_bandpass(raw, center, q)
+    x = normalize(x, 1.0)
+    return soft(smooth_lp(x, hi * 2.2), 1.3) * soft_env(len(t), 0.02, 0.18, dur)
+
+
+def beam_chorus(base=820, dur=2.1, seed=43, start=1900):
+    """Variante C 'Strahlbündel': mehrere leicht verstimmte Töne (schimmernde Schwebung), Einsatz mit
+    fallendem 'Pjiu', darunter ein Hauch Rauschen."""
+    t = t_axis(dur)
+    glide = base + (start - base) * np.exp(-t / 0.06)
+    x = np.zeros(len(t))
+    for k, d in enumerate((-0.017, -0.007, 0.0, 0.006, 0.015)):
+        x += np.sin(phase(glide * (1 + d)) + k)
+    x = x / 5 + 0.25 * normalize(band(pink(len(t), seed), base * 0.5, base * 2.5), 1.0)
+    return soft(smooth_lp(x, 2600), 1.2) * soft_env(len(t), 0.02, 0.15, dur)
+
+
+VARIANTS = {
+    "hand_a": lambda: beam_electric(1100, seed=51),
+    "hand_b": lambda: beam_resonant(140, 650, 1400, seed=52),
+    "hand_c": lambda: beam_chorus(820, seed=53),
+    "ship_a": lambda: beam_electric(520, seed=61, buzz=40, cutoff=2000),
+    "ship_b": lambda: beam_resonant(70, 300, 750, seed=62, q=5),
+    "ship_c": lambda: beam_chorus(390, seed=63, start=1000),
+}
+
+
 SOUNDS = {
     # Handwaffen
     "phaser_hand_nx": lambda: pulses(2100, 520, 0.14, 0.3, seed=11, body=0.35),
@@ -209,6 +272,13 @@ def write_ogg(name, x):
 
 
 if __name__ == "__main__":
+    import sys
+    if len(sys.argv) > 2 and sys.argv[1] == "--variants":   # Klangvarianten zum Vergleichen
+        OUT = sys.argv[2]
+        for name, fn in VARIANTS.items():
+            write_ogg(name, fn())
+            print("ok", name)
+        sys.exit()
     for name, fn in SOUNDS.items():
         write_ogg(name, fn())
         print("ok", name)
