@@ -363,7 +363,7 @@ klicke sie mit der rechten Maustaste an:
   `/gamerule simonspacemod:max_ship_blocks <Anzahl>` festlegt (Standard 3000). Ist die Struktur
   größer, startet gar nichts – die Meldung sagt, wie viele Blöcke zu viel sind.
 * **Geschlossene Hülle**: jeder Block, der von außen Luft berührt, muss ein Hüllenblock sein –
-  Hüllenplatten, Hüllenfenster, Impulsantriebe, Torpedowerfer, Phaser, Deflektor, Bussard,
+  Hüllenplatten, Hüllenfenster, **Hüllenglas** (durchsichtig – für Brückenfenster), Impulsantriebe, Torpedowerfer, Phaser, Deflektor, Bussard,
   Gondelgitter, Positionslichter oder **Luftschleusen** (andere Türen zählen nicht). Sonst nennt die Meldung die Anzahl und einen Beispiel-
   block mit Position (z. B. ein Loch oder Glas statt Hüllenfenster).
 * **Abheben**: die Struktur wird zum fliegenden Schiff; alle Lebewesen darin fliegen mit, du stehst
@@ -533,7 +533,7 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
   Größe – die Schiffe sind also 1000 Blöcke voneinander entfernt. Je neuer, desto seltener:
   NX-01 7/28, NCC-1701 6/28, -A 5/28, -B 4/28, -C 3/28, -D 2/28, -E 1/28. Sie entstehen, sobald ein
   Spieler näher als 700 Blöcke kommt (eins nach dem anderen).
-* **Asteroiden** (3 bis 12 Blöcke Radius) aus Stein, Andesit, Tuff, Tiefenschiefer oder Basalt mit
+* **Asteroiden** (3 bis 12 Blöcke Radius, 1 bis 3 je Chunk über die ganze Höhe verteilt) aus Stein, Andesit, Tuff, Tiefenschiefer oder Basalt mit
   Kohle, Eisen, Kupfer, Gold, Redstone, Lapis, Diamant, Smaragd, **Uran** und **Dilithium**; im Kern
   manchmal **Antimaterie-Einschlüsse**. Etwa jeder sechste Asteroid ist ein Eisbrocken mit
   **Deuterium-Eis**.
@@ -595,9 +595,9 @@ E = Eisenbarren        G = Goldbarren
 F = roter Farbstoff, P = Enderperle, R = Redstone
 ```
 
-## Neue Blöcke (148)
+## Neue Blöcke (149)
 
-* **Hülle**: Hüllenpanzerung (+ Stufe), Hüllenplatte, dunkle Hüllenplatte, Hüllenfenster,
+* **Hülle**: Hüllenpanzerung (+ Stufe), Hüllenplatte, dunkle Hüllenplatte, Hüllenfenster, Hüllenglas,
   Kennungsmarkierung (+ Stufe), roter Zierstreifen, Positionslicht rot/grün, Deflektorschüssel,
   Bussard-Kollektor, Warpgondel-Gitter
 * **Brücke**: Brückenwand, roter Abschlussstreifen, Brückenstation, Brückenmonitor, Brückengeländer,

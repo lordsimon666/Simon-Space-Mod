@@ -90,6 +90,9 @@ public final class ModBlocks {
     // --- Außenhülle ---
     public static final RegistryObject<Block> HULL_PLATING = block("hull_plating", Block::new, metal(MapColor.QUARTZ));
     public static final RegistryObject<Block> HULL_PANEL = block("hull_panel", Block::new, metal(MapColor.COLOR_LIGHT_GRAY));
+    /** Durchsichtiges Hüllenglas (z. B. Brückenfenster): zählt bei fliegenden Schiffen als Hülle. */
+    public static final RegistryObject<Block> HULL_GLASS = block("hull_glass", net.minecraft.world.level.block.TransparentBlock::new,
+        glass(MapColor.COLOR_LIGHT_BLUE).strength(3F, 9F).noOcclusion().requiresCorrectToolForDrops());
     public static final RegistryObject<Block> HULL_DARK = block("hull_dark", Block::new, metal(MapColor.COLOR_GRAY));
     public static final RegistryObject<Block> HULL_WINDOW = block("hull_window", Block::new, glowing(metal(MapColor.COLOR_YELLOW), 12));
     public static final RegistryObject<Block> HULL_MARKING = block("hull_marking", Block::new, metal(MapColor.COLOR_BLACK));

@@ -3070,6 +3070,36 @@ def misc_assets(de, en):
     })
 
 
+def tex_hull_glass():
+    img = Image.new("RGBA", (16, 16), (170, 210, 240, 70))
+    px = img.load()
+    for i in range(16):
+        for e in (0, 15):
+            px[i, e] = px[e, i] = (150, 156, 166, 255)   # Metallrahmen
+    for i in range(1, 15):
+        for e in (1, 14):
+            px[i, e] = px[e, i] = (110, 116, 126, 255)
+    for k in range(3, 9):                                  # Lichtreflex
+        px[k, 12 - k] = (230, 245, 255, 120)
+        px[k + 1, 12 - k] = (230, 245, 255, 90)
+    return img
+
+
+def hull_glass_assets(de, en):
+    M = MODID
+    save(tex_hull_glass(), "hull_glass")
+    write_json(os.path.join(ASSETS, "models", "block", "hull_glass.json"),
+               {"parent": "minecraft:block/cube_all", "render_type": "minecraft:translucent", "textures": {"all": b("hull_glass")}})
+    write_json(os.path.join(ASSETS, "blockstates", "hull_glass.json"), {"variants": {"": {"model": b("hull_glass")}}})
+    write_json(os.path.join(ASSETS, "items", "hull_glass.json"), item_def(b("hull_glass")))
+    write_json(os.path.join(DATA, "loot_table", "blocks", "hull_glass.json"), loot("hull_glass"))
+    write_json(os.path.join(DATA, "recipe", "hull_glass.json"), {"type": "minecraft:crafting_shaped", "category": "building",
+        "key": {"I": "minecraft:iron_ingot", "G": "minecraft:glass", "H": f"{M}:hull_plating"},
+        "pattern": ["IGI", "GHG", "IGI"], "result": {"id": f"{M}:hull_glass", "count": 4}})
+    de[f"block.{M}.hull_glass"] = "Hüllenglas (Fenster)"
+    en[f"block.{M}.hull_glass"] = "Hull Glass (window)"
+
+
 def armory_assets(de, en):
     tex = f"{MODID}:item/weapon_palette"
     for name, boxes in WEAPON_MODELS.items():
@@ -3866,7 +3896,7 @@ def main():
     models_extra += ["ceiling_light", "dual_wall", "dual_floor", "uranium_ore", "deepslate_uranium_ore", "reactor_casing",
                      "reactor_glass", "reactor_controller", "ship_helm", "airlock", "airlock_small", "dilithium_ore",
                      "antimatter_cluster", "deuterium_ice", "ship_part_assembly",
-                     "power_console", "shield_console", "alarm_light", "battery"] + [f"shield_emitter_{k}" for k in ("tos", "refit", "excelsior", "c", "d", "e")]
+                     "power_console", "shield_console", "alarm_light", "battery", "hull_glass"] + [f"shield_emitter_{k}" for k in ("tos", "refit", "excelsior", "c", "d", "e")]
     models_extra += [f"door_{e}_{k}" for e in DOOR_ERAS for k in DOOR_KINDS]
     # Mit der Spitzhacke abbaubar
     write_json(os.path.join(ROOT, "data", "minecraft", "tags", "block", "mineable", "pickaxe.json"),
@@ -4024,6 +4054,7 @@ def main():
     sound_assets(de, en)
     defense_assets(de, en)
     misc_assets(de, en)
+    hull_glass_assets(de, en)
     de.update(armory_de)
     en.update(armory_en)
     de.update({

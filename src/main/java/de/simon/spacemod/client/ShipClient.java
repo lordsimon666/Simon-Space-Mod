@@ -29,6 +29,11 @@ public final class ShipClient {
 
     private ShipClient() {}
 
+    /** Platz im Schiff wurde vom Server neu gesetzt (z. B. nach einem Dimensionswechsel). */
+    public static void resetWalk() {
+        walk = null;
+    }
+
     public static void init() {
         RegisterKeyMappingsEvent.BUS.addListener(e -> {
             e.register(LAND);

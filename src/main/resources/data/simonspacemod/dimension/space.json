@@ -6,7 +6,12 @@
       "biome": "simonspacemod:space",
       "features": true,
       "lakes": false,
-      "layers": [],
+      "layers": [
+        {
+          "block": "minecraft:structure_void",
+          "height": 1
+        }
+      ],
       "structure_overrides": []
     }
   }

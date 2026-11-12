@@ -302,6 +302,7 @@
   "gui.simonspacemod.transporter.none": "Keine anderen Transporter im Umkreis von 500 Blöcken",
   "message.simonspacemod.transporter.shielded": "Transport nicht möglich – ein aktives Schild liegt zwischen Start und Ziel!",
   "message.simonspacemod.transporter.target_gone": "Ziel-Transporter existiert nicht mehr.",
+  "block.simonspacemod.hull_glass": "Hüllenglas (Fenster)",
   "item.simonspacemod.phaser_nx": "Phasenpistole EM-33 (NX-01)",
   "item.simonspacemod.phaser_tos": "Handphaser Typ 2 (Originalserie)",
   "item.simonspacemod.phaser_movie": "Handphaser (Kinofilme)",

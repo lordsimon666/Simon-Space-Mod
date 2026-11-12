@@ -302,6 +302,7 @@
   "gui.simonspacemod.transporter.none": "No other transporters within 500 blocks",
   "message.simonspacemod.transporter.shielded": "Transport impossible – an active shield lies between start and target!",
   "message.simonspacemod.transporter.target_gone": "The target transporter no longer exists.",
+  "block.simonspacemod.hull_glass": "Hull Glass (window)",
   "item.simonspacemod.phaser_nx": "EM-33 Phase Pistol (NX-01)",
   "item.simonspacemod.phaser_tos": "Type 2 Phaser (Original Series)",
   "item.simonspacemod.phaser_movie": "Hand Phaser (Movie Era)",

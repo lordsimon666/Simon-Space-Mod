@@ -1,8 +1,28 @@
 {
   "feature": "simonspacemod:asteroid",
   "placement": [
-    { "type": "minecraft:rarity_filter", "chance": 5 },
-    { "type": "minecraft:in_square" },
-    { "type": "minecraft:height_range", "height": { "type": "minecraft:uniform", "min_inclusive": { "absolute": 24 }, "max_inclusive": { "absolute": 980 } } }
+    {
+      "type": "minecraft:count",
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 1,
+        "max_inclusive": 3
+      }
+    },
+    {
+      "type": "minecraft:in_square"
+    },
+    {
+      "type": "minecraft:height_range",
+      "height": {
+        "type": "minecraft:uniform",
+        "min_inclusive": {
+          "absolute": 24
+        },
+        "max_inclusive": {
+          "absolute": 980
+        }
+      }
+    }
   ]
 }

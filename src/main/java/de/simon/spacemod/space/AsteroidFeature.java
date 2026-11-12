@@ -64,8 +64,11 @@ public class AsteroidFeature extends Feature<NoneFeatureConfiguration> {
                     level.setBlock(p, pick(rnd, base, ice, deep, core), Block.UPDATE_CLIENTS);
                     placed = true;
                 }
+        if (placed) LOGGER.debug("Asteroid bei {} (Radius {})", o, r);
         return placed;
     }
+
+    private static final org.slf4j.Logger LOGGER = com.mojang.logging.LogUtils.getLogger();
 
     private static BlockState pick(RandomSource rnd, Block base, boolean ice, boolean deep, double core) {
         int roll = rnd.nextInt(1000);

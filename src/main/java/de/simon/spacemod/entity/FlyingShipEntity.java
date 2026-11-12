@@ -65,6 +65,21 @@ public class FlyingShipEntity extends Entity {
     private int plot = -1;
     private int scanCursor;
     private @Nullable BlockPos helmCache;
+    /** Nach einem Dimensionswechsel: genaue Plätze der Mitfahrer, die noch an die Clients gehen. */
+    private Map<UUID, Vec3> restoreSeats;
+    private int restoreAt;
+
+    /** Plätze nach einem Dimensionswechsel wiederherstellen (sofort auf dem Server, kurz danach an die Clients). */
+    public void restoreSeats(Map<UUID, Vec3> saved) {
+        restoreSeats = new HashMap<>(saved);
+        restoreAt = tickCount + 10;
+        for (Entity p : getPassengers()) if (saved.containsKey(p.getUUID())) seats.put(p.getUUID(), saved.get(p.getUUID()));
+    }
+
+    public Map<UUID, Vec3> seatsCopy() {
+        return new HashMap<>(seats);
+    }
+
     /** Wer gerade ausgestiegen ist, wird nicht sofort wieder eingeladen. */
     private final Map<UUID, Long> boardCooldown = new HashMap<>();
     /** Client: vorherige Lage für flüssiges Zeichnen. */
@@ -510,6 +525,17 @@ public class FlyingShipEntity extends Entity {
             lastPower = structure.powerPerTick > 0 ? power : 0;
         }
         if (tickCount % 2 == 0) boardWalkers(level);
+        if (restoreSeats != null && tickCount >= restoreAt) {
+            for (Entity p : getPassengers()) {
+                Vec3 s = restoreSeats.get(p.getUUID());
+                if (s == null) continue;
+                seats.put(p.getUUID(), s);
+                var msg = new de.simon.spacemod.flight.ShipSeatSync(p.getId(), (float) s.x, (float) s.y, (float) s.z, true);
+                TurboliftNetwork.CHANNEL.send(msg, PacketDistributor.TRACKING_ENTITY.with(this));
+                if (p instanceof ServerPlayer sp) TurboliftNetwork.CHANNEL.send(msg, PacketDistributor.PLAYER.with(sp));
+            }
+            restoreSeats = null;
+        }
 
         // Drehung zum Fadenkreuz (mit Trägheit)
         double alpha = ShipPhysics.angularAcceleration(structure.engines, structure.inertia, lastPower);

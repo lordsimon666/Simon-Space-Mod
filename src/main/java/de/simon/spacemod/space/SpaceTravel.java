@@ -61,8 +61,10 @@ public final class SpaceTravel {
             pos = new Vec3(ship.getX(), target.getMaxY() + radius + CLIMB - 24, ship.getZ());
         } else return ship;
         if (target == null) return ship;
+        java.util.Map<UUID, Vec3> seats = ship.seatsCopy();
         Entity moved = ship.teleport(new TeleportTransition(target, pos, Vec3.ZERO, ship.getYRot(), ship.getXRot(), TeleportTransition.DO_NOTHING));
         if (!(moved instanceof FlyingShipEntity ns)) return ship;
+        ns.restoreSeats(seats); // genau dieselben Plätze im Schiff (sonst rutscht man etwas nach hinten)
         for (Entity p : ns.getPassengers()) {
             if (pilot != null && p.getUUID().equals(pilot) && p instanceof Player pl) ns.setPilot(pl);
             if (p instanceof ServerPlayer sp)
