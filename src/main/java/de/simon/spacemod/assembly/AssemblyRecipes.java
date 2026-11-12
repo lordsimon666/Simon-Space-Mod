@@ -96,7 +96,11 @@ public final class AssemblyRecipes {
             if (p.contains("command")) b.add(Items.DYE.red(), 2);
             if (p.equals("turbolift")) b.add(Items.ENDER_PEARL, 1);
         } else if (p.contains("torpedo") || p.contains("quantum") || p.contains("launcher")) {
-            b.add(Items.IRON_INGOT, 6).add(Items.REDSTONE, 4).add(Items.TNT, 2).add(Items.GOLD_INGOT, 2).add(Items.DIAMOND, p.contains("quantum") ? 2 : 1);
+            if (p.contains("quantum")) // Quantentorpedos: deutlich teurer, mit Dilithium und Antimaterie
+                b.add(Items.IRON_BLOCK, 2).add(Items.REDSTONE_BLOCK, 2).add(Items.TNT, 4).add(Items.GOLD_INGOT, 6).add(Items.DIAMOND, 4)
+                    .add(ModBlocks.DILITHIUM_CRYSTAL.get(), 4).add(ModBlocks.ANTIMATTER_POD.get(), 2).add(Items.ENDER_PEARL, 2);
+            else
+                b.add(Items.IRON_INGOT, 6).add(Items.REDSTONE, 4).add(Items.TNT, 2).add(Items.GOLD_INGOT, 2).add(Items.DIAMOND, 1);
         } else if (p.contains("charging") || p.contains("rack") || p.contains("holder") || p.contains("cabinet")) {
             b.add(Items.IRON_INGOT, 5).add(Items.REDSTONE, 2).add(Items.GLASS_PANE, 1).add(Items.GOLD_INGOT, 1);
         } else if (p.startsWith("phase") || p.contains("weapon")) {

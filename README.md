@@ -396,8 +396,11 @@ klicke sie mit der rechten Maustaste an:
   **einen** Platz. So kann ein Rezept mehr als 9 Gegenstände brauchen. Falsche oder zu wenige Zutaten
   werden rot markiert. Shift-Klick legt Zutaten direkt in den richtigen Platz.
 * **Dauer** je nach Block (einfache Hüllenplatten 4 s, Warpkerne, Luftschleusen und Reaktor-Steuerblock
-  bis über 13 s), dabei **80 FE pro Tick**. Strom kommt über die Hülle (Bordnetz), über Kabel anderer
+  bis 15 s), dabei **80 FE pro Tick**. Strom kommt über die Hülle (Bordnetz), über Kabel anderer
   Mods oder von einem angrenzenden Reaktor. Ohne Strom steht „Kein Strom“ und nichts passiert.
+* Der **Quantentorpedo-Werfer** ist deutlich teurer als der normale Torpedowerfer: 2 Eisenblöcke,
+  2 Redstoneblöcke, 4 TNT, 6 Gold, 4 Diamanten, **4 Dilithiumkristalle**, **2 Antimaterie-Kapseln** und
+  2 Enderperlen (15 s). Der normale Werfer braucht Eisen, Redstone, TNT, Gold und 1 Diamant.
 * Einfache Bauteile (Hülle, Wände, Böden, Teppich) ergeben 8 Stück, Lichter und Fenster 4, Warpkerne
   2, alles andere 1. Trichter können Zutaten einfüllen und das Ergebnis herausholen.
 
