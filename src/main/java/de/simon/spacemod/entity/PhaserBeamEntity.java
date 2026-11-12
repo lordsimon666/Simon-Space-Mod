@@ -24,6 +24,11 @@ public class PhaserBeamEntity extends Entity {
     private static final EntityDataAccessor<Integer> CORE = SynchedEntityData.defineId(PhaserBeamEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Float> WIDTH = SynchedEntityData.defineId(PhaserBeamEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Boolean> PULSE = SynchedEntityData.defineId(PhaserBeamEntity.class, EntityDataSerializers.BOOLEAN);
+    /** Sound des Strahls (Index in {@link de.simon.spacemod.ModSounds#BEAMS}, -1 = keiner), Tonhöhe und Lautstärke. */
+    private static final EntityDataAccessor<Integer> SOUND = SynchedEntityData.defineId(PhaserBeamEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Float> PITCH = SynchedEntityData.defineId(PhaserBeamEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Float> VOLUME = SynchedEntityData.defineId(PhaserBeamEntity.class, EntityDataSerializers.FLOAT);
+    private boolean soundStarted;
     /** Sicherheitsnetz: verschwindet von selbst, wenn niemand ihn mehr nachführt. */
     private int idle;
 
@@ -34,7 +39,8 @@ public class PhaserBeamEntity extends Entity {
 
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        builder.define(TO, new Vector3f()).define(COLOR, 0xFFFF6020).define(CORE, 0xFFFFE0A0).define(WIDTH, 0.1F).define(PULSE, false);
+        builder.define(TO, new Vector3f()).define(COLOR, 0xFFFF6020).define(CORE, 0xFFFFE0A0).define(WIDTH, 0.1F).define(PULSE, false)
+            .define(SOUND, -1).define(PITCH, 1F).define(VOLUME, 1F);
     }
 
     public void setup(int color, int core, float width, boolean pulse) {
@@ -43,6 +49,16 @@ public class PhaserBeamEntity extends Entity {
         entityData.set(WIDTH, width);
         entityData.set(PULSE, pulse);
     }
+
+    public void sound(int index, float pitch, float volume) {
+        entityData.set(SOUND, index);
+        entityData.set(PITCH, pitch);
+        entityData.set(VOLUME, volume);
+    }
+
+    public int soundIndex() { return entityData.get(SOUND); }
+    public float soundPitch() { return entityData.get(PITCH); }
+    public float soundVolume() { return entityData.get(VOLUME); }
 
     /** Strahl von {@code from} nach {@code to} legen (Server). */
     public void aim(Vec3 from, Vec3 to) {
@@ -64,7 +80,13 @@ public class PhaserBeamEntity extends Entity {
     @Override
     public void tick() {
         super.tick();
-        if (!level().isClientSide() && ++idle > 5) discard();
+        if (level().isClientSide()) {
+            // Sound beim Client am Strahl festmachen: verstummt, sobald der Strahl endet (Loslassen)
+            if (!soundStarted && soundIndex() >= 0) {
+                soundStarted = true;
+                de.simon.spacemod.client.BeamSoundPlayer.play(this);
+            }
+        } else if (++idle > 5) discard();
     }
 
     @Override

@@ -104,10 +104,19 @@ public final class PhaserControl {
         LAST_SHOT.put(key, now + BeamShots.DURATION - COOLDOWN_TICKS + (power - 1) * 10L);
         float damage = (6 + 2 * tier) * (power == 1 ? 1F : power == 2 ? 1.6F : 2.2F);
         float radius = power == 1 ? 1.0F : power == 2 ? 1.8F + 0.3F * tier : 2.5F + 0.6F * tier;
-        level.playSound(null, console, SoundEvents.BEACON_ACTIVATE, SoundSource.BLOCKS, 1.0F, 1.8F);
         BeamShots.start(new ShipShot(level, player, chosen, aim, own, grid, damage, radius, power));
         player.sendOverlayMessage(Component.translatable("message.simonspacemod.phaser.fire"));
         return true;
+    }
+
+    /** Strahlsound je Phaserart (NX-01 Pulse, Originalserie, Kinofilme, Next Generation). */
+    private static net.minecraftforge.registries.RegistryObject<net.minecraft.sounds.SoundEvent> shipSound(PhaserBlock.Kind kind) {
+        return switch (kind) {
+            case PHASE_CANNON -> de.simon.spacemod.ModSounds.PHASER_SHIP_NX;
+            case PHASER_BANK -> de.simon.spacemod.ModSounds.PHASER_SHIP_TOS;
+            case PHASER_EMITTER -> de.simon.spacemod.ModSounds.PHASER_SHIP_REFIT;
+            case PHASER_STRIP -> de.simon.spacemod.ModSounds.PHASER_SHIP_TNG;
+        };
     }
 
     /** Strom je Tick und Phaser während des Feuerns (Stufe 1-3). */
@@ -160,8 +169,10 @@ public final class PhaserControl {
                 Vec3 start = c.add(tgt.subtract(c).normalize().scale(0.7));
                 if (beams.size() <= i) {
                     PhaserBeamEntity b = BeamShots.beam(level, start, tgt, pb.kind.color, pb.kind.core, 0.12F + 0.06F * power, pb.kind.pulse);
-                    if (b != null) beams.add(b);
-                    level.playSound(null, p, SoundEvents.BEACON_DEACTIVATE, SoundSource.BLOCKS, 3.0F, pb.kind.pulse ? 2.0F : 1.6F);
+                    if (b != null) {
+                        b.sound(de.simon.spacemod.ModSounds.index(shipSound(pb.kind)), power == 1 ? 1.0F : power == 2 ? 0.95F : 0.9F, 4F + power);
+                        beams.add(b);
+                    }
                 } else beams.get(i).aim(start, tgt);
                 if (age % BeamShots.PULSE == 0) hurtAlong(start, tgt);
             }
@@ -278,7 +289,8 @@ public final class PhaserControl {
         chunks.addTicketWithRadius(TicketType.ENDER_PEARL,
             ChunkPos.containing(BlockPos.containing(start.add(tgt.subtract(start).normalize().scale(64)))), 2);
         level.addFreshEntity(t);
-        level.playSound(null, from, SoundEvents.BLAZE_SHOOT, SoundSource.BLOCKS, 3.0F, quantum ? 0.6F : 0.8F);
+        level.playSound(null, from, (quantum ? de.simon.spacemod.ModSounds.TORPEDO_QUANTUM : de.simon.spacemod.ModSounds.TORPEDO_PHOTON).get(),
+            SoundSource.BLOCKS, 5.0F, 0.95F + level.getRandom().nextFloat() * 0.1F);
         player.sendOverlayMessage(Component.translatable(quantum ? "message.simonspacemod.torpedo.quantum" : "message.simonspacemod.torpedo.photon"));
     }
 

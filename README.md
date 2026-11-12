@@ -480,6 +480,21 @@ Rezepte: Reaktorhülle (8×) = Eisen in den Ecken, Kupfer an den Seiten, Uranbar
 Reaktorglas (4×) = Glas in den Ecken, Reaktorhülle an den Seiten; Steuerblock = Reaktorhülle in den
 Ecken, Diamanten oben/unten, Uranbarren links/rechts, Redstoneblock in der Mitte.
 
+### Waffensounds
+
+Alle Waffen haben eigene Sounds, angelehnt an die Serien (selbst synthetisiert mit
+`tools/generate_sounds.py`, keine Originalaufnahmen):
+
+* **Handphaser**: NX-01 einzelne „Pew“-Pulse, Originalserie und Kinofilme helles, wobbelndes Sirren,
+  Next Generation und Enterprise-E summender Dauerton. **Gewehre** tiefer und kräftiger.
+  Im Betäuben-Modus klingt alles etwas höher.
+* **Schiffsphaser**: Phasenkanone der NX-01 tiefe Pulse, Phaserbänke der Originalserie wobbelnd,
+  rote Emitter der Kinofilme tief und druckvoll, Phaserstreifen von TNG summend mit Knistern;
+  stärkere Stufen klingen tiefer und lauter.
+* **Torpedos**: Photonentorpedo mit fallendem „Pchooo“ und Wumms, Quantentorpedo tiefer mit
+  metallischem Schimmer.
+* Der Strahlsound hängt am Strahl: **Loslassen** lässt ihn sofort verstummen.
+
 ### Rezepte (Überlebensmodus)
 
 ```

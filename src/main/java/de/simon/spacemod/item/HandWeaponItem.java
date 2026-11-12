@@ -197,8 +197,6 @@ public class HandWeaponItem extends Item {
         if (!player.getAbilities().instabuild) setEnergy(stack, energy(stack) - cost);
         // feuert 2 Sekunden, danach kurz nachladen
         player.getCooldowns().addCooldown(stack, de.simon.spacemod.weapons.BeamShots.DURATION + (rifle ? 6 : 2));
-        level.playSound(null, player.blockPosition(), SoundEvents.BEACON_DEACTIVATE, SoundSource.PLAYERS, 0.8F,
-            (rifle ? 1.3F : 1.8F) + (m == Mode.STUN ? 0.2F : 0));
         de.simon.spacemod.weapons.BeamShots.start(new HandShot(server, sp, m));
         return InteractionResult.SUCCESS_SERVER;
     }
@@ -226,6 +224,7 @@ public class HandWeaponItem extends Item {
             if (beam == null) {
                 int c = mode == Mode.STUN ? lighten(color) : color;
                 beam = de.simon.spacemod.weapons.BeamShots.beam(server, from, hit, c, core, rifle ? 0.07F : 0.045F, pulse);
+                if (beam != null) beam.sound(de.simon.spacemod.ModSounds.index(sound()), soundPitch(mode), rifle ? 1.3F : 1.0F);
             } else beam.aim(from, hit);
             age++;
             return true;
@@ -235,6 +234,24 @@ public class HandWeaponItem extends Item {
         protected void end() {
             if (beam != null) beam.discard();
         }
+    }
+
+    /** Strahlsound passend zu Epoche und Waffe. */
+    private net.minecraftforge.registries.RegistryObject<net.minecraft.sounds.SoundEvent> sound() {
+        if (pulse) return de.simon.spacemod.ModSounds.PHASER_HAND_NX;            // NX-01: Pulse
+        if (rifle) return de.simon.spacemod.ModSounds.PHASER_RIFLE;
+        return tier <= 3 ? de.simon.spacemod.ModSounds.PHASER_HAND_TOS : de.simon.spacemod.ModSounds.PHASER_HAND_TNG;
+    }
+
+    /** Tonhöhe: Gewehre und Kinofilm-/E-Phaser etwas tiefer, Betäuben höher. */
+    private float soundPitch(Mode m) {
+        float p = switch (tier) {
+            case 3 -> 0.85F;
+            case 5 -> 0.93F;
+            default -> 1.0F;
+        };
+        if (rifle) p *= pulse ? 0.75F : tier == 2 ? 1.05F : 1.0F;
+        return m == Mode.STUN ? p * 1.2F : p;
     }
 
     /** Mündung: etwas rechts unterhalb der Augen. */

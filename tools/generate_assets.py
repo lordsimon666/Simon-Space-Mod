@@ -2774,6 +2774,28 @@ def suit_assembly_assets(de, en):
     })
 
 
+def sound_assets(de, en):
+    """sounds.json und Untertitel für die Waffensounds (die .ogg erzeugt tools/generate_sounds.py)."""
+    names = {
+        "phaser_hand_nx": ("Phasenpistole feuert", "Phase pistol fires"),
+        "phaser_hand_tos": ("Phaser feuert", "Phaser fires"),
+        "phaser_hand_tng": ("Phaser feuert", "Phaser fires"),
+        "phaser_rifle": ("Phasergewehr feuert", "Phaser rifle fires"),
+        "phaser_ship_nx": ("Phasenkanone feuert", "Phase cannon fires"),
+        "phaser_ship_tos": ("Schiffsphaser feuern", "Ship phasers fire"),
+        "phaser_ship_refit": ("Schiffsphaser feuern", "Ship phasers fire"),
+        "phaser_ship_tng": ("Phaserstreifen feuert", "Phaser array fires"),
+        "torpedo_photon": ("Photonentorpedo abgefeuert", "Photon torpedo launched"),
+        "torpedo_quantum": ("Quantentorpedo abgefeuert", "Quantum torpedo launched"),
+    }
+    data = {}
+    for n, (d, e) in names.items():
+        data[n] = {"sounds": [{"name": f"{MODID}:{n}"}], "subtitle": f"subtitles.{MODID}.{n}"}
+        de[f"subtitles.{MODID}.{n}"] = d
+        en[f"subtitles.{MODID}.{n}"] = e
+    write_json(os.path.join(ASSETS, "sounds.json"), data)
+
+
 def armory_assets(de, en):
     tex = f"{MODID}:item/weapon_palette"
     for name, boxes in WEAPON_MODELS.items():
@@ -3724,6 +3746,7 @@ def main():
     uranium_reactor_assets(de, en)
     space_assets(de, en)
     suit_assembly_assets(de, en)
+    sound_assets(de, en)
     de.update(armory_de)
     en.update(armory_en)
     de.update({

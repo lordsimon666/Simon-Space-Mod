@@ -1,0 +1,82 @@
+{
+  "phaser_hand_nx": {
+    "sounds": [
+      {
+        "name": "simonspacemod:phaser_hand_nx"
+      }
+    ],
+    "subtitle": "subtitles.simonspacemod.phaser_hand_nx"
+  },
+  "phaser_hand_tos": {
+    "sounds": [
+      {
+        "name": "simonspacemod:phaser_hand_tos"
+      }
+    ],
+    "subtitle": "subtitles.simonspacemod.phaser_hand_tos"
+  },
+  "phaser_hand_tng": {
+    "sounds": [
+      {
+        "name": "simonspacemod:phaser_hand_tng"
+      }
+    ],
+    "subtitle": "subtitles.simonspacemod.phaser_hand_tng"
+  },
+  "phaser_rifle": {
+    "sounds": [
+      {
+        "name": "simonspacemod:phaser_rifle"
+      }
+    ],
+    "subtitle": "subtitles.simonspacemod.phaser_rifle"
+  },
+  "phaser_ship_nx": {
+    "sounds": [
+      {
+        "name": "simonspacemod:phaser_ship_nx"
+      }
+    ],
+    "subtitle": "subtitles.simonspacemod.phaser_ship_nx"
+  },
+  "phaser_ship_tos": {
+    "sounds": [
+      {
+        "name": "simonspacemod:phaser_ship_tos"
+      }
+    ],
+    "subtitle": "subtitles.simonspacemod.phaser_ship_tos"
+  },
+  "phaser_ship_refit": {
+    "sounds": [
+      {
+        "name": "simonspacemod:phaser_ship_refit"
+      }
+    ],
+    "subtitle": "subtitles.simonspacemod.phaser_ship_refit"
+  },
+  "phaser_ship_tng": {
+    "sounds": [
+      {
+        "name": "simonspacemod:phaser_ship_tng"
+      }
+    ],
+    "subtitle": "subtitles.simonspacemod.phaser_ship_tng"
+  },
+  "torpedo_photon": {
+    "sounds": [
+      {
+        "name": "simonspacemod:torpedo_photon"
+      }
+    ],
+    "subtitle": "subtitles.simonspacemod.torpedo_photon"
+  },
+  "torpedo_quantum": {
+    "sounds": [
+      {
+        "name": "simonspacemod:torpedo_quantum"
+      }
+    ],
+    "subtitle": "subtitles.simonspacemod.torpedo_quantum"
+  }
+}

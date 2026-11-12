@@ -502,6 +502,7 @@ public final class ModBlocks {
         TABS.register(modBus);
         GAME_RULES.register(modBus);
         FEATURES.register(modBus);
+        ModSounds.SOUNDS.register(modBus);
     }
 
     private static BlockBehaviour.Properties metal(MapColor color) {
