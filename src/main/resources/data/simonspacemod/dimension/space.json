@@ -1,0 +1,13 @@
+{
+  "type": "simonspacemod:space",
+  "generator": {
+    "type": "minecraft:flat",
+    "settings": {
+      "biome": "simonspacemod:space",
+      "features": true,
+      "lakes": false,
+      "layers": [],
+      "structure_overrides": []
+    }
+  }
+}

@@ -336,7 +336,7 @@ klicke sie mit der rechten Maustaste an:
   größer, startet gar nichts – die Meldung sagt, wie viele Blöcke zu viel sind.
 * **Geschlossene Hülle**: jeder Block, der von außen Luft berührt, muss ein Hüllenblock sein –
   Hüllenplatten, Hüllenfenster, Impulsantriebe, Torpedowerfer, Phaser, Deflektor, Bussard,
-  Gondelgitter, Positionslichter oder Türen. Sonst nennt die Meldung die Anzahl und einen Beispiel-
+  Gondelgitter, Positionslichter oder **Luftschleusen** (andere Türen zählen nicht). Sonst nennt die Meldung die Anzahl und einen Beispiel-
   block mit Position (z. B. ein Loch oder Glas statt Hüllenfenster).
 * **Abheben**: die Struktur wird zum fliegenden Schiff; alle Lebewesen darin fliegen mit, du stehst
   am Steuer. Der Bug zeigt in deine Blickrichtung hinter der Konsole.
@@ -376,6 +376,38 @@ klicke sie mit der rechten Maustaste an:
 * **Landen** (L, am Steuer): nur langsam und annähernd waagerecht; das Schiff wird wieder zu Blöcken,
   die Drehung rastet auf 90° ein, Truhen & Co. behalten ihren Inhalt. Am Zielort muss Platz sein.
 
+### Luftschleusen
+
+* **Luftschleuse (2 x 2 x 2)**: zwei Doppeltüren hintereinander (vorne und hinten), dazwischen die
+  Kammer. **Luftschleuse (1 x 2 x 2)**: dasselbe mit je einer einfachen Tür.
+* Beim Setzen entsteht die Schleuse vor dir: so breit wie angegeben nach rechts, 2 hoch und 2 tief
+  von dir weg.
+* Ist eine Seite offen, ist die andere **immer zu**. Rechtsklick auf eine Tür öffnet sie (die andere
+  schließt) bzw. schließt sie wieder. **Redstone** an der Vorderseite öffnet vorne, an der Rückseite
+  hinten; ohne Signal schließt sie. Sie öffnet sich **nie von selbst**.
+* Bei eigenen fliegenden Schiffen ist die Luftschleuse die **einzige Tür, die als Hülle zählt**.
+  Von außen kann man im Flug per Rechtsklick auf die Schleuse die äußere Tür öffnen und dann
+  hineingehen.
+
+### Weltraum
+
+* Eine eigene Dimension (`simonspacemod:space`), schwarz mit Sternen, **Bauhöhe 0 bis 1007**.
+* **Hinkommen**: mit einem eigenen fliegenden Schiff in der Oberwelt hoch genug steigen (über die
+  Bauhöhe + Schiffsradius + 60 Blöcke). Das Schiff kommt mit allen Mitfahrern im Weltraum an.
+  Sinkt es dort unter Y 12, geht es zurück in die Oberwelt. Wer ohne Schiff aus dem Weltraum fällt,
+  landet mit Sanftem Fall in der Oberwelt.
+* **Enterprises**: in jedem 1000 x 1000-Feld steht in der Mitte (Y ~500) eine Enterprise in voller
+  Größe – die Schiffe sind also 1000 Blöcke voneinander entfernt. Je neuer, desto seltener:
+  NX-01 7/28, NCC-1701 6/28, -A 5/28, -B 4/28, -C 3/28, -D 2/28, -E 1/28. Sie entstehen, sobald ein
+  Spieler näher als 700 Blöcke kommt (eins nach dem anderen).
+* **Asteroiden** (3 bis 12 Blöcke Radius) aus Stein, Andesit, Tuff, Tiefenschiefer oder Basalt mit
+  Kohle, Eisen, Kupfer, Gold, Redstone, Lapis, Diamant, Smaragd, **Uran** und **Dilithium**; im Kern
+  manchmal **Antimaterie-Einschlüsse**. Etwa jeder sechste Asteroid ist ein Eisbrocken mit
+  **Deuterium-Eis**.
+* **Warpkerne bauen**: Antimaterie + Glas + Eisen = 2 Antimaterie-Kapseln. Daraus mit Deuterium,
+  Dilithium und Eisen-, Gold- oder Diamantblöcken die Warpkerne (NX-01, Originalserie, Next
+  Generation, Enterprise-E – je neuer, desto aufwendiger, aber stärker).
+
 ### Kernreaktor (Multiblock) und Uran
 
 * **Uranerz** (und Tiefenschiefer-Uranerz) kommt in der Oberwelt auf der Höhe von Lapislazuli vor
@@ -414,7 +446,7 @@ E = Eisenbarren        G = Goldbarren
 F = roter Farbstoff, P = Enderperle, R = Redstone
 ```
 
-## Neue Blöcke (132)
+## Neue Blöcke (137)
 
 * **Hülle**: Hüllenpanzerung (+ Stufe), Hüllenplatte, dunkle Hüllenplatte, Hüllenfenster,
   Kennungsmarkierung (+ Stufe), roter Zierstreifen, Positionslicht rot/grün, Deflektorschüssel,
@@ -448,10 +480,11 @@ F = roter Farbstoff, P = Enderperle, R = Redstone
 * **Türen**: 2 x 2 Schiebetür, Sicherheitstür und Kommandotür im Stil von NX-01, Originalserie,
   Kinofilmen und Next Generation (12 Stück)
 * **Kernreaktor**: Uranerz, Tiefenschiefer-Uranerz, Reaktorhülle, Reaktorglas, Reaktor-Steuerblock
+* **Weltraum**: Luftschleuse (2 x 2 x 2 und 1 x 2 x 2), Dilithium-Erz, Antimaterie-Einschluss, Deuterium-Eis
 * **Allgemein**: Deckboden, Korridorwand, Deckenverkleidung, Deckenleuchte, Maschinenraum-Konsole,
   Warpkern, Plasmaleitung
 
-Dazu das Item Kommunikator, Rohuran, Uranbarren, 3 Schlüsselkarten (Sicherheit, Kommando, Captain), 5 Handphaser, 4 Phasergewehre, 15 Uniformen, 2 Uniformhosen und
+Dazu das Item Kommunikator, Rohuran, Uranbarren, Dilithiumkristall, Antimaterie, Antimaterie-Kapsel, Deuterium-Kanister, 3 Schlüsselkarten (Sicherheit, Kommando, Captain), 5 Handphaser, 4 Phasergewehre, 15 Uniformen, 2 Uniformhosen und
 Sternenflotten-Stiefel. Alles ist im Kreativ-Tab „Simon Space Mod“ zu finden.
 
 ## Außenform aus echten 3D-Modellen

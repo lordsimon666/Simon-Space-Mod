@@ -2390,6 +2390,239 @@ def uranium_reactor_assets(de, en):
 
 
 
+# ---------------------------------------------------------------------------------------------
+#  Luftschleusen und Weltraum-Rohstoffe (Asteroiden: Dilithium, Antimaterie, Deuterium)
+# ---------------------------------------------------------------------------------------------
+
+def tex_airlock(upper, small=False):
+    img = noise(new((170, 174, 180)), 6, 811 + upper + 2 * small)
+    px = img.load()
+    for i in range(16):
+        px[i, 0] = px[i, 15] = px[0, i] = px[15, i] = (90, 94, 100, 255)
+        px[1, i] = px[14, i] = (120, 124, 130, 255)
+    if upper:
+        for x in range(4, 12):  # Bullauge
+            for y in range(4, 11):
+                if (x - 7.5) ** 2 + (y - 7.5) ** 2 < 13:
+                    px[x, y] = (40, 70, 110, 255) if (x + y) % 5 else (120, 170, 220, 255)
+        for x in range(2, 14):
+            px[x, 14] = (60, 64, 70, 255)
+    else:
+        for x in range(2, 14):  # gelb-schwarze Warnstreifen
+            for y in range(10, 14):
+                px[x, y] = ((230, 190, 40) if ((x + y) // 2) % 2 == 0 else (35, 35, 35)) + (255,)
+        px[7, 4] = px[8, 4] = (200, 40, 36, 255) if not small else (60, 200, 80, 255)  # Statuslicht
+        for x in range(2, 14):
+            px[x, 1] = (60, 64, 70, 255)
+    return img
+
+
+def tex_airlock_item(small):
+    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    px = img.load()
+    x0, x1 = (5, 11) if small else (2, 14)
+    for x in range(x0, x1):
+        for y in range(1, 15):
+            edge = x in (x0, x1 - 1) or y in (1, 14) or (not small and x in (7, 8))
+            px[x, y] = (90, 94, 100, 255) if edge else (175, 178, 184, 255)
+    for x in range(x0 + 1, x1 - 1):
+        for y in range(11, 14):
+            px[x, y] = ((230, 190, 40) if ((x + y) // 2) % 2 == 0 else (35, 35, 35)) + (255,)
+    for cx in ((8,) if small else (5, 11)):
+        for x, y in ((cx - 1, 4), (cx, 4), (cx - 1, 5), (cx, 5)):
+            if x0 < x < x1 - 1:
+                px[x, y] = (60, 100, 150, 255)
+    return img
+
+
+def tex_crystal_item(color, seed):
+    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    px = img.load()
+    rnd = random.Random(seed)
+    for x in range(16):
+        for y in range(16):
+            if abs(x - 7.5) * 1.6 + abs(y - 8) * 0.9 < 7:
+                px[x, y] = shade(color, rnd.randint(-30, 25) + (30 if x < 8 and y < 8 else 0))
+    px[6, 5] = px[7, 4] = (255, 255, 255, 255)
+    return img
+
+
+def tex_antimatter_item():
+    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    px = img.load()
+    for x in range(16):
+        for y in range(16):
+            d = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** 0.5
+            if d < 3:
+                px[x, y] = (255, 230, 255, 255)
+            elif d < 5.5:
+                px[x, y] = (210, 60, 230, 255) if (x + y) % 3 else (150, 30, 180, 255)
+            elif d < 6.5 and (x + y) % 2 == 0:
+                px[x, y] = (120, 40, 160, 200)
+    return img
+
+
+def tex_pod_item():
+    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    px = img.load()
+    for y in range(2, 14):
+        for x in range(5, 11):
+            edge = x in (5, 10) or y in (2, 13)
+            px[x, y] = (110, 115, 122, 255) if edge else ((210, 60, 230, 255) if 4 < y < 11 else (150, 155, 160, 255))
+    for x in range(4, 12):
+        px[x, 2] = px[x, 13] = (80, 84, 90, 255)
+    return img
+
+
+def tex_deuterium_item():
+    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    px = img.load()
+    for y in range(3, 15):
+        for x in range(4, 12):
+            edge = x in (4, 11) or y in (3, 14)
+            px[x, y] = (200, 205, 210, 255) if edge else ((90, 170, 255, 255) if y > 6 else (220, 240, 255, 255))
+    for x in range(6, 10):
+        px[x, 2] = (120, 125, 130, 255)
+    return img
+
+
+def tex_antimatter_cluster():
+    img = noise(new((40, 20, 50)), 10, 903)
+    px = img.load()
+    rnd = random.Random(904)
+    for _ in range(14):
+        x, y = rnd.randrange(1, 15), rnd.randrange(1, 15)
+        px[x, y] = (230, 120, 255, 255)
+        for dx, dy in ((1, 0), (0, 1), (-1, 0), (0, -1)):
+            if 0 <= x + dx < 16 and 0 <= y + dy < 16 and rnd.random() < 0.6:
+                px[x + dx, y + dy] = (170, 50, 210, 255)
+    return img
+
+
+def space_assets(de, en):
+    # --- Luftschleusen ---
+    rot = {"north": 0, "east": 90, "south": 180, "west": 270}
+    for name, width in (("airlock", 2), ("airlock_small", 1)):
+        small = width == 1
+        save(tex_airlock(0, small), f"{name}_lower")
+        save(tex_airlock(1, small), f"{name}_upper")
+        save(tex_airlock_item(small), "item/" + name)
+        frame = b("airlock_frame")
+        for h in (0, 1):
+            t = b(f"{name}_{'upper' if h else 'lower'}")
+            for d in (0, 1):
+                z0, z1 = (0, 2) if d == 0 else (14, 16)
+                closed = {"parent": "minecraft:block/block", "textures": {"particle": t, "t": t, "f": frame},
+                          "elements": [el([0, 0, z0], [16, 16, z1], {"north": "#t", "south": "#t", "east": "#f", "west": "#f", "up": "#f", "down": "#f"})]}
+                write_json(os.path.join(ASSETS, "models", "block", f"{name}_closed_{h}_{d}.json"), closed)
+                for edge in (("both",) if small else ("east", "west")):
+                    elems = []
+                    if edge in ("east", "both"):
+                        elems.append(el([14, 0, z0], [16, 16, z1], all6("#f")))
+                    if edge in ("west", "both"):
+                        elems.append(el([0, 0, z0], [2, 16, z1], all6("#f")))
+                    if h == 1:
+                        elems.append(el([0, 14, z0], [16, 16, z1], all6("#f")))
+                    write_json(os.path.join(ASSETS, "models", "block", f"{name}_open_{edge}_{h}_{d}.json"),
+                               {"parent": "minecraft:block/block", "textures": {"particle": t, "f": frame}, "elements": elems})
+        variants = {}
+        for fac, r in rot.items():
+            for part in range(width * 4):
+                w, hh, dd = (part % 2, (part // 2) % 2, part // 4) if width == 2 else (0, part % 2, part // 2)
+                edge = "both" if small else ("east" if w == 0 else "west")
+                for op in ("none", "front", "back"):
+                    is_open = op != "none" and ((op == "front") == (dd == 0))
+                    model = f"{name}_open_{edge}_{hh}_{dd}" if is_open else f"{name}_closed_{hh}_{dd}"
+                    for pw in ("false", "true"):
+                        m = {"model": b(model)}
+                        if r:
+                            m["y"] = r
+                        variants[f"facing={fac},open={op},part={part},powered={pw}"] = m
+        write_json(os.path.join(ASSETS, "blockstates", name + ".json"), {"variants": variants})
+        write_json(os.path.join(ASSETS, "models", "item", name + ".json"),
+                   {"parent": "minecraft:item/generated", "textures": {"layer0": f"{MODID}:item/{name}"}})
+        write_json(os.path.join(ASSETS, "items", name + ".json"), item_def(f"{MODID}:item/{name}"))
+        write_json(os.path.join(DATA, "loot_table", "blocks", name + ".json"), loot(name))
+    save(noise(new((96, 100, 106)), 5, 812), "airlock_frame")
+    write_json(os.path.join(DATA, "recipe", "airlock.json"), {"type": "minecraft:crafting_shaped", "category": "redstone",
+        "key": {"I": "minecraft:iron_ingot", "G": "minecraft:glass_pane", "R": "minecraft:redstone", "D": "minecraft:iron_door"},
+        "pattern": ["IGI", "DRD", "IGI"], "result": {"id": f"{MODID}:airlock"}})
+    write_json(os.path.join(DATA, "recipe", "airlock_small.json"), {"type": "minecraft:crafting_shaped", "category": "redstone",
+        "key": {"I": "minecraft:iron_ingot", "G": "minecraft:glass_pane", "R": "minecraft:redstone", "D": "minecraft:iron_door"},
+        "pattern": ["IGI", "IDI", "IRI"], "result": {"id": f"{MODID}:airlock_small"}})
+
+    # --- Asteroiden-Rohstoffe ---
+    save(_speckled((60, 60, 68), (240, 120, 200), 905, n_spots=7, glow=True), "dilithium_ore")
+    save(tex_antimatter_cluster(), "antimatter_cluster")
+    ice = noise(new((150, 200, 245)), 12, 906)
+    ipx = ice.load()
+    for x, y in ((3, 4), (10, 2), (12, 11), (5, 12), (8, 7)):
+        ipx[x, y] = (230, 245, 255, 255)
+    save(ice, "deuterium_ice")
+    for n in ("dilithium_ore", "antimatter_cluster", "deuterium_ice"):
+        write_json(os.path.join(ASSETS, "models", "block", n + ".json"), {"parent": "minecraft:block/cube_all", "textures": {"all": b(n)}})
+        write_json(os.path.join(ASSETS, "blockstates", n + ".json"), {"variants": {"": {"model": b(n)}}})
+        write_json(os.path.join(ASSETS, "items", n + ".json"), item_def(b(n)))
+    save(tex_crystal_item((235, 110, 200), 907), "item/dilithium_crystal")
+    save(tex_antimatter_item(), "item/antimatter")
+    save(tex_deuterium_item(), "item/deuterium")
+    save(tex_pod_item(), "item/antimatter_pod")
+    for it in ("dilithium_crystal", "antimatter", "deuterium", "antimatter_pod"):
+        write_json(os.path.join(ASSETS, "models", "item", it + ".json"), {"parent": "minecraft:item/generated", "textures": {"layer0": f"{MODID}:item/{it}"}})
+        write_json(os.path.join(ASSETS, "items", it + ".json"), item_def(f"{MODID}:item/{it}"))
+
+    def ore_loot(block, item, lo, hi):
+        drop = {"type": "minecraft:item", "name": f"{MODID}:{item}", "functions": [
+            {"function": "minecraft:set_count", "count": {"type": "minecraft:uniform", "min": lo, "max": hi}},
+            {"function": "minecraft:apply_bonus", "enchantment": "minecraft:fortune", "formula": "minecraft:ore_drops"},
+            {"function": "minecraft:explosion_decay"}]}
+        write_json(os.path.join(DATA, "loot_table", "blocks", block + ".json"), {
+            "type": "minecraft:block", "random_sequence": f"{MODID}:blocks/{block}",
+            "pools": [{"rolls": 1.0, "entries": [{"type": "minecraft:alternatives", "children": [
+                {"type": "minecraft:item", "name": f"{MODID}:{block}", "conditions": [{"condition": "minecraft:match_tool", "predicate": {
+                    "predicates": {"minecraft:enchantments": [{"enchantments": "minecraft:silk_touch", "levels": {"min": 1}}]}}}]},
+                drop]}]}]})
+    ore_loot("dilithium_ore", "dilithium_crystal", 1, 1)
+    ore_loot("antimatter_cluster", "antimatter", 1, 2)
+    ore_loot("deuterium_ice", "deuterium", 2, 4)
+
+    # Rezepte: Antimaterie-Kapsel und Warpkerne (je neuer, desto aufwendiger)
+    def shaped(name, pattern, key, count=1, cat="misc"):
+        write_json(os.path.join(DATA, "recipe", name + ".json"), {"type": "minecraft:crafting_shaped", "category": cat,
+            "key": key, "pattern": pattern, "result": {"id": f"{MODID}:{name}", "count": count}})
+    M = MODID
+    shaped("antimatter_pod", [" I ", "GAG", " I "], {"I": "minecraft:iron_ingot", "G": "minecraft:glass", "A": f"{M}:antimatter"}, 2)
+    shaped("warp_core_nx", ["IDI", "PRP", "IDI"], {"I": "minecraft:iron_block", "D": f"{M}:deuterium", "P": f"{M}:antimatter_pod",
+           "R": "minecraft:redstone_block"}, 2, "redstone")
+    shaped("warp_core", ["IDI", "CPC", "IDI"], {"I": "minecraft:iron_block", "D": f"{M}:deuterium", "C": f"{M}:dilithium_crystal",
+           "P": f"{M}:antimatter_pod"}, 2, "redstone")
+    shaped("warp_core_tng", ["CDC", "PGP", "CDC"], {"C": f"{M}:dilithium_crystal", "D": f"{M}:deuterium", "P": f"{M}:antimatter_pod",
+           "G": "minecraft:gold_block"}, 2, "redstone")
+    shaped("warp_core_e", ["CDC", "PBP", "CDC"], {"C": f"{M}:dilithium_crystal", "D": "minecraft:diamond", "P": f"{M}:antimatter_pod",
+           "B": "minecraft:diamond_block"}, 2, "redstone")
+    write_json(os.path.join(ROOT, "data", "minecraft", "tags", "block", "needs_iron_tool.json"),
+               {"values": [f"{M}:uranium_ore", f"{M}:deepslate_uranium_ore", f"{M}:dilithium_ore", f"{M}:antimatter_cluster"]})
+
+    de.update({
+        f"block.{M}.airlock": "Luftschleuse (2 x 2 x 2)", f"block.{M}.airlock_small": "Luftschleuse (1 x 2 x 2)",
+        f"block.{M}.dilithium_ore": "Dilithium-Erz", f"block.{M}.antimatter_cluster": "Antimaterie-Einschluss",
+        f"block.{M}.deuterium_ice": "Deuterium-Eis",
+        f"item.{M}.dilithium_crystal": "Dilithiumkristall", f"item.{M}.antimatter": "Antimaterie",
+        f"item.{M}.deuterium": "Deuterium-Kanister", f"item.{M}.antimatter_pod": "Antimaterie-Kapsel",
+        f"message.{M}.space.enter": "Weltraum erreicht",
+        f"message.{M}.space.leave": "Wiedereintritt in die Atmosphäre",
+    })
+    en.update({
+        f"block.{M}.airlock": "Airlock (2 x 2 x 2)", f"block.{M}.airlock_small": "Airlock (1 x 2 x 2)",
+        f"block.{M}.dilithium_ore": "Dilithium Ore", f"block.{M}.antimatter_cluster": "Antimatter Inclusion",
+        f"block.{M}.deuterium_ice": "Deuterium Ice",
+        f"item.{M}.dilithium_crystal": "Dilithium Crystal", f"item.{M}.antimatter": "Antimatter",
+        f"item.{M}.deuterium": "Deuterium Canister", f"item.{M}.antimatter_pod": "Antimatter Pod",
+        f"message.{M}.space.enter": "Space reached",
+        f"message.{M}.space.leave": "Re-entering the atmosphere",
+    })
+
+
 def armory_assets(de, en):
     tex = f"{MODID}:item/weapon_palette"
     for name, boxes in WEAPON_MODELS.items():
@@ -3184,7 +3417,8 @@ def main():
     armory_de, armory_en = {}, {}
     models_extra += armory_assets(armory_de, armory_en)
     models_extra += ["ceiling_light", "dual_wall", "dual_floor", "uranium_ore", "deepslate_uranium_ore", "reactor_casing",
-                     "reactor_glass", "reactor_controller", "ship_helm"]
+                     "reactor_glass", "reactor_controller", "ship_helm", "airlock", "airlock_small", "dilithium_ore",
+                     "antimatter_cluster", "deuterium_ice"]
     models_extra += [f"door_{e}_{k}" for e in DOOR_ERAS for k in DOOR_KINDS]
     # Mit der Spitzhacke abbaubar
     write_json(os.path.join(ROOT, "data", "minecraft", "tags", "block", "mineable", "pickaxe.json"),
@@ -3335,6 +3569,7 @@ def main():
     dual_assets(de, en)
     ceiling_light_assets(de, en)
     uranium_reactor_assets(de, en)
+    space_assets(de, en)
     de.update(armory_de)
     en.update(armory_en)
     de.update({

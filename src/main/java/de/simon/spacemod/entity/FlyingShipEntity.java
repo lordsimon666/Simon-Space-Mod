@@ -262,6 +262,22 @@ public class FlyingShipEntity extends Entity {
     public net.minecraft.world.InteractionResult interact(Player player, net.minecraft.world.InteractionHand hand, Vec3 location) {
         if (player.isPassenger()) return net.minecraft.world.InteractionResult.PASS;
         if (!level().isClientSide()) {
+            // von außen auf eine Luftschleuse geklickt: Schleuse bedienen, sonst einsteigen
+            if (structure != null && plot >= 0 && shipyard() != null) {
+                var q = rotation(1F);
+                Vec3 eye = ShipPhysics.inverse(q, player.getEyePosition().subtract(position()));
+                Vec3 look = ShipPhysics.inverse(q, player.getViewVector(1F));
+                BlockPos hit = structure.raycast(eye, look, 8);
+                if (hit != null) {
+                    BlockPos t = plotOrigin().offset(hit);
+                    BlockState st = shipyard().getBlockState(t);
+                    if (st.getBlock() instanceof de.simon.spacemod.block.AirlockBlock) {
+                        st.useWithoutItem(shipyard(), player, new net.minecraft.world.phys.BlockHitResult(Vec3.atCenterOf(t),
+                            net.minecraft.core.Direction.getApproximateNearest(-look.x, -look.y, -look.z), t, false));
+                        return net.minecraft.world.InteractionResult.SUCCESS;
+                    }
+                }
+            }
             player.startRiding(this, true, false);
         }
         return net.minecraft.world.InteractionResult.SUCCESS;
@@ -525,6 +541,8 @@ public class FlyingShipEntity extends Entity {
         setPos(newPos);
         updateBox();
         keepLoaded(level);
+        // hoch genug: in den Weltraum (bzw. ganz unten im Weltraum zurück in die Oberwelt)
+        if (tickCount % 5 == 0 && de.simon.spacemod.space.SpaceTravel.check(this, structure.radius, pilot) != this) return;
 
         if (tickCount % 10 == 0 && pilot != null && level.getPlayerByUUID(pilot) instanceof ServerPlayer p)
             p.sendOverlayMessage(Component.translatable("message.simonspacemod.ship.hud",
@@ -541,6 +559,7 @@ public class FlyingShipEntity extends Entity {
         for (ShipStructure.Entry e : structure.surface) {
             Vec3 w = ShipPhysics.rotate(q, e.pos().getX(), e.pos().getY(), e.pos().getZ()).add(pos);
             BlockPos bp = BlockPos.containing(w);
+            if (level.isOutsideBuildHeight(bp)) continue; // über/unter der Welt ist frei (Weg in den Weltraum)
             if (!level.isLoaded(bp)) return true;
             BlockState st = level.getBlockState(bp);
             if (!st.isAir() && !st.getCollisionShape(level, bp).isEmpty()) return true;

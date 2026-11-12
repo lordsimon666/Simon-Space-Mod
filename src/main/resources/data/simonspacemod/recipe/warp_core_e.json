@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "C": "simonspacemod:dilithium_crystal",
+    "D": "minecraft:diamond",
+    "P": "simonspacemod:antimatter_pod",
+    "B": "minecraft:diamond_block"
+  },
+  "pattern": [
+    "CDC",
+    "PBP",
+    "CDC"
+  ],
+  "result": {
+    "id": "simonspacemod:warp_core_e",
+    "count": 2
+  }
+}

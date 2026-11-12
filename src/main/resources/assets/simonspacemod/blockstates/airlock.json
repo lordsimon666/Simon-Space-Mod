@@ -1,0 +1,724 @@
+{
+  "variants": {
+    "facing=north,open=none,part=0,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_0_0"
+    },
+    "facing=north,open=none,part=0,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_0_0"
+    },
+    "facing=north,open=front,part=0,powered=false": {
+      "model": "simonspacemod:block/airlock_open_east_0_0"
+    },
+    "facing=north,open=front,part=0,powered=true": {
+      "model": "simonspacemod:block/airlock_open_east_0_0"
+    },
+    "facing=north,open=back,part=0,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_0_0"
+    },
+    "facing=north,open=back,part=0,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_0_0"
+    },
+    "facing=north,open=none,part=1,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_0_0"
+    },
+    "facing=north,open=none,part=1,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_0_0"
+    },
+    "facing=north,open=front,part=1,powered=false": {
+      "model": "simonspacemod:block/airlock_open_west_0_0"
+    },
+    "facing=north,open=front,part=1,powered=true": {
+      "model": "simonspacemod:block/airlock_open_west_0_0"
+    },
+    "facing=north,open=back,part=1,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_0_0"
+    },
+    "facing=north,open=back,part=1,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_0_0"
+    },
+    "facing=north,open=none,part=2,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_1_0"
+    },
+    "facing=north,open=none,part=2,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_1_0"
+    },
+    "facing=north,open=front,part=2,powered=false": {
+      "model": "simonspacemod:block/airlock_open_east_1_0"
+    },
+    "facing=north,open=front,part=2,powered=true": {
+      "model": "simonspacemod:block/airlock_open_east_1_0"
+    },
+    "facing=north,open=back,part=2,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_1_0"
+    },
+    "facing=north,open=back,part=2,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_1_0"
+    },
+    "facing=north,open=none,part=3,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_1_0"
+    },
+    "facing=north,open=none,part=3,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_1_0"
+    },
+    "facing=north,open=front,part=3,powered=false": {
+      "model": "simonspacemod:block/airlock_open_west_1_0"
+    },
+    "facing=north,open=front,part=3,powered=true": {
+      "model": "simonspacemod:block/airlock_open_west_1_0"
+    },
+    "facing=north,open=back,part=3,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_1_0"
+    },
+    "facing=north,open=back,part=3,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_1_0"
+    },
+    "facing=north,open=none,part=4,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_0_1"
+    },
+    "facing=north,open=none,part=4,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_0_1"
+    },
+    "facing=north,open=front,part=4,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_0_1"
+    },
+    "facing=north,open=front,part=4,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_0_1"
+    },
+    "facing=north,open=back,part=4,powered=false": {
+      "model": "simonspacemod:block/airlock_open_east_0_1"
+    },
+    "facing=north,open=back,part=4,powered=true": {
+      "model": "simonspacemod:block/airlock_open_east_0_1"
+    },
+    "facing=north,open=none,part=5,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_0_1"
+    },
+    "facing=north,open=none,part=5,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_0_1"
+    },
+    "facing=north,open=front,part=5,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_0_1"
+    },
+    "facing=north,open=front,part=5,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_0_1"
+    },
+    "facing=north,open=back,part=5,powered=false": {
+      "model": "simonspacemod:block/airlock_open_west_0_1"
+    },
+    "facing=north,open=back,part=5,powered=true": {
+      "model": "simonspacemod:block/airlock_open_west_0_1"
+    },
+    "facing=north,open=none,part=6,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_1_1"
+    },
+    "facing=north,open=none,part=6,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_1_1"
+    },
+    "facing=north,open=front,part=6,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_1_1"
+    },
+    "facing=north,open=front,part=6,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_1_1"
+    },
+    "facing=north,open=back,part=6,powered=false": {
+      "model": "simonspacemod:block/airlock_open_east_1_1"
+    },
+    "facing=north,open=back,part=6,powered=true": {
+      "model": "simonspacemod:block/airlock_open_east_1_1"
+    },
+    "facing=north,open=none,part=7,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_1_1"
+    },
+    "facing=north,open=none,part=7,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_1_1"
+    },
+    "facing=north,open=front,part=7,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_1_1"
+    },
+    "facing=north,open=front,part=7,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_1_1"
+    },
+    "facing=north,open=back,part=7,powered=false": {
+      "model": "simonspacemod:block/airlock_open_west_1_1"
+    },
+    "facing=north,open=back,part=7,powered=true": {
+      "model": "simonspacemod:block/airlock_open_west_1_1"
+    },
+    "facing=east,open=none,part=0,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_0_0",
+      "y": 90
+    },
+    "facing=east,open=none,part=0,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_0_0",
+      "y": 90
+    },
+    "facing=east,open=front,part=0,powered=false": {
+      "model": "simonspacemod:block/airlock_open_east_0_0",
+      "y": 90
+    },
+    "facing=east,open=front,part=0,powered=true": {
+      "model": "simonspacemod:block/airlock_open_east_0_0",
+      "y": 90
+    },
+    "facing=east,open=back,part=0,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_0_0",
+      "y": 90
+    },
+    "facing=east,open=back,part=0,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_0_0",
+      "y": 90
+    },
+    "facing=east,open=none,part=1,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_0_0",
+      "y": 90
+    },
+    "facing=east,open=none,part=1,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_0_0",
+      "y": 90
+    },
+    "facing=east,open=front,part=1,powered=false": {
+      "model": "simonspacemod:block/airlock_open_west_0_0",
+      "y": 90
+    },
+    "facing=east,open=front,part=1,powered=true": {
+      "model": "simonspacemod:block/airlock_open_west_0_0",
+      "y": 90
+    },
+    "facing=east,open=back,part=1,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_0_0",
+      "y": 90
+    },
+    "facing=east,open=back,part=1,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_0_0",
+      "y": 90
+    },
+    "facing=east,open=none,part=2,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_1_0",
+      "y": 90
+    },
+    "facing=east,open=none,part=2,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_1_0",
+      "y": 90
+    },
+    "facing=east,open=front,part=2,powered=false": {
+      "model": "simonspacemod:block/airlock_open_east_1_0",
+      "y": 90
+    },
+    "facing=east,open=front,part=2,powered=true": {
+      "model": "simonspacemod:block/airlock_open_east_1_0",
+      "y": 90
+    },
+    "facing=east,open=back,part=2,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_1_0",
+      "y": 90
+    },
+    "facing=east,open=back,part=2,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_1_0",
+      "y": 90
+    },
+    "facing=east,open=none,part=3,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_1_0",
+      "y": 90
+    },
+    "facing=east,open=none,part=3,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_1_0",
+      "y": 90
+    },
+    "facing=east,open=front,part=3,powered=false": {
+      "model": "simonspacemod:block/airlock_open_west_1_0",
+      "y": 90
+    },
+    "facing=east,open=front,part=3,powered=true": {
+      "model": "simonspacemod:block/airlock_open_west_1_0",
+      "y": 90
+    },
+    "facing=east,open=back,part=3,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_1_0",
+      "y": 90
+    },
+    "facing=east,open=back,part=3,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_1_0",
+      "y": 90
+    },
+    "facing=east,open=none,part=4,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_0_1",
+      "y": 90
+    },
+    "facing=east,open=none,part=4,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_0_1",
+      "y": 90
+    },
+    "facing=east,open=front,part=4,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_0_1",
+      "y": 90
+    },
+    "facing=east,open=front,part=4,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_0_1",
+      "y": 90
+    },
+    "facing=east,open=back,part=4,powered=false": {
+      "model": "simonspacemod:block/airlock_open_east_0_1",
+      "y": 90
+    },
+    "facing=east,open=back,part=4,powered=true": {
+      "model": "simonspacemod:block/airlock_open_east_0_1",
+      "y": 90
+    },
+    "facing=east,open=none,part=5,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_0_1",
+      "y": 90
+    },
+    "facing=east,open=none,part=5,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_0_1",
+      "y": 90
+    },
+    "facing=east,open=front,part=5,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_0_1",
+      "y": 90
+    },
+    "facing=east,open=front,part=5,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_0_1",
+      "y": 90
+    },
+    "facing=east,open=back,part=5,powered=false": {
+      "model": "simonspacemod:block/airlock_open_west_0_1",
+      "y": 90
+    },
+    "facing=east,open=back,part=5,powered=true": {
+      "model": "simonspacemod:block/airlock_open_west_0_1",
+      "y": 90
+    },
+    "facing=east,open=none,part=6,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_1_1",
+      "y": 90
+    },
+    "facing=east,open=none,part=6,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_1_1",
+      "y": 90
+    },
+    "facing=east,open=front,part=6,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_1_1",
+      "y": 90
+    },
+    "facing=east,open=front,part=6,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_1_1",
+      "y": 90
+    },
+    "facing=east,open=back,part=6,powered=false": {
+      "model": "simonspacemod:block/airlock_open_east_1_1",
+      "y": 90
+    },
+    "facing=east,open=back,part=6,powered=true": {
+      "model": "simonspacemod:block/airlock_open_east_1_1",
+      "y": 90
+    },
+    "facing=east,open=none,part=7,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_1_1",
+      "y": 90
+    },
+    "facing=east,open=none,part=7,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_1_1",
+      "y": 90
+    },
+    "facing=east,open=front,part=7,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_1_1",
+      "y": 90
+    },
+    "facing=east,open=front,part=7,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_1_1",
+      "y": 90
+    },
+    "facing=east,open=back,part=7,powered=false": {
+      "model": "simonspacemod:block/airlock_open_west_1_1",
+      "y": 90
+    },
+    "facing=east,open=back,part=7,powered=true": {
+      "model": "simonspacemod:block/airlock_open_west_1_1",
+      "y": 90
+    },
+    "facing=south,open=none,part=0,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_0_0",
+      "y": 180
+    },
+    "facing=south,open=none,part=0,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_0_0",
+      "y": 180
+    },
+    "facing=south,open=front,part=0,powered=false": {
+      "model": "simonspacemod:block/airlock_open_east_0_0",
+      "y": 180
+    },
+    "facing=south,open=front,part=0,powered=true": {
+      "model": "simonspacemod:block/airlock_open_east_0_0",
+      "y": 180
+    },
+    "facing=south,open=back,part=0,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_0_0",
+      "y": 180
+    },
+    "facing=south,open=back,part=0,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_0_0",
+      "y": 180
+    },
+    "facing=south,open=none,part=1,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_0_0",
+      "y": 180
+    },
+    "facing=south,open=none,part=1,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_0_0",
+      "y": 180
+    },
+    "facing=south,open=front,part=1,powered=false": {
+      "model": "simonspacemod:block/airlock_open_west_0_0",
+      "y": 180
+    },
+    "facing=south,open=front,part=1,powered=true": {
+      "model": "simonspacemod:block/airlock_open_west_0_0",
+      "y": 180
+    },
+    "facing=south,open=back,part=1,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_0_0",
+      "y": 180
+    },
+    "facing=south,open=back,part=1,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_0_0",
+      "y": 180
+    },
+    "facing=south,open=none,part=2,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_1_0",
+      "y": 180
+    },
+    "facing=south,open=none,part=2,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_1_0",
+      "y": 180
+    },
+    "facing=south,open=front,part=2,powered=false": {
+      "model": "simonspacemod:block/airlock_open_east_1_0",
+      "y": 180
+    },
+    "facing=south,open=front,part=2,powered=true": {
+      "model": "simonspacemod:block/airlock_open_east_1_0",
+      "y": 180
+    },
+    "facing=south,open=back,part=2,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_1_0",
+      "y": 180
+    },
+    "facing=south,open=back,part=2,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_1_0",
+      "y": 180
+    },
+    "facing=south,open=none,part=3,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_1_0",
+      "y": 180
+    },
+    "facing=south,open=none,part=3,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_1_0",
+      "y": 180
+    },
+    "facing=south,open=front,part=3,powered=false": {
+      "model": "simonspacemod:block/airlock_open_west_1_0",
+      "y": 180
+    },
+    "facing=south,open=front,part=3,powered=true": {
+      "model": "simonspacemod:block/airlock_open_west_1_0",
+      "y": 180
+    },
+    "facing=south,open=back,part=3,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_1_0",
+      "y": 180
+    },
+    "facing=south,open=back,part=3,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_1_0",
+      "y": 180
+    },
+    "facing=south,open=none,part=4,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_0_1",
+      "y": 180
+    },
+    "facing=south,open=none,part=4,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_0_1",
+      "y": 180
+    },
+    "facing=south,open=front,part=4,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_0_1",
+      "y": 180
+    },
+    "facing=south,open=front,part=4,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_0_1",
+      "y": 180
+    },
+    "facing=south,open=back,part=4,powered=false": {
+      "model": "simonspacemod:block/airlock_open_east_0_1",
+      "y": 180
+    },
+    "facing=south,open=back,part=4,powered=true": {
+      "model": "simonspacemod:block/airlock_open_east_0_1",
+      "y": 180
+    },
+    "facing=south,open=none,part=5,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_0_1",
+      "y": 180
+    },
+    "facing=south,open=none,part=5,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_0_1",
+      "y": 180
+    },
+    "facing=south,open=front,part=5,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_0_1",
+      "y": 180
+    },
+    "facing=south,open=front,part=5,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_0_1",
+      "y": 180
+    },
+    "facing=south,open=back,part=5,powered=false": {
+      "model": "simonspacemod:block/airlock_open_west_0_1",
+      "y": 180
+    },
+    "facing=south,open=back,part=5,powered=true": {
+      "model": "simonspacemod:block/airlock_open_west_0_1",
+      "y": 180
+    },
+    "facing=south,open=none,part=6,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_1_1",
+      "y": 180
+    },
+    "facing=south,open=none,part=6,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_1_1",
+      "y": 180
+    },
+    "facing=south,open=front,part=6,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_1_1",
+      "y": 180
+    },
+    "facing=south,open=front,part=6,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_1_1",
+      "y": 180
+    },
+    "facing=south,open=back,part=6,powered=false": {
+      "model": "simonspacemod:block/airlock_open_east_1_1",
+      "y": 180
+    },
+    "facing=south,open=back,part=6,powered=true": {
+      "model": "simonspacemod:block/airlock_open_east_1_1",
+      "y": 180
+    },
+    "facing=south,open=none,part=7,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_1_1",
+      "y": 180
+    },
+    "facing=south,open=none,part=7,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_1_1",
+      "y": 180
+    },
+    "facing=south,open=front,part=7,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_1_1",
+      "y": 180
+    },
+    "facing=south,open=front,part=7,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_1_1",
+      "y": 180
+    },
+    "facing=south,open=back,part=7,powered=false": {
+      "model": "simonspacemod:block/airlock_open_west_1_1",
+      "y": 180
+    },
+    "facing=south,open=back,part=7,powered=true": {
+      "model": "simonspacemod:block/airlock_open_west_1_1",
+      "y": 180
+    },
+    "facing=west,open=none,part=0,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_0_0",
+      "y": 270
+    },
+    "facing=west,open=none,part=0,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_0_0",
+      "y": 270
+    },
+    "facing=west,open=front,part=0,powered=false": {
+      "model": "simonspacemod:block/airlock_open_east_0_0",
+      "y": 270
+    },
+    "facing=west,open=front,part=0,powered=true": {
+      "model": "simonspacemod:block/airlock_open_east_0_0",
+      "y": 270
+    },
+    "facing=west,open=back,part=0,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_0_0",
+      "y": 270
+    },
+    "facing=west,open=back,part=0,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_0_0",
+      "y": 270
+    },
+    "facing=west,open=none,part=1,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_0_0",
+      "y": 270
+    },
+    "facing=west,open=none,part=1,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_0_0",
+      "y": 270
+    },
+    "facing=west,open=front,part=1,powered=false": {
+      "model": "simonspacemod:block/airlock_open_west_0_0",
+      "y": 270
+    },
+    "facing=west,open=front,part=1,powered=true": {
+      "model": "simonspacemod:block/airlock_open_west_0_0",
+      "y": 270
+    },
+    "facing=west,open=back,part=1,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_0_0",
+      "y": 270
+    },
+    "facing=west,open=back,part=1,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_0_0",
+      "y": 270
+    },
+    "facing=west,open=none,part=2,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_1_0",
+      "y": 270
+    },
+    "facing=west,open=none,part=2,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_1_0",
+      "y": 270
+    },
+    "facing=west,open=front,part=2,powered=false": {
+      "model": "simonspacemod:block/airlock_open_east_1_0",
+      "y": 270
+    },
+    "facing=west,open=front,part=2,powered=true": {
+      "model": "simonspacemod:block/airlock_open_east_1_0",
+      "y": 270
+    },
+    "facing=west,open=back,part=2,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_1_0",
+      "y": 270
+    },
+    "facing=west,open=back,part=2,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_1_0",
+      "y": 270
+    },
+    "facing=west,open=none,part=3,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_1_0",
+      "y": 270
+    },
+    "facing=west,open=none,part=3,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_1_0",
+      "y": 270
+    },
+    "facing=west,open=front,part=3,powered=false": {
+      "model": "simonspacemod:block/airlock_open_west_1_0",
+      "y": 270
+    },
+    "facing=west,open=front,part=3,powered=true": {
+      "model": "simonspacemod:block/airlock_open_west_1_0",
+      "y": 270
+    },
+    "facing=west,open=back,part=3,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_1_0",
+      "y": 270
+    },
+    "facing=west,open=back,part=3,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_1_0",
+      "y": 270
+    },
+    "facing=west,open=none,part=4,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_0_1",
+      "y": 270
+    },
+    "facing=west,open=none,part=4,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_0_1",
+      "y": 270
+    },
+    "facing=west,open=front,part=4,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_0_1",
+      "y": 270
+    },
+    "facing=west,open=front,part=4,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_0_1",
+      "y": 270
+    },
+    "facing=west,open=back,part=4,powered=false": {
+      "model": "simonspacemod:block/airlock_open_east_0_1",
+      "y": 270
+    },
+    "facing=west,open=back,part=4,powered=true": {
+      "model": "simonspacemod:block/airlock_open_east_0_1",
+      "y": 270
+    },
+    "facing=west,open=none,part=5,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_0_1",
+      "y": 270
+    },
+    "facing=west,open=none,part=5,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_0_1",
+      "y": 270
+    },
+    "facing=west,open=front,part=5,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_0_1",
+      "y": 270
+    },
+    "facing=west,open=front,part=5,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_0_1",
+      "y": 270
+    },
+    "facing=west,open=back,part=5,powered=false": {
+      "model": "simonspacemod:block/airlock_open_west_0_1",
+      "y": 270
+    },
+    "facing=west,open=back,part=5,powered=true": {
+      "model": "simonspacemod:block/airlock_open_west_0_1",
+      "y": 270
+    },
+    "facing=west,open=none,part=6,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_1_1",
+      "y": 270
+    },
+    "facing=west,open=none,part=6,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_1_1",
+      "y": 270
+    },
+    "facing=west,open=front,part=6,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_1_1",
+      "y": 270
+    },
+    "facing=west,open=front,part=6,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_1_1",
+      "y": 270
+    },
+    "facing=west,open=back,part=6,powered=false": {
+      "model": "simonspacemod:block/airlock_open_east_1_1",
+      "y": 270
+    },
+    "facing=west,open=back,part=6,powered=true": {
+      "model": "simonspacemod:block/airlock_open_east_1_1",
+      "y": 270
+    },
+    "facing=west,open=none,part=7,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_1_1",
+      "y": 270
+    },
+    "facing=west,open=none,part=7,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_1_1",
+      "y": 270
+    },
+    "facing=west,open=front,part=7,powered=false": {
+      "model": "simonspacemod:block/airlock_closed_1_1",
+      "y": 270
+    },
+    "facing=west,open=front,part=7,powered=true": {
+      "model": "simonspacemod:block/airlock_closed_1_1",
+      "y": 270
+    },
+    "facing=west,open=back,part=7,powered=false": {
+      "model": "simonspacemod:block/airlock_open_west_1_1",
+      "y": 270
+    },
+    "facing=west,open=back,part=7,powered=true": {
+      "model": "simonspacemod:block/airlock_open_west_1_1",
+      "y": 270
+    }
+  }
+}

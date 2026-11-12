@@ -50,7 +50,7 @@ public final class ShipAssembler {
         var id = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(st.getBlock());
         if (id == null || !id.getNamespace().equals(de.simon.spacemod.SimonSpaceMod.MODID)) return false;
         String n = id.getPath();
-        if (st.getBlock() instanceof de.simon.spacemod.block.StarshipDoorBlock) return true; // Luken
+        if (st.getBlock() instanceof de.simon.spacemod.block.AirlockBlock) return true; // nur Luftschleusen zählen als Hüllentür
         return n.startsWith("hull") || n.startsWith("deflector") || n.startsWith("bussard") || n.startsWith("nav_light")
             || n.startsWith("phase") || n.startsWith("phaser_bank") || n.startsWith("phaser_emitter") || n.startsWith("phaser_strip")
             || n.equals("impulse_engine") || n.equals("torpedo_launcher") || n.equals("quantum_launcher") || n.equals("nacelle_grille")

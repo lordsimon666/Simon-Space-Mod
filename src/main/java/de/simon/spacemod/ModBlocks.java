@@ -311,6 +311,32 @@ public final class ModBlocks {
         BLOCK_ENTITIES.register("reactor_controller", () -> new BlockEntityType<>(de.simon.spacemod.block.entity.ReactorControllerBlockEntity::new,
             java.util.Set.of(REACTOR_CONTROLLER.get())));
 
+    // --- Luftschleusen: einzige Tür, die bei fliegenden Schiffen als Hülle zählt ---
+    public static final RegistryObject<Block> AIRLOCK = block("airlock", p -> new de.simon.spacemod.block.AirlockBlock(p, 2),
+        metal(MapColor.COLOR_LIGHT_GRAY).noOcclusion());
+    public static final RegistryObject<Block> AIRLOCK_SMALL = block("airlock_small", p -> new de.simon.spacemod.block.AirlockBlock(p, 1),
+        metal(MapColor.COLOR_LIGHT_GRAY).noOcclusion());
+
+    // --- Weltraum: Asteroiden mit Rohstoffen für Warpkerne ---
+    public static final RegistryObject<Block> DILITHIUM_ORE = block("dilithium_ore", Block::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.DEEPSLATE).strength(4.5F, 6F).sound(SoundType.DEEPSLATE)
+            .requiresCorrectToolForDrops().lightLevel(_ -> 5));
+    public static final RegistryObject<Block> ANTIMATTER_CLUSTER = block("antimatter_cluster", Block::new,
+        glowing(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_MAGENTA).strength(5F, 6F).sound(SoundType.AMETHYST)
+            .requiresCorrectToolForDrops(), 10));
+    public static final RegistryObject<Block> DEUTERIUM_ICE = block("deuterium_ice", Block::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.ICE).strength(2.5F, 3F).sound(SoundType.GLASS).friction(0.98F));
+    public static final RegistryObject<Item> DILITHIUM_CRYSTAL = simpleItem("dilithium_crystal");
+    public static final RegistryObject<Item> ANTIMATTER = simpleItem("antimatter");
+    public static final RegistryObject<Item> DEUTERIUM = simpleItem("deuterium");
+    /** Magnetische Eindämmung für Antimaterie (Zwischenprodukt der Warpkerne). */
+    public static final RegistryObject<Item> ANTIMATTER_POD = simpleItem("antimatter_pod");
+
+    public static final DeferredRegister<net.minecraft.world.level.levelgen.feature.Feature<?>> FEATURES =
+        DeferredRegister.create(Registries.FEATURE, SimonSpaceMod.MODID);
+    public static final RegistryObject<net.minecraft.world.level.levelgen.feature.Feature<?>> ASTEROID = FEATURES.register("asteroid",
+        () -> new de.simon.spacemod.space.AsteroidFeature(net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration.CODEC));
+
     private static RegistryObject<Item> simpleItem(String name) {
         RegistryObject<Item> item = ITEMS.register(name, () -> new Item(new Item.Properties().setId(ITEMS.key(name))));
         TAB_ITEMS.add(item);
@@ -446,6 +472,7 @@ public final class ModBlocks {
         BLOCK_ENTITIES.register(modBus);
         TABS.register(modBus);
         GAME_RULES.register(modBus);
+        FEATURES.register(modBus);
     }
 
     private static BlockBehaviour.Properties metal(MapColor color) {
