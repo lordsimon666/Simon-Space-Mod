@@ -229,6 +229,21 @@ def beam_chorus(base=820, dur=2.1, seed=43, start=1900):
     return soft(smooth_lp(x, 2600), 1.2) * soft_env(len(t), 0.02, 0.15, dur)
 
 
+def chorus_pulses(base=1000, start=2200, pulse=0.15, period=0.3, dur=2.1, seed=44):
+    """NX-01: kurze Pulse im Klang des Strahlbündels (fallendes 'Pjiu', ausklingend)."""
+    t = t_axis(dur)
+    x = np.zeros(len(t))
+    n = int(pulse * SR)
+    one = beam_chorus(base, pulse, seed, start) * np.exp(-np.arange(n) / SR / (pulse / 2.5))
+    one = one[:n]
+    s0 = 0.0
+    while s0 + pulse <= dur:
+        i = int(s0 * SR)
+        x[i:i + n] += one
+        s0 += period
+    return x
+
+
 VARIANTS = {
     "hand_a": lambda: beam_electric(1100, seed=51),
     "hand_b": lambda: beam_resonant(140, 650, 1400, seed=52),
@@ -240,16 +255,16 @@ VARIANTS = {
 
 
 SOUNDS = {
-    # Handwaffen
-    "phaser_hand_nx": lambda: pulses(2100, 520, 0.14, 0.3, seed=11, body=0.35),
-    "phaser_hand_tos": lambda: beam_tos(900, 0.022, 6.5, seed=12),
-    "phaser_hand_tng": lambda: beam_tng(420, seed=13, cutoff=2000),
-    "phaser_rifle": lambda: beam_tng(300, seed=14, cutoff=1600, fuzz=0.6) * 0.75 + beam_tos(600, 0.015, 5, seed=15, fuzz=0.3) * 0.3,
+    # Handwaffen: Strahlbündel (mehrere leicht verstimmte Töne, fallender Einsatz)
+    "phaser_hand_nx": lambda: chorus_pulses(1000, 2200, 0.15, 0.3, seed=11),
+    "phaser_hand_tos": lambda: beam_chorus(900, seed=12, start=2000),
+    "phaser_hand_tng": lambda: beam_chorus(760, seed=13, start=1700),
+    "phaser_rifle": lambda: beam_chorus(560, seed=14, start=1300),
     # Schiffsphaser
-    "phaser_ship_nx": lambda: pulses(1200, 220, 0.2, 0.3, seed=21, body=0.8, cutoff=1800),
-    "phaser_ship_tos": lambda: beam_tos(520, 0.02, 5.0, seed=22, fuzz=0.5, cutoff=1800),
-    "phaser_ship_refit": lambda: beam_refit(160, seed=23),
-    "phaser_ship_tng": lambda: beam_tng(220, seed=24, cutoff=1400, fuzz=0.6),
+    "phaser_ship_nx": lambda: chorus_pulses(420, 1000, 0.2, 0.3, seed=21),
+    "phaser_ship_tos": lambda: beam_chorus(470, seed=22, start=1100),
+    "phaser_ship_refit": lambda: beam_chorus(300, seed=23, start=800),
+    "phaser_ship_tng": lambda: beam_chorus(390, seed=24, start=1000),
     # Torpedos
     "torpedo_photon": lambda: torpedo(1.2, 1200, 90, seed=31),
     "torpedo_quantum": lambda: torpedo(1.5, 800, 55, seed=32, shimmer=1.0, low=1.3),
