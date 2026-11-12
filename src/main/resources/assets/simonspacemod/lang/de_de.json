@@ -268,7 +268,7 @@
   "gui.simonspacemod.power.overdrive_on": "Warpkern-Overdrive: AN (+50 %)",
   "gui.simonspacemod.power.overdrive_off": "Warpkern-Overdrive: aus",
   "gui.simonspacemod.power.overdrive_time": "Overdrive – Kern kritisch in %s:%s",
-  "gui.simonspacemod.power.cooling": "Kern kühlt ab (%s s)",
+  "gui.simonspacemod.power.cooling": "Overdrive noch %s:%s – Reset in %s:%s",
   "gui.simonspacemod.power.normal": "Warpkern stabil",
   "gui.simonspacemod.power.breach": "WARPKERNBRUCH! Explosion in %s s",
   "message.simonspacemod.power.overdrive_on": "Warpkern-Overdrive aktiv: +50 % Energie – nicht länger als 5 Minuten!",

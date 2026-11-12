@@ -72,7 +72,10 @@ public class PowerConsoleScreen extends AbstractContainerScreen<ConsoleMenu> {
             status = Component.translatable("gui.simonspacemod.power.overdrive_time", left / 60, String.format("%02d", left % 60));
             color = left < 60 ? 0xFFD04020 : 0xFFB07010;
         } else if (odSec > 0) {
-            status = Component.translatable("gui.simonspacemod.power.cooling", odSec);
+            int reset = menu.data.get(10);
+            int left = Math.max(0, PowerConsoleBlockEntity.OVERDRIVE_LIMIT / 20 - odSec);
+            status = Component.translatable("gui.simonspacemod.power.cooling", left / 60, String.format("%02d", left % 60),
+                reset / 60, String.format("%02d", reset % 60));
             color = 0xFF406080;
         } else {
             status = Component.translatable("gui.simonspacemod.power.normal");

@@ -268,7 +268,7 @@
   "gui.simonspacemod.power.overdrive_on": "Warp core overdrive: ON (+50 %)",
   "gui.simonspacemod.power.overdrive_off": "Warp core overdrive: off",
   "gui.simonspacemod.power.overdrive_time": "Overdrive – core critical in %s:%s",
-  "gui.simonspacemod.power.cooling": "Core cooling down (%s s)",
+  "gui.simonspacemod.power.cooling": "Overdrive %s:%s left – reset in %s:%s",
   "gui.simonspacemod.power.normal": "Warp core stable",
   "gui.simonspacemod.power.breach": "WARP CORE BREACH! Explosion in %s s",
   "message.simonspacemod.power.overdrive_on": "Warp core overdrive active: +50 % power – no longer than 5 minutes!",

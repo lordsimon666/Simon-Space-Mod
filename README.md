@@ -429,7 +429,9 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
 * **Warpkern-Overdrive**: +50 % Leistung. Läuft er länger als **5 Minuten**, kommt es zum
   **Eindämmungsbruch**: Alarmstufe Rot, die **roten Alarmleuchten** blinken mit Alarmton, alle in der
   Nähe werden gewarnt – nach **2 Minuten** explodiert der Kern. Abwenden lässt sich das nur, indem man
-  den Warpkern entfernt. Nach dem Abschalten kühlt der Kern wieder ab (doppelt so schnell).
+  den Warpkern entfernt. Die Overdrive-Zeit **zählt weiter zusammen**, auch wenn man zwischendurch
+  ausschaltet: erst wenn der Overdrive **30 Minuten am Stück aus** war, beginnen die 5 Minuten wieder
+  von vorn (die Konsole zeigt die Restzeit und wann sie zurückgesetzt wird).
 * **Explosion** je nach stärkstem Kern: NX-01 110 Blöcke Radius (eine NX-01 in voller Größe ist
   danach so gut wie weg), Originalserie 120, Next Generation 135, Enterprise-E 150 (reißt ein großes
   Loch in die E). Alles in diesem Radius verschwindet, Lebewesen darin sterben.

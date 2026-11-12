@@ -30,10 +30,13 @@ public class PowerConsoleBlockEntity extends BlockEntity {
     public static final int OVERDRIVE_LIMIT = 20 * 60 * 5;
     public static final int BREACH_TICKS = 20 * 60 * 2;
     public static final int STEP = 25;
+    /** So lange muss der Overdrive aus sein, bis die angesammelte Overdrive-Zeit zurückgesetzt wird. */
+    public static final int RESET_TICKS = 20 * 60 * 30;
 
     private final int[] shares = {100, 100, 100, 100, 100};
     private boolean overdrive;
     private int overdriveTicks;
+    private int offTicks;
     private int breachTicks = -1;
     private long kfe;
     private boolean forced;
@@ -50,7 +53,8 @@ public class PowerConsoleBlockEntity extends BlockEntity {
                 case 6 -> overdriveTicks / 20;
                 case 7 -> breachTicks < 0 ? 0 : breachTicks / 20 + 1;
                 case 8 -> (int) (kfe & 0x7FFF);
-                default -> (int) ((kfe >> 15) & 0x7FFF);
+                case 9 -> (int) ((kfe >> 15) & 0x7FFF);
+                default -> overdriveTicks > 0 && !overdrive ? (RESET_TICKS - offTicks + 19) / 20 : 0;
             };
         }
 
@@ -59,7 +63,7 @@ public class PowerConsoleBlockEntity extends BlockEntity {
 
         @Override
         public int getCount() {
-            return 10;
+            return 11;
         }
     };
 
@@ -96,12 +100,18 @@ public class PowerConsoleBlockEntity extends BlockEntity {
             be.kfe = ShipPower.effectiveOutput(sl, grid) / 1000;
         }
         if (be.overdrive) {
+            be.offTicks = 0;
             be.overdriveTicks++;
             if (be.overdriveTicks == OVERDRIVE_LIMIT - 1200) be.broadcast(sl, Component.translatable("message.simonspacemod.power.overheat")
                 .withStyle(ChatFormatting.GOLD), false);
             if (be.overdriveTicks >= OVERDRIVE_LIMIT && be.breachTicks < 0) be.startBreach(sl);
         } else if (be.overdriveTicks > 0) {
-            be.overdriveTicks = Math.max(0, be.overdriveTicks - 2); // kühlt doppelt so schnell ab
+            // die Overdrive-Zeit bleibt stehen und wird erst nach 30 Minuten ohne Overdrive zurückgesetzt
+            // (an- und ausschalten bringt also nichts)
+            if (++be.offTicks >= RESET_TICKS) {
+                be.overdriveTicks = 0;
+                be.offTicks = 0;
+            }
         }
         if (be.breachTicks >= 0) be.breachTick(sl);
         boolean force = be.overdrive || be.breachTicks >= 0;
@@ -197,6 +207,7 @@ public class PowerConsoleBlockEntity extends BlockEntity {
         for (int i = 0; i < 5; i++) shares[i] = input.getIntOr("share" + i, 100);
         overdrive = input.getBooleanOr("overdrive", false);
         overdriveTicks = input.getIntOr("odTicks", 0);
+        offTicks = input.getIntOr("offTicks", 0);
         breachTicks = input.getIntOr("breach", -1);
         forced = input.getBooleanOr("forced", false);
     }
@@ -207,6 +218,7 @@ public class PowerConsoleBlockEntity extends BlockEntity {
         for (int i = 0; i < 5; i++) output.putInt("share" + i, shares[i]);
         output.putBoolean("overdrive", overdrive);
         output.putInt("odTicks", overdriveTicks);
+        output.putInt("offTicks", offTicks);
         output.putInt("breach", breachTicks);
         output.putBoolean("forced", forced);
     }

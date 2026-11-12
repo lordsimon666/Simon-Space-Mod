@@ -496,7 +496,7 @@ public final class ModBlocks {
             java.util.Set.of(SHIELD_CONSOLE.get())));
     public static final RegistryObject<MenuType<de.simon.spacemod.defense.ConsoleMenu>> POWER_CONSOLE_MENU = MENUS.register("power_console",
         () -> IForgeMenuType.create((id, inv, buf) -> new de.simon.spacemod.defense.ConsoleMenu(ModBlocks.POWER_CONSOLE_MENU.get(), id,
-            new net.minecraft.world.inventory.SimpleContainerData(10), b -> {}, p -> true)));
+            new net.minecraft.world.inventory.SimpleContainerData(11), b -> {}, p -> true)));
     public static final RegistryObject<MenuType<de.simon.spacemod.defense.ConsoleMenu>> SHIELD_CONSOLE_MENU = MENUS.register("shield_console",
         () -> IForgeMenuType.create((id, inv, buf) -> new de.simon.spacemod.defense.ConsoleMenu(ModBlocks.SHIELD_CONSOLE_MENU.get(), id,
             new net.minecraft.world.inventory.SimpleContainerData(7), b -> {}, p -> true)));
