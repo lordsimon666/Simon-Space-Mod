@@ -26,6 +26,7 @@ public final class SimonSpaceMod {
             FMLClientSetupEvent.getBus(modBus).addListener(de.simon.spacemod.client.ClientSetup::onClientSetup);
             net.minecraftforge.client.event.EntityRenderersEvent.RegisterRenderers.BUS.addListener(de.simon.spacemod.client.ClientSetup::onRegisterRenderers);
             de.simon.spacemod.client.ClientCamera.init();
+            de.simon.spacemod.client.ShipClient.init();
         }
     }
 }

@@ -281,6 +281,10 @@ public final class ModBlocks {
     public static final RegistryObject<BlockEntityType<ChargingStationBlockEntity>> CHARGING_STATION_BE = BLOCK_ENTITIES.register("charging_station",
         () -> new BlockEntityType<>(ChargingStationBlockEntity::new, java.util.Set.of(CHARGING_STATION.get())));
 
+    // --- Steuerkonsole für eigene fliegende Schiffe (nicht auf den Enterprises) ---
+    public static final RegistryObject<Block> SHIP_HELM = block("ship_helm", de.simon.spacemod.block.ShipHelmBlock::new,
+        glowing(metal(MapColor.COLOR_GRAY), 5).noOcclusion());
+
     // --- Zweiseitige Wand / Decke zwischen verschiedenen Räumen ---
     public static final RegistryObject<Block> DUAL_WALL = block("dual_wall", de.simon.spacemod.block.DualWallBlock::new, metal(MapColor.COLOR_LIGHT_GRAY));
     public static final RegistryObject<Block> DUAL_FLOOR = block("dual_floor", de.simon.spacemod.block.DualFloorBlock::new, metal(MapColor.COLOR_LIGHT_GRAY));
@@ -382,6 +386,11 @@ public final class ModBlocks {
     public static final RegistryObject<EntityType<TorpedoEntity>> TORPEDO = ENTITIES.register("torpedo",
         () -> EntityType.Builder.<TorpedoEntity>of(TorpedoEntity::new, MobCategory.MISC).sized(0.5F, 0.5F)
             .noSummon().noSave().clientTrackingRange(16).updateInterval(1).build(ENTITIES.key("torpedo")));
+
+    /** Fliegendes Schiff (mit der Steuerkonsole abgehoben). */
+    public static final RegistryObject<EntityType<de.simon.spacemod.entity.FlyingShipEntity>> FLYING_SHIP = ENTITIES.register("flying_ship",
+        () -> EntityType.Builder.<de.simon.spacemod.entity.FlyingShipEntity>of(de.simon.spacemod.entity.FlyingShipEntity::new, MobCategory.MISC)
+            .sized(1F, 1F).noSummon().clientTrackingRange(16).updateInterval(1).build(ENTITIES.key("flying_ship")));
 
     // --- Menüs ---
     public static final RegistryObject<MenuType<TurboliftMenu>> TURBOLIFT_MENU = MENUS.register("turbolift",

@@ -324,6 +324,33 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
   Next Generation (rot / blau / gold mit schwarzer Schulterpasse, für C und D) und Enterprise-E
   (schwarz mit grauen Schultern und farbigem Kragen). Die Uniformen ziehst du wie eine Rüstung an.
 
+### Eigene Schiffe fliegen (Steuerkonsole)
+
+Die **Steuerkonsole (eigenes Schiff)** gibt es nur im Kreativ-Tab, sie wird nicht auf den
+Enterprises platziert (die sind viel zu groß). Baue ein eigenes Schiff, setze die Konsole hinein und
+klicke sie mit der rechten Maustaste an:
+
+* **Abheben**: alle zusammenhängenden Blöcke werden zum fliegenden Schiff (höchstens 3000 Blöcke;
+  natürliches Gelände wie Erde, Stein, Sand, Laub, Pflanzen und Flüssigkeiten kommt nicht mit).
+  Alle Lebewesen auf dem Schiff fliegen mit, du sitzt an der Konsole. Der Bug zeigt in deine
+  Blickrichtung hinter der Konsole.
+* **Lenken**: das Schiff dreht sich zum **Fadenkreuz** (Gieren und Nicken). **W** gibt Schub nach
+  vorne, **S** bremst bzw. fährt rückwärts, **Shift** steigt aus, **L** landet. Rechtsklick auf das
+  fliegende Schiff: wieder einsteigen.
+* **Antrieb**: jeder **Impulsantrieb**-Block im Schiff gibt Schub, ohne Impulsantrieb hebt es nicht
+  ab. Beschleunigung = Schub / Masse (1 je Block) – mehr Antriebe, schneller; größere Schiffe,
+  träger. Höchstgeschwindigkeit 60 m/s.
+* **Massenträgheit**: das Schiff behält seinen Schwung; ohne Schub bremsen nur die
+  Trägheitsdämpfer langsam ab. Drehen hängt vom Trägheitsmoment ab (wie weit die Blöcke vom
+  Schwerpunkt entfernt sind) – lange Schiffe drehen langsamer an und bremsen die Drehung vor dem Ziel
+  rechtzeitig ab.
+* **Strom**: Schub und Drehen brauchen 2000 RF/t je Antrieb aus den **Warpkernen an Bord**; reicht
+  der Strom nicht, gibt es entsprechend weniger Schub, ohne Warpkern gar keinen. Die Anzeige über
+  der Hotbar zeigt Geschwindigkeit, Schub, Energie, Antriebe und Masse.
+* **Kollision**: stößt das Schiff an Blöcke der Welt, bleibt es stehen.
+* **Landen** (L): nur langsam und annähernd waagerecht; das Schiff wird wieder zu Blöcken, die
+  Drehung rastet auf 90° ein, Truhen & Co. behalten ihren Inhalt. Am Zielort muss Platz sein.
+
 ### Rezepte (Überlebensmodus)
 
 ```

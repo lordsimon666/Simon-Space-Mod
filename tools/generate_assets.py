@@ -2470,6 +2470,7 @@ FACING = {
                        "textures": {"front": b("turbolift_door_lower"), "side": b("bridge_wall"), "top": b("bridge_wall")}},
     "station_chair": None,
     "helm_console": None,
+    "ship_helm": None,
     "transporter_console": None,
     "biobed_monitor": None,
     "captains_chair_teal": None,
@@ -2911,7 +2912,9 @@ def main():
               "captains_chair_nx": dict(CHAIR, textures=dict(CHAIR["textures"], seat=b("chair_dark"), white=b("ent_wall"), particle=b("chair_dark"))),
               "tng_chair": dict(STATION_CHAIR, textures=dict(STATION_CHAIR["textures"], blue=b("chair_dark"), seat=b("chair_brown"), particle=b("chair_brown"))),
               "captains_chair_tng": dict(CHAIR, textures=dict(CHAIR["textures"], seat=b("chair_brown"), white=b("chair_dark"), particle=b("chair_brown"))),
-              "helm_console_gray": dict(HELM, textures={"particle": b("helm_gray"), "red": b("helm_gray"), "top": b("helm_gray_top"), "black": b("bridge_wall_dark")})}
+              "helm_console_gray": dict(HELM, textures={"particle": b("helm_gray"), "red": b("helm_gray"), "top": b("helm_gray_top"), "black": b("bridge_wall_dark")}),
+              # Steuerkonsole für eigene fliegende Schiffe: dunkles Pult mit LCARS-Oberseite
+              "ship_helm": dict(HELM, textures={"particle": b("bridge_wall_dark"), "red": b("bridge_wall_dark"), "top": b("lcars_panel"), "black": b("trim_black")})}
     for name, model in FACING.items():
         models[name] = model if model else custom[name]
     models["conference_table"] = CONFERENCE_TABLE
@@ -3111,6 +3114,28 @@ def main():
         f"message.{MODID}.phaser.power.1": "Phaser power 1: stun – damage without block damage",
         f"message.{MODID}.phaser.power.2": "Phaser power 2: more damage and block damage",
         f"message.{MODID}.phaser.power.3": "Phaser power 3: full power – heavy block damage",
+    })
+    de.update({
+        f"block.{MODID}.ship_helm": "Steuerkonsole (eigenes Schiff)",
+        f"key.{MODID}.ship_land": "Schiff landen",
+        f"message.{MODID}.ship.launched": "Schiff gestartet: %s Blöcke, %s Impulsantriebe – W/S Schub, Fadenkreuz lenkt, L landen, Shift aussteigen",
+        f"message.{MODID}.ship.hud": "%s m/s  Schub %s  Energie %s%%  Antriebe %s  Masse %s",
+        f"message.{MODID}.ship.too_big": "Struktur zu groß (höchstens %s Blöcke).",
+        f"message.{MODID}.ship.no_engine": "Kein Impulsantrieb in der Struktur – das Schiff kann sich nicht bewegen.",
+        f"message.{MODID}.ship.too_fast": "Zu schnell zum Landen – erst abbremsen (S).",
+        f"message.{MODID}.ship.level_first": "Zum Landen erst waagerecht ausrichten.",
+        f"message.{MODID}.ship.no_room": "Kein Platz zum Landen – dort stehen schon Blöcke.",
+    })
+    en.update({
+        f"block.{MODID}.ship_helm": "Helm Console (own ship)",
+        f"key.{MODID}.ship_land": "Land ship",
+        f"message.{MODID}.ship.launched": "Ship launched: %s blocks, %s impulse engines – W/S thrust, crosshair steers, L land, shift leave",
+        f"message.{MODID}.ship.hud": "%s m/s  thrust %s  power %s%%  engines %s  mass %s",
+        f"message.{MODID}.ship.too_big": "Structure too large (at most %s blocks).",
+        f"message.{MODID}.ship.no_engine": "No impulse engine in the structure – the ship cannot move.",
+        f"message.{MODID}.ship.too_fast": "Too fast to land – brake first (S).",
+        f"message.{MODID}.ship.level_first": "Level the ship before landing.",
+        f"message.{MODID}.ship.no_room": "No room to land – there are blocks in the way.",
     })
     uniform_assets(de, en)
     door_assets(de, en)
