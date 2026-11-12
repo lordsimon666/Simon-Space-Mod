@@ -57,6 +57,25 @@ public final class ShipStructure {
         this.radius = r;
     }
 
+    private java.util.Map<BlockPos, net.minecraft.world.phys.shapes.VoxelShape> collision;
+
+    /** Kollisionsformen der Blöcke im Schiffssystem (Block p liegt in [p - 0.5, p + 0.5]). */
+    public synchronized java.util.Map<BlockPos, net.minecraft.world.phys.shapes.VoxelShape> collision() {
+        if (collision == null) {
+            collision = new java.util.HashMap<>();
+            for (Entry e : blocks) {
+                net.minecraft.world.phys.shapes.VoxelShape shape;
+                try {
+                    shape = e.state().getCollisionShape(net.minecraft.world.level.EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
+                } catch (RuntimeException ex) {
+                    shape = net.minecraft.world.phys.shapes.Shapes.block();
+                }
+                if (!shape.isEmpty()) collision.put(e.pos(), shape.move(e.pos().getX() - 0.5, e.pos().getY() - 0.5, e.pos().getZ() - 0.5));
+            }
+        }
+        return collision;
+    }
+
     public double mass() {
         return blocks.size();
     }

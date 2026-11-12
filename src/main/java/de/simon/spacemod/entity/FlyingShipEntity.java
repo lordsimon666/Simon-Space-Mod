@@ -45,6 +45,8 @@ public class FlyingShipEntity extends Entity {
     private static final EntityDataAccessor<Float> PITCH = SynchedEntityData.defineId(FlyingShipEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Float> YAW0 = SynchedEntityData.defineId(FlyingShipEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Float> RADIUS = SynchedEntityData.defineId(FlyingShipEntity.class, EntityDataSerializers.FLOAT);
+    /** Entity-ID des Piloten (-1 = niemand am Steuer). */
+    private static final EntityDataAccessor<Integer> PILOT_ID = SynchedEntityData.defineId(FlyingShipEntity.class, EntityDataSerializers.INT);
 
     private @Nullable ShipStructure structure;
     private Vec3 velocity = Vec3.ZERO;
@@ -69,7 +71,7 @@ public class FlyingShipEntity extends Entity {
 
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        builder.define(YAW, 0F).define(PITCH, 0F).define(YAW0, 0F).define(RADIUS, 1F);
+        builder.define(YAW, 0F).define(PITCH, 0F).define(YAW0, 0F).define(RADIUS, 1F).define(PILOT_ID, -1);
     }
 
     public float yaw() { return entityData.get(YAW); }
@@ -153,7 +155,60 @@ public class FlyingShipEntity extends Entity {
     protected void removePassenger(Entity passenger) {
         super.removePassenger(passenger);
         seats.remove(passenger.getUUID());
-        if (passenger.getUUID().equals(pilot)) pilot = null;
+        if (passenger.getUUID().equals(pilot)) setPilotNone();
+    }
+
+    /** Mitfahrer stehen (man läuft im Schiff herum), statt zu sitzen. */
+    @Override
+    public boolean shouldRiderSit() {
+        return false;
+    }
+
+    /** Sitzplatz bzw. Standort eines Mitfahrers (lokal, relativ zum Drehpunkt). */
+    public Vec3 seat(Entity passenger) {
+        return seats.getOrDefault(passenger.getUUID(), Vec3.ZERO);
+    }
+
+    public void setSeat(Entity passenger, Vec3 local) {
+        if (hasPassenger(passenger)) seats.put(passenger.getUUID(), local);
+    }
+
+    /** Lage der Steuerkonsole im Schiff (lokal) oder null. */
+    public @Nullable BlockPos helmLocal() {
+        if (structure == null) return null;
+        for (ShipStructure.Entry e : structure.blocks)
+            if (e.state().getBlock() instanceof de.simon.spacemod.block.ShipHelmBlock) return e.pos();
+        return null;
+    }
+
+    public boolean isPilotEntity(Entity e) {
+        return entityData.get(PILOT_ID) == e.getId();
+    }
+
+    private void setPilotNone() {
+        pilot = null;
+        entityData.set(PILOT_ID, -1);
+    }
+
+    /** Steuer übernehmen (nahe der Konsole) bzw. abgeben. */
+    public void toggleHelm(ServerPlayer player) {
+        if (isPilot(player)) {
+            setPilotNone();
+            player.sendOverlayMessage(Component.translatable("message.simonspacemod.ship.helm_off"));
+            return;
+        }
+        BlockPos helm = helmLocal();
+        if (pilot != null || helm == null) {
+            player.sendOverlayMessage(Component.translatable("message.simonspacemod.ship.helm_taken"));
+            return;
+        }
+        Vec3 here = seat(player);
+        if (here.distanceTo(Vec3.atCenterOf(helm).subtract(0.5, 0.5, 0.5)) > 3.5) {
+            player.sendOverlayMessage(Component.translatable("message.simonspacemod.ship.helm_far"));
+            return;
+        }
+        setPilot(player);
+        player.sendOverlayMessage(Component.translatable("message.simonspacemod.ship.helm_on"));
     }
 
     @Override
@@ -189,7 +244,6 @@ public class FlyingShipEntity extends Entity {
         if (player.isPassenger()) return net.minecraft.world.InteractionResult.PASS;
         if (!level().isClientSide()) {
             player.startRiding(this, true, false);
-            if (pilot == null) pilot = player.getUUID();
         }
         return net.minecraft.world.InteractionResult.SUCCESS;
     }
@@ -200,6 +254,7 @@ public class FlyingShipEntity extends Entity {
 
     public void setPilot(Player player) {
         pilot = player.getUUID();
+        entityData.set(PILOT_ID, player.getId());
     }
 
     /** Steuerbefehle des Piloten (Fadenkreuz-Richtung, Schub vor/zurück). */
@@ -304,6 +359,7 @@ public class FlyingShipEntity extends Entity {
     /** Wieder zu Blöcken werden: Drehung rastet auf 90° ein, nur langsam und mit freiem Platz. */
     public void land(ServerPlayer by) {
         if (structure == null) return;
+        if (!isPilot(by)) { by.sendOverlayMessage(Component.translatable("message.simonspacemod.ship.helm_needed")); return; }
         if (velocity.length() > 0.15) { by.sendOverlayMessage(Component.translatable("message.simonspacemod.ship.too_fast")); return; }
         if (Math.abs(pitch()) > 20) { by.sendOverlayMessage(Component.translatable("message.simonspacemod.ship.level_first")); return; }
         ServerLevel level = (ServerLevel) level();

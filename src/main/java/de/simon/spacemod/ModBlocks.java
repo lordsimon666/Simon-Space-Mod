@@ -75,6 +75,15 @@ public final class ModBlocks {
     public static final DeferredRegister<DataComponentType<?>> COMPONENTS = DeferredRegister.create(Registries.DATA_COMPONENT_TYPE, SimonSpaceMod.MODID);
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, SimonSpaceMod.MODID);
     public static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, SimonSpaceMod.MODID);
+    public static final DeferredRegister<net.minecraft.world.level.gamerules.GameRule<?>> GAME_RULES =
+        DeferredRegister.create(Registries.GAME_RULE, SimonSpaceMod.MODID);
+
+    /** Spielregel: höchstens so viele Blöcke darf ein mit der Steuerkonsole gestartetes Schiff haben. */
+    public static final RegistryObject<net.minecraft.world.level.gamerules.GameRule<Integer>> MAX_SHIP_BLOCKS = GAME_RULES.register("max_ship_blocks",
+        () -> new net.minecraft.world.level.gamerules.GameRule<>(net.minecraft.world.level.gamerules.GameRuleCategory.MISC,
+            net.minecraft.world.level.gamerules.GameRuleType.INT, com.mojang.brigadier.arguments.IntegerArgumentType.integer(1, 1_000_000),
+            net.minecraft.world.level.gamerules.GameRuleTypeVisitor::visitInteger, com.mojang.serialization.Codec.intRange(1, 1_000_000),
+            i -> i, 3000, net.minecraft.world.flag.FeatureFlagSet.of()));
 
     private static final List<RegistryObject<? extends Item>> TAB_ITEMS = new ArrayList<>();
 
@@ -411,6 +420,7 @@ public final class ModBlocks {
         COMPONENTS.register(modBus);
         BLOCK_ENTITIES.register(modBus);
         TABS.register(modBus);
+        GAME_RULES.register(modBus);
     }
 
     private static BlockBehaviour.Properties metal(MapColor color) {

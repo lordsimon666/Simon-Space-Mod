@@ -25,11 +25,11 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * Macht aus der Struktur um eine Steuerkonsole ein fliegendes Schiff: alle zusammenhängenden Blöcke
- * außer natürlichem Gelände (Erde, Stein, Sand, Laub, Pflanzen, Flüssigkeiten ...), höchstens
- * {@link #MAX_BLOCKS} Blöcke.
+ * außer natürlichem Gelände (Erde, Stein, Sand, Laub, Pflanzen, Flüssigkeiten ...). Höchstens so
+ * viele Blöcke wie die Spielregel {@code simonspacemod:max_ship_blocks} erlaubt, und nur mit
+ * geschlossener Hülle: jeder Block, der Außenluft berührt, muss ein Hüllenblock sein.
  */
 public final class ShipAssembler {
-    public static final int MAX_BLOCKS = 3000;
 
     private ShipAssembler() {}
 
@@ -42,20 +42,32 @@ public final class ShipAssembler {
             || st.is(BlockTags.SNOW));
     }
 
+    /** Darüber wird gar nicht weitergezählt (z. B. wenn die Konsole in einer großen Basis steht). */
+    public static final int COUNT_CAP = 200_000;
+
+    /** Hüllenblöcke: dürfen (und müssen) außen liegen. */
+    public static boolean isHullBlock(BlockState st) {
+        var id = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(st.getBlock());
+        if (id == null || !id.getNamespace().equals(de.simon.spacemod.SimonSpaceMod.MODID)) return false;
+        String n = id.getPath();
+        if (st.getBlock() instanceof de.simon.spacemod.block.StarshipDoorBlock) return true; // Luken
+        return n.startsWith("hull") || n.startsWith("deflector") || n.startsWith("bussard") || n.startsWith("nav_light")
+            || n.startsWith("phase") || n.startsWith("phaser_bank") || n.startsWith("phaser_emitter") || n.startsWith("phaser_strip")
+            || n.equals("impulse_engine") || n.equals("torpedo_launcher") || n.equals("quantum_launcher") || n.equals("nacelle_grille")
+            || n.equals("viewport");
+    }
+
     public static void assemble(ServerLevel level, BlockPos helm, Direction forward, ServerPlayer player) {
-        // zusammenhängende Blöcke sammeln
+        int max = level.getGameRules().get(ModBlocks.MAX_SHIP_BLOCKS.get());
+        // zusammenhängende Blöcke sammeln (vollständig zählen, damit die Meldung stimmt)
         Set<BlockPos> seen = new HashSet<>();
         List<BlockPos> found = new ArrayList<>();
         ArrayDeque<BlockPos> queue = new ArrayDeque<>();
         queue.add(helm);
         seen.add(helm);
-        while (!queue.isEmpty()) {
+        while (!queue.isEmpty() && found.size() <= COUNT_CAP) {
             BlockPos p = queue.poll();
             found.add(p);
-            if (found.size() > MAX_BLOCKS) {
-                player.sendOverlayMessage(Component.translatable("message.simonspacemod.ship.too_big", MAX_BLOCKS));
-                return;
-            }
             for (Direction d : Direction.values()) {
                 BlockPos n = p.relative(d);
                 if (seen.contains(n) || !level.isLoaded(n)) continue;
@@ -63,10 +75,52 @@ public final class ShipAssembler {
                 if (isShipBlock(level.getBlockState(n))) queue.add(n.immutable());
             }
         }
+        if (found.size() > max) {
+            if (found.size() > COUNT_CAP) player.sendSystemMessage(Component.translatable("message.simonspacemod.ship.too_big_huge", COUNT_CAP, max));
+            else player.sendSystemMessage(Component.translatable("message.simonspacemod.ship.too_big", found.size(), max, found.size() - max));
+            return;
+        }
+        // geschlossene Hülle: alles, was Außenluft berührt, muss ein Hüllenblock sein
+        Set<BlockPos> inShip = new HashSet<>(found);
+        int x0 = Integer.MAX_VALUE, y0 = Integer.MAX_VALUE, z0 = Integer.MAX_VALUE, x1 = Integer.MIN_VALUE, y1 = Integer.MIN_VALUE, z1 = Integer.MIN_VALUE;
+        for (BlockPos p : found) {
+            x0 = Math.min(x0, p.getX()); y0 = Math.min(y0, p.getY()); z0 = Math.min(z0, p.getZ());
+            x1 = Math.max(x1, p.getX()); y1 = Math.max(y1, p.getY()); z1 = Math.max(z1, p.getZ());
+        }
+        x0--; y0--; z0--; x1++; y1++; z1++;
+        Set<BlockPos> outside = new HashSet<>();
+        ArrayDeque<BlockPos> oq = new ArrayDeque<>();
+        BlockPos start = new BlockPos(x0, y0, z0);
+        outside.add(start);
+        oq.add(start);
+        while (!oq.isEmpty()) {
+            BlockPos p = oq.poll();
+            for (Direction d : Direction.values()) {
+                BlockPos n = p.relative(d);
+                if (n.getX() < x0 || n.getX() > x1 || n.getY() < y0 || n.getY() > y1 || n.getZ() < z0 || n.getZ() > z1) continue;
+                if (inShip.contains(n) || !outside.add(n)) continue;
+                oq.add(n);
+            }
+        }
+        int bad = 0;
+        BlockPos example = null;
+        for (BlockPos p : found) {
+            boolean exterior = false;
+            for (Direction d : Direction.values()) if (outside.contains(p.relative(d))) { exterior = true; break; }
+            if (exterior && !isHullBlock(level.getBlockState(p))) {
+                bad++;
+                if (example == null) example = p;
+            }
+        }
+        if (bad > 0) {
+            player.sendSystemMessage(Component.translatable("message.simonspacemod.ship.hull_open", bad,
+                level.getBlockState(example).getBlock().getName(), example.getX(), example.getY(), example.getZ()));
+            return;
+        }
         int engines = 0;
         for (BlockPos p : found) if (level.getBlockState(p).is(ModBlocks.IMPULSE_ENGINE.get())) engines++;
         if (engines == 0) {
-            player.sendOverlayMessage(Component.translatable("message.simonspacemod.ship.no_engine"));
+            player.sendSystemMessage(Component.translatable("message.simonspacemod.ship.no_engine"));
             return;
         }
         // Drehpunkt = Block am Schwerpunkt

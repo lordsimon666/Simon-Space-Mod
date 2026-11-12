@@ -330,13 +330,22 @@ Die **Steuerkonsole (eigenes Schiff)** gibt es nur im Kreativ-Tab, sie wird nich
 Enterprises platziert (die sind viel zu groß). Baue ein eigenes Schiff, setze die Konsole hinein und
 klicke sie mit der rechten Maustaste an:
 
-* **Abheben**: alle zusammenhängenden Blöcke werden zum fliegenden Schiff (höchstens 3000 Blöcke;
-  natürliches Gelände wie Erde, Stein, Sand, Laub, Pflanzen und Flüssigkeiten kommt nicht mit).
-  Alle Lebewesen auf dem Schiff fliegen mit, du sitzt an der Konsole. Der Bug zeigt in deine
-  Blickrichtung hinter der Konsole.
-* **Lenken**: das Schiff dreht sich zum **Fadenkreuz** (Gieren und Nicken). **W** gibt Schub nach
-  vorne, **S** bremst bzw. fährt rückwärts, **Shift** steigt aus, **L** landet. Rechtsklick auf das
-  fliegende Schiff: wieder einsteigen.
+* **Größe**: alle zusammenhängenden Blöcke zählen (natürliches Gelände wie Erde, Stein, Sand, Laub,
+  Pflanzen und Flüssigkeiten nicht). Erlaubt sind so viele Blöcke, wie die Spielregel
+  `/gamerule simonspacemod:max_ship_blocks <Anzahl>` festlegt (Standard 3000). Ist die Struktur
+  größer, startet gar nichts – die Meldung sagt, wie viele Blöcke zu viel sind.
+* **Geschlossene Hülle**: jeder Block, der von außen Luft berührt, muss ein Hüllenblock sein –
+  Hüllenplatten, Hüllenfenster, Impulsantriebe, Torpedowerfer, Phaser, Deflektor, Bussard,
+  Gondelgitter, Positionslichter oder Türen. Sonst nennt die Meldung die Anzahl und einen Beispiel-
+  block mit Position (z. B. ein Loch oder Glas statt Hüllenfenster).
+* **Abheben**: die Struktur wird zum fliegenden Schiff; alle Lebewesen darin fliegen mit, du stehst
+  am Steuer. Der Bug zeigt in deine Blickrichtung hinter der Konsole.
+* **Herumlaufen**: im fliegenden Schiff läuft man wie in Valkyrien Skies – WASD, Springen, Sprinten,
+  Stufen bis eine halbe Blockhöhe, Kollision mit Wänden, Böden und Möbeln des Schiffs. Die Schwerkraft
+  zeigt immer zum Schiffsboden (auch wenn das Schiff nickt). Wer weit vom Schiff wegfällt, steigt ab.
+* **Steuer**: **H** übernimmt das Steuer (an der Konsole) bzw. gibt es ab. Am Steuer dreht sich das
+  Schiff zum **Fadenkreuz** (Gieren und Nicken), **W** gibt Schub, **S** bremst bzw. fährt rückwärts,
+  **L** landet. **Shift** steigt aus, Rechtsklick auf das fliegende Schiff steigt wieder ein.
 * **Antrieb**: jeder **Impulsantrieb**-Block im Schiff gibt Schub, ohne Impulsantrieb hebt es nicht
   ab. Beschleunigung = Schub / Masse (1 je Block) – mehr Antriebe, schneller; größere Schiffe,
   träger. Höchstgeschwindigkeit 60 m/s.
@@ -348,8 +357,8 @@ klicke sie mit der rechten Maustaste an:
   der Strom nicht, gibt es entsprechend weniger Schub, ohne Warpkern gar keinen. Die Anzeige über
   der Hotbar zeigt Geschwindigkeit, Schub, Energie, Antriebe und Masse.
 * **Kollision**: stößt das Schiff an Blöcke der Welt, bleibt es stehen.
-* **Landen** (L): nur langsam und annähernd waagerecht; das Schiff wird wieder zu Blöcken, die
-  Drehung rastet auf 90° ein, Truhen & Co. behalten ihren Inhalt. Am Zielort muss Platz sein.
+* **Landen** (L, am Steuer): nur langsam und annähernd waagerecht; das Schiff wird wieder zu Blöcken,
+  die Drehung rastet auf 90° ein, Truhen & Co. behalten ihren Inhalt. Am Zielort muss Platz sein.
 
 ### Rezepte (Überlebensmodus)
 
