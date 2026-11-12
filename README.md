@@ -353,14 +353,25 @@ klicke sie mit der rechten Maustaste an:
   Trägheitsdämpfer langsam ab. Drehen hängt vom Trägheitsmoment ab (wie weit die Blöcke vom
   Schwerpunkt entfernt sind) – lange Schiffe drehen langsamer an und bremsen die Drehung vor dem Ziel
   rechtzeitig ab.
-* **Strom**: Schub und Drehen brauchen 2000 RF/t je Antrieb aus den **Warpkernen** und
-  **Kernreaktoren an Bord** (oder Generatoren anderer Mods mit Energiespeicher); reicht der Strom
-  nicht, gibt es entsprechend weniger Schub, ohne Stromquelle gar keinen. Reaktoren laufen im Flug
-  weiter und verbrauchen dabei Uran. Die Anzeige über
+* **Strom**: Schub und Drehen brauchen 2000 RF/t je Antrieb aus dem Bordnetz – **Warpkerne**,
+  **Kernreaktoren** und **Generatoren anderer Mods**, die über Blöcke dieser Mod mit der
+  Steuerkonsole verbunden sind; reicht der Strom nicht, gibt es entsprechend weniger Schub, ohne
+  Stromquelle gar keinen. Alle Generatoren laufen im Flug weiter (Reaktoren verbrauchen Uran). Die Anzeige über
   der Hotbar zeigt Geschwindigkeit, Schub, Energie, Antriebe und Masse.
-* **Blöcke im Flug benutzen**: Rechtsklick auf Truhen, Fässer, Trichter, Spender/Werfer und den
-  Reaktor-Steuerblock öffnet ihr Menü auch während des Flugs – so kann man z. B. Uran nachlegen.
-  Andere Blöcke melden „Im Flug nicht benutzbar“.
+* **Alles läuft im Flug weiter** (wie bei Valkyrien Skies): beim Abheben wandern die Blöcke in eine
+  eigene, leere Dimension, die **Werft** (`simonspacemod:shipyard`), und bleiben dort echte Blöcke
+  in dauerhaft geladenen Chunks. Öfen, Trichter, Reaktoren, Generatoren und Maschinen **anderer
+  Mods** arbeiten ganz normal weiter; das fliegende Schiff zeigt sie an seiner Flugposition an
+  (Türen, Lampen, Öfen usw. ändern ihr Aussehen mit). Beim Landen kommen sie mit allen Inhalten
+  zurück in die Welt.
+* **Blöcke im Flug benutzen**: Rechtsklick benutzt den echten Block in der Werft – Truhen, Öfen,
+  Reaktor-Steuerblock (Uran nachlegen), Türen (Schlüsselkarte) und Maschinen anderer Mods öffnen ihr
+  Menü wie am Boden. Rechtsklick auf die Steuerkonsole übernimmt das Steuer. Blöcke setzen oder
+  abbauen geht im Flug nicht.
+* **Durch die Tür einsteigen**: wer im Flug durch eine offene Schiffstür hineingeht (oder auf dem
+  Schiff landet), fliegt automatisch mit und läuft darin herum – Türen öffnen sich wie am Boden.
+  Wer durch die Tür hinausgeht und keinen Schiffsboden mehr unter den Füßen hat, steigt aus.
+  (Schleichend wird man nicht eingeladen; nach dem Aussteigen 3 Sekunden Pause.)
 * **Kollision**: stößt das Schiff an Blöcke der Welt, bleibt es stehen.
 * **Landen** (L, am Steuer): nur langsam und annähernd waagerecht; das Schiff wird wieder zu Blöcken,
   die Drehung rastet auf 90° ein, Truhen & Co. behalten ihren Inhalt. Am Zielort muss Platz sein.
@@ -382,6 +393,10 @@ klicke sie mit der rechten Maustaste an:
   Er gibt Strom an angrenzende Verbraucher ab und **versorgt das Bordnetz** wie ein Warpkern
   (Ladestationen, Lampen, Antriebe im Flug). Dasselbe gilt für alle anderen Stromerzeuger mit
   Energiespeicher, auch aus anderen Mods, wenn sie über Blöcke dieser Mod verbunden sind.
+* **Strom über die Hülle**: jeder Block, der Forge-Energie (RF/FE) annimmt – auch Maschinen anderer
+  Mods – bekommt Strom, sobald er einen Block dieser Mod berührt (Hülle, Wand, Boden …), der mit
+  einem Erzeuger verbunden ist. Kabel braucht man im Schiff nicht. Speicher, die selbst Strom
+  abgeben (Batterien), zählen dabei als Erzeuger.
 * Rechtsklick auf den Steuerblock zeigt Größe, Leistung, Brennstand und Energie.
 
 Rezepte: Reaktorhülle (8×) = Eisen in den Ecken, Kupfer an den Seiten, Uranbarren in der Mitte;

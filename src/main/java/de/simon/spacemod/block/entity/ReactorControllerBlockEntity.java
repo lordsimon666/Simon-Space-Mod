@@ -111,6 +111,7 @@ public class ReactorControllerBlockEntity extends BlockEntity {
         if (level.getGameTime() % 40 == Math.floorMod(pos.asLong(), 40)) {
             int n = ReactorStructure.find(level, pos, state.getValue(ReactorControllerBlock.FACING));
             if (n != be.size) { be.size = n; be.setChanged(); }
+            if (level instanceof net.minecraft.server.level.ServerLevel sl) de.simon.spacemod.power.PowerNetwork.addSeed(sl, pos);
         }
         be.run();
         // an angrenzende Verbraucher abgeben

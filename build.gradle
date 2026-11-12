@@ -25,6 +25,7 @@ minecraft {
 
             systemProperty 'eventbus.api.strictRuntimeChecks', 'true'
             systemProperty 'forge.enabledGameTestNamespaces', 'simonspacemod'
+            args '--mixin.config', 'simonspacemod.mixins.json'
         }
 
         register('client')
@@ -64,6 +65,11 @@ tasks.named('test', Test) {
     maxHeapSize = '4g'
     // Vorschaubilder des Schiffs landen in build/ship-preview
     systemProperty 'ship.preview.dir', layout.buildDirectory.dir('ship-preview').get().asFile.absolutePath
+}
+
+// Mixin (Reichweite für Blöcke fliegender Schiffe)
+tasks.named('jar', Jar) {
+    manifest.attributes('MixinConfigs': 'simonspacemod.mixins.json')
 }
 
 tasks.withType(JavaCompile).configureEach {

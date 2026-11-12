@@ -16,6 +16,25 @@ public class WarpCoreBlock extends GlowParticleBlock {
         this.rfPerTick = rfPerTick;
     }
 
+    /** Als Startpunkt der Stromverteilung merken (beim Setzen und, für alte Welten, ab und zu). */
+    @Override
+    protected void onPlace(net.minecraft.world.level.block.state.BlockState state, net.minecraft.world.level.Level level,
+                           net.minecraft.core.BlockPos pos, net.minecraft.world.level.block.state.BlockState old, boolean moved) {
+        super.onPlace(state, level, pos, old, moved);
+        if (level instanceof net.minecraft.server.level.ServerLevel sl && !old.is(this)) de.simon.spacemod.power.PowerNetwork.addSeed(sl, pos);
+    }
+
+    @Override
+    protected boolean isRandomlyTicking(net.minecraft.world.level.block.state.BlockState state) {
+        return true;
+    }
+
+    @Override
+    protected void randomTick(net.minecraft.world.level.block.state.BlockState state, net.minecraft.server.level.ServerLevel level,
+                              net.minecraft.core.BlockPos pos, net.minecraft.util.RandomSource random) {
+        de.simon.spacemod.power.PowerNetwork.addSeed(level, pos);
+    }
+
     @Override
     protected MapCodec<? extends Block> codec() {
         return simpleCodec(p -> new WarpCoreBlock(p, rfPerTick));

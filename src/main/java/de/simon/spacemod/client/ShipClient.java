@@ -25,6 +25,7 @@ public final class ShipClient {
 
     private static ShipWalker.State walk;
     private static int walkShip = -1;
+    private static int outside;
 
     private ShipClient() {}
 
@@ -64,15 +65,20 @@ public final class ShipClient {
         var mv = mc.player.input.getMoveVector();
         Vec3 before = walk.pos();
         walk = ShipWalker.step(s, walk, mv.x, mv.y, localYaw, in.jump(), in.sprint() || mc.player.isSprinting());
-        if (walk.pos().length() > s.radius + 6) {
+        ship.setSeat(mc.player, walk.pos());
+        if (walk.pos().distanceToSqr(before) > 1e-8)
+            TurboliftNetwork.sendToServer(new ShipSeatMessage(mc.player.getId(), (float) walk.pos().x, (float) walk.pos().y, (float) walk.pos().z));
+        // durch die Tür hinausgegangen (kein Schiffsboden mehr unter den Füßen): aussteigen
+        if (!ship.overShip(walk.pos())) outside++;
+        else outside = 0;
+        if (outside > 3 || walk.pos().length() > s.radius + 6) {
+            outside = 0;
             // vom Schiff gefallen
             TurboliftNetwork.sendToServer(new ShipControlMessage(3, 0, 0, 0));
             walk = null;
             return;
         }
-        ship.setSeat(mc.player, walk.pos());
-        if (walk.pos().distanceToSqr(before) > 1e-8)
-            TurboliftNetwork.sendToServer(new ShipSeatMessage(mc.player.getId(), (float) walk.pos().x, (float) walk.pos().y, (float) walk.pos().z));
+
     }
 
     /** Rechtsklick im fliegenden Schiff: angeklickten Schiffsblock (Kiste, Reaktor …) benutzen. */
@@ -85,7 +91,7 @@ public final class ShipClient {
         Vec3 look = ShipPhysics.inverse(q, mc.player.getViewVector(1F));
         net.minecraft.core.BlockPos hit = ship.structure().raycast(eye, look, de.simon.spacemod.flight.ShipUseMessage.REACH);
         if (hit == null) return false;
-        TurboliftNetwork.sendToServer(new de.simon.spacemod.flight.ShipUseMessage(ship.getId(), hit));
+        TurboliftNetwork.sendToServer(new de.simon.spacemod.flight.ShipUseMessage(ship.getId(), hit, net.minecraft.core.Direction.getApproximateNearest(-look.x, -look.y, -look.z)));
         e.setSwingHand(true);
         return true;
     }

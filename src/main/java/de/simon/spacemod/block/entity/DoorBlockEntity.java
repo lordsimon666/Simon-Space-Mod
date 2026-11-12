@@ -48,7 +48,10 @@ public class DoorBlockEntity extends BlockEntity {
         var normal = state.getValue(StarshipDoorBlock.FACING);
         AABB box = new AABB(pos).minmax(new AABB(far)).expandTowards(normal.getStepX() * 2.5, 0, normal.getStepZ() * 2.5)
             .expandTowards(-normal.getStepX() * 2.5, 0, -normal.getStepZ() * 2.5);
-        for (Player p : level.getEntitiesOfClass(Player.class, box)) {
+        java.util.List<Player> near = new java.util.ArrayList<>(level.getEntitiesOfClass(Player.class, box));
+        // Tür eines fliegenden Schiffs (steht in der Werft): Spieler im Schiff umgerechnet
+        if (de.simon.spacemod.flight.Shipyard.is(level)) near.addAll(de.simon.spacemod.flight.Shipyard.playersIn(level, box));
+        for (Player p : near) {
             if (p.isSpectator() || p.isShiftKeyDown()) continue;
             if (allowed(p, door.kind)) return true;
         }

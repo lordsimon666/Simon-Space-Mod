@@ -65,6 +65,8 @@ public final class TurboliftNetwork {
                         de.simon.spacemod.flight.ShipStructureMessage::handle)
                     .addMain(de.simon.spacemod.flight.ShipSeatSync.class, de.simon.spacemod.flight.ShipSeatSync.STREAM_CODEC,
                         de.simon.spacemod.flight.ShipSeatSync::handle)
+                    .addMain(de.simon.spacemod.flight.ShipBlocksMessage.class, de.simon.spacemod.flight.ShipBlocksMessage.STREAM_CODEC,
+                        de.simon.spacemod.flight.ShipBlocksMessage::handle)
         .build();
 
     public static void init() {

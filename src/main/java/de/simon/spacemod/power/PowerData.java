@@ -38,7 +38,8 @@ public final class PowerData extends SavedData {
 
     public static final Codec<PowerData> CODEC = RecordCodecBuilder.create(i -> i.group(
         Link.CODEC.listOf().optionalFieldOf("links", List.of()).forGetter(d -> d.links.entrySet().stream().map(e -> new Link(e.getKey(), e.getValue())).toList()),
-        Ship.CODEC.listOf().optionalFieldOf("ships", List.of()).forGetter(d -> d.ships)
+        Ship.CODEC.listOf().optionalFieldOf("ships", List.of()).forGetter(d -> d.ships),
+        Codec.LONG.listOf().optionalFieldOf("seeds", List.of()).forGetter(d -> List.copyOf(d.seeds))
     ).apply(i, PowerData::new));
 
     public static final SavedDataType<PowerData> TYPE = new SavedDataType<>(
@@ -49,9 +50,25 @@ public final class PowerData extends SavedData {
 
     public PowerData() {}
 
-    private PowerData(List<Link> list, List<Ship> shipList) {
+    /** Startpunkte der Stromverteilung (Warpkerne, Reaktoren, Blöcke mit Energiespeicher). */
+    private final java.util.LinkedHashSet<Long> seeds = new java.util.LinkedHashSet<>();
+
+    private PowerData(List<Link> list, List<Ship> shipList, List<Long> seedList) {
         for (Link l : list) links.put(l.consumer(), List.copyOf(l.cores()));
         ships.addAll(shipList);
+        seeds.addAll(seedList);
+    }
+
+    public void addSeed(BlockPos pos) {
+        if (seeds.add(pos.asLong())) setDirty();
+    }
+
+    public void removeSeed(long pos) {
+        if (seeds.remove(pos)) setDirty();
+    }
+
+    public java.util.Collection<Long> seeds() {
+        return seeds;
     }
 
     /** Schiff eintragen (ersetzt ein Schiff mit genau gleichem Umriss). */

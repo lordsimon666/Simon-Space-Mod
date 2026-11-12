@@ -34,7 +34,7 @@ public final class ShipStructure {
     public final double radius;
 
     public ShipStructure(List<Entry> blocks) {
-        this.blocks = List.copyOf(blocks);
+        this.blocks = new ArrayList<>(blocks);
         Set<BlockPos> all = new HashSet<>();
         List<BlockPos> positions = new ArrayList<>();
         int eng = 0, power = 0;
@@ -64,16 +64,41 @@ public final class ShipStructure {
         if (collision == null) {
             collision = new java.util.HashMap<>();
             for (Entry e : blocks) {
-                net.minecraft.world.phys.shapes.VoxelShape shape;
-                try {
-                    shape = e.state().getCollisionShape(net.minecraft.world.level.EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
-                } catch (RuntimeException ex) {
-                    shape = net.minecraft.world.phys.shapes.Shapes.block();
-                }
+                net.minecraft.world.phys.shapes.VoxelShape shape = shapeOf(e.state());
                 if (!shape.isEmpty()) collision.put(e.pos(), shape.move(e.pos().getX() - 0.5, e.pos().getY() - 0.5, e.pos().getZ() - 0.5));
             }
         }
         return collision;
+    }
+
+    /** Zustand eines Blocks hat sich geändert (Tür auf/zu, Ofen an …): Kollision mitziehen. */
+    public synchronized void setState(int i, BlockState st) {
+        Entry e = blocks.get(i);
+        Entry n = new Entry(e.pos(), st, e.data());
+        blocks.set(i, n);
+        for (int k = 0; k < surface.size(); k++) if (surface.get(k).pos().equals(e.pos())) { surface.set(k, n); break; }
+        if (collision != null) {
+            collision.remove(e.pos());
+            net.minecraft.world.phys.shapes.VoxelShape shape = shapeOf(st);
+            if (!shape.isEmpty()) collision.put(e.pos(), shape.move(e.pos().getX() - 0.5, e.pos().getY() - 0.5, e.pos().getZ() - 0.5));
+        }
+    }
+
+    /** Blockdaten verwerfen (sie liegen dann bei den echten Blöcken in der Werft). */
+    public synchronized void stripData() {
+        for (int i = 0; i < blocks.size(); i++) {
+            Entry e = blocks.get(i);
+            if (e.data().isPresent()) blocks.set(i, new Entry(e.pos(), e.state(), Optional.empty()));
+        }
+        surface.replaceAll(e -> e.data().isPresent() ? new Entry(e.pos(), e.state(), Optional.empty()) : e);
+    }
+
+    private static net.minecraft.world.phys.shapes.VoxelShape shapeOf(BlockState st) {
+        try {
+            return st.getCollisionShape(net.minecraft.world.level.EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
+        } catch (RuntimeException ex) {
+            return net.minecraft.world.phys.shapes.Shapes.block();
+        }
     }
 
     private java.util.Map<BlockPos, Integer> index;

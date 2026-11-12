@@ -156,6 +156,7 @@ public final class ShipAssembler {
         Vec3 center = Vec3.atCenterOf(pivot);
         ship.setPos(center.x, center.y, center.z);
         ship.setup(structure, forward.toYRot(), player.getUUID());
+        ship.moveToShipyard(); // Blöcke bleiben in der Werft echte Blöcke und laufen weiter
         level.addFreshEntity(ship);
         for (Entity e : riders) e.startRiding(ship, true, false);
         if (!player.isPassenger()) player.startRiding(ship, true, false);

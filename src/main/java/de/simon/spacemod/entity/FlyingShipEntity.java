@@ -3,6 +3,7 @@ package de.simon.spacemod.entity;
 import de.simon.spacemod.flight.ShipPhysics;
 import de.simon.spacemod.flight.ShipStructure;
 import de.simon.spacemod.flight.ShipStructureMessage;
+import de.simon.spacemod.flight.Shipyard;
 import de.simon.spacemod.turbolift.TurboliftNetwork;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -59,9 +60,13 @@ public class FlyingShipEntity extends Entity {
     private double lastPower = 1;
     /** Sitzplätze der Passagiere (lokal, relativ zum Drehpunkt). */
     private final Map<UUID, Vec3> seats = new HashMap<>();
-    /** Server: lebende Blockdaten (Kisten, Reaktoren …) nach Index in structure.blocks. */
-    private final Map<Integer, BlockEntity> live = new HashMap<>();
-    private boolean liveLoaded;
+    /** Ursprung des Bauplatzes in der Werft (Block p des Schiffs steht bei Ursprung + p). */
+    private static final EntityDataAccessor<BlockPos> PLOT_ORIGIN = SynchedEntityData.defineId(FlyingShipEntity.class, EntityDataSerializers.BLOCK_POS);
+    private int plot = -1;
+    private int scanCursor;
+    private @Nullable BlockPos helmCache;
+    /** Wer gerade ausgestiegen ist, wird nicht sofort wieder eingeladen. */
+    private final Map<UUID, Long> boardCooldown = new HashMap<>();
     /** Client: vorherige Lage für flüssiges Zeichnen. */
     public float prevYaw, prevPitch;
 
@@ -74,7 +79,7 @@ public class FlyingShipEntity extends Entity {
 
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        builder.define(YAW, 0F).define(PITCH, 0F).define(YAW0, 0F).define(RADIUS, 1F).define(PILOT_ID, -1);
+        builder.define(YAW, 0F).define(PITCH, 0F).define(YAW0, 0F).define(RADIUS, 1F).define(PILOT_ID, -1).define(PLOT_ORIGIN, BlockPos.ZERO);
     }
 
     public float yaw() { return entityData.get(YAW); }
@@ -105,6 +110,12 @@ public class FlyingShipEntity extends Entity {
     }
 
     @Override
+    public void remove(Entity.RemovalReason reason) {
+        super.remove(reason);
+        if (plot >= 0) Shipyard.unregister(plot, this);
+    }
+
+    @Override
     public boolean hurtServer(ServerLevel level, DamageSource source, float damage) {
         return false;
     }
@@ -113,8 +124,8 @@ public class FlyingShipEntity extends Entity {
     protected void readAdditionalSaveData(ValueInput input) {
         List<ShipStructure.Entry> list = input.read("blocks", ShipStructure.LIST_CODEC).orElse(List.of());
         structure = list.isEmpty() ? null : new ShipStructure(list);
-        live.clear();
-        liveLoaded = false;
+        plot = input.getIntOr("plot", -1);
+        if (plot >= 0) entityData.set(PLOT_ORIGIN, Shipyard.origin(plot));
         entityData.set(YAW0, input.getFloatOr("yaw0", 0F));
         entityData.set(YAW, input.getFloatOr("yaw", 0F));
         entityData.set(PITCH, input.getFloatOr("pitch", 0F));
@@ -126,7 +137,8 @@ public class FlyingShipEntity extends Entity {
 
     @Override
     protected void addAdditionalSaveData(ValueOutput output) {
-        if (structure != null) output.store("blocks", ShipStructure.LIST_CODEC, currentBlocks());
+        if (structure != null) output.store("blocks", ShipStructure.LIST_CODEC, structure.blocks);
+        output.putInt("plot", plot);
         output.putFloat("yaw0", yaw0());
         output.putFloat("yaw", yaw());
         output.putFloat("pitch", pitch());
@@ -160,6 +172,7 @@ public class FlyingShipEntity extends Entity {
     protected void removePassenger(Entity passenger) {
         super.removePassenger(passenger);
         seats.remove(passenger.getUUID());
+        boardCooldown.put(passenger.getUUID(), (long) tickCount + 60);
         if (passenger.getUUID().equals(pilot)) setPilotNone();
     }
 
@@ -181,8 +194,9 @@ public class FlyingShipEntity extends Entity {
     /** Lage der Steuerkonsole im Schiff (lokal) oder null. */
     public @Nullable BlockPos helmLocal() {
         if (structure == null) return null;
+        if (helmCache != null) return helmCache;
         for (ShipStructure.Entry e : structure.blocks)
-            if (e.state().getBlock() instanceof de.simon.spacemod.block.ShipHelmBlock) return e.pos();
+            if (e.state().getBlock() instanceof de.simon.spacemod.block.ShipHelmBlock) return helmCache = e.pos();
         return null;
     }
 
@@ -271,67 +285,169 @@ public class FlyingShipEntity extends Entity {
         controlAge = 0;
     }
 
-    // ---- Blöcke im Flug ----
+    // ---- Werft: die echten Blöcke des Schiffs ----
 
-    /** Blockdaten (Kisten, Reaktor …) als lebende Objekte laden, damit sie im Flug benutzbar sind. */
-    private void loadLive() {
-        if (liveLoaded || structure == null || level().isClientSide()) return;
-        liveLoaded = true;
-        for (int i = 0; i < structure.blocks.size(); i++) {
-            ShipStructure.Entry e = structure.blocks.get(i);
-            if (e.data().isEmpty()) continue;
-            try {
-                BlockEntity be = BlockEntity.loadStatic(e.pos(), e.state(), e.data().get(), level().registryAccess());
-                if (be != null) live.put(i, be);
-            } catch (RuntimeException ex) {
-                // Block anderer Mods, der ohne Welt nicht geladen werden kann: Daten bleiben unverändert
-            }
-        }
+    public int plot() {
+        return plot;
     }
 
-    /** Lebendes Objekt des Blocks an einer lokalen Stelle (Server) oder null. */
+    public BlockPos plotOrigin() {
+        return entityData.get(PLOT_ORIGIN);
+    }
+
+    private @Nullable ServerLevel shipyard() {
+        return level() instanceof ServerLevel sl ? Shipyard.level(sl.getServer()) : null;
+    }
+
+    /** Lage eines Lebewesens im Schiffssystem (Mitfahrer: Sitzplatz, sonst umgerechnet). */
+    public Vec3 localOf(Entity e) {
+        if (hasPassenger(e)) return seat(e);
+        return ShipPhysics.inverse(rotation(1F), e.position().subtract(position()));
+    }
+
+    /** Echter Block (in der Werft) an einer lokalen Stelle: Block-Entity oder null. */
     public @Nullable BlockEntity liveAt(BlockPos local) {
-        if (structure == null) return null;
-        loadLive();
-        int i = structure.indexOf(local);
-        return i < 0 ? null : live.get(i);
+        ServerLevel sy = shipyard();
+        return sy == null || plot < 0 ? null : sy.getBlockEntity(plotOrigin().offset(local));
     }
 
-    /** Blöcke mit dem aktuellen Stand der Blockdaten (zum Speichern und Landen). */
-    private List<ShipStructure.Entry> currentBlocks() {
-        if (live.isEmpty()) return structure.blocks;
-        List<ShipStructure.Entry> out = new ArrayList<>(structure.blocks);
-        live.forEach((i, be) -> {
-            ShipStructure.Entry e = out.get(i);
-            try {
-                out.set(i, new ShipStructure.Entry(e.pos(), e.state(), Optional.of(be.saveWithFullMetadata(level().registryAccess()))));
-            } catch (RuntimeException ex) {
-                // alte Daten behalten
+    private BlockPos[] bounds() {
+        int x0 = Integer.MAX_VALUE, y0 = x0, z0 = x0, x1 = Integer.MIN_VALUE, y1 = x1, z1 = x1;
+        for (ShipStructure.Entry e : structure.blocks) {
+            BlockPos p = e.pos();
+            x0 = Math.min(x0, p.getX()); y0 = Math.min(y0, p.getY()); z0 = Math.min(z0, p.getZ());
+            x1 = Math.max(x1, p.getX()); y1 = Math.max(y1, p.getY()); z1 = Math.max(z1, p.getZ());
+        }
+        return new BlockPos[] {new BlockPos(x0, y0, z0), new BlockPos(x1, y1, z1)};
+    }
+
+    /**
+     * Blöcke in die Werft stellen: dort bleiben sie echte Blöcke und laufen weiter (Maschinen,
+     * Reaktoren, Kisten, Blöcke anderer Mods). Ohne Werft-Dimension bleibt das Schiff ein reines Abbild.
+     */
+    public boolean moveToShipyard() {
+        ServerLevel sy = shipyard();
+        if (sy == null || structure == null || plot >= 0) return false;
+        plot = Shipyard.allocate(sy.getServer());
+        BlockPos origin = Shipyard.origin(plot);
+        entityData.set(PLOT_ORIGIN, origin);
+        BlockPos[] b = bounds();
+        Shipyard.force(sy, origin, b[0], b[1], true);
+        int flags = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
+        for (int pass = 0; pass < 2; pass++)
+            for (ShipStructure.Entry e : structure.blocks) {
+                BlockPos t = origin.offset(e.pos());
+                boolean full = e.state().isCollisionShapeFullBlock(sy, t);
+                if ((pass == 0) != full) continue; // erst volle Blöcke, dann Anbauteile
+                sy.setBlock(t, e.state(), flags);
+                if (e.data().isPresent()) {
+                    try {
+                        BlockEntity be = BlockEntity.loadStatic(t, e.state(), e.data().get(), sy.registryAccess());
+                        if (be != null) sy.setBlockEntity(be);
+                    } catch (RuntimeException ex) {
+                        // fremder Block, der sich nicht laden lässt: bleibt ohne Daten stehen
+                    }
+                }
             }
-        });
+        structure.stripData();
+        Shipyard.register(plot, this);
+        return true;
+    }
+
+    /** Blöcke mit aktuellem Zustand und Daten aus der Werft (zum Landen). */
+    private List<ShipStructure.Entry> currentBlocks() {
+        ServerLevel sy = shipyard();
+        if (sy == null || plot < 0) return structure.blocks;
+        List<ShipStructure.Entry> out = new ArrayList<>(structure.blocks.size());
+        BlockPos origin = plotOrigin();
+        for (ShipStructure.Entry e : structure.blocks) {
+            BlockPos t = origin.offset(e.pos());
+            BlockState st = sy.getBlockState(t);
+            BlockEntity be = sy.getBlockEntity(t);
+            Optional<net.minecraft.nbt.CompoundTag> data = Optional.empty();
+            if (be != null) {
+                try { data = Optional.of(be.saveWithFullMetadata(sy.registryAccess())); } catch (RuntimeException ex) { /* ohne Daten */ }
+            }
+            out.add(new ShipStructure.Entry(e.pos(), st.isAir() ? e.state() : st, data));
+        }
         return out;
     }
 
-    /** Reaktoren laufen im Flug weiter; liefert den gespeicherten Strom aller Erzeuger an Bord. */
-    private long tickGenerators() {
-        loadLive();
-        long stored = 0;
-        for (BlockEntity be : live.values()) {
-            if (be instanceof de.simon.spacemod.block.entity.ReactorControllerBlockEntity r) r.run();
-            stored += be.getCapability(net.minecraftforge.common.capabilities.ForgeCapabilities.ENERGY, null)
-                .map(e -> e.canExtract() ? e.extractEnergy(Integer.MAX_VALUE, true) : 0).orElse(0);
-        }
-        return stored;
+    /** Bauplatz räumen (nach dem Landen): Inhalte sind schon in der Welt, also keine Drops. */
+    private void clearShipyard() {
+        ServerLevel sy = shipyard();
+        if (sy == null || plot < 0) return;
+        BlockPos origin = plotOrigin();
+        int flags = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_SUPPRESS_DROPS;
+        for (int pass = 0; pass < 2; pass++)
+            for (ShipStructure.Entry e : structure.blocks) {
+                BlockPos t = origin.offset(e.pos());
+                BlockState st = sy.getBlockState(t);
+                if (st.isAir()) continue;
+                boolean full = st.isCollisionShapeFullBlock(sy, t);
+                if ((pass == 0) == full) continue; // erst Anbauteile, dann volle Blöcke
+                if (sy.getBlockEntity(t) != null) sy.removeBlockEntity(t);
+                sy.setBlock(t, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), flags);
+            }
+        BlockPos[] b = bounds();
+        Shipyard.force(sy, origin, b[0], b[1], false);
+        Shipyard.unregister(plot, this);
     }
 
-    /** Strom aus den Speichern an Bord entnehmen (Reaktoren, Generatoren anderer Mods). */
-    private void drainGenerators(long amount) {
-        for (BlockEntity be : live.values()) {
-            if (amount <= 0) return;
-            long a = amount;
-            amount -= be.getCapability(net.minecraftforge.common.capabilities.ForgeCapabilities.ENERGY, null)
-                .map(e -> e.canExtract() ? e.extractEnergy((int) Math.min(Integer.MAX_VALUE, a), false) : 0).orElse(0);
+    /** Zustände aus der Werft übernehmen (Türen, Lampen, Öfen …) und an die Clients schicken. */
+    private void syncBlocks(ServerLevel sy) {
+        int n = structure.blocks.size();
+        if (n == 0) return;
+        int per = Math.min(n, Math.max(512, n / 8));
+        BlockPos origin = plotOrigin();
+        int[] idx = new int[per];
+        int[] ids = new int[per];
+        int c = 0;
+        for (int k = 0; k < per; k++) {
+            int i = scanCursor;
+            scanCursor = (scanCursor + 1) % n;
+            ShipStructure.Entry e = structure.blocks.get(i);
+            BlockState st = sy.getBlockState(origin.offset(e.pos()));
+            if (st != e.state() && !st.isAir()) {
+                structure.setState(i, st);
+                idx[c] = i;
+                ids[c++] = Block.getId(st);
+            }
         }
+        if (c > 0) TurboliftNetwork.CHANNEL.send(new de.simon.spacemod.flight.ShipBlocksMessage(getId(),
+            java.util.Arrays.copyOf(idx, c), java.util.Arrays.copyOf(ids, c)), PacketDistributor.TRACKING_ENTITY.with(this));
+    }
+
+    /**
+     * Einsteigen im Flug: wer (nicht schleichend) im Schiff steht – durch eine offene Tür
+     * hereingekommen oder auf dem Schiff gelandet – fliegt ab sofort mit und läuft darin herum.
+     */
+    private void boardWalkers(ServerLevel level) {
+        for (Player p : level.getEntitiesOfClass(Player.class, getBoundingBox().inflate(1),
+                pl -> !pl.isPassenger() && !pl.isSpectator() && !pl.isShiftKeyDown())) {
+            Long until = boardCooldown.get(p.getUUID());
+            if (until != null && until > tickCount) continue;
+            if (standsInShip(ShipPhysics.inverse(rotation(1F), p.position().subtract(position())))) p.startRiding(this, true, false);
+        }
+    }
+
+    /** Steht/fällt man über dem Schiff (bis 4 Blöcke darunter ein fester Schiffsblock)? */
+    public boolean overShip(Vec3 local) {
+        if (structure == null) return false;
+        var col = structure.collision();
+        BlockPos feet = BlockPos.containing(local.x + 0.5, local.y + 0.55, local.z + 0.5);
+        for (int k = 0; k <= 4; k++) if (col.containsKey(feet.below(k))) return true;
+        return false;
+    }
+
+    /** Füße und Kopf frei, darunter (bis 2 Blöcke) ein fester Schiffsblock. */
+    public boolean standsInShip(Vec3 local) {
+        if (structure == null) return false;
+        var col = structure.collision();
+        BlockPos feet = BlockPos.containing(local.x + 0.5, local.y + 0.55, local.z + 0.5);
+        if (col.containsKey(feet) || col.containsKey(feet.above())) return false;
+        if (structure.indexOf(feet) < 0 && structure.indexOf(feet.below()) < 0 && structure.indexOf(feet.below(2)) < 0) return false;
+        return col.containsKey(feet.below()) || col.containsKey(feet.below(2));
     }
 
     // ---- Flug ----
@@ -356,12 +472,26 @@ public class FlyingShipEntity extends Entity {
         // Strom: Antriebe brauchen Energie, wenn sie schieben oder drehen
         double turnDemand = pilot == null ? 0 : Math.min(1, (Math.abs(ShipPhysics.wrap(targetYaw - yaw())) + Math.abs(targetPitch - pitch())) / 30);
         double demand = structure.engines * ShipPhysics.RF_PER_ENGINE * Math.max(Math.abs(throttle), turnDemand);
-        long stored = tickGenerators();
-        double available = structure.powerPerTick + stored;
-        double power = demand <= 0 ? 1 : Math.min(1, available / demand);
-        lastPower = available > 0 ? power : 0;
-        // was die Warpkerne nicht schaffen, kommt aus Reaktoren/Speichern
-        if (demand > 0) drainGenerators((long) Math.ceil(demand * power) - structure.powerPerTick);
+        ServerLevel sy = shipyard();
+        if (plot < 0 && sy != null) moveToShipyard(); // Schiff aus einer älteren Version
+        if (plot >= 0 && sy != null) {
+            Shipyard.register(plot, this);
+            // Strom aus dem Bordnetz in der Werft: Warpkerne, Reaktoren, Generatoren anderer Mods
+            BlockPos helm = helmLocal();
+            BlockPos src = plotOrigin().offset(helm != null ? helm : structure.blocks.get(0).pos());
+            de.simon.spacemod.power.ShipPower.Grid grid = de.simon.spacemod.power.ShipPower.grid(sy, src);
+            if (demand > 0) {
+                int got = de.simon.spacemod.power.ShipPower.draw(sy, grid, (int) Math.min(Integer.MAX_VALUE, Math.ceil(demand)));
+                lastPower = Math.min(1, got / demand);
+            } else if (tickCount % 10 == 0) {
+                lastPower = grid.hasPower(sy) ? 1 : 0;
+            }
+            syncBlocks(sy);
+        } else {
+            double power = demand <= 0 ? 1 : Math.min(1, structure.powerPerTick / demand);
+            lastPower = structure.powerPerTick > 0 ? power : 0;
+        }
+        if (tickCount % 2 == 0) boardWalkers(level);
 
         // Drehung zum Fadenkreuz (mit Trägheit)
         double alpha = ShipPhysics.angularAcceleration(structure.engines, structure.inertia, lastPower);
@@ -471,6 +601,7 @@ public class FlyingShipEntity extends Entity {
                     if (be != null) level.setBlockEntity(be);
                 }
             }
+        clearShipyard();
         riders.forEach((p, w) -> p.teleportTo(w.x, w.y + 0.05, w.z));
         discard();
     }

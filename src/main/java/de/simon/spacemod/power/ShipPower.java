@@ -118,6 +118,55 @@ public final class ShipPower {
         List<BlockPos> cores = PowerData.get(level).cores(consumer);
         if (cores == null || cores.stream().noneMatch(p -> level.getBlockState(p).getBlock() instanceof WarpCoreBlock))
             cores = search(level, consumer);
+        return gridOf(level, cores);
+    }
+
+    /** Verbraucher am Netz: Position und Seite, von der aus er Strom annimmt. */
+    public record Consumer(BlockPos pos, @org.jspecify.annotations.Nullable Direction side) {}
+
+    /** Ergebnis der Suche: Erzeuger (Warpkerne und Speicher) und Verbraucher am Netz. */
+    public record Found(List<BlockPos> cores, List<Consumer> consumers) {}
+
+    private static List<BlockPos> search(ServerLevel level, BlockPos start) {
+        return explore(level, start).cores();
+    }
+
+    /** Netz ab einem Block absuchen (über leitende Blöcke der Mod). */
+    public static Found explore(ServerLevel level, BlockPos start) {
+        List<BlockPos> cores = new ArrayList<>();
+        List<Consumer> consumers = new ArrayList<>();
+        Set<Long> seen = new HashSet<>();
+        ArrayDeque<BlockPos> queue = new ArrayDeque<>();
+        queue.add(start);
+        seen.add(start.asLong());
+        classify(level, start, null, cores, consumers);
+        while (!queue.isEmpty() && seen.size() < SEARCH_LIMIT) {
+            BlockPos p = queue.poll();
+            for (Direction d : Direction.values()) {
+                BlockPos n = p.relative(d);
+                if (!seen.add(n.asLong()) || !level.isLoaded(n)) continue;
+                BlockState st = level.getBlockState(n);
+                classify(level, n, d.getOpposite(), cores, consumers);
+                if (conducts(st)) queue.add(n);
+            }
+        }
+        return new Found(cores, consumers);
+    }
+
+    private static void classify(ServerLevel level, BlockPos n, @org.jspecify.annotations.Nullable Direction side, List<BlockPos> cores, List<Consumer> consumers) {
+        BlockState st = level.getBlockState(n);
+        if (st.getBlock() instanceof WarpCoreBlock) { cores.add(n); return; }
+        if (!st.hasBlockEntity()) return;
+        if (isSource(level, n)) { cores.add(n); return; }
+        net.minecraft.world.level.block.entity.BlockEntity be = level.getBlockEntity(n);
+        if (be == null || be instanceof de.simon.spacemod.block.entity.ChargingStationBlockEntity) return;
+        boolean takes = be.getCapability(net.minecraftforge.common.capabilities.ForgeCapabilities.ENERGY, side)
+            .map(net.minecraftforge.energy.IEnergyStorage::canReceive).orElse(false);
+        if (takes) consumers.add(new Consumer(n.immutable(), side));
+    }
+
+    /** Netz mit Leistung aus einer Liste von Erzeugern. */
+    public static Grid gridOf(ServerLevel level, List<BlockPos> cores) {
         long out = 0;
         long key = Long.MAX_VALUE;
         List<BlockPos> sources = new ArrayList<>();
@@ -132,26 +181,6 @@ public final class ShipPower {
             }
         }
         return out == 0 && sources.isEmpty() ? Grid.NONE : new Grid(key, (int) Math.min(Integer.MAX_VALUE, out), sources);
-    }
-
-    /** Breitensuche über leitende Blöcke bis zu den Warpkernen. */
-    private static List<BlockPos> search(ServerLevel level, BlockPos start) {
-        List<BlockPos> cores = new ArrayList<>();
-        Set<Long> seen = new HashSet<>();
-        ArrayDeque<BlockPos> queue = new ArrayDeque<>();
-        queue.add(start);
-        seen.add(start.asLong());
-        while (!queue.isEmpty() && seen.size() < SEARCH_LIMIT) {
-            BlockPos p = queue.poll();
-            for (Direction d : Direction.values()) {
-                BlockPos n = p.relative(d);
-                if (!seen.add(n.asLong()) || !level.isLoaded(n)) continue;
-                BlockState st = level.getBlockState(n);
-                if (st.getBlock() instanceof WarpCoreBlock || isSource(level, n)) cores.add(n);
-                if (conducts(st)) queue.add(n);
-            }
-        }
-        return cores;
     }
 
     /** Leiten Strom: alle Blöcke der Mod (Hülle, Innenausbau, Warpkerne). */

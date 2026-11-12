@@ -31,6 +31,11 @@ public class ShipHelmBlock extends FacingBlock {
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        if (de.simon.spacemod.flight.Shipyard.is(level)) {
+            // Konsole im fliegenden Schiff: Steuer übernehmen/abgeben
+            if (player instanceof ServerPlayer sp && sp.getVehicle() instanceof de.simon.spacemod.entity.FlyingShipEntity ship) ship.toggleHelm(sp);
+            return InteractionResult.SUCCESS;
+        }
         if (level instanceof ServerLevel server && player instanceof ServerPlayer sp && !sp.isPassenger())
             ShipAssembler.assemble(server, pos, state.getValue(FACING).getOpposite(), sp);
         return InteractionResult.SUCCESS;

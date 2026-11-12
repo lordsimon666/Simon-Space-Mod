@@ -45,7 +45,7 @@ public class ReactorControllerBlock extends FacingBlock implements EntityBlock {
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (!level.isClientSide() && player instanceof ServerPlayer sp && level.getBlockEntity(pos) instanceof ReactorControllerBlockEntity be)
-            be.openMenu(sp, p -> p.distanceToSqr(net.minecraft.world.phys.Vec3.atCenterOf(pos)) < 64 && level.getBlockEntity(pos) == be);
+            be.openMenu(sp, p -> de.simon.spacemod.flight.Shipyard.distanceSqr(p, level, pos) < 64 && level.getBlockEntity(pos) == be);
         return InteractionResult.SUCCESS;
     }
 
