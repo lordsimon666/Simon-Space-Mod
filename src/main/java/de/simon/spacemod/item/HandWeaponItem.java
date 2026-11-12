@@ -164,6 +164,7 @@ public class HandWeaponItem extends Item {
             return InteractionResult.CONSUME;
         }
         if (!(level instanceof ServerLevel server) || !(player instanceof ServerPlayer sp)) return InteractionResult.SUCCESS;
+        de.simon.spacemod.weapons.Triggers.press(sp);
         return fire(server, sp, player.getItemInHand(hand));
     }
 
@@ -214,6 +215,7 @@ public class HandWeaponItem extends Item {
         @Override
         protected boolean tick() {
             if (age >= de.simon.spacemod.weapons.BeamShots.DURATION || !player.isAlive() || player.level() != server) return false;
+            if (!de.simon.spacemod.weapons.Triggers.held(player)) return false; // Abzug losgelassen
             if (!(player.getMainHandItem().getItem() == HandWeaponItem.this || player.getOffhandItem().getItem() == HandWeaponItem.this)) return false;
             Vec3 hit = strike(server, player, mode, age % de.simon.spacemod.weapons.BeamShots.PULSE == 0);
             Vec3 from = muzzle(player);

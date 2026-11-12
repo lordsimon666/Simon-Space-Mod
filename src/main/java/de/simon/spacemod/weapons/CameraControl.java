@@ -153,7 +153,14 @@ public final class CameraControl {
         if (s == null) return;
         player.setYRot(yRot);
         player.setXRot(xRot);
+        Triggers.press(player);
         PhaserControl.fire(player.level(), s.console, player, s.power);
+    }
+
+    /** Weiterfeuern bei gehaltenem Abzug (ohne Nachlade-Meldung). @return false bei Fehlschlag */
+    public static boolean fireHeld(ServerPlayer player) {
+        Session s = SESSIONS.get(player.getUUID());
+        return s != null && PhaserControl.fire(player.level(), s.console, player, s.power, true);
     }
 
     private static void show(ServerPlayer player, Session s) {

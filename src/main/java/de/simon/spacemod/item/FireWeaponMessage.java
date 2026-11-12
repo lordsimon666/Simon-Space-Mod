@@ -21,6 +21,7 @@ public record FireWeaponMessage(float yRot, float xRot) {
         if (!(stack.getItem() instanceof HandWeaponItem w) || !w.rifle) return;
         player.setYRot(msg.yRot());
         player.setXRot(msg.xRot());
+        de.simon.spacemod.weapons.Triggers.press(player);
         w.fire(player.level(), player, stack);
     }
 }

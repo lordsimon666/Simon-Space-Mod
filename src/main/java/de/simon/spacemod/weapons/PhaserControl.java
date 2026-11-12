@@ -48,13 +48,18 @@ public final class PhaserControl {
      * @param power Stufe 1: Schaden ohne Blockschaden, 2: mehr Schaden und Blockschaden, 3: am meisten
      *              Schaden und große Explosion. Wie stark, hängt vom Schiff ab (NX-01 schwach … Enterprise-E stark).
      */
-    public static void fire(ServerLevel level, BlockPos console, ServerPlayer player, int power) {
+    public static boolean fire(ServerLevel level, BlockPos console, ServerPlayer player, int power) {
+        return fire(level, console, player, power, false);
+    }
+
+    /** @param quiet Nachladen ohne Meldung (automatisches Weiterfeuern bei gehaltenem Abzug) */
+    public static boolean fire(ServerLevel level, BlockPos console, ServerPlayer player, int power, boolean quiet) {
         String key = level.dimension().identifier() + "@" + console.asLong();
         long now = level.getGameTime();
         Long last = LAST_SHOT.get(key);
         if (last != null && now - last < COOLDOWN_TICKS) {
-            player.sendOverlayMessage(Component.translatable("message.simonspacemod.phaser.recharging"));
-            return;
+            if (!quiet) player.sendOverlayMessage(Component.translatable("message.simonspacemod.phaser.recharging"));
+            return true;
         }
         WeaponsData data = WeaponsData.get(level);
         List<BlockPos> phasers = data.phasers(console);
@@ -65,7 +70,7 @@ public final class PhaserControl {
         phasers.removeIf(p -> !(level.getBlockState(p).getBlock() instanceof PhaserBlock));
         if (phasers.isEmpty()) {
             player.sendOverlayMessage(Component.translatable("message.simonspacemod.phaser.none"));
-            return;
+            return false;
         }
         AABB own = ownShip(data.battery(console), console, phasers);
         Aim aim = aim(level, player, own);
@@ -84,7 +89,7 @@ public final class PhaserControl {
         }
         if (chosen.isEmpty()) {
             player.sendOverlayMessage(Component.translatable("message.simonspacemod.phaser.no_arc"));
-            return;
+            return false;
         }
         WeaponsData.Battery battery = data.battery(console);
         int tier = battery != null && battery.tier() > 0 ? battery.tier() : tierOf(level, chosen.get(0));
@@ -93,7 +98,7 @@ public final class PhaserControl {
         if (!grid.hasPower(level)) {
             player.sendOverlayMessage(Component.translatable("message.simonspacemod.phaser.no_power"));
             level.playSound(null, console, SoundEvents.DISPENSER_FAIL, SoundSource.BLOCKS, 0.6F, 0.6F);
-            return;
+            return false;
         }
         // Feuert 2 Sekunden; danach (und je nach Stufe etwas länger) laden die Phaser nach
         LAST_SHOT.put(key, now + BeamShots.DURATION - COOLDOWN_TICKS + (power - 1) * 10L);
@@ -102,6 +107,7 @@ public final class PhaserControl {
         level.playSound(null, console, SoundEvents.BEACON_ACTIVATE, SoundSource.BLOCKS, 1.0F, 1.8F);
         BeamShots.start(new ShipShot(level, player, chosen, aim, own, grid, damage, radius, power));
         player.sendOverlayMessage(Component.translatable("message.simonspacemod.phaser.fire"));
+        return true;
     }
 
     /** Strom je Tick und Phaser während des Feuerns (Stufe 1-3). */
@@ -136,7 +142,7 @@ public final class PhaserControl {
 
         @Override
         protected boolean tick() {
-            if (age >= BeamShots.DURATION) return false;
+            if (age >= BeamShots.DURATION || !Triggers.held(player)) return false; // Loslassen bricht ab
             // Strom für alle feuernden Phaser
             int need = fePerTick(power) * phasers.size();
             if (ShipPower.draw(level, grid, need) < need) {

@@ -200,7 +200,8 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
   zum Ziel haben und am nächsten dran sind. Ein Schuss ist ein **Dauerstrahl von 2 Sekunden** (sieht
   aus wie ein Leuchtfeuer-Strahl in der Farbe des Phasers, keine Partikel) und folgt dabei dem
   Fadenkreuz. Er trifft alle 0,5 s (je 45 % des Schadens) und setzt in Brand; Explosionen gibt es
-  nach 1 s und am Ende.
+  nach 1 s und am Ende. Gefeuert wird nur, **solange Linksklick gehalten wird**: Loslassen bricht den
+  Strahl ab, wer weiter hält, feuert nach dem Nachladen automatisch erneut.
 
   **Strom:** Schiffsphaser brauchen Energie aus dem Bordnetz – **1000 FE pro Tick und Phaser** auf
   Stufe 1, 2000 auf Stufe 2, 3000 auf Stufe 3. Bei gespawnten Schiffen kommt sie von den Warpkernen
@@ -265,6 +266,8 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
   Jeder Schuss ist ein **Strahl von 2 Sekunden** (wie ein dünner Leuchtfeuer-Strahl, keine
   Partikel), der dem Blick folgt und alle 0,5 s wirkt – im Abbau-Modus bohrt er sich so bis zu 4
   Blöcke tief. Je Treffer 45 % des Schadens. Danach kurz nachladen (Phaser 0,1 s, Gewehre 0,3 s).
+  Der Strahl läuft nur, **solange die Feuertaste gehalten wird** (Gewehr: Linksklick, Handphaser:
+  Rechtsklick); Loslassen bricht ab, Weiterhalten feuert nach dem Nachladen erneut.
   Die Phasenpistole der NX-01 blinkt als Pulsstrahl.
   Schaden im Töten-Modus: Handphaser 6 (NX-01) bis 14 (E), Gewehre 11,6 bis 24,4; Gewehre
   reichen weiter und bauen härtere Blöcke ab. Jede Waffe hat eine Energiezelle (RF, Balken am

@@ -59,6 +59,8 @@ public final class ClientCamera {
     }
 
     /** @return true = Klick abfangen */
+    private static boolean triggerDown;
+
     private static boolean onInteract(InputEvent.InteractionKeyMappingTriggered e) {
         if (!active) return false;
         e.setSwingHand(false);
@@ -82,6 +84,18 @@ public final class ClientCamera {
                 player.swing(net.minecraft.world.InteractionHand.MAIN_HAND);
             }
         }
+        // Abzug: Zustand der Feuertaste an den Server (Strahl nur solange gehalten, danach Dauerfeuer)
+        boolean want = false;
+        if (player != null && mc.gui.screen() == null) {
+            var main = player.getMainHandItem().getItem();
+            if (active) want = mc.options.keyAttack.isDown();
+            else if (main instanceof de.simon.spacemod.item.HandWeaponItem w && w.rifle) want = mc.options.keyAttack.isDown();
+            else if (main instanceof de.simon.spacemod.item.HandWeaponItem || player.getOffhandItem().getItem() instanceof de.simon.spacemod.item.HandWeaponItem)
+                want = mc.options.keyUse.isDown();
+        }
+        if (player != null && (want != triggerDown || (want && player.tickCount % 5 == 0)))
+            TurboliftNetwork.sendToServer(new de.simon.spacemod.weapons.Triggers.Message(want, player.getYRot(), player.getXRot()));
+        triggerDown = want;
         boolean mode = false;
         while (WEAPON_MODE.consumeClick()) mode = true;
         if (mode && player != null && mc.gui.screen() == null

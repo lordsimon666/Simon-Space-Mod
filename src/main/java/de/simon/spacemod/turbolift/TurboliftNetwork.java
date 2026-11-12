@@ -58,6 +58,8 @@ public final class TurboliftNetwork {
                         de.simon.spacemod.flight.ShipSeatMessage::handleServer)
                     .addMain(de.simon.spacemod.flight.ShipUseMessage.class, de.simon.spacemod.flight.ShipUseMessage.STREAM_CODEC,
                         de.simon.spacemod.flight.ShipUseMessage::handle)
+                    .addMain(de.simon.spacemod.weapons.Triggers.Message.class, de.simon.spacemod.weapons.Triggers.Message.STREAM_CODEC,
+                        de.simon.spacemod.weapons.Triggers.Message::handle)
                 .clientbound()
                     .addMain(de.simon.spacemod.weapons.CameraState.class, de.simon.spacemod.weapons.CameraState.STREAM_CODEC,
                         de.simon.spacemod.weapons.CameraState::handle)
