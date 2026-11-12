@@ -125,6 +125,62 @@ public final class Transporters {
         TurboliftNetwork.CHANNEL.send(new TransporterMenuMessage(pad, data), PacketDistributor.PLAYER.with(player));
     }
 
+    /** Für den Kommunikator merken: feste Plattform oder Plattform auf einem fliegenden Schiff. */
+    public static void remember(ServerPlayer player, @Nullable FlyingShipEntity ship, BlockPos pos) {
+        var tag = player.getPersistentData();
+        if (ship == null) {
+            tag.putLong(TransporterPadBlock.LAST_PAD_TAG, pos.asLong());
+            tag.remove(TransporterPadBlock.LAST_SHIP_TAG);
+            tag.remove(TransporterPadBlock.LAST_SHIP_PAD_TAG);
+        } else {
+            tag.putInt(TransporterPadBlock.LAST_SHIP_TAG, ship.plot());
+            tag.putLong(TransporterPadBlock.LAST_SHIP_PAD_TAG, pos.asLong());
+            tag.remove(TransporterPadBlock.LAST_PAD_TAG);
+        }
+    }
+
+    /** Auf einem fliegenden Schiff an Bord gehen und auf der Plattform (lokal) stehen. */
+    public static void board(ServerPlayer player, FlyingShipEntity ship, BlockPos local) {
+        player.startRiding(ship, true, false);
+        ship.setSeat(player, new Vec3(local.getX(), local.getY() - 0.5 + 0.2, local.getZ()));
+    }
+
+    /**
+     * Kommunikator: zurück auf die zuletzt benutzte Plattform – auch auf ein fliegendes Schiff, wo
+     * auch immer es gerade fliegt (in derselben Welt). Aktive Schilde dazwischen verhindern es.
+     * @return Meldungsschlüssel bei Fehler oder null
+     */
+    public static @Nullable String beamBack(ServerPlayer player) {
+        if (!(player.level() instanceof ServerLevel level)) return null;
+        var tag = player.getPersistentData();
+        var plot = tag.getInt(TransporterPadBlock.LAST_SHIP_TAG);
+        var shipPad = tag.getLong(TransporterPadBlock.LAST_SHIP_PAD_TAG);
+        if (plot.isPresent() && shipPad.isPresent()) {
+            FlyingShipEntity ship = Shipyard.ships().stream().filter(s -> s.plot() == plot.get()).findFirst().orElse(null);
+            if (ship == null) return "message.simonspacemod.communicator.ship_gone";
+            if (ship.level() != level) return "message.simonspacemod.communicator.ship_far";
+            BlockPos local = BlockPos.of(shipPad.get());
+            ServerLevel sy = Shipyard.level(level.getServer());
+            if (sy == null || !(sy.getBlockState(ship.plotOrigin().offset(local)).getBlock() instanceof TransporterPadBlock))
+                return "message.simonspacemod.communicator.pad_gone";
+            Vec3 target = new Pad(ship, local).world().add(0, -0.3, 0);
+            if (player.getVehicle() == ship) return null; // schon an Bord
+            if (shielded(level, player.position(), target)) return "message.simonspacemod.transporter.shielded";
+            Beam.teleport(player, level, target.x, target.y, target.z, player.getYRot());
+            board(player, ship, local);
+            return null;
+        }
+        var stored = tag.getLong(TransporterPadBlock.LAST_PAD_TAG);
+        if (stored.isEmpty()) return "message.simonspacemod.communicator.no_pad";
+        BlockPos pad = BlockPos.of(stored.get());
+        level.getChunk(pad); // Chunk laden
+        if (!level.getBlockState(pad).is(ModBlocks.TRANSPORTER_PAD.get())) return "message.simonspacemod.communicator.pad_gone";
+        Vec3 target = new Vec3(pad.getX() + 0.5, pad.getY() + 0.2, pad.getZ() + 0.5);
+        if (shielded(level, player.position(), target)) return "message.simonspacemod.transporter.shielded";
+        Beam.teleport(player, level, target.x, target.y, target.z, player.getYRot());
+        return null;
+    }
+
     /** Liegt ein aktives Schild zwischen den beiden Punkten? */
     public static boolean shielded(ServerLevel level, Vec3 a, Vec3 b) {
         for (Shields.View v : Shields.views(level))
@@ -181,17 +237,11 @@ public final class Transporters {
                 net.minecraft.sounds.SoundSource.BLOCKS, 1F, 0.6F);
             return;
         }
-        if (src.ship() == null) player.getPersistentData().putLong(TransporterPadBlock.LAST_PAD_TAG, pad.asLong());
+        remember(player, src.ship(), src.ship() == null ? pad : src.local());
         if (choice < 0 && !player.getInventory().contains(stack -> stack.is(ModBlocks.COMMUNICATOR.get())))
             player.getInventory().add(new ItemStack(ModBlocks.COMMUNICATOR.get()));
         Beam.teleport(player, src.level(), target.x, target.y, target.z, player.getYRot());
-        if (onShip != null) {
-            // auf ein fliegendes Schiff: an Bord gehen und auf der Plattform stehen
-            FlyingShipEntity ship = onShip.ship();
-            player.startRiding(ship, true, false);
-            BlockPos l = onShip.pos();
-            ship.setSeat(player, new Vec3(l.getX(), l.getY() - 0.5 + 0.2, l.getZ()));
-        }
+        if (onShip != null) board(player, onShip.ship(), onShip.pos());
         player.sendOverlayMessage(Component.translatable("message.simonspacemod.transporter.energize"));
     }
 }

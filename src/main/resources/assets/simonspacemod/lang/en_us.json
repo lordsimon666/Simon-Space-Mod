@@ -297,6 +297,8 @@
   "gui.simonspacemod.transporter.surface": "Beam down to the surface",
   "gui.simonspacemod.transporter.target": "Transporter: %s m %s, height %s (%s pads)",
   "gui.simonspacemod.transporter.target_ship": "Flying ship: %s m %s, height %s (%s pads)",
+  "message.simonspacemod.communicator.ship_gone": "The ship is no longer flying (landed or destroyed).",
+  "message.simonspacemod.communicator.ship_far": "The ship is in another dimension – out of range.",
   "gui.simonspacemod.transporter.none": "No other transporters within 500 blocks",
   "message.simonspacemod.transporter.shielded": "Transport impossible – an active shield lies between start and target!",
   "message.simonspacemod.transporter.target_gone": "The target transporter no longer exists.",

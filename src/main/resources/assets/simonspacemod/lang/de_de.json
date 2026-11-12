@@ -297,6 +297,8 @@
   "gui.simonspacemod.transporter.surface": "Auf die Oberfläche beamen",
   "gui.simonspacemod.transporter.target": "Transporter: %s m %s, Höhe %s (%s Plattformen)",
   "gui.simonspacemod.transporter.target_ship": "Fliegendes Schiff: %s m %s, Höhe %s (%s Plattformen)",
+  "message.simonspacemod.communicator.ship_gone": "Das Schiff ist nicht mehr im Flug (gelandet oder zerstört).",
+  "message.simonspacemod.communicator.ship_far": "Das Schiff ist in einer anderen Dimension – außer Reichweite.",
   "gui.simonspacemod.transporter.none": "Keine anderen Transporter im Umkreis von 500 Blöcken",
   "message.simonspacemod.transporter.shielded": "Transport nicht möglich – ein aktives Schild liegt zwischen Start und Ziel!",
   "message.simonspacemod.transporter.target_gone": "Ziel-Transporter existiert nicht mehr.",

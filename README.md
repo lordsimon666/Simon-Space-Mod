@@ -183,7 +183,10 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
   Schiff: …“) – wer dorthin gebeamt wird, steht auf ihrer Plattform und fliegt mit. Umgekehrt kann man
   im Flug einen Transporter des eigenen Schiffs benutzen (auf die Oberfläche unter dem Schiff oder zu
   anderen Transportern).
-* **Kommunikator**: Rechtsklick beamt dich zurück auf das zuletzt benutzte Transporterfeld.
+* **Kommunikator**: Rechtsklick beamt dich zurück auf das zuletzt benutzte Transporterfeld – auch
+  auf ein **fliegendes Schiff**, wo immer es gerade fliegt (gleiche Dimension); du stehst dann an Bord
+  auf der Plattform und fliegst mit. Aktive Schilde dazwischen verhindern das Beamen. Ist das Schiff
+  inzwischen gelandet oder zerstört, kommt eine Meldung.
 * **Brückenstation / Brückenmonitor**: Rechtsklick schaltet zwischen 4 Varianten (Farbe bzw. Anzeige) um.
 * **Phaser und Waffenstation**: Jedes Schiff hat Waffen im Stil seiner Zeit an den Stellen der
   Originale und eine Waffenstation auf der Brücke:

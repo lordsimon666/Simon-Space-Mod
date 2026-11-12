@@ -30,6 +30,9 @@ import com.mojang.serialization.MapCodec;
  */
 public class TransporterPadBlock extends Block {
     public static final String LAST_PAD_TAG = SimonSpaceMod.MODID + ":last_pad";
+    /** Zuletzt benutzte Plattform auf einem fliegenden Schiff: Bauplatz des Schiffs und Lage im Schiff. */
+    public static final String LAST_SHIP_TAG = SimonSpaceMod.MODID + ":last_ship";
+    public static final String LAST_SHIP_PAD_TAG = SimonSpaceMod.MODID + ":last_ship_pad";
     private static final VoxelShape SHAPE = box(0, 0, 0, 16, 3, 16);
 
     public TransporterPadBlock(BlockBehaviour.Properties properties) {
