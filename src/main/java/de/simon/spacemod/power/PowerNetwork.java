@@ -73,7 +73,7 @@ public final class PowerNetwork {
             if (!e.canReceive()) return;
             int want = e.receiveEnergy(MAX_PUSH, true);
             if (want <= 0) return;
-            int got = ShipPower.draw(level, grid, want);
+            int got = be instanceof BatteryBlockEntity ? ShipPower.drawWarp(level, grid, want) : ShipPower.draw(level, grid, want);
             if (got > 0) e.receiveEnergy(got, false);
         });
     }

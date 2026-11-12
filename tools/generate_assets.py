@@ -2972,6 +2972,98 @@ def defense_assets(de, en):
     })
 
 
+# ---------------------------------------------------------------------------------------------
+#  Batterie, Shuttle-Wrack, Transporter-Menü
+# ---------------------------------------------------------------------------------------------
+
+def tex_battery_side(level):
+    img = noise(new((70, 74, 82)), 5, 951)
+    px = img.load()
+    for i in range(16):
+        px[i, 0] = px[i, 15] = px[0, i] = px[15, i] = (40, 42, 48, 255)
+    for x in range(4, 12):  # Anzeige mit 4 Segmenten
+        for y in range(2, 14):
+            px[x, y] = (20, 22, 26, 255)
+    for seg in range(4):
+        y0 = 11 - seg * 3
+        col = (90, 220, 255) if seg < level else (35, 50, 60)
+        for x in range(5, 11):
+            for y in range(y0, y0 + 2):
+                px[x, y] = col + (255,)
+    return img
+
+
+def tex_battery_top():
+    img = noise(new((90, 94, 102)), 5, 952)
+    px = img.load()
+    for i in range(16):
+        px[i, 0] = px[i, 15] = px[0, i] = px[15, i] = (40, 42, 48, 255)
+    for x, y in ((4, 4), (5, 4), (4, 5), (5, 5)):
+        px[x, y] = (200, 50, 50, 255)        # Pluspol
+    for x, y in ((10, 10), (11, 10), (10, 11), (11, 11)):
+        px[x, y] = (40, 40, 40, 255)         # Minuspol
+    return img
+
+
+def misc_assets(de, en):
+    M = MODID
+    save(tex_battery_top(), "battery_top")
+    for lvl in range(5):
+        save(tex_battery_side(lvl), f"battery_side_{lvl}")
+        write_json(os.path.join(ASSETS, "models", "block", f"battery_{lvl}.json"), {"parent": "minecraft:block/cube_column",
+            "textures": {"side": b(f"battery_side_{lvl}"), "end": b("battery_top")}})
+    write_json(os.path.join(ASSETS, "blockstates", "battery.json"), {"variants": {f"charge={c}": {"model": b(f"battery_{c}")} for c in range(5)}})
+    write_json(os.path.join(ASSETS, "items", "battery.json"), item_def(b("battery_4")))
+    write_json(os.path.join(DATA, "loot_table", "blocks", "battery.json"), {
+        "type": "minecraft:block", "random_sequence": f"{M}:blocks/battery",
+        "pools": [{"rolls": 1.0, "entries": [{"type": "minecraft:item", "name": f"{M}:battery", "functions": [
+            {"function": "minecraft:copy_components", "source": "block_entity", "include": [f"{M}:weapon_energy"]}]}],
+            "conditions": [{"condition": "minecraft:survives_explosion"}]}]})
+    write_json(os.path.join(DATA, "recipe", "battery.json"), {"type": "minecraft:crafting_shaped", "category": "redstone",
+        "key": {"I": "minecraft:iron_ingot", "C": "minecraft:copper_block", "R": "minecraft:redstone_block", "G": "minecraft:gold_ingot"},
+        "pattern": ["IGI", "CRC", "ICI"], "result": {"id": f"{M}:battery"}})
+    # Shuttle-Wrack: selten, an der Oberfläche der Oberwelt
+    write_json(os.path.join(DATA, "worldgen", "configured_feature", "shuttle_wreck.json"), {"type": f"{M}:shuttle_wreck", "config": {}})
+    write_json(os.path.join(DATA, "worldgen", "placed_feature", "shuttle_wreck.json"), {"feature": f"{M}:shuttle_wreck", "placement": [
+        {"type": "minecraft:rarity_filter", "chance": 450}, {"type": "minecraft:in_square"},
+        {"type": "minecraft:heightmap", "heightmap": "WORLD_SURFACE_WG"}, {"type": "minecraft:biome"}]})
+    write_json(os.path.join(DATA, "forge", "biome_modifier", "add_shuttle_wreck.json"), {"type": "forge:add_features",
+        "biomes": "#minecraft:is_overworld", "features": f"{M}:shuttle_wreck", "step": "surface_structures"})
+
+    def item(name, lo, hi, w):
+        e = {"type": "minecraft:item", "name": name, "weight": w}
+        if hi > 1:
+            e["functions"] = [{"function": "minecraft:set_count", "count": {"type": "minecraft:uniform", "min": lo, "max": hi}}]
+        return e
+    write_json(os.path.join(DATA, "loot_table", "chests", "shuttle_wreck.json"), {"type": "minecraft:chest",
+        "random_sequence": f"{M}:chests/shuttle_wreck", "pools": [
+            # immer: Uran für einen ersten Reaktor, Eisen und Kupfer für die Fertigung
+            {"rolls": 1, "entries": [item(f"{M}:uranium_ingot", 6, 9, 1)]},
+            {"rolls": 1, "entries": [item("minecraft:iron_ingot", 8, 16, 1)]},
+            {"rolls": 1, "entries": [item("minecraft:copper_ingot", 8, 16, 1)]},
+            {"rolls": {"type": "minecraft:uniform", "min": 3, "max": 6}, "entries": [
+                item("minecraft:redstone", 3, 9, 15), item("minecraft:glass_pane", 2, 6, 10), item("minecraft:diamond", 1, 2, 5),
+                item(f"{M}:raw_uranium", 1, 4, 8), item(f"{M}:hull_plating", 4, 12, 12), item(f"{M}:ceiling_light", 1, 4, 6),
+                item("minecraft:gold_ingot", 1, 4, 6), item(f"{M}:dilithium_crystal", 1, 1, 2), item(f"{M}:keycard_security", 1, 1, 2),
+                item(f"{M}:phaser_tos", 1, 1, 2), item(f"{M}:communicator", 1, 1, 3), item("minecraft:bread", 2, 5, 6)]}]})
+    de.update({
+        f"block.{M}.battery": "Batterie",
+        f"gui.{M}.transporter.title": "Transporter", f"gui.{M}.transporter.surface": "Auf die Oberfläche beamen",
+        f"gui.{M}.transporter.target": "Transporter: %s m %s, Höhe %s (%s Plattformen)",
+        f"gui.{M}.transporter.none": "Keine anderen Transporter im Umkreis von 500 Blöcken",
+        f"message.{M}.transporter.shielded": "Transport nicht möglich – ein aktives Schild liegt zwischen Start und Ziel!",
+        f"message.{M}.transporter.target_gone": "Ziel-Transporter existiert nicht mehr.",
+    })
+    en.update({
+        f"block.{M}.battery": "Battery",
+        f"gui.{M}.transporter.title": "Transporter", f"gui.{M}.transporter.surface": "Beam down to the surface",
+        f"gui.{M}.transporter.target": "Transporter: %s m %s, height %s (%s pads)",
+        f"gui.{M}.transporter.none": "No other transporters within 500 blocks",
+        f"message.{M}.transporter.shielded": "Transport impossible – an active shield lies between start and target!",
+        f"message.{M}.transporter.target_gone": "The target transporter no longer exists.",
+    })
+
+
 def armory_assets(de, en):
     tex = f"{MODID}:item/weapon_palette"
     for name, boxes in WEAPON_MODELS.items():
@@ -3768,7 +3860,7 @@ def main():
     models_extra += ["ceiling_light", "dual_wall", "dual_floor", "uranium_ore", "deepslate_uranium_ore", "reactor_casing",
                      "reactor_glass", "reactor_controller", "ship_helm", "airlock", "airlock_small", "dilithium_ore",
                      "antimatter_cluster", "deuterium_ice", "ship_part_assembly",
-                     "power_console", "shield_console", "alarm_light"] + [f"shield_emitter_{k}" for k in ("tos", "refit", "excelsior", "c", "d", "e")]
+                     "power_console", "shield_console", "alarm_light", "battery"] + [f"shield_emitter_{k}" for k in ("tos", "refit", "excelsior", "c", "d", "e")]
     models_extra += [f"door_{e}_{k}" for e in DOOR_ERAS for k in DOOR_KINDS]
     # Mit der Spitzhacke abbaubar
     write_json(os.path.join(ROOT, "data", "minecraft", "tags", "block", "mineable", "pickaxe.json"),
@@ -3925,6 +4017,7 @@ def main():
     suit_assembly_assets(de, en)
     sound_assets(de, en)
     defense_assets(de, en)
+    misc_assets(de, en)
     de.update(armory_de)
     en.update(armory_en)
     de.update({

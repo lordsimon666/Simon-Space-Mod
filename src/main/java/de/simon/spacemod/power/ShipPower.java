@@ -148,6 +148,20 @@ public final class ShipPower {
         return a != null && a.overdrive() ? grid.output() * 3L / 2 : grid.output();
     }
 
+    /** Nur aus der Warpkernleistung (für Batterien, damit sich Speicher nicht gegenseitig leeren). */
+    public static int drawWarp(ServerLevel level, Grid grid, int want) {
+        String key = level.dimension().identifier() + "#" + grid.key();
+        long now = level.getGameTime();
+        long[] b = BUDGET.computeIfAbsent(key, k -> new long[] {-1, 0});
+        if (b[0] != now) {
+            b[0] = now;
+            b[1] = effectiveOutput(level, grid);
+        }
+        int got = (int) Math.max(0, Math.min(want, b[1]));
+        b[1] -= got;
+        return got;
+    }
+
     /** Holt bis zu {@code want} RF aus dem Netz (in diesem Tick) für allgemeine Maschinen. */
     public static int draw(ServerLevel level, Grid grid, int want) {
         return draw(level, grid, want, Category.MACHINES);
@@ -231,7 +245,12 @@ public final class ShipPower {
         BlockState st = level.getBlockState(n);
         if (st.getBlock() instanceof WarpCoreBlock) { cores.add(n); return; }
         if (!st.hasBlockEntity()) return;
-        if (isSource(level, n)) { cores.add(n); return; }
+        if (isSource(level, n)) {
+            cores.add(n);
+            // Batterien werden zusätzlich aus überschüssiger Warpkernleistung geladen
+            if (level.getBlockEntity(n) instanceof BatteryBlockEntity) consumers.add(new Consumer(n.immutable(), side));
+            return;
+        }
         net.minecraft.world.level.block.entity.BlockEntity be = level.getBlockEntity(n);
         if (be == null || be instanceof de.simon.spacemod.block.entity.ChargingStationBlockEntity) return;
         boolean takes = be.getCapability(net.minecraftforge.common.capabilities.ForgeCapabilities.ENERGY, side)

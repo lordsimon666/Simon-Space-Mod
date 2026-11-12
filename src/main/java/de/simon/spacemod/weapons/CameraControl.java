@@ -31,7 +31,7 @@ public final class CameraControl {
     private CameraControl() {}
 
     private static final class Session {
-        final ResourceKey<Level> dim;
+        ResourceKey<Level> dim;
         final BlockPos console;
         final Vec3 back;
         final float yRot, xRot;
@@ -47,6 +47,8 @@ public final class CameraControl {
         final List<Vec3> localCams = new ArrayList<>();
         final List<Vec3> localFocus = new ArrayList<>();
         Vec3 seat;
+        /** Ticks ohne auffindbares Schiff (nach einem Dimensionswechsel meldet es sich kurz danach). */
+        int lost;
 
         Session(ServerPlayer p, BlockPos console) {
             dim = p.level().dimension();
@@ -253,8 +255,8 @@ public final class CameraControl {
         player.setInvisible(s.invisible);
         MinecraftServer server = player.level().getServer();
         ServerLevel level = server.getLevel(s.dim);
-        if (s.ship != null && s.ship.isAlive() && s.ship.level() == player.level()) {
-            // zurück auf den Platz im fliegenden Schiff
+        if (s.ship != null && s.ship.isAlive()) {
+            // zurück auf den Platz im fliegenden Schiff (auch nach einem Dimensionswechsel)
             Vec3 w = world(s.ship, s.seat);
             player.teleportTo((ServerLevel) s.ship.level(), w.x, w.y, w.z, Set.of(), s.yRot, s.xRot, false);
             player.startRiding(s.ship, true, false);
@@ -274,6 +276,21 @@ public final class CameraControl {
             if (p == null) {
                 SESSIONS.remove(e.getKey());
                 continue;
+            }
+            // fliegendes Schiff hat die Dimension gewechselt (Weltraum/Oberwelt): neues Schiffsobjekt über den Bauplatz finden
+            if (s.ship != null && !s.ship.isAlive() && p.isAlive() && !p.isShiftKeyDown()) {
+                int plot = s.ship.plot();
+                var next = de.simon.spacemod.flight.Shipyard.ships().stream().filter(sh -> sh.plot() == plot).findFirst().orElse(null);
+                if (next != null && next.level() instanceof ServerLevel nl) {
+                    s.ship = next;
+                    s.dim = nl.dimension();
+                    Vec3 cam = world(next, s.localCams.get(s.index));
+                    p.teleportTo(nl, cam.x, cam.y, cam.z, Set.of(), p.getYRot(), p.getXRot(), false);
+                    s.lost = 0;
+                    show(p, s);
+                    continue;
+                }
+                if (s.lost++ < 40) continue; // noch nicht wieder angemeldet
             }
             if (p.isShiftKeyDown() || !p.isAlive() || p.level().dimension() != s.dim) {
                 exit(p, true);

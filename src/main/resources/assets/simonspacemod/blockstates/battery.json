@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "charge=0": {
+      "model": "simonspacemod:block/battery_0"
+    },
+    "charge=1": {
+      "model": "simonspacemod:block/battery_1"
+    },
+    "charge=2": {
+      "model": "simonspacemod:block/battery_2"
+    },
+    "charge=3": {
+      "model": "simonspacemod:block/battery_3"
+    },
+    "charge=4": {
+      "model": "simonspacemod:block/battery_4"
+    }
+  }
+}

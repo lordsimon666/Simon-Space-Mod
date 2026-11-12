@@ -334,6 +334,8 @@ public final class ModBlocks {
 
     public static final DeferredRegister<net.minecraft.world.level.levelgen.feature.Feature<?>> FEATURES =
         DeferredRegister.create(Registries.FEATURE, SimonSpaceMod.MODID);
+    public static final RegistryObject<net.minecraft.world.level.levelgen.feature.Feature<?>> SHUTTLE_WRECK = FEATURES.register("shuttle_wreck",
+        () -> new de.simon.spacemod.world.ShuttleWreckFeature(net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration.CODEC));
     public static final RegistryObject<net.minecraft.world.level.levelgen.feature.Feature<?>> ASTEROID = FEATURES.register("asteroid",
         () -> new de.simon.spacemod.space.AsteroidFeature(net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration.CODEC));
 
@@ -511,6 +513,43 @@ public final class ModBlocks {
     public static final RegistryObject<EntityType<de.simon.spacemod.defense.ShieldFlashEntity>> SHIELD_FLASH = ENTITIES.register("shield_flash",
         () -> EntityType.Builder.<de.simon.spacemod.defense.ShieldFlashEntity>of(de.simon.spacemod.defense.ShieldFlashEntity::new, MobCategory.MISC)
             .sized(0.2F, 0.2F).noSummon().noSave().clientTrackingRange(12).updateInterval(20).build(ENTITIES.key("shield_flash")));
+
+    // --- Batterie (behält ihre Ladung als Item) ---
+    public static final RegistryObject<Block> BATTERY = BLOCKS.register("battery", () -> new de.simon.spacemod.power.BatteryBlock(
+        metal(MapColor.COLOR_YELLOW).setId(BLOCKS.key("battery"))));
+    public static final RegistryObject<Item> BATTERY_ITEM = batteryItem();
+    public static final RegistryObject<BlockEntityType<de.simon.spacemod.power.BatteryBlockEntity>> BATTERY_BE =
+        BLOCK_ENTITIES.register("battery", () -> new BlockEntityType<>(de.simon.spacemod.power.BatteryBlockEntity::new, java.util.Set.of(BATTERY.get())));
+
+    private static RegistryObject<Item> batteryItem() {
+        RegistryObject<Item> item = ITEMS.register("battery", () -> new BlockItem(BATTERY.get(),
+                new Item.Properties().setId(ITEMS.key("battery")).useBlockDescriptionPrefix().stacksTo(1)) {
+            @Override
+            public void appendHoverText(net.minecraft.world.item.ItemStack stack, Item.TooltipContext ctx,
+                                        net.minecraft.world.item.component.TooltipDisplay display,
+                                        java.util.function.Consumer<net.minecraft.network.chat.Component> out,
+                                        net.minecraft.world.item.TooltipFlag flag) {
+                de.simon.spacemod.power.BatteryBlock.tooltip(stack, out);
+            }
+
+            @Override
+            public boolean isBarVisible(net.minecraft.world.item.ItemStack stack) {
+                return true;
+            }
+
+            @Override
+            public int getBarWidth(net.minecraft.world.item.ItemStack stack) {
+                return Math.round(13F * stack.getOrDefault(WEAPON_ENERGY.get(), 0) / de.simon.spacemod.power.BatteryBlockEntity.CAPACITY);
+            }
+
+            @Override
+            public int getBarColor(net.minecraft.world.item.ItemStack stack) {
+                return 0x40C0FF;
+            }
+        });
+        TAB_ITEMS.add(item);
+        return item;
+    }
 
     // --- Schiffsteil-Fertigung: baut alle Blöcke der Mod ---
     public static final RegistryObject<Block> SHIP_PART_ASSEMBLY = block("ship_part_assembly", de.simon.spacemod.assembly.AssemblyBlock::new,

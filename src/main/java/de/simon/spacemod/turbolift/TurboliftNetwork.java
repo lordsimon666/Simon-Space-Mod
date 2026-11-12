@@ -58,6 +58,8 @@ public final class TurboliftNetwork {
                         de.simon.spacemod.flight.ShipSeatMessage::handleServer)
                     .addMain(de.simon.spacemod.flight.ShipUseMessage.class, de.simon.spacemod.flight.ShipUseMessage.STREAM_CODEC,
                         de.simon.spacemod.flight.ShipUseMessage::handle)
+                    .addMain(de.simon.spacemod.transporter.TransporterChoiceMessage.class, de.simon.spacemod.transporter.TransporterChoiceMessage.STREAM_CODEC,
+                        de.simon.spacemod.transporter.TransporterChoiceMessage::handle)
                     .addMain(de.simon.spacemod.weapons.Triggers.Message.class, de.simon.spacemod.weapons.Triggers.Message.STREAM_CODEC,
                         de.simon.spacemod.weapons.Triggers.Message::handle)
                 .clientbound()
@@ -69,6 +71,8 @@ public final class TurboliftNetwork {
                         de.simon.spacemod.flight.ShipSeatSync::handle)
                     .addMain(de.simon.spacemod.flight.ShipBlocksMessage.class, de.simon.spacemod.flight.ShipBlocksMessage.STREAM_CODEC,
                         de.simon.spacemod.flight.ShipBlocksMessage::handle)
+                    .addMain(de.simon.spacemod.transporter.TransporterMenuMessage.class, de.simon.spacemod.transporter.TransporterMenuMessage.STREAM_CODEC,
+                        de.simon.spacemod.transporter.TransporterMenuMessage::handle)
                     .addMain(de.simon.spacemod.defense.ShieldFlashMessage.class, de.simon.spacemod.defense.ShieldFlashMessage.STREAM_CODEC,
                         de.simon.spacemod.defense.ShieldFlashMessage::handle)
         .build();

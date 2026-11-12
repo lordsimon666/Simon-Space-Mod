@@ -173,8 +173,13 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
   Originalserie rot, Refit hellgrau mit blauen Lichtleisten, Excelsior petrolfarben mit Lichtsäulen,
   C/D/E beige Schiebetüren. Alle Stile funktionieren gleich und lassen sich gemeinsam in einem Netz
   verwenden. Umfärben: Turbolift + grauer / hellblauer / türkiser / oranger Farbstoff.
-* **Transporterfeld**: Rechtsklick beamt dich auf den Boden unter dem Schiff.
-  Hast du keinen Kommunikator dabei, bekommst du einen.
+* **Transporterfeld**: Rechtsklick öffnet das **Transporter-Menü**. Ganz oben „Auf die Oberfläche
+  beamen“ (auf den Boden unter dem Schiff; ohne Kommunikator bekommst du einen). Darunter alle
+  anderen Transporter im Umkreis von **500 Blöcken**, nach Entfernung sortiert mit Richtung und Höhe:
+  Felder, die höchstens 10 Blöcke auseinanderliegen, zählen als ein Transporterraum, Ziel ist ein
+  zufälliges Feld davon. Felder in 10 Blöcken um das eigene werden nicht angezeigt. Liegt ein
+  **aktives Schild** zwischen Start und Ziel (auch das eigene), ist kein Transport möglich –
+  Fehlermeldung.
 * **Kommunikator**: Rechtsklick beamt dich zurück auf das zuletzt benutzte Transporterfeld.
 * **Brückenstation / Brückenmonitor**: Rechtsklick schaltet zwischen 4 Varianten (Farbe bzw. Anzeige) um.
 * **Phaser und Waffenstation**: Jedes Schiff hat Waffen im Stil seiner Zeit an den Stellen der
@@ -401,7 +406,8 @@ klicke sie mit der rechten Maustaste an:
   mitfliegen: Rechtsklick wechselt die Kamera, **Linksklick halten** feuert die Schiffsphaser auf das
   Fadenkreuz, Mausrad = Stärke, **P/O** = Torpedos, **Shift** = zurück auf den Platz im Schiff. Pilot
   und Waffenoffizier teilen sich die Phaser (gemeinsames Nachladen). Das eigene Schiff und die eigene
-  Besatzung werden nicht anvisiert.
+  Besatzung werden nicht anvisiert. Fliegt das Schiff dabei in den Weltraum oder zurück, bleibt
+  die Kamerasicht erhalten; Shift bringt den Waffenoffizier zurück auf seinen Platz im Schiff.
 * **Kollision**: stößt das Schiff an Blöcke der Welt, bleibt es stehen.
 * **Landen** (L, am Steuer): nur langsam und annähernd waagerecht; das Schiff wird wieder zu Blöcken,
   die Drehung rastet auf 90° ein, Truhen & Co. behalten ihren Inhalt. Am Zielort muss Platz sein.
@@ -453,6 +459,21 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
   werden – Phaser zielen auf ihre Hülle, Torpedos schlagen dort ein, Explosionen in ihrer Nähe
   wirken auf sie. Ohne Schild (oder wo es durchbrochen ist) gehen dabei echte Blöcke des Schiffs
   kaputt; beim Landen fehlen sie dann auch.
+
+### Batterie und Shuttle-Wracks (Start ohne andere Mods)
+
+* **Batterie**: speichert **400 000 FE** (bis 4 000 FE/t rein und raus). Gibt Strom ans Bordnetz und
+  an angrenzende Maschinen (z. B. die Schiffsteil-Fertigung) ab und wird von angrenzenden Erzeugern
+  (Reaktor) sowie aus überschüssiger Warpkernleistung geladen. Die Seiten zeigen den Ladestand;
+  **abgebaut behält sie ihre Ladung**. Rezept: Eisen – Gold – Eisen / Kupferblock – Redstoneblock –
+  Kupferblock / Eisen – Kupferblock – Eisen.
+* **Shuttle-Wracks** liegen selten an der Oberfläche (etwa jeder 450. Chunk): ein zerbeultes Shuttle
+  mit Löchern im Rumpf, **1-4 Impulsantrieben**, einer **Batterie mit 75-100 % Ladung**, einer Kiste
+  (immer 6-9 Uranbarren, Eisen und Kupfer, dazu Redstone, Glas, Hüllenplatten, Lichter, manchmal
+  Diamanten, Dilithium, ein Phaser oder eine Schlüsselkarte), einem Sitz und einer **Steuerkonsole**.
+* Die Ladung reicht, um mit der **Schiffsteil-Fertigung** (Batterie daneben setzen) die Teile für
+  einen ersten **3×3×3-Kernreaktor** zu bauen – etwa 62 000 FE – mit reichlich Reserve. Wer die Löcher
+  flickt (Hüllenblöcke), kann das Shuttle mit der Steuerkonsole sogar wieder fliegen lassen.
 
 ### Raumanzug
 
@@ -568,7 +589,7 @@ E = Eisenbarren        G = Goldbarren
 F = roter Farbstoff, P = Enderperle, R = Redstone
 ```
 
-## Neue Blöcke (147)
+## Neue Blöcke (148)
 
 * **Hülle**: Hüllenpanzerung (+ Stufe), Hüllenplatte, dunkle Hüllenplatte, Hüllenfenster,
   Kennungsmarkierung (+ Stufe), roter Zierstreifen, Positionslicht rot/grün, Deflektorschüssel,
@@ -603,7 +624,7 @@ F = roter Farbstoff, P = Enderperle, R = Redstone
   Kinofilmen und Next Generation (12 Stück)
 * **Kernreaktor**: Uranerz, Tiefenschiefer-Uranerz, Reaktorhülle, Reaktorglas, Reaktor-Steuerblock
 * **Weltraum**: Luftschleuse (2 x 2 x 2 und 1 x 2 x 2), Dilithium-Erz, Antimaterie-Einschluss, Deuterium-Eis
-* **Werkstatt**: Schiffsteil-Fertigung
+* **Werkstatt**: Schiffsteil-Fertigung, Batterie
 * **Verteidigung**: Energieverteilung, Schildsteuerung, Alarmleuchte, 6 Schildemitter (NCC-1701 bis -E)
 * **Allgemein**: Deckboden, Korridorwand, Deckenverkleidung, Deckenleuchte, Maschinenraum-Konsole,
   Warpkern, Plasmaleitung
