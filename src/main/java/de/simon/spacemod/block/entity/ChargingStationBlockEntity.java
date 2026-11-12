@@ -61,7 +61,7 @@ public class ChargingStationBlockEntity extends WeaponHolderBlockEntity {
         ShipPower.Grid grid = ShipPower.grid(server, pos);
         be.gridOutput = grid.output();
         int need = CAPACITY - be.energy.getEnergyStored();
-        if (need > 0 && grid.output() > 0) {
+        if (need > 0 && (grid.output() > 0 || !grid.sources().isEmpty())) {
             int got = ShipPower.draw(server, grid, need);
             if (got > 0) {
                 be.energy.receiveEnergy(got, false);

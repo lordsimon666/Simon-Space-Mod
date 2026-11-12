@@ -21,6 +21,9 @@ public final class ClientSetup {
     }
 
     public static void onClientSetup(FMLClientSetupEvent event) {
-        event.enqueueWork(() -> MenuScreens.register(ModBlocks.TURBOLIFT_MENU.get(), TurboliftScreen::new));
+        event.enqueueWork(() -> {
+            MenuScreens.register(ModBlocks.TURBOLIFT_MENU.get(), TurboliftScreen::new);
+            MenuScreens.register(ModBlocks.REACTOR_MENU.get(), ReactorScreen::new);
+        });
     }
 }

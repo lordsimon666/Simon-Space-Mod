@@ -294,6 +294,29 @@ public final class ModBlocks {
     public static final RegistryObject<Block> SHIP_HELM = block("ship_helm", de.simon.spacemod.block.ShipHelmBlock::new,
         glowing(metal(MapColor.COLOR_GRAY), 5).noOcclusion());
 
+    // --- Uran und Reaktor ---
+    public static final RegistryObject<Block> URANIUM_ORE = block("uranium_ore", Block::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(3F, 3F).sound(SoundType.STONE).requiresCorrectToolForDrops().lightLevel(_ -> 3));
+    public static final RegistryObject<Block> DEEPSLATE_URANIUM_ORE = block("deepslate_uranium_ore", Block::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.DEEPSLATE).strength(4.5F, 3F).sound(SoundType.DEEPSLATE).requiresCorrectToolForDrops().lightLevel(_ -> 3));
+    public static final RegistryObject<Item> RAW_URANIUM = simpleItem("raw_uranium");
+    public static final RegistryObject<Item> URANIUM_INGOT = simpleItem("uranium_ingot");
+
+    public static final RegistryObject<Block> REACTOR_CASING = block("reactor_casing", Block::new, metal(MapColor.COLOR_GRAY));
+    public static final RegistryObject<Block> REACTOR_GLASS = block("reactor_glass", net.minecraft.world.level.block.TransparentBlock::new,
+        glass(MapColor.COLOR_LIGHT_GREEN).strength(3F, 9F).noOcclusion());
+    public static final RegistryObject<Block> REACTOR_CONTROLLER = block("reactor_controller", de.simon.spacemod.block.ReactorControllerBlock::new,
+        metal(MapColor.COLOR_GREEN).lightLevel(s -> s.getValue(de.simon.spacemod.block.ReactorControllerBlock.LIT) ? 12 : 2));
+    public static final RegistryObject<BlockEntityType<de.simon.spacemod.block.entity.ReactorControllerBlockEntity>> REACTOR_BE =
+        BLOCK_ENTITIES.register("reactor_controller", () -> new BlockEntityType<>(de.simon.spacemod.block.entity.ReactorControllerBlockEntity::new,
+            java.util.Set.of(REACTOR_CONTROLLER.get())));
+
+    private static RegistryObject<Item> simpleItem(String name) {
+        RegistryObject<Item> item = ITEMS.register(name, () -> new Item(new Item.Properties().setId(ITEMS.key(name))));
+        TAB_ITEMS.add(item);
+        return item;
+    }
+
     // --- Zweiseitige Wand / Decke zwischen verschiedenen Räumen ---
     public static final RegistryObject<Block> DUAL_WALL = block("dual_wall", de.simon.spacemod.block.DualWallBlock::new, metal(MapColor.COLOR_LIGHT_GRAY));
     public static final RegistryObject<Block> DUAL_FLOOR = block("dual_floor", de.simon.spacemod.block.DualFloorBlock::new, metal(MapColor.COLOR_LIGHT_GRAY));
@@ -404,6 +427,8 @@ public final class ModBlocks {
     // --- Menüs ---
     public static final RegistryObject<MenuType<TurboliftMenu>> TURBOLIFT_MENU = MENUS.register("turbolift",
         () -> IForgeMenuType.create(TurboliftMenu::new));
+    public static final RegistryObject<MenuType<de.simon.spacemod.reactor.ReactorMenu>> REACTOR_MENU = MENUS.register("reactor",
+        () -> IForgeMenuType.create(de.simon.spacemod.reactor.ReactorMenu::new));
 
     public static final RegistryObject<CreativeModeTab> TAB = TABS.register("space", () -> CreativeModeTab.builder()
         .withTabsBefore(CreativeModeTabs.SPAWN_EGGS)

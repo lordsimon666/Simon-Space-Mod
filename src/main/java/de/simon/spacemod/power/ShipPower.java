@@ -24,9 +24,34 @@ import net.minecraftforge.registries.ForgeRegistries;
 public final class ShipPower {
     private ShipPower() {}
 
-    /** Netz: Schlüssel (für die gemeinsame Leistung) und Leistung in RF/t. */
-    public record Grid(long key, int output) {
-        static final Grid NONE = new Grid(Long.MIN_VALUE, 0);
+    /**
+     * Netz: Schlüssel (für die gemeinsame Leistung), feste Leistung der Warpkerne in RF/t und alle
+     * weiteren Stromerzeuger mit Speicher, aus denen entnommen wird (Reaktoren, Generatoren anderer Mods).
+     */
+    public record Grid(long key, int output, List<BlockPos> sources) {
+        static final Grid NONE = new Grid(Long.MIN_VALUE, 0, List.of());
+
+        public boolean hasPower(ServerLevel level) {
+            if (output > 0) return true;
+            for (BlockPos p : sources) if (extractFrom(level, p, 1, true) > 0) return true;
+            return false;
+        }
+    }
+
+    /** Liefert dieser Block Strom (Speicher mit Entnahme, kein Warpkern, keine Ladestation)? */
+    public static boolean isSource(ServerLevel level, BlockPos p) {
+        net.minecraft.world.level.block.entity.BlockEntity be = level.getBlockEntity(p);
+        if (be == null || be instanceof de.simon.spacemod.block.entity.ChargingStationBlockEntity) return false;
+        return be.getCapability(net.minecraftforge.common.capabilities.ForgeCapabilities.ENERGY, null)
+            .map(net.minecraftforge.energy.IEnergyStorage::canExtract).orElse(false);
+    }
+
+    static int extractFrom(ServerLevel level, BlockPos p, int max, boolean simulate) {
+        if (!level.isLoaded(p)) return 0;
+        net.minecraft.world.level.block.entity.BlockEntity be = level.getBlockEntity(p);
+        if (be == null) return 0;
+        return be.getCapability(net.minecraftforge.common.capabilities.ForgeCapabilities.ENERGY, null)
+            .map(e -> e.canExtract() ? e.extractEnergy(max, simulate) : 0).orElse(0);
     }
 
     private static final int SEARCH_LIMIT = 60_000;
@@ -56,7 +81,7 @@ public final class ShipPower {
      */
     public static boolean powered(ServerLevel level, BlockPos pos) {
         PowerData.Ship ship = PowerData.get(level).shipAt(pos);
-        if (ship == null) return grid(level, pos).output() > 0;
+        if (ship == null) return grid(level, pos).hasPower(level);
         String key = level.dimension().identifier() + "!" + ship.min().asLong() + "/" + ship.max().asLong();
         long now = level.getGameTime();
         long[] c = SHIP_POWER.get(key);
@@ -66,7 +91,8 @@ public final class ShipPower {
             if (!level.isLoaded(core) || level.getBlockState(core).getBlock() instanceof WarpCoreBlock) { on = true; break; }
         }
         SHIP_POWER.put(key, new long[] {now, on ? 1 : 0});
-        return on;
+        // Ohne Warpkern: vielleicht versorgt ein Reaktor oder ein anderer Generator das Netz
+        return on || grid(level, pos).hasPower(level);
     }
 
     /** Holt bis zu {@code want} RF aus dem Netz (in diesem Tick). */
@@ -80,22 +106,32 @@ public final class ShipPower {
         }
         int got = (int) Math.min(want, b[1]);
         b[1] -= got;
+        // Rest aus Reaktoren und anderen Stromerzeugern
+        for (BlockPos p : grid.sources()) {
+            if (got >= want) break;
+            got += extractFrom(level, p, want - got, false);
+        }
         return got;
     }
 
     private static Grid compute(ServerLevel level, BlockPos consumer) {
         List<BlockPos> cores = PowerData.get(level).cores(consumer);
-        if (cores == null) cores = search(level, consumer);
+        if (cores == null || cores.stream().noneMatch(p -> level.getBlockState(p).getBlock() instanceof WarpCoreBlock))
+            cores = search(level, consumer);
         long out = 0;
         long key = Long.MAX_VALUE;
+        List<BlockPos> sources = new ArrayList<>();
         for (BlockPos p : cores) {
             BlockState st = level.getBlockState(p);
             if (st.getBlock() instanceof WarpCoreBlock w) {
                 out += w.rfPerTick;
                 key = Math.min(key, p.asLong());
+            } else if (isSource(level, p)) {
+                sources.add(p);
+                key = Math.min(key, p.asLong());
             }
         }
-        return out == 0 ? Grid.NONE : new Grid(key, (int) Math.min(Integer.MAX_VALUE, out));
+        return out == 0 && sources.isEmpty() ? Grid.NONE : new Grid(key, (int) Math.min(Integer.MAX_VALUE, out), sources);
     }
 
     /** Breitensuche über leitende Blöcke bis zu den Warpkernen. */
@@ -111,7 +147,7 @@ public final class ShipPower {
                 BlockPos n = p.relative(d);
                 if (!seen.add(n.asLong()) || !level.isLoaded(n)) continue;
                 BlockState st = level.getBlockState(n);
-                if (st.getBlock() instanceof WarpCoreBlock) cores.add(n);
+                if (st.getBlock() instanceof WarpCoreBlock || isSource(level, n)) cores.add(n);
                 if (conducts(st)) queue.add(n);
             }
         }

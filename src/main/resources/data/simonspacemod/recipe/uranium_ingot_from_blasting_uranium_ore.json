@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:blasting",
+  "experience": 1.0,
+  "group": "uranium_ingot",
+  "cookingtime": 100,
+  "ingredient": "simonspacemod:uranium_ore",
+  "result": {
+    "id": "simonspacemod:uranium_ingot"
+  }
+}

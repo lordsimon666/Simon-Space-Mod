@@ -34,6 +34,7 @@ public final class ShipClient {
             e.register(HELM);
         });
         TickEvent.ClientTickEvent.Post.BUS.addListener(e -> tick());
+        net.minecraftforge.client.event.InputEvent.InteractionKeyMappingTriggered.BUS.addListener(ShipClient::onUse);
     }
 
     private static void tick() {
@@ -72,6 +73,21 @@ public final class ShipClient {
         ship.setSeat(mc.player, walk.pos());
         if (walk.pos().distanceToSqr(before) > 1e-8)
             TurboliftNetwork.sendToServer(new ShipSeatMessage(mc.player.getId(), (float) walk.pos().x, (float) walk.pos().y, (float) walk.pos().z));
+    }
+
+    /** Rechtsklick im fliegenden Schiff: angeklickten Schiffsblock (Kiste, Reaktor …) benutzen. */
+    private static boolean onUse(net.minecraftforge.client.event.InputEvent.InteractionKeyMappingTriggered e) {
+        if (!e.isUseItem()) return false;
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null || !(mc.player.getVehicle() instanceof FlyingShipEntity ship) || ship.structure() == null) return false;
+        var q = ship.rotation(1F);
+        Vec3 eye = ShipPhysics.inverse(q, mc.player.getEyePosition().subtract(ship.position()));
+        Vec3 look = ShipPhysics.inverse(q, mc.player.getViewVector(1F));
+        net.minecraft.core.BlockPos hit = ship.structure().raycast(eye, look, de.simon.spacemod.flight.ShipUseMessage.REACH);
+        if (hit == null) return false;
+        TurboliftNetwork.sendToServer(new de.simon.spacemod.flight.ShipUseMessage(ship.getId(), hit));
+        e.setSwingHand(true);
+        return true;
     }
 
     /** Für Tests/Anzeige: Blickrichtung im Schiffssystem. */

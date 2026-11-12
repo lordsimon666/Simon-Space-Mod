@@ -76,6 +76,38 @@ public final class ShipStructure {
         return collision;
     }
 
+    private java.util.Map<BlockPos, Integer> index;
+
+    /** Index des Blocks an einer lokalen Stelle in {@link #blocks} oder -1. */
+    public synchronized int indexOf(BlockPos local) {
+        if (index == null) {
+            index = new java.util.HashMap<>();
+            for (int i = 0; i < blocks.size(); i++) index.put(blocks.get(i).pos(), i);
+        }
+        return index.getOrDefault(local, -1);
+    }
+
+    /**
+     * Strahl im Schiffssystem (Block p liegt in [p - 0.5, p + 0.5]): erster Block mit Kollisionsform
+     * oder Blockdaten innerhalb von {@code reach}, sonst null.
+     */
+    public @org.jspecify.annotations.Nullable BlockPos raycast(net.minecraft.world.phys.Vec3 from, net.minecraft.world.phys.Vec3 dir, double reach) {
+        net.minecraft.world.phys.Vec3 d = dir.normalize();
+        for (double t = 0; t <= reach; t += 0.05) {
+            net.minecraft.world.phys.Vec3 p = from.add(d.scale(t));
+            BlockPos b = BlockPos.containing(p.x + 0.5, p.y + 0.5, p.z + 0.5);
+            int i = indexOf(b);
+            if (i < 0) continue;
+            if (blocks.get(i).data().isPresent()) return b;
+            net.minecraft.world.phys.shapes.VoxelShape shape = collision().get(b);
+            if (shape != null && !shape.isEmpty()) {
+                for (net.minecraft.world.phys.AABB box : shape.toAabbs())
+                    if (box.inflate(1e-4).contains(p)) return b;
+            }
+        }
+        return null;
+    }
+
     public double mass() {
         return blocks.size();
     }

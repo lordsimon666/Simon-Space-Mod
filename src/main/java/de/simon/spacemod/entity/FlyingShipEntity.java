@@ -59,6 +59,9 @@ public class FlyingShipEntity extends Entity {
     private double lastPower = 1;
     /** Sitzplätze der Passagiere (lokal, relativ zum Drehpunkt). */
     private final Map<UUID, Vec3> seats = new HashMap<>();
+    /** Server: lebende Blockdaten (Kisten, Reaktoren …) nach Index in structure.blocks. */
+    private final Map<Integer, BlockEntity> live = new HashMap<>();
+    private boolean liveLoaded;
     /** Client: vorherige Lage für flüssiges Zeichnen. */
     public float prevYaw, prevPitch;
 
@@ -110,6 +113,8 @@ public class FlyingShipEntity extends Entity {
     protected void readAdditionalSaveData(ValueInput input) {
         List<ShipStructure.Entry> list = input.read("blocks", ShipStructure.LIST_CODEC).orElse(List.of());
         structure = list.isEmpty() ? null : new ShipStructure(list);
+        live.clear();
+        liveLoaded = false;
         entityData.set(YAW0, input.getFloatOr("yaw0", 0F));
         entityData.set(YAW, input.getFloatOr("yaw", 0F));
         entityData.set(PITCH, input.getFloatOr("pitch", 0F));
@@ -121,7 +126,7 @@ public class FlyingShipEntity extends Entity {
 
     @Override
     protected void addAdditionalSaveData(ValueOutput output) {
-        if (structure != null) output.store("blocks", ShipStructure.LIST_CODEC, structure.blocks);
+        if (structure != null) output.store("blocks", ShipStructure.LIST_CODEC, currentBlocks());
         output.putFloat("yaw0", yaw0());
         output.putFloat("yaw", yaw());
         output.putFloat("pitch", pitch());
@@ -266,6 +271,69 @@ public class FlyingShipEntity extends Entity {
         controlAge = 0;
     }
 
+    // ---- Blöcke im Flug ----
+
+    /** Blockdaten (Kisten, Reaktor …) als lebende Objekte laden, damit sie im Flug benutzbar sind. */
+    private void loadLive() {
+        if (liveLoaded || structure == null || level().isClientSide()) return;
+        liveLoaded = true;
+        for (int i = 0; i < structure.blocks.size(); i++) {
+            ShipStructure.Entry e = structure.blocks.get(i);
+            if (e.data().isEmpty()) continue;
+            try {
+                BlockEntity be = BlockEntity.loadStatic(e.pos(), e.state(), e.data().get(), level().registryAccess());
+                if (be != null) live.put(i, be);
+            } catch (RuntimeException ex) {
+                // Block anderer Mods, der ohne Welt nicht geladen werden kann: Daten bleiben unverändert
+            }
+        }
+    }
+
+    /** Lebendes Objekt des Blocks an einer lokalen Stelle (Server) oder null. */
+    public @Nullable BlockEntity liveAt(BlockPos local) {
+        if (structure == null) return null;
+        loadLive();
+        int i = structure.indexOf(local);
+        return i < 0 ? null : live.get(i);
+    }
+
+    /** Blöcke mit dem aktuellen Stand der Blockdaten (zum Speichern und Landen). */
+    private List<ShipStructure.Entry> currentBlocks() {
+        if (live.isEmpty()) return structure.blocks;
+        List<ShipStructure.Entry> out = new ArrayList<>(structure.blocks);
+        live.forEach((i, be) -> {
+            ShipStructure.Entry e = out.get(i);
+            try {
+                out.set(i, new ShipStructure.Entry(e.pos(), e.state(), Optional.of(be.saveWithFullMetadata(level().registryAccess()))));
+            } catch (RuntimeException ex) {
+                // alte Daten behalten
+            }
+        });
+        return out;
+    }
+
+    /** Reaktoren laufen im Flug weiter; liefert den gespeicherten Strom aller Erzeuger an Bord. */
+    private long tickGenerators() {
+        loadLive();
+        long stored = 0;
+        for (BlockEntity be : live.values()) {
+            if (be instanceof de.simon.spacemod.block.entity.ReactorControllerBlockEntity r) r.run();
+            stored += be.getCapability(net.minecraftforge.common.capabilities.ForgeCapabilities.ENERGY, null)
+                .map(e -> e.canExtract() ? e.extractEnergy(Integer.MAX_VALUE, true) : 0).orElse(0);
+        }
+        return stored;
+    }
+
+    /** Strom aus den Speichern an Bord entnehmen (Reaktoren, Generatoren anderer Mods). */
+    private void drainGenerators(long amount) {
+        for (BlockEntity be : live.values()) {
+            if (amount <= 0) return;
+            long a = amount;
+            amount -= be.getCapability(net.minecraftforge.common.capabilities.ForgeCapabilities.ENERGY, null)
+                .map(e -> e.canExtract() ? e.extractEnergy((int) Math.min(Integer.MAX_VALUE, a), false) : 0).orElse(0);
+        }
+    }
+
     // ---- Flug ----
 
     @Override
@@ -288,8 +356,12 @@ public class FlyingShipEntity extends Entity {
         // Strom: Antriebe brauchen Energie, wenn sie schieben oder drehen
         double turnDemand = pilot == null ? 0 : Math.min(1, (Math.abs(ShipPhysics.wrap(targetYaw - yaw())) + Math.abs(targetPitch - pitch())) / 30);
         double demand = structure.engines * ShipPhysics.RF_PER_ENGINE * Math.max(Math.abs(throttle), turnDemand);
-        double power = demand <= 0 ? 1 : Math.min(1, structure.powerPerTick / demand);
-        lastPower = structure.powerPerTick > 0 ? power : 0;
+        long stored = tickGenerators();
+        double available = structure.powerPerTick + stored;
+        double power = demand <= 0 ? 1 : Math.min(1, available / demand);
+        lastPower = available > 0 ? power : 0;
+        // was die Warpkerne nicht schaffen, kommt aus Reaktoren/Speichern
+        if (demand > 0) drainGenerators((long) Math.ceil(demand * power) - structure.powerPerTick);
 
         // Drehung zum Fadenkreuz (mit Trägheit)
         double alpha = ShipPhysics.angularAcceleration(structure.engines, structure.inertia, lastPower);
@@ -367,7 +439,8 @@ public class FlyingShipEntity extends Entity {
         Rotation rot = switch (steps) { case 1 -> Rotation.CLOCKWISE_90; case 2 -> Rotation.CLOCKWISE_180; case 3 -> Rotation.COUNTERCLOCKWISE_90; default -> Rotation.NONE; };
         BlockPos pivot = BlockPos.containing(position());
         List<BlockPos> targets = new ArrayList<>();
-        for (ShipStructure.Entry e : structure.blocks) {
+        List<ShipStructure.Entry> blocks = currentBlocks();
+        for (ShipStructure.Entry e : blocks) {
             BlockPos t = pivot.offset(e.pos().rotate(rot));
             BlockState here = level.getBlockState(t);
             if (!here.isAir() && !here.canBeReplaced()) {
@@ -386,8 +459,8 @@ public class FlyingShipEntity extends Entity {
         ejectPassengers();
         int flags = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
         for (int pass = 0; pass < 2; pass++)
-            for (int i = 0; i < structure.blocks.size(); i++) {
-                ShipStructure.Entry e = structure.blocks.get(i);
+            for (int i = 0; i < blocks.size(); i++) {
+                ShipStructure.Entry e = blocks.get(i);
                 boolean full = e.state().isCollisionShapeFullBlock(level, targets.get(i));
                 if ((pass == 0) != full) continue; // erst volle Blöcke, dann Anbauteile
                 BlockState st = e.state().rotate(rot);

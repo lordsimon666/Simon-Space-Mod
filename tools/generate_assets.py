@@ -2216,6 +2216,180 @@ def ceiling_light_assets(de, en):
 
 
 
+# ---------------------------------------------------------------------------------------------
+#  Uran und Reaktor
+# ---------------------------------------------------------------------------------------------
+
+def _speckled(base, spot, seed, n_spots=9, glow=False):
+    rnd = random.Random(seed)
+    img = noise(new(base), 10, seed)
+    px = img.load()
+    for _ in range(n_spots):
+        x, y = rnd.randrange(1, 14), rnd.randrange(1, 14)
+        for dx, dy in ((0, 0), (1, 0), (0, 1), (1, 1)):
+            if rnd.random() < 0.85:
+                px[x + dx, y + dy] = shade(spot, rnd.randint(-25, 25))
+        if glow:
+            px[x, y] = shade(spot, 60)
+    return img
+
+
+def tex_item_raw_uranium():
+    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    px = img.load()
+    rnd = random.Random(77)
+    for x in range(16):
+        for y in range(16):
+            d = ((x - 7.5) ** 2 + (y - 8) ** 2) ** 0.5
+            if d < 6 + rnd.random():
+                px[x, y] = shade((70, 150, 60), rnd.randint(-30, 20))
+    for x, y in ((5, 6), (9, 9), (7, 4), (10, 6)):
+        px[x, y] = (170, 255, 120, 255)
+    return img
+
+
+def tex_item_uranium_ingot():
+    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    px = img.load()
+    for y in range(5, 12):
+        inset = 1 if y in (5, 11) else 0
+        for x in range(2 + inset, 14 - inset):
+            c = (90, 200, 70) if y > 6 else (150, 240, 120)
+            px[x, y] = shade(c, -20 if y == 11 or x in (2, 13) else 0)
+    for x in (5, 9):
+        px[x, 7] = (210, 255, 180, 255)
+    return img
+
+
+def tex_reactor_casing():
+    img = noise(new((96, 100, 106)), 6, 501)
+    px = img.load()
+    for i in range(16):
+        px[i, 0] = px[i, 15] = px[0, i] = px[15, i] = (60, 62, 66, 255)
+    for i in range(2, 14):  # gelb-schwarze Warnstreifen an der Unterkante
+        px[i, 13] = ((230, 190, 40) if (i // 2) % 2 == 0 else (40, 40, 40)) + (255,)
+    for x, y in ((3, 3), (12, 3), (3, 10), (12, 10)):
+        px[x, y] = (150, 154, 160, 255)
+    return img
+
+
+def tex_reactor_glass():
+    img = Image.new("RGBA", (16, 16), (90, 220, 110, 70))
+    px = img.load()
+    for i in range(16):
+        px[i, 0] = px[i, 15] = px[0, i] = px[15, i] = (70, 90, 76, 255)
+    for i in range(3, 7):
+        px[i, i - 1] = (210, 255, 220, 140)
+    return img
+
+
+def tex_reactor_front(lit):
+    img = tex_reactor_casing()
+    px = img.load()
+    for x in range(3, 13):
+        for y in range(3, 11):
+            px[x, y] = (20, 30, 24, 255)
+    core = (120, 255, 110) if lit else (40, 90, 40)
+    for x in range(6, 10):
+        for y in range(5, 9):
+            px[x, y] = core + (255,)
+    for x in (4, 11):
+        px[x, 4] = ((230, 190, 40) if lit else (90, 80, 40)) + (255,)
+    return img
+
+
+def uranium_reactor_assets(de, en):
+    save(_speckled((125, 125, 125), (80, 200, 70), 601, glow=True), "uranium_ore")
+    save(_speckled((70, 70, 78), (80, 200, 70), 602, glow=True), "deepslate_uranium_ore")
+    save(tex_item_raw_uranium(), "item/raw_uranium")
+    save(tex_item_uranium_ingot(), "item/uranium_ingot")
+    save(tex_reactor_casing(), "reactor_casing")
+    save(tex_reactor_glass(), "reactor_glass")
+    save(tex_reactor_front(False), "reactor_front")
+    save(tex_reactor_front(True), "reactor_front_lit")
+    for name in ("uranium_ore", "deepslate_uranium_ore", "reactor_casing"):
+        write_json(os.path.join(ASSETS, "models", "block", name + ".json"), {"parent": "minecraft:block/cube_all", "textures": {"all": b(name)}})
+        write_json(os.path.join(ASSETS, "blockstates", name + ".json"), {"variants": {"": {"model": b(name)}}})
+        write_json(os.path.join(ASSETS, "items", name + ".json"), item_def(b(name)))
+    write_json(os.path.join(ASSETS, "models", "block", "reactor_glass.json"),
+               {"parent": "minecraft:block/cube_all", "render_type": "minecraft:translucent", "textures": {"all": b("reactor_glass")}})
+    write_json(os.path.join(ASSETS, "blockstates", "reactor_glass.json"), {"variants": {"": {"model": b("reactor_glass")}}})
+    write_json(os.path.join(ASSETS, "items", "reactor_glass.json"), item_def(b("reactor_glass")))
+    for lit in (False, True):
+        n = "reactor_controller" + ("_lit" if lit else "")
+        write_json(os.path.join(ASSETS, "models", "block", n + ".json"), {"parent": "minecraft:block/orientable",
+            "textures": {"front": b("reactor_front_lit" if lit else "reactor_front"), "side": b("reactor_casing"), "top": b("reactor_casing")}})
+    rot = {"north": 0, "east": 90, "south": 180, "west": 270}
+    write_json(os.path.join(ASSETS, "blockstates", "reactor_controller.json"), {"variants": {
+        f"facing={d},lit={str(l).lower()}": dict({"model": b("reactor_controller" + ("_lit" if l else ""))}, **({"y": r} if r else {}))
+        for d, r in rot.items() for l in (False, True)}})
+    write_json(os.path.join(ASSETS, "items", "reactor_controller.json"), item_def(b("reactor_controller")))
+    for it in ("raw_uranium", "uranium_ingot"):
+        write_json(os.path.join(ASSETS, "models", "item", it + ".json"), {"parent": "minecraft:item/generated", "textures": {"layer0": f"{MODID}:item/{it}"}})
+        write_json(os.path.join(ASSETS, "items", it + ".json"), item_def(f"{MODID}:item/{it}"))
+    # Loot: Erze mit Behutsamkeit/Glück, Rest droppt sich selbst
+    for ore in ("uranium_ore", "deepslate_uranium_ore"):
+        write_json(os.path.join(DATA, "loot_table", "blocks", ore + ".json"), {
+            "type": "minecraft:block", "random_sequence": f"{MODID}:blocks/{ore}",
+            "pools": [{"rolls": 1.0, "entries": [{"type": "minecraft:alternatives", "children": [
+                {"type": "minecraft:item", "name": f"{MODID}:{ore}", "conditions": [{"condition": "minecraft:match_tool", "predicate": {
+                    "predicates": {"minecraft:enchantments": [{"enchantments": "minecraft:silk_touch", "levels": {"min": 1}}]}}}]},
+                {"type": "minecraft:item", "name": f"{MODID}:raw_uranium", "functions": [
+                    {"function": "minecraft:apply_bonus", "enchantment": "minecraft:fortune", "formula": "minecraft:ore_drops"},
+                    {"function": "minecraft:explosion_decay"}]}]}]}]})
+    for n in ("reactor_casing", "reactor_glass", "reactor_controller"):
+        write_json(os.path.join(DATA, "loot_table", "blocks", n + ".json"), loot(n))
+    # Rezepte: Schmelzen/Hochofen, Reaktorteile
+    for kind in ("smelting", "blasting"):
+        for src in ("raw_uranium", "uranium_ore", "deepslate_uranium_ore"):
+            write_json(os.path.join(DATA, "recipe", f"uranium_ingot_from_{kind}_{src}.json"), {
+                "type": f"minecraft:{kind}", "experience": 1.0, "group": "uranium_ingot",
+                "cookingtime": 200 if kind == "smelting" else 100,
+                "ingredient": f"{MODID}:{src}", "result": {"id": f"{MODID}:uranium_ingot"}})
+    write_json(os.path.join(DATA, "recipe", "reactor_casing.json"), {"type": "minecraft:crafting_shaped", "category": "building",
+        "key": {"I": "minecraft:iron_ingot", "U": f"{MODID}:uranium_ingot", "C": "minecraft:copper_ingot"},
+        "pattern": ["ICI", "CUC", "ICI"], "result": {"id": f"{MODID}:reactor_casing", "count": 8}})
+    write_json(os.path.join(DATA, "recipe", "reactor_glass.json"), {"type": "minecraft:crafting_shaped", "category": "building",
+        "key": {"G": "minecraft:glass", "R": f"{MODID}:reactor_casing"},
+        "pattern": ["GRG", "R R", "GRG"], "result": {"id": f"{MODID}:reactor_glass", "count": 4}})
+    write_json(os.path.join(DATA, "recipe", "reactor_controller.json"), {"type": "minecraft:crafting_shaped", "category": "redstone",
+        "key": {"R": f"{MODID}:reactor_casing", "D": "minecraft:diamond", "S": "minecraft:redstone_block", "U": f"{MODID}:uranium_ingot"},
+        "pattern": ["RDR", "USU", "RDR"], "result": {"id": f"{MODID}:reactor_controller"}})
+    # Weltgenerierung: wie Lapis (Trapez -32..32), etwas seltener
+    write_json(os.path.join(DATA, "worldgen", "configured_feature", "ore_uranium.json"), {"type": "minecraft:ore", "config": {
+        "discard_chance_on_air_exposure": 0.0, "size": 6, "targets": [
+            {"state": {"Name": f"{MODID}:uranium_ore"}, "target": {"predicate_type": "minecraft:tag_match", "tag": "minecraft:stone_ore_replaceables"}},
+            {"state": {"Name": f"{MODID}:deepslate_uranium_ore"}, "target": {"predicate_type": "minecraft:tag_match", "tag": "minecraft:deepslate_ore_replaceables"}}]}})
+    write_json(os.path.join(DATA, "worldgen", "placed_feature", "ore_uranium.json"), {"feature": f"{MODID}:ore_uranium", "placement": [
+        {"type": "minecraft:count", "count": 2}, {"type": "minecraft:in_square"},
+        {"type": "minecraft:height_range", "height": {"type": "minecraft:trapezoid", "min_inclusive": {"absolute": -32}, "max_inclusive": {"absolute": 32}}},
+        {"type": "minecraft:biome"}]})
+    write_json(os.path.join(DATA, "forge", "biome_modifier", "add_uranium_ore.json"), {"type": "forge:add_features",
+        "biomes": "#minecraft:is_overworld", "features": f"{MODID}:ore_uranium", "step": "underground_ores"})
+    # Abbau: Eisenspitzhacke
+    write_json(os.path.join(ROOT, "data", "minecraft", "tags", "block", "needs_iron_tool.json"),
+               {"values": [f"{MODID}:uranium_ore", f"{MODID}:deepslate_uranium_ore"]})
+    de.update({
+        f"block.{MODID}.uranium_ore": "Uranerz", f"block.{MODID}.deepslate_uranium_ore": "Tiefenschiefer-Uranerz",
+        f"item.{MODID}.raw_uranium": "Roh-Uran", f"item.{MODID}.uranium_ingot": "Uranbarren",
+        f"block.{MODID}.reactor_casing": "Reaktorhülle", f"block.{MODID}.reactor_glass": "Reaktorglas",
+        f"block.{MODID}.reactor_controller": "Reaktor-Steuerblock",
+        f"gui.{MODID}.reactor": "Kernreaktor", f"gui.{MODID}.reactor.invalid": "Kein gültiger",
+        f"gui.{MODID}.reactor.invalid2": "Würfel (3-8)", f"gui.{MODID}.reactor.slots": "%s Plätze",
+        f"message.{MODID}.ship.no_use": "Das lässt sich im Flug nicht bedienen.",
+    })
+    en.update({
+        f"block.{MODID}.uranium_ore": "Uranium Ore", f"block.{MODID}.deepslate_uranium_ore": "Deepslate Uranium Ore",
+        f"item.{MODID}.raw_uranium": "Raw Uranium", f"item.{MODID}.uranium_ingot": "Uranium Ingot",
+        f"block.{MODID}.reactor_casing": "Reactor Casing", f"block.{MODID}.reactor_glass": "Reactor Glass",
+        f"block.{MODID}.reactor_controller": "Reactor Controller",
+        f"gui.{MODID}.reactor": "Nuclear Reactor", f"gui.{MODID}.reactor.invalid": "No valid",
+        f"gui.{MODID}.reactor.invalid2": "cube (3-8)", f"gui.{MODID}.reactor.slots": "%s slots",
+        f"message.{MODID}.ship.no_use": "That cannot be used in flight.",
+    })
+
+
+
 def armory_assets(de, en):
     tex = f"{MODID}:item/weapon_palette"
     for name, boxes in WEAPON_MODELS.items():
@@ -3009,7 +3183,8 @@ def main():
 
     armory_de, armory_en = {}, {}
     models_extra += armory_assets(armory_de, armory_en)
-    models_extra += ["ceiling_light", "dual_wall", "dual_floor"]
+    models_extra += ["ceiling_light", "dual_wall", "dual_floor", "uranium_ore", "deepslate_uranium_ore", "reactor_casing",
+                     "reactor_glass", "reactor_controller", "ship_helm"]
     models_extra += [f"door_{e}_{k}" for e in DOOR_ERAS for k in DOOR_KINDS]
     # Mit der Spitzhacke abbaubar
     write_json(os.path.join(ROOT, "data", "minecraft", "tags", "block", "mineable", "pickaxe.json"),
@@ -3159,6 +3334,7 @@ def main():
     door_assets(de, en)
     dual_assets(de, en)
     ceiling_light_assets(de, en)
+    uranium_reactor_assets(de, en)
     de.update(armory_de)
     en.update(armory_en)
     de.update({

@@ -353,12 +353,40 @@ klicke sie mit der rechten Maustaste an:
   Trägheitsdämpfer langsam ab. Drehen hängt vom Trägheitsmoment ab (wie weit die Blöcke vom
   Schwerpunkt entfernt sind) – lange Schiffe drehen langsamer an und bremsen die Drehung vor dem Ziel
   rechtzeitig ab.
-* **Strom**: Schub und Drehen brauchen 2000 RF/t je Antrieb aus den **Warpkernen an Bord**; reicht
-  der Strom nicht, gibt es entsprechend weniger Schub, ohne Warpkern gar keinen. Die Anzeige über
+* **Strom**: Schub und Drehen brauchen 2000 RF/t je Antrieb aus den **Warpkernen** und
+  **Kernreaktoren an Bord** (oder Generatoren anderer Mods mit Energiespeicher); reicht der Strom
+  nicht, gibt es entsprechend weniger Schub, ohne Stromquelle gar keinen. Reaktoren laufen im Flug
+  weiter und verbrauchen dabei Uran. Die Anzeige über
   der Hotbar zeigt Geschwindigkeit, Schub, Energie, Antriebe und Masse.
+* **Blöcke im Flug benutzen**: Rechtsklick auf Truhen, Fässer, Trichter, Spender/Werfer und den
+  Reaktor-Steuerblock öffnet ihr Menü auch während des Flugs – so kann man z. B. Uran nachlegen.
+  Andere Blöcke melden „Im Flug nicht benutzbar“.
 * **Kollision**: stößt das Schiff an Blöcke der Welt, bleibt es stehen.
 * **Landen** (L, am Steuer): nur langsam und annähernd waagerecht; das Schiff wird wieder zu Blöcken,
   die Drehung rastet auf 90° ein, Truhen & Co. behalten ihren Inhalt. Am Zielort muss Platz sein.
+
+### Kernreaktor (Multiblock) und Uran
+
+* **Uranerz** (und Tiefenschiefer-Uranerz) kommt in der Oberwelt auf der Höhe von Lapislazuli vor
+  (um Y 0, von -32 bis 32). Abbau mit Eisenspitzhacke oder besser; liefert **Rohuran**, das im Ofen
+  oder Schmelzofen zu **Uranbarren** wird.
+* **Aufbau**: ein hohler Würfel von **3×3×3 bis 8×8×8**. Die Hülle besteht nur aus
+  **Reaktorhülle**, **Reaktorglas** und genau einem **Reaktor-Steuerblock**. Der Steuerblock sitzt in
+  einer Seitenfläche und schaut nach außen; das Innere ist beliebig. Der größte passende Würfel zählt.
+* **Leistung** wächst mit dem Volumen: 8³ = **10 000 FE/t**, 7³ ≈ 6700, 6³ ≈ 4200, 5³ ≈ 2400,
+  4³ ≈ 1250, 3³ ≈ 530 FE/t.
+* **Verbrauch**: je größer, desto schneller brennt ein Uranbarren ab (3³: 5 Minuten, 8³: ≈ 42 s).
+* **Eingabeplätze**: der kleinste Reaktor hat 1 Platz, der größte 3×3 = 9 (dazwischen 3, 4, 6, 7).
+  Uran lässt sich auch mit Trichtern oder Rohren anderer Mods nachfüllen.
+* **Strom**: Speicher 1 000 000 FE; ist er voll, pausiert der Reaktor (kein Uran wird verschwendet).
+  Er gibt Strom an angrenzende Verbraucher ab und **versorgt das Bordnetz** wie ein Warpkern
+  (Ladestationen, Lampen, Antriebe im Flug). Dasselbe gilt für alle anderen Stromerzeuger mit
+  Energiespeicher, auch aus anderen Mods, wenn sie über Blöcke dieser Mod verbunden sind.
+* Rechtsklick auf den Steuerblock zeigt Größe, Leistung, Brennstand und Energie.
+
+Rezepte: Reaktorhülle (8×) = Eisen in den Ecken, Kupfer an den Seiten, Uranbarren in der Mitte;
+Reaktorglas (4×) = Glas in den Ecken, Reaktorhülle an den Seiten; Steuerblock = Reaktorhülle in den
+Ecken, Diamanten oben/unten, Uranbarren links/rechts, Redstoneblock in der Mitte.
 
 ### Rezepte (Überlebensmodus)
 
@@ -371,7 +399,7 @@ E = Eisenbarren        G = Goldbarren
 F = roter Farbstoff, P = Enderperle, R = Redstone
 ```
 
-## Neue Blöcke (127)
+## Neue Blöcke (132)
 
 * **Hülle**: Hüllenpanzerung (+ Stufe), Hüllenplatte, dunkle Hüllenplatte, Hüllenfenster,
   Kennungsmarkierung (+ Stufe), roter Zierstreifen, Positionslicht rot/grün, Deflektorschüssel,
@@ -404,10 +432,11 @@ F = roter Farbstoff, P = Enderperle, R = Redstone
 * **Zweiseitig**: Wand mit zwei Seiten und Boden/Decke mit eigener Ober- und Unterseite (je 16 Materialien)
 * **Türen**: 2 x 2 Schiebetür, Sicherheitstür und Kommandotür im Stil von NX-01, Originalserie,
   Kinofilmen und Next Generation (12 Stück)
+* **Kernreaktor**: Uranerz, Tiefenschiefer-Uranerz, Reaktorhülle, Reaktorglas, Reaktor-Steuerblock
 * **Allgemein**: Deckboden, Korridorwand, Deckenverkleidung, Deckenleuchte, Maschinenraum-Konsole,
   Warpkern, Plasmaleitung
 
-Dazu das Item Kommunikator, 3 Schlüsselkarten (Sicherheit, Kommando, Captain), 5 Handphaser, 4 Phasergewehre, 15 Uniformen, 2 Uniformhosen und
+Dazu das Item Kommunikator, Rohuran, Uranbarren, 3 Schlüsselkarten (Sicherheit, Kommando, Captain), 5 Handphaser, 4 Phasergewehre, 15 Uniformen, 2 Uniformhosen und
 Sternenflotten-Stiefel. Alles ist im Kreativ-Tab „Simon Space Mod“ zu finden.
 
 ## Außenform aus echten 3D-Modellen

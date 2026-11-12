@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "G": "minecraft:glass",
+    "R": "simonspacemod:reactor_casing"
+  },
+  "pattern": [
+    "GRG",
+    "R R",
+    "GRG"
+  ],
+  "result": {
+    "id": "simonspacemod:reactor_glass",
+    "count": 4
+  }
+}
