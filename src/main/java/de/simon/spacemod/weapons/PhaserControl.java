@@ -187,7 +187,7 @@ public final class PhaserControl {
             // dem Fadenkreuz folgen, solange der Spieler durch die Kamera schaut
             if (age > 0 && age % 2 == 0 && player.isAlive() && player.level() == level
                 && (CameraControl.inSession(player) || ownShip != null && player.getVehicle() == ownShip))
-                aim = aim(level, player, own);
+                aim = aim(level, player, own, ownShip);
             Vec3 tgt = aim.entity() != null && aim.entity().isAlive() ? aim.entity().getBoundingBox().getCenter() : aim.point();
             boolean shielded = false;
             for (int i = 0; i < phasers.size(); i++) {
@@ -296,7 +296,7 @@ public final class PhaserControl {
             return false;
         }
         AABB own = ship.getBoundingBox();
-        Aim aim = aim(level, player, new AABB(0, -100000, 0, 0, -100000, 0));
+        Aim aim = aim(level, player, new AABB(0, -100000, 0, 0, -100000, 0), ship);
         Vec3 tgt = aim.point();
         phasers.sort(Comparator.comparingDouble(p -> worldOf(ship, p).distanceToSqr(tgt)));
         List<BlockPos> chosen = new ArrayList<>();
@@ -358,7 +358,7 @@ public final class PhaserControl {
             return;
         }
         AABB own = ship.getBoundingBox();
-        Aim aim = aim(level, player, new AABB(0, -100000, 0, 0, -100000, 0));
+        Aim aim = aim(level, player, new AABB(0, -100000, 0, 0, -100000, 0), ship);
         Vec3 tgt = aim.point();
         launchers.sort(Comparator.comparingDouble(p -> worldOf(ship, p).distanceToSqr(tgt)));
         Vec3 c = worldOf(ship, launchers.get(0));
@@ -379,6 +379,11 @@ public final class PhaserControl {
     private record Aim(Vec3 point, @Nullable Entity entity, boolean hit) {}
 
     private static Aim aim(ServerLevel level, ServerPlayer player, AABB own) {
+        return aim(level, player, own, null);
+    }
+
+    /** @param exclude eigenes fliegendes Schiff (wird nicht anvisiert) */
+    private static Aim aim(ServerLevel level, ServerPlayer player, AABB own, @Nullable Entity exclude) {
         Vec3 eye = player.getEyePosition(), look = player.getLookAngle();
         Vec3 end = eye.add(look.scale(RANGE));
         Vec3 target = end;
@@ -400,15 +405,17 @@ public final class PhaserControl {
             break;
         }
         // fliegende Schiffe (ihre Blöcke stehen nicht in der Welt) – trifft man ihre Hülle, zählt das
-        var shipHit = de.simon.spacemod.flight.Shipyard.raycastShips(level, eye, look, Math.min(blockDist, BLOCK_RANGE));
-        if (shipHit != null && shipHit.distance() < blockDist && !(player.getVehicle() == shipHit.ship())) {
+        var shipHit = de.simon.spacemod.flight.Shipyard.raycastShips(level, eye, look, Math.min(blockDist, BLOCK_RANGE),
+            exclude != null ? exclude : player.getVehicle());
+        if (shipHit != null && shipHit.distance() < blockDist) {
             target = shipHit.point();
             blockDist = shipHit.distance();
             hit = true;
         }
         // 2. Kreatur im Blick, wenn sie vor dem Block steht
         double best = Math.min(RANGE, blockDist);
-        for (Entity e : level.getEntities(player, new AABB(eye, end).inflate(2), e -> e instanceof LivingEntity le && le.isAlive())) {
+        for (Entity e : level.getEntities(player, new AABB(eye, end).inflate(2), e -> e instanceof LivingEntity le && le.isAlive()
+                && (exclude == null || e.getVehicle() != exclude))) { // eigene Besatzung nicht anvisieren
             Optional<Vec3> h = e.getBoundingBox().inflate(0.6).clip(eye, end);
             if (h.isEmpty()) continue;
             double d = h.get().distanceTo(eye);

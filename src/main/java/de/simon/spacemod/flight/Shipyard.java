@@ -79,11 +79,16 @@ public final class Shipyard {
 
     /** Erstes fliegendes Schiff, dessen Blöcke der Strahl trifft (oder null). */
     public static @Nullable ShipHit raycastShips(Level level, Vec3 from, Vec3 dir, double max) {
+        return raycastShips(level, from, dir, max, null);
+    }
+
+    /** Wie oben, ohne das Schiff {@code exclude} (das eigene). */
+    public static @Nullable ShipHit raycastShips(Level level, Vec3 from, Vec3 dir, double max, net.minecraft.world.entity.@Nullable Entity exclude) {
         Vec3 d = dir.normalize();
         AABB seg = new AABB(from, from.add(d.scale(max))).inflate(1);
         ShipHit best = null;
         for (FlyingShipEntity ship : ships()) {
-            if (ship.level() != level || ship.structure() == null || !ship.getBoundingBox().intersects(seg)) continue;
+            if (ship == exclude || ship.level() != level || ship.structure() == null || !ship.getBoundingBox().intersects(seg)) continue;
             var q = ship.rotation(1F);
             Vec3 lf = de.simon.spacemod.flight.ShipPhysics.inverse(q, from.subtract(ship.position()));
             Vec3 ld = de.simon.spacemod.flight.ShipPhysics.inverse(q, d);

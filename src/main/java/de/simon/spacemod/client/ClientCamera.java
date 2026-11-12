@@ -22,6 +22,15 @@ public final class ClientCamera {
 
     private static boolean active;
 
+    /** Kamera eines fliegenden Schiffs: Schiff (Entity-ID, -1 = keins) und Kamerapunkt im Schiffssystem. */
+    private static int followShip = -1;
+    private static net.minecraft.world.phys.Vec3 followLocal = net.minecraft.world.phys.Vec3.ZERO;
+
+    public static void followShip(int shipId, float x, float y, float z) {
+        followShip = shipId;
+        followLocal = new net.minecraft.world.phys.Vec3(x, y, z);
+    }
+
     public static void setActive(boolean value) {
         active = value;
     }
@@ -76,6 +85,13 @@ public final class ClientCamera {
     private static void onTick() {
         var mc = Minecraft.getInstance();
         var player = mc.player;
+        // Kamera eines fliegenden Schiffs: mit dem Schiff mitfliegen (ruckelfrei auf dem Client)
+        if (active && followShip >= 0 && player != null && mc.level != null
+            && mc.level.getEntity(followShip) instanceof de.simon.spacemod.entity.FlyingShipEntity ship) {
+            var w = de.simon.spacemod.flight.ShipPhysics.rotate(ship.rotation(1F), followLocal.x, followLocal.y, followLocal.z).add(ship.position());
+            player.setPos(w.x, w.y, w.z);
+            player.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
+        }
         // Pilot eines fliegenden Schiffs: Linksklick feuert die Schiffsphaser (nicht schlagen)
         boolean pilot = player != null && player.getVehicle() instanceof de.simon.spacemod.entity.FlyingShipEntity fs && fs.isPilotEntity(player);
         if (pilot && mc.gui.screen() == null) while (mc.options.keyAttack.consumeClick()) {}

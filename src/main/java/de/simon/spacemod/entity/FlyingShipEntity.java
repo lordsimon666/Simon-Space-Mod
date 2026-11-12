@@ -440,7 +440,8 @@ public class FlyingShipEntity extends Entity {
      */
     private void boardWalkers(ServerLevel level) {
         for (Player p : level.getEntitiesOfClass(Player.class, getBoundingBox().inflate(1),
-                pl -> !pl.isPassenger() && !pl.isSpectator() && !pl.isShiftKeyDown())) {
+                pl -> !pl.isPassenger() && !pl.isSpectator() && !pl.isShiftKeyDown()
+                    && !(pl instanceof ServerPlayer sp && de.simon.spacemod.weapons.CameraControl.active(sp)))) {
             Long until = boardCooldown.get(p.getUUID());
             if (until != null && until > tickCount) continue;
             if (standsInShip(ShipPhysics.inverse(rotation(1F), p.position().subtract(position())))) p.startRiding(this, true, false);

@@ -395,6 +395,13 @@ klicke sie mit der rechten Maustaste an:
   Phaser des Schiffs, die freie Schussbahn haben und dem Ziel am nächsten sind; Strom kommt aus dem
   Bordnetz des Schiffs (Gruppe „Waffen“). Das eigene Schild lässt die Schüsse hinaus, Mitfahrer
   werden nicht getroffen. So können auch fliegende Schiffe gegeneinander kämpfen.
+* **Waffenstation im Flug (2-Mann-Bedienung)**: setzt man eine **Waffenstation** ins eigene Schiff,
+  kann ein zweiter Spieler sie im Flug per Rechtsklick bedienen, während der Pilot fliegt. Er sieht
+  dann durch sechs **Kameras rund um das Schiff** (Bug, Heck, Backbord, Steuerbord, oben, unten), die
+  mitfliegen: Rechtsklick wechselt die Kamera, **Linksklick halten** feuert die Schiffsphaser auf das
+  Fadenkreuz, Mausrad = Stärke, **P/O** = Torpedos, **Shift** = zurück auf den Platz im Schiff. Pilot
+  und Waffenoffizier teilen sich die Phaser (gemeinsames Nachladen). Das eigene Schiff und die eigene
+  Besatzung werden nicht anvisiert.
 * **Kollision**: stößt das Schiff an Blöcke der Welt, bleibt es stehen.
 * **Landen** (L, am Steuer): nur langsam und annähernd waagerecht; das Schiff wird wieder zu Blöcken,
   die Drehung rastet auf 90° ein, Truhen & Co. behalten ihren Inhalt. Am Zielort muss Platz sein.
