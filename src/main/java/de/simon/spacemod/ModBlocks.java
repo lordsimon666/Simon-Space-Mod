@@ -460,6 +460,11 @@ public final class ModBlocks {
         () -> EntityType.Builder.<TorpedoEntity>of(TorpedoEntity::new, MobCategory.MISC).sized(0.5F, 0.5F)
             .noSummon().noSave().clientTrackingRange(16).updateInterval(1).build(ENTITIES.key("torpedo")));
 
+    /** Sichtbarer Phaserstrahl (Schiffsphaser, Handphaser, Gewehre). */
+    public static final RegistryObject<EntityType<de.simon.spacemod.entity.PhaserBeamEntity>> PHASER_BEAM = ENTITIES.register("phaser_beam",
+        () -> EntityType.Builder.<de.simon.spacemod.entity.PhaserBeamEntity>of(de.simon.spacemod.entity.PhaserBeamEntity::new, MobCategory.MISC)
+            .sized(0.2F, 0.2F).noSummon().noSave().clientTrackingRange(16).updateInterval(1).build(ENTITIES.key("phaser_beam")));
+
     /** Fliegendes Schiff (mit der Steuerkonsole abgehoben). */
     public static final RegistryObject<EntityType<de.simon.spacemod.entity.FlyingShipEntity>> FLYING_SHIP = ENTITIES.register("flying_ship",
         () -> EntityType.Builder.<de.simon.spacemod.entity.FlyingShipEntity>of(de.simon.spacemod.entity.FlyingShipEntity::new, MobCategory.MISC)

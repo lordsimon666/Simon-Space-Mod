@@ -131,6 +131,7 @@
   "message.simonspacemod.phaser.recharging": "Phasers recharging ...",
   "message.simonspacemod.phaser.none": "No phasers linked to this weapons console.",
   "message.simonspacemod.phaser.no_arc": "No phaser has a clear line of fire to the target.",
+  "message.simonspacemod.phaser.no_power": "Phasers: not enough power",
   "message.simonspacemod.camera.show": "Camera %s/%s: %s | power %s – left click: phasers, P/O: torpedo, right click: camera, mouse wheel: power, shift: leave",
   "message.simonspacemod.torpedo.photon": "Photon torpedo away!",
   "message.simonspacemod.torpedo.quantum": "Quantum torpedo away!",

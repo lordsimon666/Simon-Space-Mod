@@ -95,6 +95,23 @@ public final class ShipPower {
         return on || grid(level, pos).hasPower(level);
     }
 
+    /**
+     * Netz für einen Verbraucher, der in einem gespawnten Schiff stehen kann (Phaser): dort die
+     * gespeicherten Warpkerne des Schiffs, sonst die Suche über leitende Blöcke.
+     */
+    public static Grid gridFor(ServerLevel level, BlockPos pos) {
+        PowerData.Ship ship = PowerData.get(level).shipAt(pos);
+        if (ship == null) return grid(level, pos);
+        String key = level.dimension().identifier() + "!grid" + ship.min().asLong() + "/" + ship.max().asLong();
+        long now = level.getGameTime();
+        Cached c = CACHE.get(key);
+        if (c != null && now - c.time() < RECHECK_TICKS) return c.grid();
+        Grid g = gridOf(level, ship.cores());
+        if (g == Grid.NONE) g = grid(level, pos); // Kerne zerstört: vielleicht ein Reaktor im Netz
+        CACHE.put(key, new Cached(g, now));
+        return g;
+    }
+
     /** Holt bis zu {@code want} RF aus dem Netz (in diesem Tick). */
     public static int draw(ServerLevel level, Grid grid, int want) {
         String key = level.dimension().identifier() + "#" + grid.key();

@@ -197,12 +197,21 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
 
   Gezielt wird auf das, was im Fadenkreuz ist: eine Kreatur im Blick,
   sonst den ersten Block außerhalb des Schiffs. Es feuern bis zu zwei Phaser, die freie Schussbahn
-  zum Ziel haben und am nächsten dran sind. Treffer verursachen Schaden und setzen in Brand.
+  zum Ziel haben und am nächsten dran sind. Ein Schuss ist ein **Dauerstrahl von 2 Sekunden** (sieht
+  aus wie ein Leuchtfeuer-Strahl in der Farbe des Phasers, keine Partikel) und folgt dabei dem
+  Fadenkreuz. Er trifft alle 0,5 s (je 45 % des Schadens) und setzt in Brand; Explosionen gibt es
+  nach 1 s und am Ende.
+
+  **Strom:** Schiffsphaser brauchen Energie aus dem Bordnetz – **1000 FE pro Tick und Phaser** auf
+  Stufe 1, 2000 auf Stufe 2, 3000 auf Stufe 3. Bei gespawnten Schiffen kommt sie von den Warpkernen
+  des Schiffs, bei selbst gebauten Stationen von Warpkernen, Reaktoren oder Generatoren, die über
+  Blöcke der Mod verbunden sind. Reicht der Strom nicht, bricht der Strahl ab („Phaser: zu wenig
+  Strom“).
 
   **Phaserstärke (Mausrad, 3 Stufen):**
-  * Stufe 1: Schaden, kleine Explosion ohne Blockschaden (Nachladen 1 s)
-  * Stufe 2: 1,6-facher Schaden und Blockschaden (Nachladen 1,5 s)
-  * Stufe 3: 2,2-facher Schaden, große Explosion mit Feuer (Nachladen 2 s)
+  * Stufe 1: Schaden, kleine Explosion ohne Blockschaden (dünnster Strahl, danach sofort wieder bereit)
+  * Stufe 2: 1,6-facher Schaden und Blockschaden (dickerer Strahl, 0,5 s Pause)
+  * Stufe 3: 2,2-facher Schaden, große Explosion mit Feuer (dickster Strahl, 1 s Pause)
 
   Neuere Schiffe haben stärkere Waffen. Grundschaden pro Treffer / Explosionsradius auf Stufe 3:
   NX-01 8 / 3,1 – NCC-1701 10 / 3,7 – A 12 / 4,3 – B 14 / 4,9 – C 16 / 5,5 – D 18 / 6,1 – E 20 / 6,7.
@@ -253,6 +262,10 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
   immer nach vorne.
   **V** schaltet zwischen **Betäuben** (langsam und schwach machen),
   **Töten** (Schaden und Feuer) und **Abbauen** (baut den Block ab, Gewehre eine 3x3-Fläche).
+  Jeder Schuss ist ein **Strahl von 2 Sekunden** (wie ein dünner Leuchtfeuer-Strahl, keine
+  Partikel), der dem Blick folgt und alle 0,5 s wirkt – im Abbau-Modus bohrt er sich so bis zu 4
+  Blöcke tief. Je Treffer 45 % des Schadens. Danach kurz nachladen (Phaser 0,1 s, Gewehre 0,3 s).
+  Die Phasenpistole der NX-01 blinkt als Pulsstrahl.
   Schaden im Töten-Modus: Handphaser 6 (NX-01) bis 14 (E), Gewehre 11,6 bis 24,4; Gewehre
   reichen weiter und bauen härtere Blöcke ab. Jede Waffe hat eine Energiezelle (RF, Balken am
   Item): Handphaser 6 000 bis 14 000 RF, Gewehre das 2,5-Fache; ein Schuss kostet 100 (Betäuben),

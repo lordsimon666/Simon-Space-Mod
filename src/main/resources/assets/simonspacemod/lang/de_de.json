@@ -131,6 +131,7 @@
   "message.simonspacemod.phaser.recharging": "Phaser laden nach ...",
   "message.simonspacemod.phaser.none": "Keine Phaser mit dieser Waffenstation verbunden.",
   "message.simonspacemod.phaser.no_arc": "Kein Phaser hat freie Schussbahn zum Ziel.",
+  "message.simonspacemod.phaser.no_power": "Phaser: zu wenig Strom",
   "message.simonspacemod.camera.show": "Kamera %s/%s: %s | Stärke %s – Linksklick: Phaser, P/O: Torpedo, Rechtsklick: Kamera, Mausrad: Stärke, Shift: zurück",
   "message.simonspacemod.torpedo.photon": "Photonentorpedo abgefeuert!",
   "message.simonspacemod.torpedo.quantum": "Quantentorpedo abgefeuert!",

@@ -126,6 +126,10 @@ public final class CameraControl {
         show(player, s);
     }
 
+    public static boolean inSession(ServerPlayer player) {
+        return SESSIONS.containsKey(player.getUUID());
+    }
+
     /** Phaserstärke 1-3 (Mausrad in der Kamerasicht). */
     public static void power(ServerPlayer player, int delta) {
         Session s = SESSIONS.get(player.getUUID());

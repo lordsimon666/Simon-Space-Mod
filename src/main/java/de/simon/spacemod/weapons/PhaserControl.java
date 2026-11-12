@@ -14,7 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.DustParticleOptions;
+import de.simon.spacemod.entity.PhaserBeamEntity;
+import de.simon.spacemod.power.ShipPower;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -85,19 +86,103 @@ public final class PhaserControl {
             player.sendOverlayMessage(Component.translatable("message.simonspacemod.phaser.no_arc"));
             return;
         }
-        LAST_SHOT.put(key, now + (power - 1) * 10L); // stärkere Schüsse laden länger nach
-        // Zielgebiet geladen halten, damit Treffer und Explosion auch weit draußen wirken
-        level.getChunkSource().addTicketWithRadius(TicketType.ENDER_PEARL, ChunkPos.containing(BlockPos.containing(tgt)), 2);
         WeaponsData.Battery battery = data.battery(console);
         int tier = battery != null && battery.tier() > 0 ? battery.tier() : tierOf(level, chosen.get(0));
+        // Strom: Phaser brauchen Energie aus dem Bordnetz (Warpkerne, Reaktoren …)
+        ShipPower.Grid grid = ShipPower.gridFor(level, chosen.get(0));
+        if (!grid.hasPower(level)) {
+            player.sendOverlayMessage(Component.translatable("message.simonspacemod.phaser.no_power"));
+            level.playSound(null, console, SoundEvents.DISPENSER_FAIL, SoundSource.BLOCKS, 0.6F, 0.6F);
+            return;
+        }
+        // Feuert 2 Sekunden; danach (und je nach Stufe etwas länger) laden die Phaser nach
+        LAST_SHOT.put(key, now + BeamShots.DURATION - COOLDOWN_TICKS + (power - 1) * 10L);
         float damage = (6 + 2 * tier) * (power == 1 ? 1F : power == 2 ? 1.6F : 2.2F);
         float radius = power == 1 ? 1.0F : power == 2 ? 1.8F + 0.3F * tier : 2.5F + 0.6F * tier;
-        level.playSound(null, console, SoundEvents.BEACON_DEACTIVATE, SoundSource.BLOCKS, 1.0F, 1.8F);
-        for (BlockPos p : chosen) beam(level, player, p, tgt, ((PhaserBlock) level.getBlockState(p).getBlock()).kind, damage, power);
-        // Blockschaden ab Stufe 2; nur das eigene Schiff bleibt heil
-        if (hit) level.explode(null, null, spare(own), tgt.x, tgt.y, tgt.z, radius, power == 3,
-            power >= 2 ? Level.ExplosionInteraction.TNT : Level.ExplosionInteraction.NONE);
+        level.playSound(null, console, SoundEvents.BEACON_ACTIVATE, SoundSource.BLOCKS, 1.0F, 1.8F);
+        BeamShots.start(new ShipShot(level, player, chosen, aim, own, grid, damage, radius, power));
         player.sendOverlayMessage(Component.translatable("message.simonspacemod.phaser.fire"));
+    }
+
+    /** Strom je Tick und Phaser während des Feuerns (Stufe 1-3). */
+    public static int fePerTick(int power) {
+        return 1000 * power;
+    }
+
+    /** Laufender Schuss der Schiffsphaser: Strahlen folgen dem Fadenkreuz, Treffer alle 0,5 s, Explosion am Ende. */
+    private static final class ShipShot extends BeamShots.Shot {
+        private final ServerLevel level;
+        private final ServerPlayer player;
+        private final List<BlockPos> phasers;
+        private final List<PhaserBeamEntity> beams = new ArrayList<>();
+        private final AABB own;
+        private final ShipPower.Grid grid;
+        private final float damage, radius;
+        private final int power;
+        private Aim aim;
+
+        ShipShot(ServerLevel level, ServerPlayer player, List<BlockPos> phasers, Aim aim, AABB own, ShipPower.Grid grid,
+                 float damage, float radius, int power) {
+            this.level = level;
+            this.player = player;
+            this.phasers = phasers;
+            this.aim = aim;
+            this.own = own;
+            this.grid = grid;
+            this.damage = damage;
+            this.radius = radius;
+            this.power = power;
+        }
+
+        @Override
+        protected boolean tick() {
+            if (age >= BeamShots.DURATION) return false;
+            // Strom für alle feuernden Phaser
+            int need = fePerTick(power) * phasers.size();
+            if (ShipPower.draw(level, grid, need) < need) {
+                if (player.isAlive()) player.sendOverlayMessage(Component.translatable("message.simonspacemod.phaser.no_power"));
+                return false;
+            }
+            // dem Fadenkreuz folgen, solange der Spieler durch die Kamera schaut
+            if (age > 0 && age % 2 == 0 && player.isAlive() && player.level() == level && CameraControl.inSession(player))
+                aim = aim(level, player, own);
+            Vec3 tgt = aim.entity() != null && aim.entity().isAlive() ? aim.entity().getBoundingBox().getCenter() : aim.point();
+            for (int i = 0; i < phasers.size(); i++) {
+                BlockPos p = phasers.get(i);
+                if (!(level.getBlockState(p).getBlock() instanceof PhaserBlock pb)) continue;
+                Vec3 c = Vec3.atCenterOf(p);
+                Vec3 start = c.add(tgt.subtract(c).normalize().scale(0.7));
+                if (beams.size() <= i) {
+                    PhaserBeamEntity b = BeamShots.beam(level, start, tgt, pb.kind.color, pb.kind.core, 0.12F + 0.06F * power, pb.kind.pulse);
+                    if (b != null) beams.add(b);
+                    level.playSound(null, p, SoundEvents.BEACON_DEACTIVATE, SoundSource.BLOCKS, 3.0F, pb.kind.pulse ? 2.0F : 1.6F);
+                } else beams.get(i).aim(start, tgt);
+                if (age % BeamShots.PULSE == 0) hurtAlong(start, tgt);
+            }
+            // Zielgebiet geladen halten, damit Treffer und Explosion auch weit draußen wirken
+            if (age % 20 == 0)
+                level.getChunkSource().addTicketWithRadius(TicketType.ENDER_PEARL, ChunkPos.containing(BlockPos.containing(tgt)), 2);
+            // Blockschaden ab Stufe 2 (nur das eigene Schiff bleibt heil): zur Hälfte und am Ende
+            if (aim.hit() && (age == BeamShots.DURATION / 2 || age == BeamShots.DURATION - 1))
+                level.explode(null, null, spare(own), tgt.x, tgt.y, tgt.z, radius * (age == BeamShots.DURATION - 1 ? 1F : 0.7F),
+                    power == 3, power >= 2 ? Level.ExplosionInteraction.TNT : Level.ExplosionInteraction.NONE);
+            age++;
+            return true;
+        }
+
+        private void hurtAlong(Vec3 start, Vec3 to) {
+            Vec3 dir = to.subtract(start).normalize();
+            for (Entity e : level.getEntities(player, new AABB(start, to).inflate(1), e -> e instanceof LivingEntity le && le.isAlive())) {
+                if (e.getBoundingBox().inflate(0.3).clip(start, to.add(dir.scale(0.5))).isEmpty()) continue;
+                e.hurtServer(level, level.damageSources().indirectMagic(player, player), damage * 0.45F);
+                e.igniteForSeconds(2 + power * 2);
+            }
+        }
+
+        @Override
+        protected void end() {
+            for (PhaserBeamEntity b : beams) b.discard();
+        }
     }
 
     /** Ziel im Fadenkreuz: Punkt, ggf. Kreatur, und ob überhaupt etwas getroffen wird. */
@@ -250,30 +335,6 @@ public final class PhaserControl {
             case PHASER_EMITTER -> 3;
             case PHASER_STRIP -> 6;
         };
-    }
-
-    private static void beam(ServerLevel level, ServerPlayer shooter, BlockPos from, Vec3 to, PhaserBlock.Kind kind, float damage, int power) {
-        Vec3 c = Vec3.atCenterOf(from);
-        Vec3 dir = to.subtract(c);
-        double len = dir.length();
-        dir = dir.normalize();
-        Vec3 start = c.add(dir.scale(0.7));
-        DustParticleOptions outer = new DustParticleOptions(kind.color, 1.2F + 0.4F * power); // stärker = dicker
-        DustParticleOptions inner = new DustParticleOptions(kind.core, 0.7F);
-        for (double t = 0.7; t < len; t += 0.4) {
-            if (kind.pulse && (t % 4.0) > 1.6) continue; // Phasenkanone: einzelne Pulse
-            Vec3 v = c.add(dir.scale(t));
-            level.sendParticles(outer, true, true, v.x, v.y, v.z, 1, 0, 0, 0, 0);
-            level.sendParticles(inner, true, true, v.x, v.y, v.z, 1, 0, 0, 0, 0);
-        }
-        level.playSound(null, from, SoundEvents.BEACON_DEACTIVATE, SoundSource.BLOCKS, 3.0F, kind.pulse ? 2.0F : 1.6F);
-        // Schaden an allem, was im Strahl steht
-        for (Entity e : level.getEntities(shooter, new AABB(start, to).inflate(1),
-                e -> e instanceof LivingEntity le && le.isAlive())) {
-            if (e.getBoundingBox().inflate(0.3).clip(start, to.add(dir.scale(0.5))).isEmpty()) continue;
-            e.hurtServer(level, level.damageSources().indirectMagic(shooter, shooter), damage);
-            e.igniteForSeconds(2 + power * 2);
-        }
     }
 
     /** Selbst gebaute Waffenstation: Phaser in der Nähe suchen. */

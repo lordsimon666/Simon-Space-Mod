@@ -24,6 +24,7 @@ public final class SimonSpaceMod {
         de.simon.spacemod.space.SpaceTravel.init();
         de.simon.spacemod.item.SpaceSuitItem.init();
         de.simon.spacemod.assembly.AssemblyRecipes.init();
+        de.simon.spacemod.weapons.BeamShots.init();
         de.simon.spacemod.weapons.CameraControl.init();
         net.minecraftforge.event.AttachCapabilitiesEvent.ItemStacks.BUS.addListener(de.simon.spacemod.item.HandWeaponItem::attachEnergy);
         if (FMLLoader.getDist().isClient()) {

@@ -4,7 +4,6 @@ import de.simon.spacemod.ModBlocks;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -191,8 +190,58 @@ public class HandWeaponItem extends Item {
             return InteractionResult.FAIL;
         }
         if (!player.getAbilities().instabuild) setEnergy(stack, energy(stack) - cost);
-        player.getCooldowns().addCooldown(stack, rifle ? 14 : 8);
+        // feuert 2 Sekunden, danach kurz nachladen
+        player.getCooldowns().addCooldown(stack, de.simon.spacemod.weapons.BeamShots.DURATION + (rifle ? 6 : 2));
+        level.playSound(null, player.blockPosition(), SoundEvents.BEACON_DEACTIVATE, SoundSource.PLAYERS, 0.8F,
+            (rifle ? 1.3F : 1.8F) + (m == Mode.STUN ? 0.2F : 0));
+        de.simon.spacemod.weapons.BeamShots.start(new HandShot(server, sp, m));
+        return InteractionResult.SUCCESS_SERVER;
+    }
 
+    /** Laufender Schuss: Strahl aus der Hand folgt dem Blick, Wirkung alle 0,5 s. */
+    private final class HandShot extends de.simon.spacemod.weapons.BeamShots.Shot {
+        private final ServerLevel server;
+        private final ServerPlayer player;
+        private final Mode mode;
+        private de.simon.spacemod.entity.PhaserBeamEntity beam;
+
+        HandShot(ServerLevel server, ServerPlayer player, Mode mode) {
+            this.server = server;
+            this.player = player;
+            this.mode = mode;
+        }
+
+        @Override
+        protected boolean tick() {
+            if (age >= de.simon.spacemod.weapons.BeamShots.DURATION || !player.isAlive() || player.level() != server) return false;
+            if (!(player.getMainHandItem().getItem() == HandWeaponItem.this || player.getOffhandItem().getItem() == HandWeaponItem.this)) return false;
+            Vec3 hit = strike(server, player, mode, age % de.simon.spacemod.weapons.BeamShots.PULSE == 0);
+            Vec3 from = muzzle(player);
+            if (beam == null) {
+                int c = mode == Mode.STUN ? lighten(color) : color;
+                beam = de.simon.spacemod.weapons.BeamShots.beam(server, from, hit, c, core, rifle ? 0.07F : 0.045F, pulse);
+            } else beam.aim(from, hit);
+            age++;
+            return true;
+        }
+
+        @Override
+        protected void end() {
+            if (beam != null) beam.discard();
+        }
+    }
+
+    /** Mündung: etwas rechts unterhalb der Augen. */
+    private static Vec3 muzzle(Player player) {
+        Vec3 look = player.getLookAngle();
+        Vec3 right = look.cross(new Vec3(0, 1, 0)).normalize();
+        return player.getEyePosition().add(right.scale(0.35)).add(0, -0.25, 0).add(look.scale(0.6));
+    }
+
+    /** Ziel im Blick bestimmen und (wenn {@code apply}) wirken lassen; liefert den Endpunkt des Strahls. */
+    private Vec3 strike(ServerLevel server, ServerPlayer sp, Mode m, boolean apply) {
+        Player player = sp;
+        Level level = server;
         Vec3 eye = player.getEyePosition(), look = player.getLookAngle();
         Vec3 end = eye.add(look.scale(range()));
         BlockHitResult blockHit = level.clip(new ClipContext(eye, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
@@ -208,18 +257,18 @@ public class HandWeaponItem extends Item {
                 hitPos = h.get();
             }
         }
-        beam(server, player, hitPos, m);
+        if (!apply) return hitPos;
         if (target != null) {
             switch (m) {
                 case STUN -> {
-                    target.hurtServer(server, server.damageSources().playerAttack(player), rifle ? 2 : 1);
+                    target.hurtServer(server, server.damageSources().playerAttack(player), rifle ? 1 : 0.5F);
                     int ticks = 40 + 20 * tier + (rifle ? 40 : 0);
                     target.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, ticks, 6), player);
                     target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, ticks, 2), player);
                     target.addEffect(new MobEffectInstance(MobEffects.MINING_FATIGUE, ticks, 2), player);
                 }
                 case KILL -> {
-                    target.hurtServer(server, server.damageSources().playerAttack(player), killDamage());
+                    target.hurtServer(server, server.damageSources().playerAttack(player), killDamage() * 0.45F);
                     target.igniteForSeconds(rifle ? 4 : 2);
                 }
                 case MINING -> target.hurtServer(server, server.damageSources().playerAttack(player), 1);
@@ -241,9 +290,7 @@ public class HandWeaponItem extends Item {
                     }
             }
         }
-        level.playSound(null, player.blockPosition(), SoundEvents.BEACON_DEACTIVATE, SoundSource.PLAYERS, 0.8F,
-            (rifle ? 1.3F : 1.8F) + (m == Mode.STUN ? 0.2F : 0));
-        return InteractionResult.SUCCESS_SERVER;
+        return hitPos;
     }
 
     private void mine(ServerLevel level, ServerPlayer player, BlockPos pos) {
@@ -254,26 +301,6 @@ public class HandWeaponItem extends Item {
         // Beute wie mit einer Diamantspitzhacke
         Block.dropResources(st, level, pos, level.getBlockEntity(pos), player, new ItemStack(Items.DIAMOND_PICKAXE));
         level.destroyBlock(pos, false, player);
-    }
-
-    private void beam(ServerLevel level, Player player, Vec3 to, Mode m) {
-        // aus der Hand: etwas rechts unterhalb der Augen
-        Vec3 look = player.getLookAngle();
-        Vec3 right = look.cross(new Vec3(0, 1, 0)).normalize();
-        Vec3 from = player.getEyePosition().add(right.scale(0.35)).add(0, -0.25, 0).add(look.scale(0.6));
-        Vec3 d = to.subtract(from);
-        double len = d.length();
-        if (len < 0.1) return;
-        d = d.scale(1 / len);
-        int c = m == Mode.STUN ? lighten(color) : color;
-        DustParticleOptions outer = new DustParticleOptions(c, rifle ? 1.1F : 0.8F);
-        DustParticleOptions inner = new DustParticleOptions(core, 0.5F);
-        for (double t = 0; t < len; t += 0.25) {
-            if (pulse && (t % 3.0) > 1.2) continue;
-            Vec3 v = from.add(d.scale(t));
-            level.sendParticles(outer, true, true, v.x, v.y, v.z, 1, 0, 0, 0, 0);
-            level.sendParticles(inner, true, true, v.x, v.y, v.z, 1, 0, 0, 0, 0);
-        }
     }
 
     private static int lighten(int rgb) {
