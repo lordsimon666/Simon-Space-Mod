@@ -389,6 +389,12 @@ klicke sie mit der rechten Maustaste an:
   Schiff landet), fliegt automatisch mit und läuft darin herum – Türen öffnen sich wie am Boden.
   Wer durch die Tür hinausgeht und keinen Schiffsboden mehr unter den Füßen hat, steigt aus.
   (Schleichend wird man nicht eingeladen; nach dem Aussteigen 3 Sekunden Pause.)
+* **Waffen am Steuer**: der Pilot feuert die Phaser des Schiffs mit **gehaltenem Linksklick** auf
+  das Fadenkreuz (2 s Strahl, Loslassen bricht ab, Halten feuert erneut), das **Mausrad** wählt die
+  Stärke (1-3), **P** feuert einen Photonen-, **O** einen Quantentorpedo. Es feuern bis zu zwei
+  Phaser des Schiffs, die freie Schussbahn haben und dem Ziel am nächsten sind; Strom kommt aus dem
+  Bordnetz des Schiffs (Gruppe „Waffen“). Das eigene Schild lässt die Schüsse hinaus, Mitfahrer
+  werden nicht getroffen. So können auch fliegende Schiffe gegeneinander kämpfen.
 * **Kollision**: stößt das Schiff an Blöcke der Welt, bleibt es stehen.
 * **Landen** (L, am Steuer): nur langsam und annähernd waagerecht; das Schiff wird wieder zu Blöcken,
   die Drehung rastet auf 90° ein, Truhen & Co. behalten ihren Inhalt. Am Zielort muss Platz sein.

@@ -104,7 +104,9 @@ public final class PhaserControl {
         LAST_SHOT.put(key, now + BeamShots.DURATION - COOLDOWN_TICKS + (power - 1) * 10L);
         float damage = (6 + 2 * tier) * (power == 1 ? 1F : power == 2 ? 1.6F : 2.2F);
         float radius = power == 1 ? 1.0F : power == 2 ? 1.8F + 0.3F * tier : 2.5F + 0.6F * tier;
-        BeamShots.start(new ShipShot(level, player, chosen, aim, own, grid, damage, radius, power));
+        List<Source> sources = new ArrayList<>();
+        for (BlockPos p : chosen) sources.add(fixed(level, p));
+        BeamShots.start(new ShipShot(level, player, sources, aim, own, grid, damage, radius, power, null));
         player.sendOverlayMessage(Component.translatable("message.simonspacemod.phaser.fire"));
         return true;
     }
@@ -125,10 +127,31 @@ public final class PhaserControl {
     }
 
     /** Laufender Schuss der Schiffsphaser: Strahlen folgen dem Fadenkreuz, Treffer alle 0,5 s, Explosion am Ende. */
+    /** Ausgangspunkt eines Phaserstrahls: fester Block oder Phaser auf einem fliegenden Schiff (bewegt sich mit). */
+    interface Source {
+        /** Mitte des Phasers in der Welt oder null, wenn er nicht mehr da ist. */
+        @Nullable Vec3 center();
+
+        PhaserBlock.@Nullable Kind kind();
+    }
+
+    private static Source fixed(ServerLevel level, BlockPos p) {
+        return new Source() {
+            @Override public @Nullable Vec3 center() {
+                return level.getBlockState(p).getBlock() instanceof PhaserBlock ? Vec3.atCenterOf(p) : null;
+            }
+
+            @Override public PhaserBlock.@Nullable Kind kind() {
+                return level.getBlockState(p).getBlock() instanceof PhaserBlock pb ? pb.kind : null;
+            }
+        };
+    }
+
     private static final class ShipShot extends BeamShots.Shot {
         private final ServerLevel level;
         private final ServerPlayer player;
-        private final List<BlockPos> phasers;
+        private final List<Source> phasers;
+        private final @Nullable Entity ownShip;
         private final List<PhaserBeamEntity> beams = new ArrayList<>();
         private final AABB own;
         private final ShipPower.Grid grid;
@@ -136,8 +159,9 @@ public final class PhaserControl {
         private final int power;
         private Aim aim;
 
-        ShipShot(ServerLevel level, ServerPlayer player, List<BlockPos> phasers, Aim aim, AABB own, ShipPower.Grid grid,
-                 float damage, float radius, int power) {
+        ShipShot(ServerLevel level, ServerPlayer player, List<Source> phasers, Aim aim, AABB own, ShipPower.Grid grid,
+                 float damage, float radius, int power, @Nullable Entity ownShip) {
+            this.ownShip = ownShip;
             this.level = level;
             this.player = player;
             this.phasers = phasers;
@@ -154,19 +178,22 @@ public final class PhaserControl {
             if (age >= BeamShots.DURATION || !Triggers.held(player)) return false; // Loslassen bricht ab
             // Strom für alle feuernden Phaser
             int need = fePerTick(power) * phasers.size();
-            if (ShipPower.draw(level, grid, need, ShipPower.Category.WEAPONS) < need) {
+            ServerLevel powerLevel = ownShip != null && de.simon.spacemod.flight.Shipyard.level(level.getServer()) != null
+                ? de.simon.spacemod.flight.Shipyard.level(level.getServer()) : level;
+            if (ShipPower.draw(powerLevel, grid, need, ShipPower.Category.WEAPONS) < need) {
                 if (player.isAlive()) player.sendOverlayMessage(Component.translatable("message.simonspacemod.phaser.no_power"));
                 return false;
             }
             // dem Fadenkreuz folgen, solange der Spieler durch die Kamera schaut
-            if (age > 0 && age % 2 == 0 && player.isAlive() && player.level() == level && CameraControl.inSession(player))
+            if (age > 0 && age % 2 == 0 && player.isAlive() && player.level() == level
+                && (CameraControl.inSession(player) || ownShip != null && player.getVehicle() == ownShip))
                 aim = aim(level, player, own);
             Vec3 tgt = aim.entity() != null && aim.entity().isAlive() ? aim.entity().getBoundingBox().getCenter() : aim.point();
             boolean shielded = false;
             for (int i = 0; i < phasers.size(); i++) {
-                BlockPos p = phasers.get(i);
-                if (!(level.getBlockState(p).getBlock() instanceof PhaserBlock pb)) continue;
-                Vec3 c = Vec3.atCenterOf(p);
+                Vec3 c = phasers.get(i).center();
+                PhaserBlock.Kind kind = phasers.get(i).kind();
+                if (c == null || kind == null) continue;
                 Vec3 start = c.add(tgt.subtract(c).normalize().scale(0.7));
                 Vec3 end = tgt;
                 // Schild im Weg: Strahl endet am Schild und schwächt es
@@ -177,9 +204,9 @@ public final class PhaserControl {
                     shielded = true;
                 }
                 if (beams.size() <= i) {
-                    PhaserBeamEntity b = BeamShots.beam(level, start, end, pb.kind.color, pb.kind.core, 0.12F + 0.06F * power, pb.kind.pulse);
+                    PhaserBeamEntity b = BeamShots.beam(level, start, end, kind.color, kind.core, 0.12F + 0.06F * power, kind.pulse);
                     if (b != null) {
-                        b.sound(de.simon.spacemod.ModSounds.index(shipSound(pb.kind)), power == 1 ? 1.0F : power == 2 ? 0.95F : 0.9F, 2.5F + 0.5F * power);
+                        b.sound(de.simon.spacemod.ModSounds.index(shipSound(kind)), power == 1 ? 1.0F : power == 2 ? 0.95F : 0.9F, 2.5F + 0.5F * power);
                         beams.add(b);
                     }
                 } else beams.get(i).aim(start, end);
@@ -198,7 +225,8 @@ public final class PhaserControl {
 
         private void hurtAlong(Vec3 start, Vec3 to) {
             Vec3 dir = to.subtract(start).normalize();
-            for (Entity e : level.getEntities(player, new AABB(start, to).inflate(1), e -> e instanceof LivingEntity le && le.isAlive())) {
+            for (Entity e : level.getEntities(player, new AABB(start, to).inflate(1), e -> e instanceof LivingEntity le && le.isAlive()
+                    && (ownShip == null || e.getVehicle() != ownShip))) {
                 if (e.getBoundingBox().inflate(0.3).clip(start, to.add(dir.scale(0.5))).isEmpty()) continue;
                 e.hurtServer(level, level.damageSources().indirectMagic(player, player), damage * 0.45F);
                 e.igniteForSeconds(2 + power * 2);
@@ -209,6 +237,142 @@ public final class PhaserControl {
         protected void end() {
             for (PhaserBeamEntity b : beams) b.discard();
         }
+    }
+
+    // ---- Pilot am Steuer eines fliegenden Schiffs ----
+
+    private static final Map<java.util.UUID, Integer> PILOT_POWER = new HashMap<>();
+
+    /** Phaserstärke des Piloten (Mausrad am Steuer), Standard 2. */
+    public static int pilotPower(ServerPlayer player) {
+        return PILOT_POWER.getOrDefault(player.getUUID(), 2);
+    }
+
+    public static void pilotPower(ServerPlayer player, int delta) {
+        int p = Math.max(1, Math.min(3, pilotPower(player) + delta));
+        PILOT_POWER.put(player.getUUID(), p);
+        player.sendOverlayMessage(Component.translatable("message.simonspacemod.phaser.power." + p));
+    }
+
+    /** Mitte eines Schiffsblocks (lokal) in der Welt. */
+    private static Vec3 worldOf(de.simon.spacemod.entity.FlyingShipEntity ship, BlockPos local) {
+        return de.simon.spacemod.flight.ShipPhysics.rotate(ship.rotation(1F), local.getX(), local.getY(), local.getZ()).add(ship.position());
+    }
+
+    /** Freie Schussbahn aus dem Schiff: die ersten Blöcke Richtung Ziel liegen nicht im eigenen Schiff. */
+    private static boolean clearLocal(de.simon.spacemod.entity.FlyingShipEntity ship, BlockPos local, Vec3 target) {
+        var q = ship.rotation(1F);
+        Vec3 d = de.simon.spacemod.flight.ShipPhysics.inverse(q, target.subtract(worldOf(ship, local))).normalize();
+        var col = ship.structure().collision();
+        for (double t = 1.0; t <= 3.0; t += 0.5) {
+            BlockPos b = BlockPos.containing(local.getX() + d.x * t + 0.5, local.getY() + d.y * t + 0.5, local.getZ() + d.z * t + 0.5);
+            if (!b.equals(local) && col.containsKey(b)) return false;
+        }
+        return true;
+    }
+
+    /** Lage aller Blöcke einer Art im fliegenden Schiff (lokal). */
+    private static List<BlockPos> shipBlocks(de.simon.spacemod.entity.FlyingShipEntity ship, java.util.function.Predicate<BlockState> test) {
+        List<BlockPos> out = new ArrayList<>();
+        for (var e : ship.structure().blocks) if (test.test(e.state())) out.add(e.pos());
+        return out;
+    }
+
+    /** Pilot: Phaser des fliegenden Schiffs feuern 2 s lang auf das Fadenkreuz (Strom aus dem Bordnetz). */
+    public static boolean fireFromShip(ServerPlayer player, de.simon.spacemod.entity.FlyingShipEntity ship, int power, boolean quiet) {
+        if (!(ship.level() instanceof ServerLevel level) || ship.structure() == null || ship.plot() < 0) return false;
+        ServerLevel sy = de.simon.spacemod.flight.Shipyard.level(level.getServer());
+        if (sy == null) return false;
+        String key = "ship#" + ship.getUUID();
+        long now = level.getGameTime();
+        Long last = LAST_SHOT.get(key);
+        if (last != null && now - last < COOLDOWN_TICKS) {
+            if (!quiet) player.sendOverlayMessage(Component.translatable("message.simonspacemod.phaser.recharging"));
+            return true;
+        }
+        List<BlockPos> phasers = shipBlocks(ship, st -> st.getBlock() instanceof PhaserBlock);
+        if (phasers.isEmpty()) {
+            player.sendOverlayMessage(Component.translatable("message.simonspacemod.phaser.none"));
+            return false;
+        }
+        AABB own = ship.getBoundingBox();
+        Aim aim = aim(level, player, new AABB(0, -100000, 0, 0, -100000, 0));
+        Vec3 tgt = aim.point();
+        phasers.sort(Comparator.comparingDouble(p -> worldOf(ship, p).distanceToSqr(tgt)));
+        List<BlockPos> chosen = new ArrayList<>();
+        for (BlockPos p : phasers) {
+            if (chosen.size() >= 2) break;
+            if (!clearLocal(ship, p, tgt) || chosen.stream().anyMatch(c -> c.distSqr(p) < 36)) continue;
+            chosen.add(p);
+        }
+        if (chosen.isEmpty()) {
+            player.sendOverlayMessage(Component.translatable("message.simonspacemod.phaser.no_arc"));
+            return false;
+        }
+        BlockPos origin = ship.plotOrigin();
+        ShipPower.Grid grid = ShipPower.gridFor(sy, origin.offset(chosen.get(0)));
+        if (!grid.hasPower(sy)) {
+            player.sendOverlayMessage(Component.translatable("message.simonspacemod.phaser.no_power"));
+            return false;
+        }
+        LAST_SHOT.put(key, now + BeamShots.DURATION - COOLDOWN_TICKS + (power - 1) * 10L);
+        int tier = sy.getBlockState(origin.offset(chosen.get(0))).getBlock() instanceof PhaserBlock pb ? switch (pb.kind) {
+            case PHASE_CANNON -> 1;
+            case PHASER_BANK -> 2;
+            case PHASER_EMITTER -> 3;
+            case PHASER_STRIP -> 6;
+        } : 2;
+        float damage = (6 + 2 * tier) * (power == 1 ? 1F : power == 2 ? 1.6F : 2.2F);
+        float radius = power == 1 ? 1.0F : power == 2 ? 1.8F + 0.3F * tier : 2.5F + 0.6F * tier;
+        List<Source> sources = new ArrayList<>();
+        for (BlockPos local : chosen) {
+            BlockPos yardPos = origin.offset(local);
+            sources.add(new Source() {
+                @Override public @Nullable Vec3 center() {
+                    return ship.isAlive() && sy.getBlockState(yardPos).getBlock() instanceof PhaserBlock ? worldOf(ship, local) : null;
+                }
+
+                @Override public PhaserBlock.@Nullable Kind kind() {
+                    return sy.getBlockState(yardPos).getBlock() instanceof PhaserBlock pb ? pb.kind : null;
+                }
+            });
+        }
+        BeamShots.start(new ShipShot(level, player, sources, aim, own, grid, damage, radius, power, ship));
+        if (!quiet) player.sendOverlayMessage(Component.translatable("message.simonspacemod.phaser.fire"));
+        return true;
+    }
+
+    /** Pilot: Photonen- bzw. Quantentorpedo aus dem Werfer des fliegenden Schiffs, der dem Ziel am nächsten ist. */
+    public static void torpedoFromShip(ServerPlayer player, de.simon.spacemod.entity.FlyingShipEntity ship, boolean quantum) {
+        if (!(ship.level() instanceof ServerLevel level) || ship.structure() == null) return;
+        String key = "ship#" + ship.getUUID() + (quantum ? "q" : "t");
+        long now = level.getGameTime();
+        Long last = LAST_SHOT.get(key);
+        if (last != null && now - last < (quantum ? 50 : 30)) {
+            player.sendOverlayMessage(Component.translatable("message.simonspacemod.torpedo.loading"));
+            return;
+        }
+        List<BlockPos> launchers = shipBlocks(ship, st -> st.getBlock() instanceof TorpedoLauncherBlock t && t.quantum == quantum);
+        if (launchers.isEmpty()) {
+            player.sendOverlayMessage(Component.translatable(quantum ? "message.simonspacemod.torpedo.no_quantum" : "message.simonspacemod.torpedo.none"));
+            return;
+        }
+        AABB own = ship.getBoundingBox();
+        Aim aim = aim(level, player, new AABB(0, -100000, 0, 0, -100000, 0));
+        Vec3 tgt = aim.point();
+        launchers.sort(Comparator.comparingDouble(p -> worldOf(ship, p).distanceToSqr(tgt)));
+        Vec3 c = worldOf(ship, launchers.get(0));
+        Vec3 start = c.add(tgt.subtract(c).normalize().scale(1.0));
+        LAST_SHOT.put(key, now);
+        TorpedoEntity t = ModBlocks.TORPEDO.get().create(level, EntitySpawnReason.TRIGGERED);
+        if (t == null) return;
+        t.setPos(start.x, start.y, start.z);
+        t.setup(quantum ? TorpedoStyle.QUANTUM : TorpedoStyle.photon(5), tgt, aim.entity(), own, player.getUUID());
+        level.getChunkSource().addTicketWithRadius(TicketType.ENDER_PEARL, ChunkPos.containing(BlockPos.containing(start)), 2);
+        level.addFreshEntity(t);
+        level.playSound(null, BlockPos.containing(c), (quantum ? de.simon.spacemod.ModSounds.TORPEDO_QUANTUM : de.simon.spacemod.ModSounds.TORPEDO_PHOTON).get(),
+            SoundSource.BLOCKS, 3.0F, 0.95F + level.getRandom().nextFloat() * 0.1F);
+        player.sendOverlayMessage(Component.translatable(quantum ? "message.simonspacemod.torpedo.quantum" : "message.simonspacemod.torpedo.photon"));
     }
 
     /** Ziel im Fadenkreuz: Punkt, ggf. Kreatur, und ob überhaupt etwas getroffen wird. */

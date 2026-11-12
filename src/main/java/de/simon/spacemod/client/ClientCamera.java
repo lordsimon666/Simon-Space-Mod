@@ -45,7 +45,9 @@ public final class ClientCamera {
         MovementInputUpdateEvent.BUS.addListener(ClientCamera::onMovement);
         // Mausrad: Phaserstärke (statt Hotbar wechseln)
         InputEvent.MouseScrollingEvent.BUS.addListener(e -> {
-            if (!active || e.getDeltaY() == 0) return false;
+            var pl = Minecraft.getInstance().player;
+            boolean pilotNow = pl != null && pl.getVehicle() instanceof de.simon.spacemod.entity.FlyingShipEntity fs && fs.isPilotEntity(pl);
+            if ((!active && !pilotNow) || e.getDeltaY() == 0) return false;
             TurboliftNetwork.sendToServer(new CameraAction(CameraAction.POWER, e.getDeltaY() > 0 ? 1 : -1, 0, 0));
             return true;
         });
@@ -74,8 +76,11 @@ public final class ClientCamera {
     private static void onTick() {
         var mc = Minecraft.getInstance();
         var player = mc.player;
+        // Pilot eines fliegenden Schiffs: Linksklick feuert die Schiffsphaser (nicht schlagen)
+        boolean pilot = player != null && player.getVehicle() instanceof de.simon.spacemod.entity.FlyingShipEntity fs && fs.isPilotEntity(player);
+        if (pilot && mc.gui.screen() == null) while (mc.options.keyAttack.consumeClick()) {}
         // Handphaser und Gewehre: Linksklick feuert (beim Zielen und aus der Hüfte) statt zu schlagen/abzubauen
-        if (!active && player != null && mc.gui.screen() == null
+        if (!active && !pilot && player != null && mc.gui.screen() == null
             && player.getMainHandItem().getItem() instanceof de.simon.spacemod.item.HandWeaponItem) {
             boolean shot = false;
             while (mc.options.keyAttack.consumeClick()) shot = true;
@@ -87,7 +92,7 @@ public final class ClientCamera {
         // Abzug: Zustand der Feuertaste an den Server (Strahl nur solange gehalten, danach Dauerfeuer)
         boolean want = false;
         if (player != null && mc.gui.screen() == null) {
-            if (active || player.getMainHandItem().getItem() instanceof de.simon.spacemod.item.HandWeaponItem)
+            if (active || pilot || player.getMainHandItem().getItem() instanceof de.simon.spacemod.item.HandWeaponItem)
                 want = mc.options.keyAttack.isDown();
         }
         if (player != null && (want != triggerDown || (want && player.tickCount % 5 == 0)))
@@ -102,6 +107,13 @@ public final class ClientCamera {
         boolean photon = false, quantum = false;
         while (PHOTON.consumeClick()) photon = true;
         while (QUANTUM.consumeClick()) quantum = true;
+        if (pilot && mc.gui.screen() == null) { // Torpedos vom Steuer aus
+            if (PHOTON.getKey().equals(mc.options.keySocialInteractions.getKey()))
+                while (mc.options.keySocialInteractions.consumeClick()) {}
+            if (photon) TurboliftNetwork.sendToServer(new CameraAction(CameraAction.PHOTON, 0, player.getYRot(), player.getXRot()));
+            if (quantum) TurboliftNetwork.sendToServer(new CameraAction(CameraAction.QUANTUM, 0, player.getYRot(), player.getXRot()));
+            return;
+        }
         if (!active || player == null) return;
         if (PHOTON.getKey().equals(mc.options.keySocialInteractions.getKey()))
             while (mc.options.keySocialInteractions.consumeClick()) {} // P öffnet in der Kamerasicht nicht die Spielerliste

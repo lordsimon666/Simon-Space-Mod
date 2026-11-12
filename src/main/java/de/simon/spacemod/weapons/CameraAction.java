@@ -23,8 +23,17 @@ public record CameraAction(int action, int delta, float yRot, float xRot) {
         if (player == null) return;
         switch (msg.action()) {
             case FIRE -> CameraControl.fire(player, msg.yRot(), msg.xRot());
-            case POWER -> CameraControl.power(player, msg.delta());
-            case PHOTON, QUANTUM -> CameraControl.torpedo(player, msg.action() == QUANTUM, msg.yRot(), msg.xRot());
+            case POWER -> {
+                if (player.getVehicle() instanceof de.simon.spacemod.entity.FlyingShipEntity s && s.isPilot(player)) PhaserControl.pilotPower(player, msg.delta());
+                else CameraControl.power(player, msg.delta());
+            }
+            case PHOTON, QUANTUM -> {
+                if (player.getVehicle() instanceof de.simon.spacemod.entity.FlyingShipEntity s && s.isPilot(player)) {
+                    player.setYRot(msg.yRot());
+                    player.setXRot(msg.xRot());
+                    PhaserControl.torpedoFromShip(player, s, msg.action() == QUANTUM);
+                } else CameraControl.torpedo(player, msg.action() == QUANTUM, msg.yRot(), msg.xRot());
+            }
             default -> CameraControl.next(player);
         }
     }

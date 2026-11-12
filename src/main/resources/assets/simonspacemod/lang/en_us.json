@@ -151,7 +151,7 @@
   "gamerule.simonspacemod.max_ship_blocks": "Largest ship size (blocks) for the helm console",
   "message.simonspacemod.ship.too_big_huge": "Too large: more than %s connected blocks (allowed: %s).",
   "message.simonspacemod.ship.hull_open": "Hull not closed: %s outer blocks are not hull blocks (e.g. %s at %s %s %s). Allowed outside: hull plates, hull windows, impulse engines, torpedo launchers, phasers, deflector, bussard, nacelle grille, navigation lights, doors.",
-  "message.simonspacemod.ship.helm_on": "You took the helm (W/S thrust, crosshair steers, L land, H leave).",
+  "message.simonspacemod.ship.helm_on": "You took the helm: W/S thrust, crosshair steers, left click phasers (wheel: power), P/O torpedoes, L land, H leave.",
   "message.simonspacemod.ship.helm_off": "Helm released – you can walk around the ship.",
   "message.simonspacemod.ship.helm_taken": "Someone else is at the helm.",
   "message.simonspacemod.ship.helm_far": "You need to stand at the helm console.",

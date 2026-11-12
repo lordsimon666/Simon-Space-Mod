@@ -53,6 +53,8 @@ public final class Triggers {
             boolean ok;
             if (CameraControl.inSession(p)) {
                 ok = CameraControl.fireHeld(p);
+            } else if (p.getVehicle() instanceof de.simon.spacemod.entity.FlyingShipEntity ship && ship.isPilot(p)) {
+                ok = PhaserControl.fireFromShip(p, ship, PhaserControl.pilotPower(p), true); // Pilot: Schiffsphaser
             } else {
                 ItemStack stack = p.getMainHandItem();
                 if (!(stack.getItem() instanceof HandWeaponItem w)) { HELD.remove(e.getKey()); continue; }
