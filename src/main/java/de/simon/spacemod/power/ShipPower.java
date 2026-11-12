@@ -75,13 +75,22 @@ public final class ShipPower {
 
     private static final Map<String, long[]> SHIP_POWER = new HashMap<>();
 
+    /** Licht auf 0 % gestellt (z. B. im Kampf): Lampen aus. */
+    private static boolean lightsAllowed(ServerLevel level, Grid grid) {
+        Alloc a = alloc(level, grid);
+        return a == null || a.shares()[Category.LIGHTS.ordinal()] > 0;
+    }
+
     /**
      * Hat ein Verbraucher (Lampe) Strom? In gespawnten Schiffen: steht noch einer ihrer Warpkerne
      * (nicht geladene Kerne zählen als vorhanden); sonst Suche über leitende Blöcke.
      */
     public static boolean powered(ServerLevel level, BlockPos pos) {
         PowerData.Ship ship = PowerData.get(level).shipAt(pos);
-        if (ship == null) return grid(level, pos).hasPower(level);
+        if (ship == null) {
+            Grid g = grid(level, pos);
+            return g.hasPower(level) && lightsAllowed(level, g);
+        }
         String key = level.dimension().identifier() + "!" + ship.min().asLong() + "/" + ship.max().asLong();
         long now = level.getGameTime();
         long[] c = SHIP_POWER.get(key);
@@ -92,7 +101,8 @@ public final class ShipPower {
         }
         SHIP_POWER.put(key, new long[] {now, on ? 1 : 0});
         // Ohne Warpkern: vielleicht versorgt ein Reaktor oder ein anderer Generator das Netz
-        return on || grid(level, pos).hasPower(level);
+        if (!on && !grid(level, pos).hasPower(level)) return false;
+        return lightsAllowed(level, gridFor(level, pos));
     }
 
     /**
@@ -112,15 +122,59 @@ public final class ShipPower {
         return g;
     }
 
-    /** Holt bis zu {@code want} RF aus dem Netz (in diesem Tick). */
+    /** Verbrauchergruppen für die Energieverteilung (Energieverteilungskonsole). */
+    public enum Category { WEAPONS, SHIELDS, ENGINES, LIGHTS, MACHINES }
+
+    /** Eingestellte Verteilung eines Netzes: Anteil je Gruppe in Prozent, Warpkern-Overdrive. */
+    private record Alloc(int[] shares, boolean overdrive, long time) {}
+
+    private static final Map<String, Alloc> ALLOC = new HashMap<>();
+    private static final Map<String, long[]> USED = new HashMap<>();
+
+    /** Von der Energieverteilungskonsole regelmäßig gemeldet (verfällt nach 3 s ohne Meldung). */
+    public static void allocate(ServerLevel level, Grid grid, int[] shares, boolean overdrive) {
+        if (grid == Grid.NONE) return;
+        ALLOC.put(level.dimension().identifier() + "#" + grid.key(), new Alloc(shares.clone(), overdrive, level.getGameTime()));
+    }
+
+    private static @org.jspecify.annotations.Nullable Alloc alloc(ServerLevel level, Grid grid) {
+        Alloc a = ALLOC.get(level.dimension().identifier() + "#" + grid.key());
+        return a == null || level.getGameTime() - a.time() > 60 ? null : a;
+    }
+
+    /** Leistung der Warpkerne im Netz (mit Overdrive +50 %). */
+    public static long effectiveOutput(ServerLevel level, Grid grid) {
+        Alloc a = alloc(level, grid);
+        return a != null && a.overdrive() ? grid.output() * 3L / 2 : grid.output();
+    }
+
+    /** Holt bis zu {@code want} RF aus dem Netz (in diesem Tick) für allgemeine Maschinen. */
     public static int draw(ServerLevel level, Grid grid, int want) {
+        return draw(level, grid, want, Category.MACHINES);
+    }
+
+    /** Holt bis zu {@code want} RF aus dem Netz für eine Verbrauchergruppe (begrenzt durch die Verteilung). */
+    public static int draw(ServerLevel level, Grid grid, int want, Category cat) {
         String key = level.dimension().identifier() + "#" + grid.key();
         long now = level.getGameTime();
+        Alloc a = alloc(level, grid);
+        long out = effectiveOutput(level, grid);
         long[] b = BUDGET.computeIfAbsent(key, k -> new long[] {-1, 0});
+        long[] used = USED.computeIfAbsent(key, k -> new long[Category.values().length + 1]);
         if (b[0] != now) {
             b[0] = now;
-            b[1] = grid.output();
+            b[1] = out;
         }
+        if (used[0] != now) {
+            java.util.Arrays.fill(used, 0);
+            used[0] = now;
+        }
+        if (a != null) {
+            int share = a.shares()[cat.ordinal()];
+            if (out > 0) want = (int) Math.max(0, Math.min(want, out * share / 100 - used[cat.ordinal() + 1]));
+            else want = want * share / 100;
+        }
+        if (want <= 0) return 0;
         int got = (int) Math.min(want, b[1]);
         b[1] -= got;
         // Rest aus Reaktoren und anderen Stromerzeugern
@@ -128,6 +182,7 @@ public final class ShipPower {
             if (got >= want) break;
             got += extractFrom(level, p, want - got, false);
         }
+        used[cat.ordinal() + 1] += got;
         return got;
     }
 
@@ -142,7 +197,7 @@ public final class ShipPower {
     public record Consumer(BlockPos pos, @org.jspecify.annotations.Nullable Direction side) {}
 
     /** Ergebnis der Suche: Erzeuger (Warpkerne und Speicher) und Verbraucher am Netz. */
-    public record Found(List<BlockPos> cores, List<Consumer> consumers) {}
+    public record Found(List<BlockPos> cores, List<Consumer> consumers, List<BlockPos> alarms) {}
 
     private static List<BlockPos> search(ServerLevel level, BlockPos start) {
         return explore(level, start).cores();
@@ -152,6 +207,7 @@ public final class ShipPower {
     public static Found explore(ServerLevel level, BlockPos start) {
         List<BlockPos> cores = new ArrayList<>();
         List<Consumer> consumers = new ArrayList<>();
+        List<BlockPos> alarms = new ArrayList<>();
         Set<Long> seen = new HashSet<>();
         ArrayDeque<BlockPos> queue = new ArrayDeque<>();
         queue.add(start);
@@ -164,10 +220,11 @@ public final class ShipPower {
                 if (!seen.add(n.asLong()) || !level.isLoaded(n)) continue;
                 BlockState st = level.getBlockState(n);
                 classify(level, n, d.getOpposite(), cores, consumers);
+                if (st.getBlock() instanceof de.simon.spacemod.defense.AlarmLightBlock) alarms.add(n.immutable());
                 if (conducts(st)) queue.add(n);
             }
         }
-        return new Found(cores, consumers);
+        return new Found(cores, consumers, alarms);
     }
 
     private static void classify(ServerLevel level, BlockPos n, @org.jspecify.annotations.Nullable Direction side, List<BlockPos> cores, List<Consumer> consumers) {

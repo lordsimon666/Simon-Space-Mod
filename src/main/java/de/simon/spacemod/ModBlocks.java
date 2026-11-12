@@ -476,6 +476,42 @@ public final class ModBlocks {
     public static final RegistryObject<MenuType<de.simon.spacemod.reactor.ReactorMenu>> REACTOR_MENU = MENUS.register("reactor",
         () -> IForgeMenuType.create(de.simon.spacemod.reactor.ReactorMenu::new));
 
+    // --- Energieverteilung (Maschinenraum), Alarm und Schilde ---
+    public static final RegistryObject<Block> POWER_CONSOLE = block("power_console",
+        p -> new de.simon.spacemod.defense.ConsoleBlock(p, de.simon.spacemod.defense.ConsoleBlock.Kind.POWER),
+        glowing(metal(MapColor.COLOR_ORANGE), 6).noOcclusion());
+    public static final RegistryObject<Block> SHIELD_CONSOLE = block("shield_console",
+        p -> new de.simon.spacemod.defense.ConsoleBlock(p, de.simon.spacemod.defense.ConsoleBlock.Kind.SHIELD),
+        glowing(metal(MapColor.COLOR_LIGHT_BLUE), 6).noOcclusion());
+    public static final RegistryObject<BlockEntityType<de.simon.spacemod.defense.PowerConsoleBlockEntity>> POWER_CONSOLE_BE =
+        BLOCK_ENTITIES.register("power_console", () -> new BlockEntityType<>(de.simon.spacemod.defense.PowerConsoleBlockEntity::new,
+            java.util.Set.of(POWER_CONSOLE.get())));
+    public static final RegistryObject<BlockEntityType<de.simon.spacemod.defense.ShieldConsoleBlockEntity>> SHIELD_CONSOLE_BE =
+        BLOCK_ENTITIES.register("shield_console", () -> new BlockEntityType<>(de.simon.spacemod.defense.ShieldConsoleBlockEntity::new,
+            java.util.Set.of(SHIELD_CONSOLE.get())));
+    public static final RegistryObject<MenuType<de.simon.spacemod.defense.ConsoleMenu>> POWER_CONSOLE_MENU = MENUS.register("power_console",
+        () -> IForgeMenuType.create((id, inv, buf) -> new de.simon.spacemod.defense.ConsoleMenu(ModBlocks.POWER_CONSOLE_MENU.get(), id,
+            new net.minecraft.world.inventory.SimpleContainerData(10), b -> {}, p -> true)));
+    public static final RegistryObject<MenuType<de.simon.spacemod.defense.ConsoleMenu>> SHIELD_CONSOLE_MENU = MENUS.register("shield_console",
+        () -> IForgeMenuType.create((id, inv, buf) -> new de.simon.spacemod.defense.ConsoleMenu(ModBlocks.SHIELD_CONSOLE_MENU.get(), id,
+            new net.minecraft.world.inventory.SimpleContainerData(7), b -> {}, p -> true)));
+    public static final RegistryObject<Block> ALARM_LIGHT = block("alarm_light", de.simon.spacemod.defense.AlarmLightBlock::new,
+        metal(MapColor.COLOR_RED).noOcclusion().lightLevel(s -> s.getValue(de.simon.spacemod.defense.AlarmLightBlock.LIT) ? 14 : 0)
+            .emissiveRendering(s -> s.getValue(de.simon.spacemod.defense.AlarmLightBlock.LIT)));
+    /** Schildemitter je Schiff: NCC-1701 (Stufe 1) bis NCC-1701-E (Stufe 6). */
+    public static final String[] SHIELD_EMITTERS = {"tos", "refit", "excelsior", "c", "d", "e"};
+    public static final java.util.List<RegistryObject<Block>> SHIELD_EMITTER = new java.util.ArrayList<>();
+    static {
+        for (int i = 0; i < SHIELD_EMITTERS.length; i++) {
+            int tier = i + 1;
+            SHIELD_EMITTER.add(block("shield_emitter_" + SHIELD_EMITTERS[i], p -> new de.simon.spacemod.defense.ShieldEmitterBlock(p, tier),
+                glowing(metal(MapColor.COLOR_LIGHT_BLUE), 4 + tier)));
+        }
+    }
+    public static final RegistryObject<EntityType<de.simon.spacemod.defense.ShieldFlashEntity>> SHIELD_FLASH = ENTITIES.register("shield_flash",
+        () -> EntityType.Builder.<de.simon.spacemod.defense.ShieldFlashEntity>of(de.simon.spacemod.defense.ShieldFlashEntity::new, MobCategory.MISC)
+            .sized(0.2F, 0.2F).noSummon().noSave().clientTrackingRange(12).updateInterval(20).build(ENTITIES.key("shield_flash")));
+
     // --- Schiffsteil-Fertigung: baut alle Blöcke der Mod ---
     public static final RegistryObject<Block> SHIP_PART_ASSEMBLY = block("ship_part_assembly", de.simon.spacemod.assembly.AssemblyBlock::new,
         metal(MapColor.COLOR_LIGHT_BLUE).lightLevel(s -> s.getValue(de.simon.spacemod.assembly.AssemblyBlock.LIT) ? 10 : 3));

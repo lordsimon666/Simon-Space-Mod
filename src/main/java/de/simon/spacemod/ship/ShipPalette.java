@@ -164,6 +164,11 @@ public final class ShipPalette {
             case QUANTUM_LAUNCHER -> ModBlocks.QUANTUM_LAUNCHER.get().defaultBlockState();
             case PHASER_BANK -> ModBlocks.PHASER_BANK.get().defaultBlockState();
             case PHASER_EMITTER -> ModBlocks.PHASER_EMITTER.get().defaultBlockState();
+            case POWER_CONSOLE -> ModBlocks.POWER_CONSOLE.get().defaultBlockState();
+            case SHIELD_CONSOLE -> ModBlocks.SHIELD_CONSOLE.get().defaultBlockState();
+            case ALARM_LIGHT -> ModBlocks.ALARM_LIGHT.get().defaultBlockState();
+            case SHIELD_EMITTER -> ModBlocks.SHIELD_EMITTER.get(Math.max(0, Math.min(ModBlocks.SHIELD_EMITTER.size() - 1,
+                EnterpriseBlueprint.variant(cellCode) - 1))).get().defaultBlockState();
             case WEAPONS_CONSOLE -> ModBlocks.WEAPONS_CONSOLE.get().defaultBlockState()
                 .setValue(VariantFacingBlock.VARIANT, EnterpriseBlueprint.variant(cellCode));
             case IRON_BARS -> Blocks.IRON_BARS.defaultBlockState()

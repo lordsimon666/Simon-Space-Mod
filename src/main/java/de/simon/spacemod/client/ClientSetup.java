@@ -14,6 +14,7 @@ public final class ClientSetup {
         // Torpedos bestehen nur aus Leuchtpartikeln
         event.registerEntityRenderer(ModBlocks.TORPEDO.get(), net.minecraft.client.renderer.entity.NoopRenderer::new);
         event.registerEntityRenderer(ModBlocks.PHASER_BEAM.get(), PhaserBeamRenderer::new);
+        event.registerEntityRenderer(ModBlocks.SHIELD_FLASH.get(), ShieldFlashRenderer::new);
         event.registerEntityRenderer(ModBlocks.FLYING_SHIP.get(), FlyingShipRenderer::new);
         // Waffen in Ständern, Wandhaltern und auf Ladestationen
         event.registerBlockEntityRenderer(ModBlocks.RIFLE_RACK_BE.get(), WeaponHolderRenderer::new);
@@ -26,6 +27,8 @@ public final class ClientSetup {
             MenuScreens.register(ModBlocks.TURBOLIFT_MENU.get(), TurboliftScreen::new);
             MenuScreens.register(ModBlocks.REACTOR_MENU.get(), ReactorScreen::new);
             MenuScreens.register(ModBlocks.ASSEMBLY_MENU.get(), AssemblyScreen::new);
+            MenuScreens.register(ModBlocks.POWER_CONSOLE_MENU.get(), PowerConsoleScreen::new);
+            MenuScreens.register(ModBlocks.SHIELD_CONSOLE_MENU.get(), ShieldConsoleScreen::new);
         });
     }
 }

@@ -254,6 +254,25 @@ VARIANTS = {
 }
 
 
+def red_alert(dur=2.0, seed=71):
+    """Alarmstufe Rot: zwei ansteigende 'Wuuup'-Töne (weich, leicht verstimmt)."""
+    t = t_axis(dur)
+    x = np.zeros(len(t))
+    whoop = 0.9
+    n = int(whoop * SR)
+    tw = np.arange(n) / SR
+    f = 380 + 520 * (tw / whoop) ** 0.8
+    one = np.zeros(n)
+    for k, d in enumerate((-0.006, 0.0, 0.007)):
+        ph = phase(f * (1 + d))
+        one += np.sin(ph) + 0.35 * np.sin(2 * ph + k) + 0.12 * np.sin(3 * ph)
+    one *= soft_env(n, 0.04, 0.12, whoop) / 3
+    for start in (0.0, 1.0):
+        i = int(start * SR)
+        x[i:i + n] += one[:max(0, min(n, len(x) - i))]
+    return soft(smooth_lp(x, 2500), 1.2)
+
+
 SOUNDS = {
     # Handwaffen: Strahlbündel (mehrere leicht verstimmte Töne, fallender Einsatz)
     "phaser_hand_nx": lambda: chorus_pulses(1000, 2200, 0.15, 0.3, seed=11),
@@ -268,6 +287,8 @@ SOUNDS = {
     # Torpedos
     "torpedo_photon": lambda: torpedo(1.2, 1200, 90, seed=31),
     "torpedo_quantum": lambda: torpedo(1.5, 800, 55, seed=32, shimmer=1.0, low=1.3),
+    # Alarm
+    "red_alert": lambda: red_alert(),
 }
 
 

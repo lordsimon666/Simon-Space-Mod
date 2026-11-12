@@ -82,6 +82,13 @@ public final class AssemblyRecipes {
                 .add(ModBlocks.ANTIMATTER_POD.get(), late ? 3 : 2).add(ModBlocks.DEUTERIUM.get(), 3)
                 .add(Items.REDSTONE_BLOCK, 1).add(late ? Items.DIAMOND : Items.GOLD_INGOT, late ? 2 : 3);
             b.count = 2;
+        } else if (p.startsWith("shield_emitter")) {
+            // je neuer das Schiff, desto aufwendiger
+            int tier = 1 + java.util.List.of("tos", "refit", "excelsior", "c", "d", "e").indexOf(p.substring("shield_emitter_".length()));
+            b.add(Items.IRON_BLOCK, 1 + tier / 2).add(Items.DIAMOND, tier).add(Items.REDSTONE_BLOCK, 2).add(Items.GLOWSTONE_DUST, 4)
+                .add(Items.LAPIS_BLOCK, 2);
+            if (tier >= 4) b.add(ModBlocks.DILITHIUM_CRYSTAL.get(), tier - 2);
+            if (tier >= 6) b.add(ModBlocks.ANTIMATTER_POD.get(), 1);
         } else if (p.startsWith("reactor_")) {
             if (p.equals("reactor_controller"))
                 b.add(Items.IRON_INGOT, 8).add(Items.COPPER_INGOT, 8).add(ModBlocks.URANIUM_INGOT.get(), 3).add(Items.DIAMOND, 2).add(Items.REDSTONE_BLOCK, 1);

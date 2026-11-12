@@ -393,6 +393,47 @@ klicke sie mit der rechten Maustaste an:
 * **Landen** (L, am Steuer): nur langsam und annähernd waagerecht; das Schiff wird wieder zu Blöcken,
   die Drehung rastet auf 90° ein, Truhen & Co. behalten ihren Inhalt. Am Zielort muss Platz sein.
 
+### Energieverteilung und Warpkern-Overdrive
+
+Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baubar):
+
+* Für jede Verbrauchergruppe – **Waffen**, **Schilde**, **Antrieb**, **Beleuchtung**, **Maschinen**
+  (Ladestationen, Fertigung, Maschinen anderer Mods) – lässt sich einstellen, wie viel der
+  Warpkernleistung sie höchstens bekommt (0, 25, 50, 75 oder 100 %). Im Kampf z. B. Maschinen und
+  Licht herunter, damit Phaser und Schilde mehr bekommen. Licht auf 0 % schaltet die Lampen aus.
+* **Warpkern-Overdrive**: +50 % Leistung. Läuft er länger als **5 Minuten**, kommt es zum
+  **Eindämmungsbruch**: Alarmstufe Rot, die **roten Alarmleuchten** blinken mit Alarmton, alle in der
+  Nähe werden gewarnt – nach **2 Minuten** explodiert der Kern. Abwenden lässt sich das nur, indem man
+  den Warpkern entfernt. Nach dem Abschalten kühlt der Kern wieder ab (doppelt so schnell).
+* **Explosion** je nach stärkstem Kern: NX-01 110 Blöcke Radius (eine NX-01 in voller Größe ist
+  danach so gut wie weg), Originalserie 120, Next Generation 135, Enterprise-E 150 (reißt ein großes
+  Loch in die E). Alles in diesem Radius verschwindet, Lebewesen darin sterben.
+* Rote **Alarmleuchten** hängen in jedem Maschinenraum; man kann weitere an die Wand setzen – sie
+  gehören zum Bordnetz, wenn sie Blöcke der Mod berühren.
+
+### Schilde
+
+* **Schildemitter** für jedes Schiff, je neuer desto stärker: NCC-1701 (Stufe 1) bis NCC-1701-E
+  (Stufe 6). Die NX-01 hat noch keine Schilde (nur polarisierte Hüllenplatten). In jeder Enterprise
+  ab der NCC-1701 steht der Emitter im Maschinenraum, die **Schildsteuerung** auf der Brücke
+  (neben der Waffenstation).
+* **Einschalten** an der Schildsteuerung: die Hülle wird vermessen und das Schild etwa **2 Blöcke**
+  vor dem Rumpf berechnet. Es ist geglättet: kleine Vertiefungen (z. B. viele 1-Block-Rillen) werden
+  überbrückt (dort ist der Abstand größer), einzeln herausstehende Blöcke bekommen nur 1 Block Abstand.
+* Jeder Schildblock hat **Leben**: Stufe 1 60, 2 90, 3 120, 4 160, 5 200, 6 260. Schaden machen nur
+  **Explosionen** (je stärker, desto mehr) und **Phaser**: ein Phaserstoß weniger als ein
+  **Photonentorpedo**, ein **Quantentorpedo** noch mehr. Solange das Schild an der Stelle Leben hat,
+  bleiben Hülle und Besatzung dahinter unversehrt; Strahlen und Torpedos enden am Schild.
+* **Sichtbar** wird das Schild nur bei Treffern: die Schildblöcke im Umkreis von etwa 10 Blöcken
+  leuchten kurz auf – **blau**, mit wenig Leben **gelb**, fast zerstört **rot**.
+* **Regeneration** mit Strom aus dem Bordnetz (Gruppe „Schilde“): mehr Energie, schnellere
+  Erholung – aber höchstens 2 % des Lebens je Block und Sekunde, so wird kein Schiff unverwundbar.
+  Das Halten des Schildes kostet zusätzlich Grundlast; reicht sie nicht, fällt das Schild aus.
+* **Umverteilen** (alle 10 s): verteilt die Energie von starken auf schwache Stellen – alle
+  Schildblöcke bekommen den Durchschnitt.
+* Selbst gebaute Schiffe: Schildemitter und Schildsteuerung ins Schiff setzen; die Konsole nimmt alle
+  verbundenen Schiffsblöcke als Rumpf.
+
 ### Raumanzug
 
 * **Raumanzug** (Brustteil): angezogen kann man **fliegen wie im Kreativmodus** (doppelt springen),
@@ -507,7 +548,7 @@ E = Eisenbarren        G = Goldbarren
 F = roter Farbstoff, P = Enderperle, R = Redstone
 ```
 
-## Neue Blöcke (138)
+## Neue Blöcke (147)
 
 * **Hülle**: Hüllenpanzerung (+ Stufe), Hüllenplatte, dunkle Hüllenplatte, Hüllenfenster,
   Kennungsmarkierung (+ Stufe), roter Zierstreifen, Positionslicht rot/grün, Deflektorschüssel,
@@ -543,6 +584,7 @@ F = roter Farbstoff, P = Enderperle, R = Redstone
 * **Kernreaktor**: Uranerz, Tiefenschiefer-Uranerz, Reaktorhülle, Reaktorglas, Reaktor-Steuerblock
 * **Weltraum**: Luftschleuse (2 x 2 x 2 und 1 x 2 x 2), Dilithium-Erz, Antimaterie-Einschluss, Deuterium-Eis
 * **Werkstatt**: Schiffsteil-Fertigung
+* **Verteidigung**: Energieverteilung, Schildsteuerung, Alarmleuchte, 6 Schildemitter (NCC-1701 bis -E)
 * **Allgemein**: Deckboden, Korridorwand, Deckenverkleidung, Deckenleuchte, Maschinenraum-Konsole,
   Warpkern, Plasmaleitung
 

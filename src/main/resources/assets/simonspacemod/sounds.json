@@ -78,5 +78,13 @@
       }
     ],
     "subtitle": "subtitles.simonspacemod.torpedo_quantum"
+  },
+  "red_alert": {
+    "sounds": [
+      {
+        "name": "simonspacemod:red_alert"
+      }
+    ],
+    "subtitle": "subtitles.simonspacemod.red_alert"
   }
 }

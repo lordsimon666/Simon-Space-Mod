@@ -47,6 +47,10 @@ class EnterpriseBlueprintTest {
             + counts.getOrDefault(ShipPart.TNG_CONSOLE, 0) + counts.getOrDefault(ShipPart.ENT_CONSOLE, 0) > 10, "Stationen fehlen");
         assertTrue(counts.getOrDefault(ShipPart.TRANSPORTER_ENERGIZER, 0) > 0 || design.nx, "Energiewand fehlt");
         assertTrue(bp.warpCores.size() >= 30, "Warpkern fehlt");
+        assertEquals(1, counts.getOrDefault(ShipPart.POWER_CONSOLE, 0), "Energieverteilung im Maschinenraum fehlt");
+        assertTrue(counts.getOrDefault(ShipPart.ALARM_LIGHT, 0) >= 4, "Alarmleuchten fehlen");
+        assertEquals(design.nx ? 0 : 1, counts.getOrDefault(ShipPart.SHIELD_EMITTER, 0), "Schildemitter");
+        assertEquals(design.nx ? 0 : 1, counts.getOrDefault(ShipPart.SHIELD_CONSOLE, 0), "Schildkonsole auf der Brücke");
         assertEquals(2, bp.armoryChargers.size(), "Waffenkammer: Ladestationen fehlen");
         assertEquals(bp.hasRifles() ? 3 : 0, bp.armoryRacks.size(), "Waffenkammer: Gewehrständer");
         assertTrue(bp.armoryHolders.size() >= 2, "Waffenkammer: Phaserhalter fehlen");

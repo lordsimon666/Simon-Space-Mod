@@ -497,7 +497,8 @@ public class FlyingShipEntity extends Entity {
             BlockPos src = plotOrigin().offset(helm != null ? helm : structure.blocks.get(0).pos());
             de.simon.spacemod.power.ShipPower.Grid grid = de.simon.spacemod.power.ShipPower.grid(sy, src);
             if (demand > 0) {
-                int got = de.simon.spacemod.power.ShipPower.draw(sy, grid, (int) Math.min(Integer.MAX_VALUE, Math.ceil(demand)));
+                int got = de.simon.spacemod.power.ShipPower.draw(sy, grid, (int) Math.min(Integer.MAX_VALUE, Math.ceil(demand)),
+                    de.simon.spacemod.power.ShipPower.Category.ENGINES);
                 lastPower = Math.min(1, got / demand);
             } else if (tickCount % 10 == 0) {
                 lastPower = grid.hasPower(sy) ? 1 : 0;

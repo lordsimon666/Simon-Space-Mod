@@ -2787,6 +2787,7 @@ def sound_assets(de, en):
         "phaser_ship_tng": ("Phaserstreifen feuert", "Phaser array fires"),
         "torpedo_photon": ("Photonentorpedo abgefeuert", "Photon torpedo launched"),
         "torpedo_quantum": ("Quantentorpedo abgefeuert", "Quantum torpedo launched"),
+        "red_alert": ("Alarmstufe Rot", "Red alert"),
     }
     data = {}
     for n, (d, e) in names.items():
@@ -2794,6 +2795,181 @@ def sound_assets(de, en):
         de[f"subtitles.{MODID}.{n}"] = d
         en[f"subtitles.{MODID}.{n}"] = e
     write_json(os.path.join(ASSETS, "sounds.json"), data)
+
+
+# ---------------------------------------------------------------------------------------------
+#  Energieverteilung, Alarmleuchte, Schilde
+# ---------------------------------------------------------------------------------------------
+
+def tex_console_front(bars, accent):
+    img = noise(new((70, 74, 82)), 5, 931 + len(bars))
+    px = img.load()
+    for i in range(16):
+        px[i, 0] = px[i, 15] = px[0, i] = px[15, i] = (40, 42, 48, 255)
+    for x in range(2, 14):
+        for y in range(2, 11):
+            px[x, y] = (12, 14, 20, 255)
+    for k, (h, c) in enumerate(bars):  # Balkenanzeige
+        x = 3 + k * 2
+        for y in range(10 - h, 10):
+            px[x, y] = c + (255,)
+    for x in range(2, 14):
+        px[x, 12] = accent + (255,)
+    px[3, 13] = (220, 60, 60, 255)
+    px[5, 13] = (60, 200, 80, 255)
+    return img
+
+
+def tex_shield_emitter(tier):
+    img = noise(new((90, 96, 108)), 6, 940 + tier)
+    px = img.load()
+    for i in range(16):
+        px[i, 0] = px[i, 15] = px[0, i] = px[15, i] = (55, 58, 66, 255)
+    glow = [(90, 160, 255), (110, 180, 255), (80, 200, 255), (120, 200, 255), (150, 210, 255), (180, 225, 255)][tier - 1]
+    for x in range(16):
+        for y in range(16):
+            d = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** 0.5
+            if d < 2.5 + tier * 0.35:
+                px[x, y] = shade(glow, 30)
+            elif d < 4 + tier * 0.4:
+                px[x, y] = shade(glow, -40)
+    for k in range(tier):  # Stufe als Punkte
+        px[2 + 2 * k, 13] = (230, 230, 240, 255)
+    return img
+
+
+def tex_alarm(lit):
+    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    px = img.load()
+    for x in range(16):
+        for y in range(16):
+            d = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** 0.5
+            if d < 7.5:
+                base = (255, 60, 40) if lit else (110, 20, 18)
+                px[x, y] = shade(base, int(40 - d * 8) if lit else -int(d * 3))
+    for x in range(16):
+        px[x, 0] = px[x, 15] = (50, 50, 55, 255)
+        px[0, x] = px[15, x] = (50, 50, 55, 255)
+    return img
+
+
+def defense_assets(de, en):
+    M = MODID
+    rot = {"north": 0, "east": 90, "south": 180, "west": 270}
+    side = b("reactor_casing")
+    # Konsolen (vorne Anzeige, sonst Metall)
+    save(tex_console_front([(6, (230, 120, 40)), (4, (230, 190, 40)), (7, (90, 200, 90)), (3, (90, 160, 255)), (5, (200, 200, 200))],
+                           (230, 140, 40)), "power_console_front")
+    save(tex_console_front([(7, (90, 160, 255)), (7, (90, 160, 255)), (5, (90, 160, 255)), (6, (90, 160, 255)), (7, (90, 160, 255))],
+                           (80, 150, 255)), "shield_console_front")
+    for n in ("power_console", "shield_console"):
+        write_json(os.path.join(ASSETS, "models", "block", n + ".json"), {"parent": "minecraft:block/orientable",
+            "textures": {"front": b(n + "_front"), "side": side, "top": side}})
+        write_json(os.path.join(ASSETS, "blockstates", n + ".json"), {"variants": {
+            f"facing={d}": dict({"model": b(n)}, **({"y": r} if r else {})) for d, r in rot.items()}})
+        write_json(os.path.join(ASSETS, "items", n + ".json"), item_def(b(n)))
+        write_json(os.path.join(DATA, "loot_table", "blocks", n + ".json"), loot(n))
+    # Alarmleuchte (an der Wand, Lampe zeigt in Blickrichtung)
+    save(tex_alarm(False), "alarm_light")
+    save(tex_alarm(True), "alarm_light_lit")
+    for lit in (False, True):
+        n = "alarm_light" + ("_lit" if lit else "")
+        t = b(n)
+        write_json(os.path.join(ASSETS, "models", "block", n + ".json"), {"parent": "minecraft:block/block",
+            "textures": {"particle": t, "l": t, "m": b("reactor_casing")},
+            "elements": [el([4, 3, 14], [12, 13, 16], all6("#m")), el([5, 4, 11], [11, 12, 14], all6("#l"))]})
+    write_json(os.path.join(ASSETS, "blockstates", "alarm_light.json"), {"variants": {
+        f"facing={d},lit={str(l).lower()}": dict({"model": b("alarm_light" + ("_lit" if l else ""))}, **({"y": r} if r else {}))
+        for d, r in rot.items() for l in (False, True)}})
+    write_json(os.path.join(ASSETS, "items", "alarm_light.json"), item_def(b("alarm_light_lit")))
+    write_json(os.path.join(DATA, "loot_table", "blocks", "alarm_light.json"), loot("alarm_light"))
+    # Schildemitter je Schiff
+    names = {"tos": ("NCC-1701", "NCC-1701"), "refit": ("NCC-1701-A", "NCC-1701-A"), "excelsior": ("NCC-1701-B", "NCC-1701-B"),
+             "c": ("NCC-1701-C", "NCC-1701-C"), "d": ("NCC-1701-D", "NCC-1701-D"), "e": ("NCC-1701-E", "NCC-1701-E")}
+    for i, k in enumerate(names):
+        n = f"shield_emitter_{k}"
+        save(tex_shield_emitter(i + 1), n)
+        write_json(os.path.join(ASSETS, "models", "block", n + ".json"), {"parent": "minecraft:block/cube_all", "textures": {"all": b(n)}})
+        write_json(os.path.join(ASSETS, "blockstates", n + ".json"), {"variants": {"": {"model": b(n)}}})
+        write_json(os.path.join(ASSETS, "items", n + ".json"), item_def(b(n)))
+        write_json(os.path.join(DATA, "loot_table", "blocks", n + ".json"), loot(n))
+        de[f"block.{M}.{n}"] = f"Schildemitter ({names[k][0]}, Stufe {i + 1})"
+        en[f"block.{M}.{n}"] = f"Shield Emitter ({names[k][1]}, tier {i + 1})"
+    # Rezepte (Werkbank)
+    def shaped(name, pattern, key):
+        write_json(os.path.join(DATA, "recipe", name + ".json"), {"type": "minecraft:crafting_shaped", "category": "redstone",
+            "key": key, "pattern": pattern, "result": {"id": f"{M}:{name}"}})
+    shaped("power_console", ["IGI", "RCR", "IDI"], {"I": "minecraft:iron_ingot", "G": "minecraft:glass_pane", "R": "minecraft:redstone",
+           "C": "minecraft:comparator", "D": "minecraft:diamond"})
+    shaped("shield_console", ["IGI", "RCR", "ILI"], {"I": "minecraft:iron_ingot", "G": "minecraft:glass_pane", "R": "minecraft:redstone",
+           "C": "minecraft:comparator", "L": "minecraft:lapis_block"})
+    write_json(os.path.join(DATA, "recipe", "alarm_light.json"), {"type": "minecraft:crafting_shaped", "category": "redstone",
+        "key": {"I": "minecraft:iron_ingot", "R": "minecraft:redstone_lamp", "D": "minecraft:red_dye"},
+        "pattern": [" I ", "DRD", " I "], "result": {"id": f"{M}:alarm_light", "count": 2}})
+    extra = {1: "minecraft:lapis_block", 2: "minecraft:gold_block", 3: "minecraft:emerald", 4: f"{M}:dilithium_crystal",
+             5: f"{M}:dilithium_crystal", 6: f"{M}:antimatter_pod"}
+    prev = None
+    for i, k in enumerate(names):
+        n = f"shield_emitter_{k}"
+        key = {"I": "minecraft:iron_block", "D": "minecraft:diamond", "X": extra[i + 1]}
+        if prev:
+            key["P"] = f"{M}:{prev}"
+            pattern = ["IXI", "DPD", "IXI"]
+        else:
+            key["R"] = "minecraft:redstone_block"
+            pattern = ["IXI", "DRD", "IXI"]
+        shaped(n, pattern, key)
+        prev = n
+    de.update({
+        f"block.{M}.power_console": "Energieverteilung", f"block.{M}.shield_console": "Schildsteuerung",
+        f"block.{M}.alarm_light": "Alarmleuchte (rot)",
+        f"gui.{M}.power.weapons": "Waffen", f"gui.{M}.power.shields": "Schilde", f"gui.{M}.power.engines": "Antrieb",
+        f"gui.{M}.power.lights": "Beleuchtung", f"gui.{M}.power.machines": "Maschinen",
+        f"gui.{M}.power.overdrive_on": "Warpkern-Overdrive: AN (+50 %)", f"gui.{M}.power.overdrive_off": "Warpkern-Overdrive: aus",
+        f"gui.{M}.power.overdrive_time": "Overdrive – Kern kritisch in %s:%s",
+        f"gui.{M}.power.cooling": "Kern kühlt ab (%s s)", f"gui.{M}.power.normal": "Warpkern stabil",
+        f"gui.{M}.power.breach": "WARPKERNBRUCH! Explosion in %s s",
+        f"message.{M}.power.overdrive_on": "Warpkern-Overdrive aktiv: +50 % Energie – nicht länger als 5 Minuten!",
+        f"message.{M}.power.overdrive_off": "Warpkern-Overdrive aus",
+        f"message.{M}.power.overheat": "Warnung: Warpkern überhitzt – Eindämmungsbruch in 1 Minute!",
+        f"message.{M}.power.breach": "ALARMSTUFE ROT! Warpkern-Eindämmungsbruch – Explosion in 2 Minuten! Kern entfernen oder Schiff verlassen!",
+        f"message.{M}.power.countdown": "WARPKERNBRUCH – Explosion in %s s",
+        f"message.{M}.power.breach_averted": "Warpkern entfernt – Eindämmungsbruch abgewendet.",
+        f"gui.{M}.shield.off": "Schild aus", f"gui.{M}.shield.scanning": "Hülle wird vermessen …",
+        f"gui.{M}.shield.up": "Schild aktiv", f"gui.{M}.shield.no_emitter": "Kein Schildemitter im Schiff",
+        f"gui.{M}.shield.no_power": "Zu wenig Energie – Schild unten",
+        f"gui.{M}.shield.info": "Stufe %s, ~%s Blöcke", f"gui.{M}.shield.average": "Stärke", f"gui.{M}.shield.weakest": "Schwächste",
+        f"gui.{M}.shield.turn_on": "Schild an", f"gui.{M}.shield.turn_off": "Schild aus", f"gui.{M}.shield.rebalance": "Umverteilen",
+        f"gui.{M}.shield.hint": "Umverteilen: von starken zu schwachen Stellen",
+        f"message.{M}.shield.on": "Schilde hoch!", f"message.{M}.shield.off": "Schilde runter",
+        f"message.{M}.shield.rebalanced": "Schildenergie umverteilt: alle Bereiche auf %s %%",
+        f"subtitles.{M}.red_alert": "Alarmstufe Rot",
+    })
+    en.update({
+        f"block.{M}.power_console": "Power Distribution", f"block.{M}.shield_console": "Shield Control",
+        f"block.{M}.alarm_light": "Alarm Light (red)",
+        f"gui.{M}.power.weapons": "Weapons", f"gui.{M}.power.shields": "Shields", f"gui.{M}.power.engines": "Engines",
+        f"gui.{M}.power.lights": "Lighting", f"gui.{M}.power.machines": "Machines",
+        f"gui.{M}.power.overdrive_on": "Warp core overdrive: ON (+50 %)", f"gui.{M}.power.overdrive_off": "Warp core overdrive: off",
+        f"gui.{M}.power.overdrive_time": "Overdrive – core critical in %s:%s",
+        f"gui.{M}.power.cooling": "Core cooling down (%s s)", f"gui.{M}.power.normal": "Warp core stable",
+        f"gui.{M}.power.breach": "WARP CORE BREACH! Explosion in %s s",
+        f"message.{M}.power.overdrive_on": "Warp core overdrive active: +50 % power – no longer than 5 minutes!",
+        f"message.{M}.power.overdrive_off": "Warp core overdrive off",
+        f"message.{M}.power.overheat": "Warning: warp core overheating – containment breach in 1 minute!",
+        f"message.{M}.power.breach": "RED ALERT! Warp core containment breach – explosion in 2 minutes! Remove the core or abandon ship!",
+        f"message.{M}.power.countdown": "WARP CORE BREACH – explosion in %s s",
+        f"message.{M}.power.breach_averted": "Warp core removed – containment breach averted.",
+        f"gui.{M}.shield.off": "Shields off", f"gui.{M}.shield.scanning": "Mapping the hull …",
+        f"gui.{M}.shield.up": "Shields up", f"gui.{M}.shield.no_emitter": "No shield emitter in the ship",
+        f"gui.{M}.shield.no_power": "Not enough power – shields down",
+        f"gui.{M}.shield.info": "Tier %s, ~%s blocks", f"gui.{M}.shield.average": "Strength", f"gui.{M}.shield.weakest": "Weakest",
+        f"gui.{M}.shield.turn_on": "Shields on", f"gui.{M}.shield.turn_off": "Shields off", f"gui.{M}.shield.rebalance": "Rebalance",
+        f"gui.{M}.shield.hint": "Rebalance: move energy from strong to weak areas",
+        f"message.{M}.shield.on": "Shields up!", f"message.{M}.shield.off": "Shields down",
+        f"message.{M}.shield.rebalanced": "Shield energy rebalanced: all areas at %s %%",
+        f"subtitles.{M}.red_alert": "Red alert",
+    })
 
 
 def armory_assets(de, en):
@@ -3591,7 +3767,8 @@ def main():
     models_extra += armory_assets(armory_de, armory_en)
     models_extra += ["ceiling_light", "dual_wall", "dual_floor", "uranium_ore", "deepslate_uranium_ore", "reactor_casing",
                      "reactor_glass", "reactor_controller", "ship_helm", "airlock", "airlock_small", "dilithium_ore",
-                     "antimatter_cluster", "deuterium_ice", "ship_part_assembly"]
+                     "antimatter_cluster", "deuterium_ice", "ship_part_assembly",
+                     "power_console", "shield_console", "alarm_light"] + [f"shield_emitter_{k}" for k in ("tos", "refit", "excelsior", "c", "d", "e")]
     models_extra += [f"door_{e}_{k}" for e in DOOR_ERAS for k in DOOR_KINDS]
     # Mit der Spitzhacke abbaubar
     write_json(os.path.join(ROOT, "data", "minecraft", "tags", "block", "mineable", "pickaxe.json"),
@@ -3747,6 +3924,7 @@ def main():
     space_assets(de, en)
     suit_assembly_assets(de, en)
     sound_assets(de, en)
+    defense_assets(de, en)
     de.update(armory_de)
     en.update(armory_en)
     de.update({

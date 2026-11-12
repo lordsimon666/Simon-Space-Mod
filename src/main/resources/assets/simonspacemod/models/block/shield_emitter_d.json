@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "simonspacemod:block/shield_emitter_d"
+  }
+}

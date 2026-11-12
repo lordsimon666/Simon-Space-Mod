@@ -76,6 +76,21 @@ public class TorpedoEntity extends Entity {
         Vec3 dir = dist < 1e-4 ? Vec3.ZERO : to.scale(1 / dist);
         double step = Math.min(speed, dist);
         keepLoaded(level, pos, dir);
+        // Schild eines anderen Schiffs auf dem Weg? Torpedos treffen härter als ein Phaserstoß,
+        // Quantentorpedos noch härter
+        var shieldHit = de.simon.spacemod.defense.Shields.intercept(level, pos, pos.add(dir.scale(step)));
+        if (shieldHit != null) {
+            float amount = style.radius * de.simon.spacemod.defense.Shields.PHOTON_PER_RADIUS
+                * (style == TorpedoStyle.QUANTUM ? de.simon.spacemod.defense.Shields.QUANTUM_BONUS : 1F);
+            if (shieldHit.shield().damage(shieldHit.point(), amount, 3 + style.radius / 2)) {
+                Vec3 p = shieldHit.point();
+                level.sendParticles(net.minecraft.core.particles.ParticleTypes.EXPLOSION_EMITTER, p.x, p.y, p.z, 1, 0, 0, 0, 0);
+                level.playSound(null, BlockPos.containing(p), net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE.value(),
+                    net.minecraft.sounds.SoundSource.BLOCKS, 4F, 0.9F);
+                discard();
+                return;
+            }
+        }
         // Weg in kleinen Schritten prüfen: Blöcke außerhalb des eigenen Schiffs und Kreaturen
         for (double t = 0.25; t <= step; t += 0.25) {
             Vec3 v = pos.add(dir.scale(t));

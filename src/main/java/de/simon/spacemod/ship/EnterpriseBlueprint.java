@@ -3069,6 +3069,7 @@ public final class EnterpriseBlueprint {
         for (int dz = -1; dz <= 1; dz++) set(cx - 3, yb + 1, dz, ShipPart.HELM_CONSOLE, Direction.SOUTH);
         // Steuermann (Backbord) bedient wie bei Sulu auch die Phaser
         set(cx - 3, yb + 1, -1, ShipPart.WEAPONS_CONSOLE, Direction.SOUTH, 0);
+        set(cx - 3, yb + 1, 1, ShipPart.SHIELD_CONSOLE, Direction.SOUTH); // Deflektoren (Steuerbord)
         set(cx - 2, yb + 1, -1, ShipPart.STATION_CHAIR, Direction.NORTH);
         set(cx - 2, yb + 1, 1, ShipPart.STATION_CHAIR, Direction.NORTH);
         // Kommandantensessel
@@ -3145,6 +3146,7 @@ public final class EnterpriseBlueprint {
         // lange graue Steuerkonsole mit zwei Stühlen
         for (int dz = -1; dz <= 1; dz++) set(cx - 3, yb + 1, dz, ShipPart.HELM_CONSOLE_GRAY, Direction.SOUTH);
         set(cx - 3, yb + 1, -1, ShipPart.WEAPONS_CONSOLE, Direction.SOUTH, 1); // Waffen am Steuer (Backbord)
+        set(cx - 3, yb + 1, 1, ShipPart.SHIELD_CONSOLE, Direction.SOUTH); // Schilde (Steuerbord)
         set(cx - 2, yb + 1, -1, ShipPart.STATION_CHAIR_TEAL, Direction.NORTH);
         set(cx - 2, yb + 1, 1, ShipPart.STATION_CHAIR_TEAL, Direction.NORTH);
         // erhöhtes Podest mit dem Kommandantensessel
@@ -3215,6 +3217,7 @@ public final class EnterpriseBlueprint {
             for (int y = yb + 1; y <= yb + 4; y++) set(cx - (int) Math.ceil(rr), y, dz, ShipPart.VIEWSCREEN, Direction.SOUTH);
         // Taktikstation in der Mitte des Hufeisens (hinter dem Captain)
         set(cx + 5, yb + 2, 0, ShipPart.WEAPONS_CONSOLE, Direction.SOUTH, 2);
+        set(cx + 4, yb + 2, 1, ShipPart.SHIELD_CONSOLE, Direction.SOUTH); // Schilde neben der Taktik
         // Ops (Backbord) und Conn (Steuerbord)
         for (int side : new int[] {-1, 1}) {
             set(cx - 6, yb + 1, 2 * side, ShipPart.TNG_CONSOLE, Direction.SOUTH);
@@ -3381,6 +3384,14 @@ public final class EnterpriseBlueprint {
                 set(x, yF + 2, -6, lcars, Direction.EAST);
                 set(x, yF + 2, 6, lcars, Direction.WEST);
             }
+        }
+        // Energieverteilung (mit Warpkern-Overdrive) und Schildemitter (ab der NCC-1701)
+        set(x0 + 3, yF + 1, -5, ShipPart.POWER_CONSOLE, Direction.SOUTH);
+        if (!nx) set(x0 + 3, yF + 1, 5, ShipPart.SHIELD_EMITTER, Direction.NORTH, design.ordinal());
+        // rote Alarmleuchten unter der Decke (Warpkernbruch)
+        for (int x : new int[] {x0 - 7, x0, x0 + 7}) {
+            set(x, yF + 6, -5, ShipPart.ALARM_LIGHT, Direction.SOUTH);
+            set(x, yF + 6, 5, ShipPart.ALARM_LIGHT, Direction.NORTH);
         }
         for (int x = x0 - 9; x <= x0 + 9; x++) {
             for (int z : new int[] {-5, -4, 4, 5}) set(x, yF + 3, z, floor);
@@ -3569,7 +3580,8 @@ public final class EnterpriseBlueprint {
                         case TURBOLIFT, TURBOLIFT_DOOR, TURBOLIFT_FRAME, TRANSPORTER_PAD, TRANSPORTER_WALL, TRANSPORTER_PLATFORM,
                              ENGINEERING_CONSOLE, TNG_CONSOLE, ENT_CONSOLE, LADDER, BIOBED, CONFERENCE_TABLE, VIEWSCREEN,
                              HOLODECK_GRID, IRON_BARS, FORCE_FIELD, PLASMA_CONDUIT, WARP_CORE, WARP_CORE_TNG, WARP_CORE_NX, WARP_CORE_E,
-                             TURBOLIFT_NX, TURBOLIFT_REFIT, TURBOLIFT_EXCELSIOR, TURBOLIFT_TNG -> { return true; }
+                             TURBOLIFT_NX, TURBOLIFT_REFIT, TURBOLIFT_EXCELSIOR, TURBOLIFT_TNG,
+                             POWER_CONSOLE, ALARM_LIGHT, SHIELD_EMITTER, SHIELD_CONSOLE -> { return true; }
                         default -> {}
                     }
                 }

@@ -27,6 +27,7 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> PHASER_SHIP_TNG = beam("phaser_ship_tng");
     public static final RegistryObject<SoundEvent> TORPEDO_PHOTON = sound("torpedo_photon");
     public static final RegistryObject<SoundEvent> TORPEDO_QUANTUM = sound("torpedo_quantum");
+    public static final RegistryObject<SoundEvent> RED_ALERT = sound("red_alert");
 
     private ModSounds() {}
 

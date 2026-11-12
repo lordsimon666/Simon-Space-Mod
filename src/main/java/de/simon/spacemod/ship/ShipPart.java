@@ -150,7 +150,12 @@ public enum ShipPart {
     DOOR_TNG(0xC8B898),
     // zweiseitige Blöcke (Materialien in Bits 16-19 / 20-23)
     DUAL_WALL(0xD0C8B8),
-    DUAL_FLOOR(0x8A8A8A);
+    DUAL_FLOOR(0x8A8A8A),
+    // Energieverteilung (Maschinenraum), Alarmleuchte, Schildemitter (Variante = Stufe 1-6), Schildkonsole (Brücke)
+    POWER_CONSOLE(0xD08030),
+    ALARM_LIGHT(0xE02020),
+    SHIELD_EMITTER(0x60A0FF),
+    SHIELD_CONSOLE(0x4080E0);
 
     /** Farbe für Vorschaubilder. */
     public final int color;

@@ -154,7 +154,7 @@ public final class PhaserControl {
             if (age >= BeamShots.DURATION || !Triggers.held(player)) return false; // Loslassen bricht ab
             // Strom für alle feuernden Phaser
             int need = fePerTick(power) * phasers.size();
-            if (ShipPower.draw(level, grid, need) < need) {
+            if (ShipPower.draw(level, grid, need, ShipPower.Category.WEAPONS) < need) {
                 if (player.isAlive()) player.sendOverlayMessage(Component.translatable("message.simonspacemod.phaser.no_power"));
                 return false;
             }
@@ -162,25 +162,34 @@ public final class PhaserControl {
             if (age > 0 && age % 2 == 0 && player.isAlive() && player.level() == level && CameraControl.inSession(player))
                 aim = aim(level, player, own);
             Vec3 tgt = aim.entity() != null && aim.entity().isAlive() ? aim.entity().getBoundingBox().getCenter() : aim.point();
+            boolean shielded = false;
             for (int i = 0; i < phasers.size(); i++) {
                 BlockPos p = phasers.get(i);
                 if (!(level.getBlockState(p).getBlock() instanceof PhaserBlock pb)) continue;
                 Vec3 c = Vec3.atCenterOf(p);
                 Vec3 start = c.add(tgt.subtract(c).normalize().scale(0.7));
+                Vec3 end = tgt;
+                // Schild im Weg: Strahl endet am Schild und schwächt es
+                var hit = de.simon.spacemod.defense.Shields.intercept(level, start, tgt);
+                if (hit != null) {
+                    end = hit.point();
+                    if (age % BeamShots.PULSE == 0) hit.shield().damage(end, damage, 2.5);
+                    shielded = true;
+                }
                 if (beams.size() <= i) {
-                    PhaserBeamEntity b = BeamShots.beam(level, start, tgt, pb.kind.color, pb.kind.core, 0.12F + 0.06F * power, pb.kind.pulse);
+                    PhaserBeamEntity b = BeamShots.beam(level, start, end, pb.kind.color, pb.kind.core, 0.12F + 0.06F * power, pb.kind.pulse);
                     if (b != null) {
                         b.sound(de.simon.spacemod.ModSounds.index(shipSound(pb.kind)), power == 1 ? 1.0F : power == 2 ? 0.95F : 0.9F, 2.5F + 0.5F * power);
                         beams.add(b);
                     }
-                } else beams.get(i).aim(start, tgt);
-                if (age % BeamShots.PULSE == 0) hurtAlong(start, tgt);
+                } else beams.get(i).aim(start, end);
+                if (age % BeamShots.PULSE == 0) hurtAlong(start, end);
             }
             // Zielgebiet geladen halten, damit Treffer und Explosion auch weit draußen wirken
             if (age % 20 == 0)
                 level.getChunkSource().addTicketWithRadius(TicketType.ENDER_PEARL, ChunkPos.containing(BlockPos.containing(tgt)), 2);
             // Blockschaden ab Stufe 2 (nur das eigene Schiff bleibt heil): zur Hälfte und am Ende
-            if (aim.hit() && (age == BeamShots.DURATION / 2 || age == BeamShots.DURATION - 1))
+            if (!shielded && aim.hit() && (age == BeamShots.DURATION / 2 || age == BeamShots.DURATION - 1))
                 level.explode(null, null, spare(own), tgt.x, tgt.y, tgt.z, radius * (age == BeamShots.DURATION - 1 ? 1F : 0.7F),
                     power == 3, power >= 2 ? Level.ExplosionInteraction.TNT : Level.ExplosionInteraction.NONE);
             age++;
