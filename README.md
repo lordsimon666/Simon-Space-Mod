@@ -172,7 +172,7 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
 * **Turbolift-Stile**: Jedes Schiff hat Turbolifte im Stil seiner Zeit – NX-01 graue Metalltüren,
   Originalserie rot, Refit hellgrau mit blauen Lichtleisten, Excelsior petrolfarben mit Lichtsäulen,
   C/D/E beige Schiebetüren. Alle Stile funktionieren gleich und lassen sich gemeinsam in einem Netz
-  verwenden. Umfärben: Turbolift + grauer / hellblauer / türkiser / oranger Farbstoff.
+  verwenden. Die Stile baut die Schiffsteil-Fertigung.
 * **Transporterfeld**: Rechtsklick öffnet das **Transporter-Menü**. Ganz oben „Auf die Oberfläche
   beamen“ (auf den Boden unter dem Schiff; ohne Kommunikator bekommst du einen). Darunter alle
   anderen Transporter im Umkreis von **500 Blöcken**, nach Entfernung sortiert mit Richtung und Höhe:
@@ -539,8 +539,8 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
   Kohle, Eisen, Kupfer, Gold, Redstone, Lapis, Diamant, Smaragd, **Uran** und **Dilithium**; im Kern
   manchmal **Antimaterie-Einschlüsse**. Etwa jeder sechste Asteroid ist ein Eisbrocken mit
   **Deuterium-Eis**.
-* **Warpkerne bauen**: Antimaterie + Glas + Eisen = 2 Antimaterie-Kapseln. Daraus mit Deuterium,
-  Dilithium und Eisen-, Gold- oder Diamantblöcken die Warpkerne (NX-01, Originalserie, Next
+* **Warpkerne bauen**: Antimaterie + Glas + Eisen = 2 Antimaterie-Kapseln (Werkbank). Daraus baut die
+  Schiffsteil-Fertigung mit Deuterium, Dilithium und Eisenblöcken, Gold oder Diamanten die Warpkerne (NX-01, Originalserie, Next
   Generation, Enterprise-E – je neuer, desto aufwendiger, aber stärker).
 
 ### Kernreaktor (Multiblock) und Uran
@@ -566,9 +566,8 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
   abgeben (Batterien), zählen dabei als Erzeuger.
 * Rechtsklick auf den Steuerblock zeigt Größe, Leistung, Brennstand und Energie.
 
-Rezepte: Reaktorhülle (8×) = Eisen in den Ecken, Kupfer an den Seiten, Uranbarren in der Mitte;
-Reaktorglas (4×) = Glas in den Ecken, Reaktorhülle an den Seiten; Steuerblock = Reaktorhülle in den
-Ecken, Diamanten oben/unten, Uranbarren links/rechts, Redstoneblock in der Mitte.
+Reaktorhülle (8×), Reaktorglas (4×) und Steuerblock baut die **Schiffsteil-Fertigung** (Eisen,
+Kupfer, Glas, Uran, Diamanten, Redstone).
 
 ### Waffensounds
 
@@ -588,13 +587,20 @@ mehreren leicht verstimmten Tönen mit fallendem „Pjiu“-Einsatz und einem Ha
 
 ### Rezepte (Überlebensmodus)
 
+**Alle Blöcke der Mod** (Hülle, Konsolen, Türen, Turbolifte, Warpkerne, Reaktor, Schilde, Waffen …)
+gibt es **nur aus der Schiffsteil-Fertigung**. An der Werkbank baut man nur:
+
+* die **Schiffsteil-Fertigung** selbst (Eisen – Glas – Eisen / Diamant – Glas – Diamant / Eisen – Eisen – Eisen),
+* die **Batterie** (Startstrom für die Fertigung, falls man kein Shuttle-Wrack findet – sie kann
+  auch aus der Fertigung kommen),
+* Gegenstände: Kommunikator, Raumanzug, Antimaterie-Kapsel.
+
 ```
-Turbolift (2x)        Kommunikator
-E = Eisenbarren        G = Goldbarren
- E F E                    G
- E P E                  E P E
- E R E                  E R E
-F = roter Farbstoff, P = Enderperle, R = Redstone
+Kommunikator
+G = Goldbarren, E = Eisenbarren, P = Enderperle, R = Redstone
+   G
+ E P E
+ E R E
 ```
 
 ## Neue Blöcke (149)

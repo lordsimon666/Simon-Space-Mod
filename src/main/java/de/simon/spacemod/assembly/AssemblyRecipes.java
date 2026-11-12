@@ -89,6 +89,8 @@ public final class AssemblyRecipes {
                 .add(Items.LAPIS_BLOCK, 2);
             if (tier >= 4) b.add(ModBlocks.DILITHIUM_CRYSTAL.get(), tier - 2);
             if (tier >= 6) b.add(ModBlocks.ANTIMATTER_POD.get(), 1);
+        } else if (p.equals("battery")) {
+            b.add(Items.IRON_INGOT, 4).add(Items.COPPER_BLOCK.weathering().unaffected(), 3).add(Items.REDSTONE_BLOCK, 1).add(Items.GOLD_INGOT, 1);
         } else if (p.startsWith("reactor_")) {
             if (p.equals("reactor_controller"))
                 b.add(Items.IRON_INGOT, 8).add(Items.COPPER_INGOT, 8).add(ModBlocks.URANIUM_INGOT.get(), 3).add(Items.DIAMOND, 2).add(Items.REDSTONE_BLOCK, 1);

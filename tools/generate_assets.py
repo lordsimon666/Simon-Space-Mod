@@ -4085,6 +4085,26 @@ def main():
     })
     write_json(os.path.join(ASSETS, "lang", "de_de.json"), de)
     write_json(os.path.join(ASSETS, "lang", "en_us.json"), en)
+    only_assembly_recipes()
+
+
+# Blöcke der Mod gibt es nur aus der Schiffsteil-Fertigung; an der Werkbank nur die Fertigung selbst
+# und die Batterie (Startstrom für die Fertigung, falls man kein Shuttle-Wrack findet)
+WORKBENCH_BLOCKS = {"ship_part_assembly", "battery"}
+
+
+def only_assembly_recipes():
+    blocks = {f[:-5] for f in os.listdir(os.path.join(ASSETS, "blockstates")) if f.endswith(".json")}
+    folder = os.path.join(DATA, "recipe")
+    for f in sorted(os.listdir(folder)):
+        with open(os.path.join(folder, f)) as fh:
+            d = json.load(fh)
+        if not d.get("type", "").startswith("minecraft:crafting"):
+            continue
+        res = d.get("result", {})
+        rid = (res.get("id", "") if isinstance(res, dict) else res).split(":")[-1]
+        if rid in blocks and rid not in WORKBENCH_BLOCKS:
+            os.remove(os.path.join(folder, f))
 
 
 if __name__ == "__main__":
