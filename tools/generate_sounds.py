@@ -65,100 +65,136 @@ def soft(x, drive=1.5):
     return np.tanh(x * drive) / np.tanh(drive)
 
 
+def fft_filter(x, gain):
+    """Filter im Frequenzbereich: gain(f) -> Faktor."""
+    spec = np.fft.rfft(x)
+    f = np.fft.rfftfreq(len(x), 1 / SR)
+    return np.fft.irfft(spec * gain(f), len(x))
+
+
+def pink(n, seed):
+    """Rosa Rauschen (1/f) – das 'Fuzz' im Phaserklang."""
+    return normalize(fft_filter(noise(n, seed), lambda f: 1 / np.sqrt(np.maximum(f, 20))), 1.0)
+
+
+def band(x, lo, hi):
+    return fft_filter(x, lambda f: ((f >= lo) & (f <= hi)).astype(float) * 1.0)
+
+
+def smooth_lp(x, cutoff):
+    """weicher Tiefpass (sanfter Abfall statt harter Kante)."""
+    return fft_filter(x, lambda f: 1 / np.sqrt(1 + (f / cutoff) ** 4))
+
+
+def soft_env(n, attack, release, total):
+    t = np.arange(n) / SR
+    a = 0.5 - 0.5 * np.cos(np.pi * np.clip(t / attack, 0, 1))
+    r = 0.5 - 0.5 * np.cos(np.pi * np.clip((total - t) / release, 0, 1))
+    return a * r
+
+
 # ---------------------------------------------------------------------------------------------
-#  Strahlen (2,1 s; bricht im Spiel beim Loslassen ab)
+#  Strahlen (2,1 s; bricht im Spiel beim Loslassen ab). Grundidee wie beim Original: ein
+#  gleichmäßiges elektrisches Brummen, mit rosa Rauschen "angefuzzt" – weich, ohne schrille Obertöne.
 # ---------------------------------------------------------------------------------------------
 
-def beam_tos(base=1450, depth=180, rate=17, dur=2.1, seed=1):
-    """Originalserie: helles, schnell wobbelndes Sirren mit leichtem Anstieg."""
+def beam_tos(base=880, warble=0.025, rate=6.5, dur=2.1, seed=1, fuzz=0.45, cutoff=2600):
+    """Originalserie: singendes Brummen mit leichtem Schweben und Rauschfahne."""
     t = t_axis(dur)
-    f = base * (1 + 0.06 * np.minimum(t / 0.25, 1)) + depth * np.sin(2 * np.pi * rate * t)
+    f = base * (1 + warble * np.sin(2 * np.pi * rate * t)) * (1 + 0.03 * np.minimum(t / 0.3, 1))
     ph = phase(f)
-    x = 0.6 * np.sin(ph) + 0.25 * np.sin(2 * ph + 0.3) + 0.15 * square(ph, 0.3)
-    x += 0.05 * highpass(noise(len(t), seed), 3000)
-    return soft(x, 1.8) * envelope(len(t), 0.03, 0.12, dur)
+    tone = 0.75 * np.sin(ph) + 0.18 * np.sin(2 * ph) + 0.06 * np.sin(3 * ph)
+    hiss = band(pink(len(t), seed), base * 0.6, base * 3.0)
+    hiss = normalize(hiss, 1.0) * (0.8 + 0.2 * np.sin(2 * np.pi * rate * t + 1))
+    x = tone + fuzz * hiss
+    x = smooth_lp(x, cutoff)
+    return soft(x, 1.1) * soft_env(len(t), 0.08, 0.18, dur)
 
 
-def beam_tng(base=620, dur=2.1, seed=2, bright=1.0):
-    """Next Generation: summender, sägender Dauerton mit Schwebung und Knistern; setzt mit Anstieg ein."""
+def beam_tng(base=360, dur=2.1, seed=2, cutoff=1800, fuzz=0.55):
+    """Next Generation: warmes, summendes Rauschen mit tiefem Kern und weichem Einsatz (‚wusch‘)."""
     t = t_axis(dur)
-    sweep = 1 - 0.35 * np.exp(-t / 0.08)
-    f1 = base * sweep * (1 + 0.004 * np.sin(2 * np.pi * 5 * t))
-    f2 = base * 1.007 * sweep
-    x = 0.45 * saw(phase(f1)) + 0.35 * saw(phase(f2)) + 0.2 * np.sin(phase(f1 * 2.01))
-    x = lowpass(x, 3500 * bright) * 1.3
-    crackle = highpass(noise(len(t), seed), 4000) * (np.random.default_rng(seed + 1).random(len(t)) < 0.02)
-    x += 0.25 * crackle + 0.06 * highpass(noise(len(t), seed + 2), 6000)
-    return soft(x, 2.0) * envelope(len(t), 0.04, 0.15, dur)
+    sweep = 1 - 0.25 * np.exp(-t / 0.12)
+    f = base * sweep * (1 + 0.006 * np.sin(2 * np.pi * 4.5 * t))
+    ph = phase(f)
+    core = 0.6 * np.sin(ph) + 0.25 * np.sin(phase(f * 1.004 * 2)) + 0.12 * np.sin(3 * ph)
+    hiss = normalize(band(pink(len(t), seed), 500, 3200), 1.0)
+    whoosh = normalize(band(pink(len(t), seed + 7), 200, 1500), 1.0) * np.exp(-t / 0.25)
+    x = core + fuzz * hiss + 0.4 * whoosh
+    x = smooth_lp(x, cutoff)
+    return soft(x, 1.1) * soft_env(len(t), 0.1, 0.2, dur)
 
 
-def beam_refit(base=210, dur=2.1, seed=3):
-    """Kinofilme (rote Emitter): tiefer, kräftiger Strahl mit Sägezahn und Unterton, leicht ansteigend."""
+def beam_refit(base=170, dur=2.1, seed=3):
+    """Kinofilme (rote Emitter): tiefes, rundes Dröhnen mit Rauschen, leicht ansteigend."""
     t = t_axis(dur)
-    f = base * (1 + 0.15 * (1 - np.exp(-t / 0.3)))
-    x = 0.5 * saw(phase(f)) + 0.3 * saw(phase(f * 1.5 * 1.003)) + 0.4 * np.sin(phase(f / 2))
-    x = lowpass(x, 2200)
-    x += 0.12 * lowpass(noise(len(t), seed), 900)
-    x *= 1 + 0.15 * np.sin(2 * np.pi * 9 * t)
-    return soft(x, 2.2) * envelope(len(t), 0.05, 0.2, dur)
+    f = base * (1 + 0.12 * (1 - np.exp(-t / 0.35)))
+    ph = phase(f)
+    x = 0.6 * np.sin(ph) + 0.3 * np.sin(2 * ph * 1.002) + 0.15 * np.sin(3 * ph) + 0.3 * np.sin(ph / 2)
+    x += 0.5 * normalize(band(pink(len(t), seed), 150, 1400), 1.0)
+    x *= 1 + 0.08 * np.sin(2 * np.pi * 7 * t)
+    x = smooth_lp(x, 1400)
+    return soft(x, 1.1) * soft_env(len(t), 0.12, 0.25, dur)
 
 
-def pulses(chirp_hi=3200, chirp_lo=650, pulse=0.15, period=0.3, dur=2.1, seed=4, body=1.0):
-    """NX-01 (Phasenpistole/-kanone): einzelne 'Pew'-Schüsse, passend zum Blinken des Strahls."""
+def pulses(chirp_hi=1900, chirp_lo=480, pulse=0.16, period=0.3, dur=2.1, seed=4, body=0.5, cutoff=2800):
+    """NX-01 (Phasenpistole/-kanone): weiche, kurze 'Pew'-Schüsse, passend zum Blinken des Strahls."""
     t = t_axis(dur)
     x = np.zeros(len(t))
     n = int(pulse * SR)
     tp = np.arange(n) / SR
     f = chirp_lo + (chirp_hi - chirp_lo) * np.exp(-tp / (pulse / 3))
     ph = phase(f)
-    one = (0.7 * np.sin(ph) + 0.3 * square(ph, 0.4)) * np.exp(-tp / (pulse / 2.2))
-    one += body * 0.5 * np.sin(phase(np.full(n, chirp_lo / 4))) * np.exp(-tp / (pulse / 2))
-    one += 0.1 * highpass(noise(n, seed), 2500) * np.exp(-tp / 0.03)
+    shape = soft_env(n, 0.006, pulse * 0.8, pulse)
+    one = (0.8 * np.sin(ph) + 0.12 * np.sin(2 * ph)) * shape
+    one += body * np.sin(phase(np.full(n, chirp_lo / 3))) * shape
+    one += 0.15 * normalize(band(pink(n, seed), 600, 2500), 1.0) * np.exp(-tp / 0.04)
     start = 0.0
     while start + pulse <= dur:
         i = int(start * SR)
         x[i:i + n] += one
         start += period
-    return soft(x, 1.6)
+    return soft(smooth_lp(x, cutoff), 1.05)
 
 
 # ---------------------------------------------------------------------------------------------
 #  Torpedos
 # ---------------------------------------------------------------------------------------------
 
-def torpedo(dur=1.1, f_hi=1800, f_lo=90, seed=5, shimmer=0.0, low=1.0):
+def torpedo(dur=1.2, f_hi=1100, f_lo=80, seed=5, shimmer=0.0, low=1.0):
     """Ausstoß mit fallendem 'Pchooo', Luftstoß und tiefem Wumms; Quanten zusätzlich metallisch."""
     t = t_axis(dur)
-    f = f_lo + (f_hi - f_lo) * np.exp(-t / 0.12)
+    f = f_lo + (f_hi - f_lo) * np.exp(-t / 0.13)
     ph = phase(f)
-    x = 0.5 * np.sin(ph) + 0.25 * saw(ph) * np.exp(-t / 0.25)
-    x += low * 0.8 * np.sin(phase(np.full(len(t), 55))) * np.exp(-t / 0.35)
-    x += 0.35 * lowpass(noise(len(t), seed), 1500) * np.exp(-t / 0.18)
+    x = 0.6 * np.sin(ph) + 0.15 * np.sin(2 * ph) * np.exp(-t / 0.2)
+    x += low * 0.8 * np.sin(phase(np.full(len(t), 50))) * np.exp(-t / 0.4)
+    x += 0.4 * normalize(band(pink(len(t), seed), 120, 1800), 1.0) * np.exp(-t / 0.2)
     if shimmer:
-        for k, fr in enumerate((2300, 3170, 4410)):
-            x += shimmer * 0.12 * np.sin(phase(np.full(len(t), fr)) + k) * np.exp(-t / 0.5) * (1 + np.sin(2 * np.pi * 23 * t))
-    return soft(x, 1.8) * envelope(len(t), 0.005, 0.3, dur)
+        for k, fr in enumerate((1700, 2350, 3100)):
+            x += shimmer * 0.07 * np.sin(phase(np.full(len(t), fr)) + k) * np.exp(-t / 0.45) * (1 + 0.6 * np.sin(2 * np.pi * 19 * t))
+    x = smooth_lp(x, 2200)
+    return soft(x, 1.2) * soft_env(len(t), 0.008, 0.45, dur)
 
 
 SOUNDS = {
     # Handwaffen
-    "phaser_hand_nx": lambda: pulses(3400, 700, 0.13, 0.3, seed=11, body=0.6),
-    "phaser_hand_tos": lambda: beam_tos(1500, 170, 18, seed=12),
-    "phaser_hand_tng": lambda: beam_tng(760, seed=13, bright=1.2),
-    "phaser_rifle": lambda: beam_tng(430, seed=14, bright=0.8) * 0.7 + beam_tos(900, 90, 11, seed=15) * 0.35,
+    "phaser_hand_nx": lambda: pulses(2100, 520, 0.14, 0.3, seed=11, body=0.35),
+    "phaser_hand_tos": lambda: beam_tos(900, 0.022, 6.5, seed=12),
+    "phaser_hand_tng": lambda: beam_tng(420, seed=13, cutoff=2000),
+    "phaser_rifle": lambda: beam_tng(300, seed=14, cutoff=1600, fuzz=0.6) * 0.75 + beam_tos(600, 0.015, 5, seed=15, fuzz=0.3) * 0.3,
     # Schiffsphaser
-    "phaser_ship_nx": lambda: pulses(1700, 260, 0.2, 0.3, seed=21, body=1.4),
-    "phaser_ship_tos": lambda: beam_tos(760, 120, 12, seed=22),
-    "phaser_ship_refit": lambda: beam_refit(190, seed=23),
-    "phaser_ship_tng": lambda: beam_tng(330, seed=24, bright=0.9),
+    "phaser_ship_nx": lambda: pulses(1200, 220, 0.2, 0.3, seed=21, body=0.8, cutoff=1800),
+    "phaser_ship_tos": lambda: beam_tos(520, 0.02, 5.0, seed=22, fuzz=0.5, cutoff=1800),
+    "phaser_ship_refit": lambda: beam_refit(160, seed=23),
+    "phaser_ship_tng": lambda: beam_tng(220, seed=24, cutoff=1400, fuzz=0.6),
     # Torpedos
-    "torpedo_photon": lambda: torpedo(1.1, 1900, 110, seed=31, shimmer=0.0),
-    "torpedo_quantum": lambda: torpedo(1.4, 1200, 60, seed=32, shimmer=1.0, low=1.4),
+    "torpedo_photon": lambda: torpedo(1.2, 1200, 90, seed=31),
+    "torpedo_quantum": lambda: torpedo(1.5, 800, 55, seed=32, shimmer=1.0, low=1.3),
 }
 
 
 def write_ogg(name, x):
-    x = normalize(np.asarray(x, dtype=np.float64))
+    x = normalize(np.asarray(x, dtype=np.float64), 0.5)  # leiser und mit Reserve
     pcm = (x * 32767).astype(np.int16)
     os.makedirs(OUT, exist_ok=True)
     with tempfile.TemporaryDirectory() as tmp:

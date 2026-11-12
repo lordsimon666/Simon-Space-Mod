@@ -224,7 +224,7 @@ public class HandWeaponItem extends Item {
             if (beam == null) {
                 int c = mode == Mode.STUN ? lighten(color) : color;
                 beam = de.simon.spacemod.weapons.BeamShots.beam(server, from, hit, c, core, rifle ? 0.07F : 0.045F, pulse);
-                if (beam != null) beam.sound(de.simon.spacemod.ModSounds.index(sound()), soundPitch(mode), rifle ? 1.3F : 1.0F);
+                if (beam != null) beam.sound(de.simon.spacemod.ModSounds.index(sound()), soundPitch(mode), rifle ? 0.75F : 0.6F);
             } else beam.aim(from, hit);
             age++;
             return true;

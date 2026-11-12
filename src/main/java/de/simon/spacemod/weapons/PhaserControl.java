@@ -170,7 +170,7 @@ public final class PhaserControl {
                 if (beams.size() <= i) {
                     PhaserBeamEntity b = BeamShots.beam(level, start, tgt, pb.kind.color, pb.kind.core, 0.12F + 0.06F * power, pb.kind.pulse);
                     if (b != null) {
-                        b.sound(de.simon.spacemod.ModSounds.index(shipSound(pb.kind)), power == 1 ? 1.0F : power == 2 ? 0.95F : 0.9F, 4F + power);
+                        b.sound(de.simon.spacemod.ModSounds.index(shipSound(pb.kind)), power == 1 ? 1.0F : power == 2 ? 0.95F : 0.9F, 2.5F + 0.5F * power);
                         beams.add(b);
                     }
                 } else beams.get(i).aim(start, tgt);
@@ -290,7 +290,7 @@ public final class PhaserControl {
             ChunkPos.containing(BlockPos.containing(start.add(tgt.subtract(start).normalize().scale(64)))), 2);
         level.addFreshEntity(t);
         level.playSound(null, from, (quantum ? de.simon.spacemod.ModSounds.TORPEDO_QUANTUM : de.simon.spacemod.ModSounds.TORPEDO_PHOTON).get(),
-            SoundSource.BLOCKS, 5.0F, 0.95F + level.getRandom().nextFloat() * 0.1F);
+            SoundSource.BLOCKS, 3.0F, 0.95F + level.getRandom().nextFloat() * 0.1F);
         player.sendOverlayMessage(Component.translatable(quantum ? "message.simonspacemod.torpedo.quantum" : "message.simonspacemod.torpedo.photon"));
     }
 

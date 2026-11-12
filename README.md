@@ -483,13 +483,15 @@ Ecken, Diamanten oben/unten, Uranbarren links/rechts, Redstoneblock in der Mitte
 ### Waffensounds
 
 Alle Waffen haben eigene Sounds, angelehnt an die Serien (selbst synthetisiert mit
-`tools/generate_sounds.py`, keine Originalaufnahmen):
+`tools/generate_sounds.py`, keine Originalaufnahmen). Wie beim Original-Phaser ist die Grundidee ein
+gleichmäßiges elektrisches Brummen, das mit rosa Rauschen „angefuzzt“ wird – weich und ohne schrille
+Obertöne:
 
-* **Handphaser**: NX-01 einzelne „Pew“-Pulse, Originalserie und Kinofilme helles, wobbelndes Sirren,
-  Next Generation und Enterprise-E summender Dauerton. **Gewehre** tiefer und kräftiger.
+* **Handphaser**: NX-01 weiche „Pew“-Pulse, Originalserie und Kinofilme singendes Brummen mit leichtem
+  Schweben, Next Generation und Enterprise-E warmes, summendes Rauschen. **Gewehre** tiefer und kräftiger.
   Im Betäuben-Modus klingt alles etwas höher.
-* **Schiffsphaser**: Phasenkanone der NX-01 tiefe Pulse, Phaserbänke der Originalserie wobbelnd,
-  rote Emitter der Kinofilme tief und druckvoll, Phaserstreifen von TNG summend mit Knistern;
+* **Schiffsphaser**: Phasenkanone der NX-01 tiefe Pulse, Phaserbänke der Originalserie tiefes Brummen,
+  rote Emitter der Kinofilme rundes Dröhnen, Phaserstreifen von TNG tiefes, summendes Rauschen;
   stärkere Stufen klingen tiefer und lauter.
 * **Torpedos**: Photonentorpedo mit fallendem „Pchooo“ und Wumms, Quantentorpedo tiefer mit
   metallischem Schimmer.
