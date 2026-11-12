@@ -262,7 +262,7 @@
   "message.simonspacemod.weapon.empty": "Power cell empty – recharge at a charging station.",
   "tooltip.simonspacemod.weapon.energy": "Energy: %s / %s RF",
   "tooltip.simonspacemod.weapon.mode": "Mode: %s",
-  "tooltip.simonspacemod.weapon.keys": "Right click: fire, V: switch mode",
-  "tooltip.simonspacemod.rifle.keys": "Hold right click: aim, left click: fire, V: switch mode",
+  "tooltip.simonspacemod.weapon.keys": "Hold left click: fire, V: switch mode",
+  "tooltip.simonspacemod.rifle.keys": "Hold left click: fire, hold right click: aim, V: switch mode",
   "message.simonspacemod.charger.status": "Charging station: %s / %s RF, ship grid: %s RF/t"
 }

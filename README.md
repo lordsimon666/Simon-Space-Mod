@@ -256,7 +256,7 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
   | Next Generation (C, D) | Typ 2 („Cobra Head“) | Typ-3-Phasergewehr (nur D) |
   | Enterprise-E | Typ 2 der 2370er | Kompressions-Phasergewehr |
 
-  **Phaser:** Rechtsklick feuert; in der Außenansicht streckt die Figur den Arm nach vorne und der
+  **Phaser:** Linksklick (halten) feuert; in der Außenansicht streckt die Figur den Arm nach vorne und der
   Lauf verlängert den Arm. **Gewehre:** Linksklick feuert, **Rechtsklick halten zielt** – in der
   Ego-Ansicht wandert das Gewehr in die Bildmitte, man schaut über das Visier (leichter Zoom); in der
   Außenansicht wird es mit beiden Händen gerade nach vorne gehalten. In der Ego-Ansicht zeigt der Lauf
@@ -266,8 +266,9 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
   Jeder Schuss ist ein **Strahl von 2 Sekunden** (wie ein dünner Leuchtfeuer-Strahl, keine
   Partikel), der dem Blick folgt und alle 0,5 s wirkt – im Abbau-Modus bohrt er sich so bis zu 4
   Blöcke tief. Je Treffer 45 % des Schadens. Danach kurz nachladen (Phaser 0,1 s, Gewehre 0,3 s).
-  Der Strahl läuft nur, **solange die Feuertaste gehalten wird** (Gewehr: Linksklick, Handphaser:
-  Rechtsklick); Loslassen bricht ab, Weiterhalten feuert nach dem Nachladen erneut.
+  Der Strahl läuft nur, **solange Linksklick gehalten wird** (Handphaser und Gewehre); Loslassen
+  bricht ab, Weiterhalten feuert nach dem Nachladen erneut. Mit einer Phaserwaffe in der Hand baut
+  Linksklick keine Blöcke ab.
   Die Phasenpistole der NX-01 blinkt als Pulsstrahl.
   Schaden im Töten-Modus: Handphaser 6 (NX-01) bis 14 (E), Gewehre 11,6 bis 24,4; Gewehre
   reichen weiter und bauen härtere Blöcke ab. Jede Waffe hat eine Energiezelle (RF, Balken am

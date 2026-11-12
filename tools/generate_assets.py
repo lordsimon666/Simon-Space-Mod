@@ -3735,8 +3735,8 @@ def main():
         f"message.{MODID}.weapon.empty": "Energiezelle leer – an der Ladestation aufladen.",
         f"tooltip.{MODID}.weapon.energy": "Energie: %s / %s RF",
         f"tooltip.{MODID}.weapon.mode": "Modus: %s",
-        f"tooltip.{MODID}.weapon.keys": "Rechtsklick: feuern, V: Modus wechseln",
-        f"tooltip.{MODID}.rifle.keys": "Rechtsklick halten: zielen, Linksklick: feuern, V: Modus wechseln",
+        f"tooltip.{MODID}.weapon.keys": "Linksklick halten: feuern, V: Modus wechseln",
+        f"tooltip.{MODID}.rifle.keys": "Linksklick halten: feuern, Rechtsklick halten: zielen, V: Modus wechseln",
         f"message.{MODID}.charger.status": "Ladestation: %s / %s RF, Bordnetz: %s RF/t",
     })
     en.update({
@@ -3748,8 +3748,8 @@ def main():
         f"message.{MODID}.weapon.empty": "Power cell empty – recharge at a charging station.",
         f"tooltip.{MODID}.weapon.energy": "Energy: %s / %s RF",
         f"tooltip.{MODID}.weapon.mode": "Mode: %s",
-        f"tooltip.{MODID}.weapon.keys": "Right click: fire, V: switch mode",
-        f"tooltip.{MODID}.rifle.keys": "Hold right click: aim, left click: fire, V: switch mode",
+        f"tooltip.{MODID}.weapon.keys": "Hold left click: fire, V: switch mode",
+        f"tooltip.{MODID}.rifle.keys": "Hold left click: fire, hold right click: aim, V: switch mode",
         f"message.{MODID}.charger.status": "Charging station: %s / %s RF, ship grid: %s RF/t",
     })
     write_json(os.path.join(ASSETS, "lang", "de_de.json"), de)

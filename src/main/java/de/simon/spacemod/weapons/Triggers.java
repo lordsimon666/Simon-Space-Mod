@@ -16,8 +16,7 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.network.CustomPayloadEvent;
 
 /**
- * Abzug: gefeuert wird nur, solange die Feuertaste gehalten wird (Gewehr und Kamerasicht: Linksklick,
- * Handphaser: Rechtsklick). Loslassen bricht den Strahl ab; wer weiter hält, feuert nach dem
+ * Abzug: gefeuert wird nur, solange Linksklick gehalten wird (Handphaser, Gewehre, Kamerasicht). Loslassen bricht den Strahl ab; wer weiter hält, feuert nach dem
  * Nachladen automatisch erneut.
  */
 public final class Triggers {
@@ -55,9 +54,7 @@ public final class Triggers {
             if (CameraControl.inSession(p)) {
                 ok = CameraControl.fireHeld(p);
             } else {
-                // Waffe in der Haupthand, sonst ein Phaser in der Nebenhand
                 ItemStack stack = p.getMainHandItem();
-                if (!(stack.getItem() instanceof HandWeaponItem)) stack = p.getOffhandItem();
                 if (!(stack.getItem() instanceof HandWeaponItem w)) { HELD.remove(e.getKey()); continue; }
                 if (p.getCooldowns().isOnCooldown(stack)) continue;
                 ok = w.fire(p.level(), p, stack) != InteractionResult.FAIL;

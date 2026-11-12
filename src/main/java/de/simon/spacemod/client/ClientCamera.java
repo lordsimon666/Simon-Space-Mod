@@ -74,9 +74,9 @@ public final class ClientCamera {
     private static void onTick() {
         var mc = Minecraft.getInstance();
         var player = mc.player;
-        // Phasergewehr: Linksklick feuert (beim Zielen und aus der Hüfte) statt zu schlagen/abzubauen
+        // Handphaser und Gewehre: Linksklick feuert (beim Zielen und aus der Hüfte) statt zu schlagen/abzubauen
         if (!active && player != null && mc.gui.screen() == null
-            && player.getMainHandItem().getItem() instanceof de.simon.spacemod.item.HandWeaponItem w && w.rifle) {
+            && player.getMainHandItem().getItem() instanceof de.simon.spacemod.item.HandWeaponItem) {
             boolean shot = false;
             while (mc.options.keyAttack.consumeClick()) shot = true;
             if (shot) {
@@ -87,11 +87,8 @@ public final class ClientCamera {
         // Abzug: Zustand der Feuertaste an den Server (Strahl nur solange gehalten, danach Dauerfeuer)
         boolean want = false;
         if (player != null && mc.gui.screen() == null) {
-            var main = player.getMainHandItem().getItem();
-            if (active) want = mc.options.keyAttack.isDown();
-            else if (main instanceof de.simon.spacemod.item.HandWeaponItem w && w.rifle) want = mc.options.keyAttack.isDown();
-            else if (main instanceof de.simon.spacemod.item.HandWeaponItem || player.getOffhandItem().getItem() instanceof de.simon.spacemod.item.HandWeaponItem)
-                want = mc.options.keyUse.isDown();
+            if (active || player.getMainHandItem().getItem() instanceof de.simon.spacemod.item.HandWeaponItem)
+                want = mc.options.keyAttack.isDown();
         }
         if (player != null && (want != triggerDown || (want && player.tickCount % 5 == 0)))
             TurboliftNetwork.sendToServer(new de.simon.spacemod.weapons.Triggers.Message(want, player.getYRot(), player.getXRot()));

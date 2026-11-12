@@ -156,16 +156,20 @@ public class HandWeaponItem extends Item {
         consumer.accept(de.simon.spacemod.client.WeaponClientExtensions.create(this));
     }
 
-    /** Gewehre: Rechtsklick halten = zielen (gefeuert wird mit Linksklick); Phaser: Rechtsklick feuert. */
+    /** Gefeuert wird mit Linksklick (halten); Gewehre: Rechtsklick halten = zielen. */
     @Override
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
         if (rifle) {
             player.startUsingItem(hand);
             return InteractionResult.CONSUME;
         }
-        if (!(level instanceof ServerLevel server) || !(player instanceof ServerPlayer sp)) return InteractionResult.SUCCESS;
-        de.simon.spacemod.weapons.Triggers.press(sp);
-        return fire(server, sp, player.getItemInHand(hand));
+        return InteractionResult.PASS;
+    }
+
+    /** Linksklick halten feuert – dabei keine Blöcke abbauen. */
+    @Override
+    public boolean canDestroyBlock(ItemStack stack, BlockState state, Level level, BlockPos pos, LivingEntity user) {
+        return false;
     }
 
     @Override
@@ -216,7 +220,7 @@ public class HandWeaponItem extends Item {
         protected boolean tick() {
             if (age >= de.simon.spacemod.weapons.BeamShots.DURATION || !player.isAlive() || player.level() != server) return false;
             if (!de.simon.spacemod.weapons.Triggers.held(player)) return false; // Abzug losgelassen
-            if (!(player.getMainHandItem().getItem() == HandWeaponItem.this || player.getOffhandItem().getItem() == HandWeaponItem.this)) return false;
+            if (player.getMainHandItem().getItem() != HandWeaponItem.this) return false;
             Vec3 hit = strike(server, player, mode, age % de.simon.spacemod.weapons.BeamShots.PULSE == 0);
             Vec3 from = muzzle(player);
             if (beam == null) {

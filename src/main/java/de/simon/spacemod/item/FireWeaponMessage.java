@@ -5,7 +5,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.network.CustomPayloadEvent;
 
-/** Client -> Server: Linksklick mit dem Phasergewehr in der Hand – feuern. */
+/** Client -> Server: Linksklick mit Handphaser oder Phasergewehr in der Hand – feuern. */
 public record FireWeaponMessage(float yRot, float xRot) {
     public static final StreamCodec<RegistryFriendlyByteBuf, FireWeaponMessage> STREAM_CODEC = StreamCodec.ofMember(
         (msg, buf) -> {
@@ -18,7 +18,7 @@ public record FireWeaponMessage(float yRot, float xRot) {
         ServerPlayer player = ctx.getSender();
         if (player == null) return;
         var stack = player.getMainHandItem();
-        if (!(stack.getItem() instanceof HandWeaponItem w) || !w.rifle) return;
+        if (!(stack.getItem() instanceof HandWeaponItem w)) return;
         player.setYRot(msg.yRot());
         player.setXRot(msg.xRot());
         de.simon.spacemod.weapons.Triggers.press(player);
