@@ -4089,8 +4089,7 @@ def main():
 
 
 # Blöcke der Mod gibt es nur aus der Schiffsteil-Fertigung; an der Werkbank nur die Fertigung selbst
-# und die Batterie (Startstrom für die Fertigung, falls man kein Shuttle-Wrack findet)
-WORKBENCH_BLOCKS = {"ship_part_assembly", "battery"}
+WORKBENCH_BLOCKS = {"ship_part_assembly"}
 
 
 def only_assembly_recipes():

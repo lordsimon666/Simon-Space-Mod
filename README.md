@@ -473,8 +473,8 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
 * **Batterie**: speichert **400 000 FE** (bis 4 000 FE/t rein und raus). Gibt Strom ans Bordnetz und
   an angrenzende Maschinen (z. B. die Schiffsteil-Fertigung) ab und wird von angrenzenden Erzeugern
   (Reaktor) sowie aus überschüssiger Warpkernleistung geladen. Die Seiten zeigen den Ladestand;
-  **abgebaut behält sie ihre Ladung**. Rezept: Eisen – Gold – Eisen / Kupferblock – Redstoneblock –
-  Kupferblock / Eisen – Kupferblock – Eisen.
+  **abgebaut behält sie ihre Ladung**. Gebaut wird sie (leer) in der Schiffsteil-Fertigung; geladen
+  findet man sie in Shuttle-Wracks.
 * **Shuttle-Wracks** liegen selten an der Oberfläche (etwa jeder 450. Chunk): ein zerbeultes Shuttle
   mit Löchern im Rumpf, **1-4 Impulsantrieben**, einer **Batterie mit 75-100 % Ladung**, einer Kiste
   (immer 6-9 Uranbarren, Eisen und Kupfer, dazu Redstone, Glas, Hüllenplatten, Lichter, manchmal
@@ -591,8 +591,6 @@ mehreren leicht verstimmten Tönen mit fallendem „Pjiu“-Einsatz und einem Ha
 gibt es **nur aus der Schiffsteil-Fertigung**. An der Werkbank baut man nur:
 
 * die **Schiffsteil-Fertigung** selbst (Eisen – Glas – Eisen / Diamant – Glas – Diamant / Eisen – Eisen – Eisen),
-* die **Batterie** (Startstrom für die Fertigung, falls man kein Shuttle-Wrack findet – sie kann
-  auch aus der Fertigung kommen),
 * Gegenstände: Kommunikator, Raumanzug, Antimaterie-Kapsel.
 
 ```
