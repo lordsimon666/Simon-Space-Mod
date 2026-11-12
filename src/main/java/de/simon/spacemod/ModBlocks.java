@@ -423,6 +423,21 @@ public final class ModBlocks {
         armor("boots_starfleet", ArmorType.BOOTS);
     }
 
+    /** Raumanzug: Kreativflug, solange geladen. */
+    public static final RegistryObject<Item> SPACE_SUIT = spaceSuit();
+
+    private static RegistryObject<Item> spaceSuit() {
+        String name = "space_suit";
+        ResourceKey<EquipmentAsset> asset = ResourceKey.create(EquipmentAssets.ROOT_ID, Identifier.fromNamespaceAndPath(SimonSpaceMod.MODID, name));
+        ArmorMaterial material = new ArmorMaterial(20,
+            Map.of(ArmorType.BOOTS, 2, ArmorType.LEGGINGS, 5, ArmorType.CHESTPLATE, 6, ArmorType.HELMET, 2, ArmorType.BODY, 6),
+            10, SoundEvents.ARMOR_EQUIP_IRON, 1F, 0F, ItemTags.REPAIRS_IRON_ARMOR, asset);
+        RegistryObject<Item> item = ITEMS.register(name, () -> new de.simon.spacemod.item.SpaceSuitItem(
+            new Item.Properties().setId(ITEMS.key(name)).humanoidArmor(material, ArmorType.CHESTPLATE).stacksTo(1)));
+        TAB_ITEMS.add(item);
+        return item;
+    }
+
     private static void armor(String name, ArmorType type) {
         ResourceKey<EquipmentAsset> asset = ResourceKey.create(EquipmentAssets.ROOT_ID,
             Identifier.fromNamespaceAndPath(SimonSpaceMod.MODID, name));
@@ -455,6 +470,15 @@ public final class ModBlocks {
         () -> IForgeMenuType.create(TurboliftMenu::new));
     public static final RegistryObject<MenuType<de.simon.spacemod.reactor.ReactorMenu>> REACTOR_MENU = MENUS.register("reactor",
         () -> IForgeMenuType.create(de.simon.spacemod.reactor.ReactorMenu::new));
+
+    // --- Schiffsteil-Fertigung: baut alle Blöcke der Mod ---
+    public static final RegistryObject<Block> SHIP_PART_ASSEMBLY = block("ship_part_assembly", de.simon.spacemod.assembly.AssemblyBlock::new,
+        metal(MapColor.COLOR_LIGHT_BLUE).lightLevel(s -> s.getValue(de.simon.spacemod.assembly.AssemblyBlock.LIT) ? 10 : 3));
+    public static final RegistryObject<BlockEntityType<de.simon.spacemod.assembly.AssemblyBlockEntity>> ASSEMBLY_BE =
+        BLOCK_ENTITIES.register("ship_part_assembly", () -> new BlockEntityType<>(de.simon.spacemod.assembly.AssemblyBlockEntity::new,
+            java.util.Set.of(SHIP_PART_ASSEMBLY.get())));
+    public static final RegistryObject<MenuType<de.simon.spacemod.assembly.AssemblyMenu>> ASSEMBLY_MENU = MENUS.register("ship_part_assembly",
+        () -> IForgeMenuType.create(de.simon.spacemod.assembly.AssemblyMenu::new));
 
     public static final RegistryObject<CreativeModeTab> TAB = TABS.register("space", () -> CreativeModeTab.builder()
         .withTabsBefore(CreativeModeTabs.SPAWN_EGGS)

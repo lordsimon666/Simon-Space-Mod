@@ -24,6 +24,7 @@ public final class ClientSetup {
         event.enqueueWork(() -> {
             MenuScreens.register(ModBlocks.TURBOLIFT_MENU.get(), TurboliftScreen::new);
             MenuScreens.register(ModBlocks.REACTOR_MENU.get(), ReactorScreen::new);
+            MenuScreens.register(ModBlocks.ASSEMBLY_MENU.get(), AssemblyScreen::new);
         });
     }
 }

@@ -51,7 +51,7 @@ public class ReactorScreen extends AbstractContainerScreen<ReactorMenu> {
         }
         g.text(font, size + "³", 8, 20, color, false);
         g.text(font, out + " FE/t", 8, 32, out > 0 ? 0xFF207020 : color, false);
-        g.text(font, (energy / 1000) + "k FE", 8, 44, color, false);
+        g.text(font, (energy / 10) + "k FE", 8, 44, color, false); // energy in 100 FE
         g.text(font, Component.translatable("gui.simonspacemod.reactor.slots", menu.fuelSlots), 8, 56, color, false);
         g.text(font, (ReactorMath.burnTicks(size) / 20) + "s", 130, 20, color, false);
         g.text(font, ReactorMath.output(size) + "", 130, 44, color, false);

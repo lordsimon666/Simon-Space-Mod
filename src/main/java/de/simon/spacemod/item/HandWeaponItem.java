@@ -120,6 +120,9 @@ public class HandWeaponItem extends Item {
         if (stack.getItem() instanceof HandWeaponItem w)
             event.addCapability(net.minecraft.resources.Identifier.fromNamespaceAndPath(de.simon.spacemod.SimonSpaceMod.MODID, "energy"),
                 new WeaponEnergy(stack, w));
+        else if (stack.getItem() instanceof SpaceSuitItem)
+            event.addCapability(net.minecraft.resources.Identifier.fromNamespaceAndPath(de.simon.spacemod.SimonSpaceMod.MODID, "energy"),
+                new SpaceSuitItem.Energy(stack));
     }
 
     @Override

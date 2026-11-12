@@ -2623,6 +2623,157 @@ def space_assets(de, en):
     })
 
 
+# ---------------------------------------------------------------------------------------------
+#  Raumanzug und Schiffsteil-Fertigung
+# ---------------------------------------------------------------------------------------------
+
+def space_suit_texture():
+    img = Image.new("RGBA", (64, 32), (0, 0, 0, 0))
+    px = img.load()
+    white = (225, 228, 232)
+    for f, r in BODY.items():
+        fill(px, r, white, seed_of("suit", f), 5)
+    for f, r in ARM.items():
+        fill(px, r, white, seed_of("suit", "a", f), 5)
+    rows(px, BODY, 0, 1, (200, 120, 40))            # orangefarbener Kragenring
+    rows(px, ARM, 0, 1, (200, 120, 40))
+    rows(px, ARM, 10, 11, (90, 94, 100))            # Handschuhe
+    rows(px, BODY, 9, 9, (90, 94, 100))             # Gürtel
+    fx, fy = BODY["front"][0], BODY["front"][1]
+    for x, y in ((2, 3), (3, 3), (2, 4), (3, 4)):    # Brustkontrollen
+        px[fx + x, fy + y] = (60, 140, 220, 255)
+    px[fx + 5, fy + 3] = (220, 60, 60, 255)
+    px[fx + 5, fy + 4] = (80, 220, 80, 255)
+    bx, by = BODY["back"][0], BODY["back"][1]        # Tornister mit Düsen
+    for x in range(1, 7):
+        for y in range(1, 9):
+            px[bx + x, by + y] = (120, 124, 130, 255) if x in (1, 6) or y in (1, 8) else (160, 164, 170, 255)
+    for x in (2, 5):
+        px[bx + x, by + 10] = px[bx + x, by + 11] = (60, 160, 255, 255)
+    return img
+
+
+def icon_space_suit():
+    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    px = img.load()
+    for y in range(2, 15):
+        for x in range(2, 14):
+            body = 4 <= x <= 11
+            arm = (x in (2, 3, 12, 13)) and 3 <= y <= 10
+            if body or arm:
+                px[x, y] = (225, 228, 232, 255)
+    for x in range(4, 12):
+        px[x, 2] = (200, 120, 40, 255)
+        px[x, 11] = (90, 94, 100, 255)
+    px[6, 5] = px[7, 5] = (60, 140, 220, 255)
+    px[9, 5] = (220, 60, 60, 255)
+    for x in (2, 3, 12, 13):
+        px[x, 10] = (90, 94, 100, 255)
+    for y in range(2, 15):
+        for x in range(2, 14):
+            if px[x, y][3] and (px[x - 1, y][3] == 0 or px[x + 1, y][3] == 0):
+                px[x, y] = shade(px[x, y][:3], -40)
+    return img
+
+
+def tex_assembly_front(lit):
+    img = noise(new((150, 160, 172)), 6, 921)
+    px = img.load()
+    for i in range(16):
+        px[i, 0] = px[i, 15] = px[0, i] = px[15, i] = (80, 86, 94, 255)
+    for x in range(3, 13):                          # Sichtfenster mit Greifarm
+        for y in range(3, 10):
+            px[x, y] = (30, 40, 55, 255)
+    for y in range(3, 7):
+        px[8, y] = (200, 200, 205, 255)
+    px[7, 7] = px[9, 7] = (200, 200, 205, 255)
+    if lit:
+        for x in range(4, 12):
+            px[x, 9] = (90, 220, 255, 255)
+        px[8, 8] = (255, 240, 150, 255)
+    for x in range(3, 13):                          # Bedienleiste
+        px[x, 12] = (60, 64, 70, 255)
+    px[4, 12] = (80, 220, 80, 255) if lit else (40, 90, 40, 255)
+    px[6, 12] = (220, 180, 40, 255)
+    return img
+
+
+def tex_assembly_side():
+    img = noise(new((140, 150, 162)), 6, 922)
+    px = img.load()
+    for i in range(16):
+        px[i, 0] = px[i, 15] = px[0, i] = px[15, i] = (80, 86, 94, 255)
+    for y in range(4, 12, 2):
+        for x in range(3, 13):
+            px[x, y] = (95, 100, 108, 255)
+    return img
+
+
+def tex_assembly_top():
+    img = noise(new((130, 140, 152)), 6, 923)
+    px = img.load()
+    for i in range(16):
+        px[i, 0] = px[i, 15] = px[0, i] = px[15, i] = (80, 86, 94, 255)
+    for x in range(3, 13):
+        for y in range(3, 13):
+            if x in (3, 12) or y in (3, 12):
+                px[x, y] = (230, 190, 40, 255) if (x + y) % 2 == 0 else (40, 40, 40, 255)
+    return img
+
+
+def suit_assembly_assets(de, en):
+    M = MODID
+    tex_dir = os.path.join(ASSETS, "textures", "entity", "equipment", "humanoid")
+    os.makedirs(tex_dir, exist_ok=True)
+    space_suit_texture().save(os.path.join(tex_dir, "space_suit.png"))
+    write_json(os.path.join(ASSETS, "equipment", "space_suit.json"), {"layers": {"humanoid": [{"texture": f"{M}:space_suit"}]}})
+    save(icon_space_suit(), "item/space_suit")
+    write_json(os.path.join(ASSETS, "models", "item", "space_suit.json"),
+               {"parent": "minecraft:item/generated", "textures": {"layer0": f"{M}:item/space_suit"}})
+    write_json(os.path.join(ASSETS, "items", "space_suit.json"), item_def(f"{M}:item/space_suit"))
+    write_json(os.path.join(DATA, "recipe", "space_suit.json"), {"type": "minecraft:crafting_shaped", "category": "equipment",
+        "key": {"L": "minecraft:leather", "G": "minecraft:glass", "I": "minecraft:iron_ingot", "D": "minecraft:diamond",
+                "R": "minecraft:redstone_block", "F": "minecraft:feather"},
+        "pattern": ["LGL", "IDI", "FRF"], "result": {"id": f"{M}:space_suit"}})
+
+    save(tex_assembly_front(False), "assembly_front")
+    save(tex_assembly_front(True), "assembly_front_lit")
+    save(tex_assembly_side(), "assembly_side")
+    save(tex_assembly_top(), "assembly_top")
+    for lit in (False, True):
+        n = "ship_part_assembly" + ("_lit" if lit else "")
+        write_json(os.path.join(ASSETS, "models", "block", n + ".json"), {"parent": "minecraft:block/orientable",
+            "textures": {"front": b("assembly_front_lit" if lit else "assembly_front"), "side": b("assembly_side"), "top": b("assembly_top")}})
+    rot = {"north": 0, "east": 90, "south": 180, "west": 270}
+    write_json(os.path.join(ASSETS, "blockstates", "ship_part_assembly.json"), {"variants": {
+        f"facing={d},lit={str(l).lower()}": dict({"model": b("ship_part_assembly" + ("_lit" if l else ""))}, **({"y": r} if r else {}))
+        for d, r in rot.items() for l in (False, True)}})
+    write_json(os.path.join(ASSETS, "items", "ship_part_assembly.json"), item_def(b("ship_part_assembly")))
+    write_json(os.path.join(DATA, "loot_table", "blocks", "ship_part_assembly.json"), loot("ship_part_assembly"))
+    write_json(os.path.join(DATA, "recipe", "ship_part_assembly.json"), {"type": "minecraft:crafting_shaped", "category": "redstone",
+        "key": {"I": "minecraft:iron_ingot", "D": "minecraft:diamond", "G": "minecraft:glass"},
+        "pattern": ["IGI", "DGD", "III"], "result": {"id": f"{M}:ship_part_assembly"}})
+
+    de.update({
+        f"item.{M}.space_suit": "Raumanzug",
+        f"tooltip.{M}.suit": "Angezogen: fliegen wie im Kreativmodus (doppelt springen). Fliegen verbraucht Ladung – laden an der Ladestation.",
+        f"message.{M}.suit.empty": "Raumanzug leer – an der Ladestation aufladen!",
+        f"block.{M}.ship_part_assembly": "Schiffsteil-Fertigung",
+        f"gui.{M}.assembly.choose": "Rechts einen Block wählen",
+        f"gui.{M}.assembly.no_power": "Kein Strom",
+        f"gui.{M}.assembly.cost": "%s s, %s FE/t",
+    })
+    en.update({
+        f"item.{M}.space_suit": "Space Suit",
+        f"tooltip.{M}.suit": "Worn: fly like in creative mode (double jump). Flying uses charge – recharge at a charging station.",
+        f"message.{M}.suit.empty": "Space suit empty – recharge it at a charging station!",
+        f"block.{M}.ship_part_assembly": "Ship Part Assembly",
+        f"gui.{M}.assembly.choose": "Pick a block on the right",
+        f"gui.{M}.assembly.no_power": "No power",
+        f"gui.{M}.assembly.cost": "%s s, %s FE/t",
+    })
+
+
 def armory_assets(de, en):
     tex = f"{MODID}:item/weapon_palette"
     for name, boxes in WEAPON_MODELS.items():
@@ -3418,7 +3569,7 @@ def main():
     models_extra += armory_assets(armory_de, armory_en)
     models_extra += ["ceiling_light", "dual_wall", "dual_floor", "uranium_ore", "deepslate_uranium_ore", "reactor_casing",
                      "reactor_glass", "reactor_controller", "ship_helm", "airlock", "airlock_small", "dilithium_ore",
-                     "antimatter_cluster", "deuterium_ice"]
+                     "antimatter_cluster", "deuterium_ice", "ship_part_assembly"]
     models_extra += [f"door_{e}_{k}" for e in DOOR_ERAS for k in DOOR_KINDS]
     # Mit der Spitzhacke abbaubar
     write_json(os.path.join(ROOT, "data", "minecraft", "tags", "block", "mineable", "pickaxe.json"),
@@ -3570,6 +3721,7 @@ def main():
     ceiling_light_assets(de, en)
     uranium_reactor_assets(de, en)
     space_assets(de, en)
+    suit_assembly_assets(de, en)
     de.update(armory_de)
     en.update(armory_en)
     de.update({

@@ -57,7 +57,7 @@ public class ReactorControllerBlockEntity extends BlockEntity {
         }
     };
 
-    /** Anzeige: Größe, Leistung, Restbrenndauer, Brenndauer je Barren, Energie, Plätze. */
+    /** Anzeige: Größe, Leistung, Restbrenndauer, Brenndauer je Barren, Energie (in 100 FE), Plätze. */
     public final ContainerData data = new ContainerData() {
         @Override
         public int get(int i) {
@@ -66,7 +66,7 @@ public class ReactorControllerBlockEntity extends BlockEntity {
                 case 1 -> currentOutput;
                 case 2 -> burnLeft;
                 case 3 -> burnMax;
-                case 4 -> energy;
+                case 4 -> energy / 100; // Menüdaten sind 16 Bit: in 100 FE
                 default -> slots();
             };
         }

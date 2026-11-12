@@ -376,6 +376,31 @@ klicke sie mit der rechten Maustaste an:
 * **Landen** (L, am Steuer): nur langsam und annähernd waagerecht; das Schiff wird wieder zu Blöcken,
   die Drehung rastet auf 90° ein, Truhen & Co. behalten ihren Inhalt. Am Zielort muss Platz sein.
 
+### Raumanzug
+
+* **Raumanzug** (Brustteil): angezogen kann man **fliegen wie im Kreativmodus** (doppelt springen),
+  solange er geladen ist. Fliegen verbraucht 20 FE pro Tick (voll geladen: 240 000 FE = 10 Minuten
+  Flug); Stehen und Laufen kostet nichts.
+* **Laden**: in die **Ladestation** legen (oder in jedes Forge-Energie-Ladegerät anderer Mods).
+* Ist er leer, endet der Flug mit ein paar Sekunden **Sanftem Fall**.
+* Rezept: Leder – Glas – Leder / Eisen – Diamant – Eisen / Feder – Redstoneblock – Feder.
+
+### Schiffsteil-Fertigung
+
+* Baut **jeden Block dieser Mod** (außer sich selbst und den Erzen) aus Grundstoffen und **Strom**.
+  Rezept an der Werkbank: Eisen – Glas – Eisen / Diamant – Glas – Diamant / Eisen – Eisen – Eisen.
+* **Rechts** eine Tabelle mit den Bildern aller baubaren Blöcke (Mausrad blättert, Maus darüber zeigt
+  Zutaten, Dauer und Strombedarf). Klick wählt einen Block aus.
+* **Links** 3 x 3 Zutatenplätze und ein Ergebnisplatz. Nach der Auswahl zeigen die leeren Plätze
+  **ausgegraut**, was hinein muss – mit Menge: braucht ein Block z. B. 3 Eisen, kommen alle 3 in
+  **einen** Platz. So kann ein Rezept mehr als 9 Gegenstände brauchen. Falsche oder zu wenige Zutaten
+  werden rot markiert. Shift-Klick legt Zutaten direkt in den richtigen Platz.
+* **Dauer** je nach Block (einfache Hüllenplatten 4 s, Warpkerne, Luftschleusen und Reaktor-Steuerblock
+  bis über 13 s), dabei **80 FE pro Tick**. Strom kommt über die Hülle (Bordnetz), über Kabel anderer
+  Mods oder von einem angrenzenden Reaktor. Ohne Strom steht „Kein Strom“ und nichts passiert.
+* Einfache Bauteile (Hülle, Wände, Böden, Teppich) ergeben 8 Stück, Lichter und Fenster 4, Warpkerne
+  2, alles andere 1. Trichter können Zutaten einfüllen und das Ergebnis herausholen.
+
 ### Luftschleusen
 
 * **Luftschleuse (2 x 2 x 2)**: zwei Doppeltüren hintereinander (vorne und hinten), dazwischen die
@@ -446,7 +471,7 @@ E = Eisenbarren        G = Goldbarren
 F = roter Farbstoff, P = Enderperle, R = Redstone
 ```
 
-## Neue Blöcke (137)
+## Neue Blöcke (138)
 
 * **Hülle**: Hüllenpanzerung (+ Stufe), Hüllenplatte, dunkle Hüllenplatte, Hüllenfenster,
   Kennungsmarkierung (+ Stufe), roter Zierstreifen, Positionslicht rot/grün, Deflektorschüssel,
@@ -481,10 +506,11 @@ F = roter Farbstoff, P = Enderperle, R = Redstone
   Kinofilmen und Next Generation (12 Stück)
 * **Kernreaktor**: Uranerz, Tiefenschiefer-Uranerz, Reaktorhülle, Reaktorglas, Reaktor-Steuerblock
 * **Weltraum**: Luftschleuse (2 x 2 x 2 und 1 x 2 x 2), Dilithium-Erz, Antimaterie-Einschluss, Deuterium-Eis
+* **Werkstatt**: Schiffsteil-Fertigung
 * **Allgemein**: Deckboden, Korridorwand, Deckenverkleidung, Deckenleuchte, Maschinenraum-Konsole,
   Warpkern, Plasmaleitung
 
-Dazu das Item Kommunikator, Rohuran, Uranbarren, Dilithiumkristall, Antimaterie, Antimaterie-Kapsel, Deuterium-Kanister, 3 Schlüsselkarten (Sicherheit, Kommando, Captain), 5 Handphaser, 4 Phasergewehre, 15 Uniformen, 2 Uniformhosen und
+Dazu der Raumanzug, das Item Kommunikator, Rohuran, Uranbarren, Dilithiumkristall, Antimaterie, Antimaterie-Kapsel, Deuterium-Kanister, 3 Schlüsselkarten (Sicherheit, Kommando, Captain), 5 Handphaser, 4 Phasergewehre, 15 Uniformen, 2 Uniformhosen und
 Sternenflotten-Stiefel. Alles ist im Kreativ-Tab „Simon Space Mod“ zu finden.
 
 ## Außenform aus echten 3D-Modellen
