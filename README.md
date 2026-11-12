@@ -179,7 +179,10 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
   Felder, die höchstens 10 Blöcke auseinanderliegen, zählen als ein Transporterraum, Ziel ist ein
   zufälliges Feld davon. Felder in 10 Blöcken um das eigene werden nicht angezeigt. Liegt ein
   **aktives Schild** zwischen Start und Ziel (auch das eigene), ist kein Transport möglich –
-  Fehlermeldung.
+  Fehlermeldung. **Fliegende Schiffe** sind dabei: ihre Transporter erscheinen im Menü („Fliegendes
+  Schiff: …“) – wer dorthin gebeamt wird, steht auf ihrer Plattform und fliegt mit. Umgekehrt kann man
+  im Flug einen Transporter des eigenen Schiffs benutzen (auf die Oberfläche unter dem Schiff oder zu
+  anderen Transportern).
 * **Kommunikator**: Rechtsklick beamt dich zurück auf das zuletzt benutzte Transporterfeld.
 * **Brückenstation / Brückenmonitor**: Rechtsklick schaltet zwischen 4 Varianten (Farbe bzw. Anzeige) um.
 * **Phaser und Waffenstation**: Jedes Schiff hat Waffen im Stil seiner Zeit an den Stellen der

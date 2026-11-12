@@ -33,16 +33,17 @@ public class TransporterScreen extends Screen {
     @Override
     protected void init() {
         int w = 260, x = (width - w) / 2;
-        int n = groups.length / 4;
+        int n = groups.length / 5;
         int y = Math.max(30, (height - (n + 1) * 24) / 2);
         addRenderableWidget(Button.builder(Component.translatable("gui.simonspacemod.transporter.surface"), b -> choose(-1))
             .bounds(x, y, w, 20).build());
         for (int i = 0; i < n; i++) {
-            int dx = groups[i * 4], dy = groups[i * 4 + 1], dz = groups[i * 4 + 2], count = groups[i * 4 + 3];
+            int dx = groups[i * 5], dy = groups[i * 5 + 1], dz = groups[i * 5 + 2], count = groups[i * 5 + 3];
+            boolean flying = groups[i * 5 + 4] == 1;
             int dist = (int) Math.round(Math.sqrt((double) dx * dx + (double) dy * dy + (double) dz * dz));
             String dir = DIRS[Math.floorMod((int) Math.round(Math.toDegrees(Math.atan2(-dx, dz)) / 45.0), 8)];
-            Component label = Component.translatable("gui.simonspacemod.transporter.target", dist, dir,
-                (dy >= 0 ? "+" : "") + dy, count);
+            Component label = Component.translatable(flying ? "gui.simonspacemod.transporter.target_ship" : "gui.simonspacemod.transporter.target",
+                dist, dir, (dy >= 0 ? "+" : "") + dy, count);
             int idx = i;
             addRenderableWidget(Button.builder(label, b -> choose(idx)).bounds(x, y + 24 * (i + 1), w, 20).build());
         }
