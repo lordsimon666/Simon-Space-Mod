@@ -13,6 +13,8 @@ public class ShieldFlashEntity extends Entity {
     public static final int LIFE = 30;
     /** Client: Zellen (gepackt, siehe {@link Shields}). */
     public int[] cells;
+    /** Client: Drehung (bei fliegenden Schiffen), x y z w. */
+    public float[] rot = {0, 0, 0, 1};
 
     public ShieldFlashEntity(EntityType<?> type, Level level) {
         super(type, level);
@@ -23,7 +25,13 @@ public class ShieldFlashEntity extends Entity {
     public void tick() {
         super.tick();
         if (level().isClientSide()) {
-            if (cells == null) cells = ShieldFlashMessage.take(getId());
+            if (cells == null) {
+                ShieldFlashMessage m = ShieldFlashMessage.take(getId());
+                if (m != null) {
+                    cells = m.cells();
+                    rot = m.rot();
+                }
+            }
         } else if (tickCount > LIFE) discard();
     }
 

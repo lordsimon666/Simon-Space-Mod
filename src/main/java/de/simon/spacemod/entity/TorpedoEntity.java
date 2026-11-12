@@ -28,6 +28,8 @@ import org.jspecify.annotations.Nullable;
 public class TorpedoEntity extends Entity {
     private TorpedoStyle style = TorpedoStyle.PHOTON_TNG_D;
     private Vec3 target = Vec3.ZERO;
+    /** Abschussort: Schilde, die ihn umschließen (das eigene Schiff), lassen den Torpedo durch. */
+    private Vec3 launch;
     private @Nullable Entity targetEntity;
     private AABB own = new AABB(0, 0, 0, 0, 0, 0);
     private @Nullable UUID shooter;
@@ -78,16 +80,25 @@ public class TorpedoEntity extends Entity {
         keepLoaded(level, pos, dir);
         // Schild eines anderen Schiffs auf dem Weg? Torpedos treffen härter als ein Phaserstoß,
         // Quantentorpedos noch härter
-        var shieldHit = de.simon.spacemod.defense.Shields.intercept(level, pos, pos.add(dir.scale(step)));
+        if (launch == null) launch = pos;
+        var shieldHit = de.simon.spacemod.defense.Shields.intercept(level, pos, pos.add(dir.scale(step)), launch);
         if (shieldHit != null) {
             float amount = style.radius * de.simon.spacemod.defense.Shields.PHOTON_PER_RADIUS
                 * (style == TorpedoStyle.QUANTUM ? de.simon.spacemod.defense.Shields.QUANTUM_BONUS : 1F);
-            if (shieldHit.shield().damage(shieldHit.point(), amount, 3 + style.radius / 2)) {
+            if (shieldHit.damage(amount, 3 + style.radius / 2)) {
                 Vec3 p = shieldHit.point();
                 level.sendParticles(net.minecraft.core.particles.ParticleTypes.EXPLOSION_EMITTER, p.x, p.y, p.z, 1, 0, 0, 0, 0);
                 level.playSound(null, BlockPos.containing(p), net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE.value(),
                     net.minecraft.sounds.SoundSource.BLOCKS, 4F, 0.9F);
                 discard();
+                return;
+            }
+        }
+        // fliegendes Schiff im Weg: an seiner Hülle explodieren
+        if (step > 1e-4) {
+            var shipHit = de.simon.spacemod.flight.Shipyard.raycastShips(level, pos, dir, step);
+            if (shipHit != null && (launch == null || !shipHit.ship().getBoundingBox().contains(launch))) {
+                detonate(level, shipHit.point());
                 return;
             }
         }

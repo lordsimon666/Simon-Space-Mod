@@ -69,6 +69,33 @@ public final class Shipyard {
         ACTIVE.remove(plot, ship);
     }
 
+    /** Alle fliegenden Schiffe mit Bauplatz (Server). */
+    public static java.util.List<FlyingShipEntity> ships() {
+        return ACTIVE.values().stream().filter(FlyingShipEntity::isAlive).toList();
+    }
+
+    /** Treffer auf ein fliegendes Schiff: Abstand entlang des Strahls und Punkt in der Welt. */
+    public record ShipHit(FlyingShipEntity ship, double distance, Vec3 point) {}
+
+    /** Erstes fliegendes Schiff, dessen Blöcke der Strahl trifft (oder null). */
+    public static @Nullable ShipHit raycastShips(Level level, Vec3 from, Vec3 dir, double max) {
+        Vec3 d = dir.normalize();
+        AABB seg = new AABB(from, from.add(d.scale(max))).inflate(1);
+        ShipHit best = null;
+        for (FlyingShipEntity ship : ships()) {
+            if (ship.level() != level || ship.structure() == null || !ship.getBoundingBox().intersects(seg)) continue;
+            var q = ship.rotation(1F);
+            Vec3 lf = de.simon.spacemod.flight.ShipPhysics.inverse(q, from.subtract(ship.position()));
+            Vec3 ld = de.simon.spacemod.flight.ShipPhysics.inverse(q, d);
+            BlockPos hit = ship.structure().raycast(lf, ld, max);
+            if (hit == null) continue;
+            // Abstand bis zur Blockoberfläche (ungefähr)
+            double t = Math.max(0, Vec3.atLowerCornerOf(hit).subtract(lf).dot(ld) - 0.5);
+            if (best == null || t < best.distance()) best = new ShipHit(ship, t, from.add(d.scale(t)));
+        }
+        return best;
+    }
+
     public static @Nullable FlyingShipEntity shipAt(BlockPos shipyardPos) {
         int plot = plotOf(shipyardPos);
         FlyingShipEntity s = plot < 0 ? null : ACTIVE.get(plot);

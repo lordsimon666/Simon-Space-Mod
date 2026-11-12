@@ -83,7 +83,7 @@ public final class Shield {
      * Schaden an den Schildblöcken um {@code at}. @return false, wenn der getroffene Block danach
      * kein Leben mehr hat (das Schild ist dort durchbrochen) oder es dort gar kein Schild gibt.
      */
-    public boolean damage(Vec3 at, float amount, double radius) {
+    public boolean damage(Shields.View view, Vec3 at, float amount, double radius) {
         BlockPos hit = nearestCell(at, (int) Math.ceil(radius) + 2);
         if (hit == null) return false;
         long hitKey = hit.asLong();
@@ -100,7 +100,7 @@ public final class Shield {
                     float dmg = (float) (amount * Math.max(0.15, 1 - d / (radius + 1)));
                     damaged.put(k, Math.max(0, hp(k) - dmg));
                 }
-        Shields.flash(this, hit);
+        Shields.flash(view, hit);
         return true;
     }
 

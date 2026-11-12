@@ -384,7 +384,7 @@ public class FlyingShipEntity extends Entity {
             if (be != null) {
                 try { data = Optional.of(be.saveWithFullMetadata(sy.registryAccess())); } catch (RuntimeException ex) { /* ohne Daten */ }
             }
-            out.add(new ShipStructure.Entry(e.pos(), st.isAir() ? e.state() : st, data));
+            out.add(new ShipStructure.Entry(e.pos(), st, data));
         }
         return out;
     }
@@ -424,7 +424,7 @@ public class FlyingShipEntity extends Entity {
             scanCursor = (scanCursor + 1) % n;
             ShipStructure.Entry e = structure.blocks.get(i);
             BlockState st = sy.getBlockState(origin.offset(e.pos()));
-            if (st != e.state() && !st.isAir()) {
+            if (st != e.state() && !(st.isAir() && e.state().isAir())) { // auch zerstörte Blöcke (Luft) übernehmen
                 structure.setState(i, st);
                 idx[c] = i;
                 ids[c++] = Block.getId(st);
@@ -558,6 +558,7 @@ public class FlyingShipEntity extends Entity {
 
     private boolean collides(ServerLevel level, Vec3 pos, Quaternionf q) {
         for (ShipStructure.Entry e : structure.surface) {
+            if (e.state().isAir()) continue; // zerstört
             Vec3 w = ShipPhysics.rotate(q, e.pos().getX(), e.pos().getY(), e.pos().getZ()).add(pos);
             BlockPos bp = BlockPos.containing(w);
             if (level.isOutsideBuildHeight(bp)) continue; // über/unter der Welt ist frei (Weg in den Weltraum)
@@ -592,12 +593,13 @@ public class FlyingShipEntity extends Entity {
         List<ShipStructure.Entry> blocks = currentBlocks();
         for (ShipStructure.Entry e : blocks) {
             BlockPos t = pivot.offset(e.pos().rotate(rot));
+            targets.add(t);
+            if (e.state().isAir()) continue; // im Kampf zerstört
             BlockState here = level.getBlockState(t);
             if (!here.isAir() && !here.canBeReplaced()) {
                 by.sendOverlayMessage(Component.translatable("message.simonspacemod.ship.no_room"));
                 return;
             }
-            targets.add(t);
         }
         // Passagiere an ihre Plätze im gelandeten Schiff
         Quaternionf q = ShipPhysics.rotation(yaw0(), yaw0() + steps * 90F, 0F);
@@ -611,6 +613,7 @@ public class FlyingShipEntity extends Entity {
         for (int pass = 0; pass < 2; pass++)
             for (int i = 0; i < blocks.size(); i++) {
                 ShipStructure.Entry e = blocks.get(i);
+                if (e.state().isAir()) continue; // zerstörter Block: nichts setzen
                 boolean full = e.state().isCollisionShapeFullBlock(level, targets.get(i));
                 if ((pass == 0) != full) continue; // erst volle Blöcke, dann Anbauteile
                 BlockState st = e.state().rotate(rot);

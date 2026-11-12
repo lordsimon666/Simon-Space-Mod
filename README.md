@@ -433,6 +433,13 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
   Schildblöcke bekommen den Durchschnitt.
 * Selbst gebaute Schiffe: Schildemitter und Schildsteuerung ins Schiff setzen; die Konsole nimmt alle
   verbundenen Schiffsblöcke als Rumpf.
+* **Eigene Waffen** (Phaser und Torpedos) gehen durch das **eigene Schild** hinaus – man kann mit
+  aktiven Schilden kämpfen. Gegnerische Schüsse bleiben am Schild hängen.
+* **Fliegende Schiffe**: Schild und Konsole funktionieren auch im Flug (die Konsole per Rechtsklick
+  im Schiff bedienen); das Schild dreht sich mit dem Schiff. Fliegende Schiffe können jetzt getroffen
+  werden – Phaser zielen auf ihre Hülle, Torpedos schlagen dort ein, Explosionen in ihrer Nähe
+  wirken auf sie. Ohne Schild (oder wo es durchbrochen ist) gehen dabei echte Blöcke des Schiffs
+  kaputt; beim Landen fehlen sie dann auch.
 
 ### Raumanzug
 

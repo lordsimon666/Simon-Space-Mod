@@ -170,10 +170,10 @@ public final class PhaserControl {
                 Vec3 start = c.add(tgt.subtract(c).normalize().scale(0.7));
                 Vec3 end = tgt;
                 // Schild im Weg: Strahl endet am Schild und schwächt es
-                var hit = de.simon.spacemod.defense.Shields.intercept(level, start, tgt);
+                var hit = de.simon.spacemod.defense.Shields.intercept(level, start, tgt, c);
                 if (hit != null) {
                     end = hit.point();
-                    if (age % BeamShots.PULSE == 0) hit.shield().damage(end, damage, 2.5);
+                    if (age % BeamShots.PULSE == 0) hit.damage(damage, 2.5);
                     shielded = true;
                 }
                 if (beams.size() <= i) {
@@ -234,6 +234,13 @@ public final class PhaserControl {
             blockDist = t;
             hit = true;
             break;
+        }
+        // fliegende Schiffe (ihre Blöcke stehen nicht in der Welt) – trifft man ihre Hülle, zählt das
+        var shipHit = de.simon.spacemod.flight.Shipyard.raycastShips(level, eye, look, Math.min(blockDist, BLOCK_RANGE));
+        if (shipHit != null && shipHit.distance() < blockDist && !(player.getVehicle() == shipHit.ship())) {
+            target = shipHit.point();
+            blockDist = shipHit.distance();
+            hit = true;
         }
         // 2. Kreatur im Blick, wenn sie vor dem Block steht
         double best = Math.min(RANGE, blockDist);

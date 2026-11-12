@@ -16,6 +16,7 @@ public class ShieldFlashRenderer extends EntityRenderer<ShieldFlashEntity, Shiel
     public static class State extends EntityRenderState {
         public int[] cells;
         public float fade;
+        public org.joml.Quaternionf rot = new org.joml.Quaternionf();
     }
 
     public ShieldFlashRenderer(EntityRendererProvider.Context context) {
@@ -37,6 +38,7 @@ public class ShieldFlashRenderer extends EntityRenderer<ShieldFlashEntity, Shiel
     public void extractRenderState(ShieldFlashEntity e, State s, float partialTicks) {
         super.extractRenderState(e, s, partialTicks);
         s.cells = e.cells;
+        s.rot = new org.joml.Quaternionf(e.rot[0], e.rot[1], e.rot[2], e.rot[3]);
         float age = e.tickCount + partialTicks;
         s.fade = Math.max(0, 1 - age / ShieldFlashEntity.LIFE);
     }
@@ -46,6 +48,8 @@ public class ShieldFlashRenderer extends EntityRenderer<ShieldFlashEntity, Shiel
         if (s.cells != null && s.fade > 0) {
             final int[] cells = s.cells;
             final float fade = s.fade;
+            pose.pushPose();
+            pose.mulPose(s.rot); // fliegende Schiffe: Schild dreht mit
             collector.submitCustomGeometry(pose, RenderTypes.lightning(), (p, buf) -> {
                 for (int c : cells) {
                     float x = (c & 0x7F) - 64, y = ((c >> 7) & 0x7F) - 64, z = ((c >> 14) & 0x7F) - 64;
@@ -55,9 +59,10 @@ public class ShieldFlashRenderer extends EntityRenderer<ShieldFlashEntity, Shiel
                     else if (hp > 0.25F) { r = 1F; g = 0.82F; b = 0.2F; }
                     else { r = 1F; g = 0.2F; b = 0.12F; }
                     float a = (hp <= 0 ? 0.15F : 0.4F) * fade;
-                    cube(buf, p, x + 0.05F, y + 0.05F, z + 0.05F, x + 0.95F, y + 0.95F, z + 0.95F, r, g, b, a);
+                    cube(buf, p, x - 0.45F, y - 0.45F, z - 0.45F, x + 0.45F, y + 0.45F, z + 0.45F, r, g, b, a);
                 }
             });
+            pose.popPose();
         }
         super.submit(s, pose, collector, camera);
     }
