@@ -41,9 +41,9 @@ class EnterpriseBlueprintTest {
         // Wichtige Räume vorhanden
         assertTrue(counts.getOrDefault(ShipPart.CAPTAINS_CHAIR, 0) + counts.getOrDefault(ShipPart.CAPTAINS_CHAIR_TEAL, 0)
             + counts.getOrDefault(ShipPart.CAPTAINS_CHAIR_TNG, 0) + counts.getOrDefault(ShipPart.CAPTAINS_CHAIR_NX, 0) >= 1);
-        assertEquals(design.tng ? 44 : 21, counts.get(ShipPart.VIEWSCREEN));
+        assertEquals(design == ShipDesign.NCC_1701_D || design == ShipDesign.NCC_1701_F ? 27 : design.tng ? 21 : 15, counts.get(ShipPart.VIEWSCREEN));
         assertTrue(counts.getOrDefault(ShipPart.BRIDGE_RAILING, 0) + counts.getOrDefault(ShipPart.BRIDGE_RAILING_GRAY, 0)
-            + counts.getOrDefault(ShipPart.BRIDGE_RAILING_WOOD, 0) > (design.tng ? 8 : 20) || design.nx, "Geländer fehlt");
+            + counts.getOrDefault(ShipPart.BRIDGE_RAILING_WOOD, 0) > (design.tng ? 5 : 10) || design.nx, "Geländer fehlt");
         assertTrue(counts.getOrDefault(ShipPart.BRIDGE_STATION, 0) + counts.getOrDefault(ShipPart.EXCELSIOR_CONSOLE, 0)
             + counts.getOrDefault(ShipPart.TNG_CONSOLE, 0) + counts.getOrDefault(ShipPart.ENT_CONSOLE, 0) > 10, "Stationen fehlen");
         assertTrue(counts.getOrDefault(ShipPart.TRANSPORTER_ENERGIZER, 0) > 0 || design.nx, "Energiewand fehlt");

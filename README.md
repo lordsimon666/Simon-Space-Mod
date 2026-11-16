@@ -45,6 +45,9 @@ des Modells, weit vorne auf der lang gestreckten Untertasse (nicht in deren Mitt
 mit Brücke, Decks, Maschinenraum, Waffenkammer usw. Weil die Untertasse flach ist, liegen die Holodecks
 bei kleineren Bauformen im Sekundärrumpf.
 
+* Hinter der Brücke **vier blau leuchtende Kuppeln** (je zwei hintereinander links und rechts der Mittellinie).
+* Rot leuchtende **Impulstriebwerke** nur hinten an der Untertasse; die roten Streifen und Ringe auf der Oberseite
+  sind nur Markierungen. Bei der E sitzen die Impulstriebwerke wie im Original schräg an der Hinterkante der Untertasse.
 * **Doppel-Quantenwerfer** unter der Untertasse: jede Salve sind **zwei Quantentorpedos nebeneinander**,
   5 Salven (10 Torpedos) bevor nachgeladen wird (Taste **O**). Dazu Schnellfeuer-Photonenwerfer mit 5 Schuss.
 * **Warpkern der Enterprise-F**: 40 000 FE/t (die E hat 30 000), Warpkernbruch mit 170 Blöcken Radius.

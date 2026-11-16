@@ -156,7 +156,8 @@ public final class EnterpriseBlueprint {
         colors = model != null ? ShipColors.load(design) : null;
         if (model != null) {
             fitToModel();
-            int rr = (int) Math.round((bR + 1) * Math.min(1, s / 0.75));
+            // Boden am Rand des Brückenmoduls gemessen (feste Breite, damit das Deckraster nicht von der Brückengröße abhängt)
+            int rr = (int) Math.round(((tng ? 13 : 10) + 1) * Math.min(1, s / 0.75));
             // Boden auf der Oberfläche rund um die Brücke; liegt sie nicht in der Mitte, dort gemessen
             bridgeFloor = bCx == sCx ? (int) Math.floor(topProf[Math.min(topProf.length - 1, rr)]) : ringTop(rr);
         } else {
@@ -188,6 +189,8 @@ public final class EnterpriseBlueprint {
         }
         registryLettering();
         hullDetails();
+        if (design == ShipDesign.NCC_1701_F && model != null) fDomes();
+        if (design.late && colors != null) dropThinImpulse();
         placePhasers();
         if (model != null || refit) torpedoLaunchers();
         if (model == null) smoothSaucer(); // das Modell ist schon glatt
@@ -688,6 +691,7 @@ public final class EnterpriseBlueprint {
                         ShipPart q = get(fx, y + dy, fz);
                         if (q == null || q == ShipPart.AIR) continue;
                         if (isDoor(q) || isLift(q) || q == ShipPart.TURBOLIFT_DOOR || q.name().startsWith("HULL")
+                            || q == ShipPart.VIEWSCREEN || q == ShipPart.MSD_DISPLAY // nie durch den Hauptbildschirm
                             || q == ShipPart.LADDER || ab != null && fx >= ab[0] && fx <= ab[1] && fz >= ab[2] && fz <= ab[3]) { remove = true; continue; }
                         if (wallLike(q) || mat(q) >= 0) {
                             // dünne Wand: dahinter frei -> öffnen (bis zur Decke), sonst Tür weg
@@ -3206,7 +3210,7 @@ public final class EnterpriseBlueprint {
         ShipPart carpet = ShipPart.BRIDGE_DECK;
         ShipPart light = ShipPart.CEILING_LIGHT;
         double well = bIn - 2.8, step = bIn - 1.8; // vertiefte Mitte, Stufe, erhöhter Ring mit den Stationen
-        int vs = (int) Math.ceil(bIn);           // Hauptbildschirm in der vorderen Wand
+        int vs = (int) Math.floor(bIn) + 1;           // Hauptbildschirm in der vorderen Wand
         for (int dx = -bR; dx <= bR; dx++)
             for (int dz = -bR; dz <= bR; dz++) {
                 double r = Math.sqrt(dx * dx + dz * dz);
@@ -3283,7 +3287,7 @@ public final class EnterpriseBlueprint {
         int cx = (int) Math.round(bCx);
         int yb = bridgeFloor, top = yb + BRIDGE_H;
         double well = bIn - 2.8, step = bIn - 1.8;
-        int vs = (int) Math.ceil(bIn);
+        int vs = (int) Math.floor(bIn) + 1;
         for (int dx = -bR; dx <= bR; dx++)
             for (int dz = -bR; dz <= bR; dz++) {
                 double r = Math.sqrt(dx * dx + dz * dz);
@@ -3366,7 +3370,7 @@ public final class EnterpriseBlueprint {
         int cx = (int) Math.round(bCx);
         int yb = bridgeFloor, top = yb + BRIDGE_H;
         double rr = bIn;
-        int vs = (int) Math.ceil(rr);
+        int vs = (int) Math.floor(rr) + 1;
         ShipPart wallPart = design == ShipDesign.NCC_1701_C ? ShipPart.BRIDGE_WALL_DARK : ShipPart.TNG_WALL;
         ShipPart carpet = ShipPart.TNG_CARPET;
         BlockPos lift = bridgeTurbolift();
@@ -3438,7 +3442,7 @@ public final class EnterpriseBlueprint {
     private void buildBridgeNx() {
         int cx = (int) Math.round(bCx);
         int yb = bridgeFloor, top = yb + BRIDGE_H;
-        int vs = (int) Math.ceil(bIn);
+        int vs = (int) Math.floor(bIn) + 1;
         for (int dx = -bR; dx <= bR; dx++)
             for (int dz = -bR; dz <= bR; dz++) {
                 double r = Math.sqrt(dx * dx + dz * dz);
@@ -4894,7 +4898,15 @@ public final class EnterpriseBlueprint {
             switch (k) {
                 case ShipColors.RED -> {
                     if (nacelle && x < nX0 + nR * 1.6) return ShipPart.BUSSARD_RED;
-                    return c == SAUCER || c == NECK || c == PYLON ? ShipPart.IMPULSE_ENGINE : ShipPart.HULL_PENNANT;
+                    // Impulstriebwerke nur an nach hinten (auch schräg) offenen Flächen der hinteren Hälfte –
+                    // rote Streifen und Ringe auf der Oberseite (F) bleiben rote Markierungen
+                    return (c == SAUCER || c == NECK || c == PYLON) && x > sCx && facesAft(x, y, z)
+                        ? ShipPart.IMPULSE_ENGINE : ShipPart.HULL_PENNANT;
+                }
+                case ShipColors.RED_GLOW -> {
+                    // F: die orange leuchtenden Spitzen der Gondeln gehören teils zu den Pylonen – Bussard-Kollektor
+                    if (nacelle || c == PYLON) return ShipPart.BUSSARD_RED;
+                    return facesAft(x, y, z) ? ShipPart.IMPULSE_ENGINE : st;
                 }
                 case ShipColors.BLUEPAINT -> { return nacelle ? ShipPart.NACELLE_GRILLE : ShipPart.HULL_AZTEC; }
                 case ShipColors.COPPER -> { if (c == SECONDARY || c == NECK) return ShipPart.DEFLECTOR_DISH; }
@@ -4918,6 +4930,75 @@ public final class EnterpriseBlueprint {
             // rote Streifen, Schrift, Fenster und Kupfer werden auf 1 m pro Block krumm – die baut die Mod selbst gerade
             default -> st;
         };
+    }
+
+    /**
+     * E und F: dünne rote Linien und Punkte am Heck (Zierstreifen des Modells) sind keine Impulstriebwerke.
+     * Eine zusammenhängende Gruppe bleibt nur, wenn sie von hinten gesehen mindestens 30 m² groß ist – das sind
+     * die beiden schrägen Triebwerke der E und die zwei der F hinten an der Untertasse.
+     */
+    private void dropThinImpulse() {
+        boolean[] seen = new boolean[cell.length];
+        int[][] nb = new int[26][];
+        int k = 0;
+        for (int a = -1; a <= 1; a++) for (int b = -1; b <= 1; b++) for (int c = -1; c <= 1; c++)
+            if (a != 0 || b != 0 || c != 0) nb[k++] = new int[] {a, b, c};
+        for (int x = 0; x < sizeX; x++)
+            for (int y = 0; y < sizeY; y++)
+                for (int z = -zOffset; z <= zOffset; z++) {
+                    if (get(x, y, z) != ShipPart.IMPULSE_ENGINE || seen[idx(x, y, z)]) continue;
+                    List<int[]> group = new ArrayList<>();
+                    java.util.ArrayDeque<int[]> queue = new java.util.ArrayDeque<>();
+                    queue.add(new int[] {x, y, z});
+                    seen[idx(x, y, z)] = true;
+                    java.util.Set<Long> face = new java.util.HashSet<>(); // Ansicht von hinten (y, z)
+                    while (!queue.isEmpty()) {
+                        int[] p = queue.poll();
+                        group.add(p);
+                        face.add((long) p[1] << 32 | (p[2] & 0xffffffffL));
+                        for (int[] d : nb) {
+                            int nx2 = p[0] + d[0], ny = p[1] + d[1], nz = p[2] + d[2];
+                            if (!inBounds(nx2, ny, nz) || seen[idx(nx2, ny, nz)] || get(nx2, ny, nz) != ShipPart.IMPULSE_ENGINE) continue;
+                            seen[idx(nx2, ny, nz)] = true;
+                            queue.add(new int[] {nx2, ny, nz});
+                        }
+                    }
+                    if (face.size() < Math.max(2, 30 * s * s)) for (int[] p : group) set(p[0], p[1], p[2], ShipPart.HULL_PENNANT);
+                }
+    }
+
+    /** Zeigt die Hüllenzelle nach hinten (gerade oder schräg zur Seite, wie die Impulstriebwerke der E)? */
+    private boolean facesAft(int x, int y, int z) {
+        return compAt(x + 1, y, z) == NONE || compAt(x + 1, y, z - 1) == NONE || compAt(x + 1, y, z + 1) == NONE;
+    }
+
+    /**
+     * Odyssey-Klasse (F): vier blau leuchtende Kuppeln auf dem Rücken hinter der Brücke, je zwei
+     * hintereinander links und rechts der Mittellinie. Das Modell hat dort nur graue Ringe mit einer Mulde.
+     */
+    private void fDomes() {
+        // Mittelpunkte im Modellraster (Größe 1), aus den Ringen des Farbmodells vermessen
+        int[][] centers = {{357, -34}, {357, 31}, {379, -35}, {379, 32}};
+        double rad = Math.max(1.5, 5.5 * s);
+        int h = Math.max(1, (int) Math.round(3 * s));
+        for (int[] c : centers) {
+            double mx = c[0] * Math.min(1, s), mz = c[1] * Math.min(1, s);
+            int r = (int) Math.ceil(rad);
+            int base = -1;
+            for (int x = (int) mx - r; x <= mx + r; x++)
+                for (int z = (int) mz - r; z <= mz + r; z++)
+                    if (Math.hypot(x - mx, z - mz) <= rad) base = Math.max(base, topHullY(x, z));
+            if (base < 0) continue;
+            for (int x = (int) mx - r; x <= mx + r; x++)
+                for (int z = (int) mz - r; z <= mz + r; z++) {
+                    double d = Math.hypot(x - mx, z - mz);
+                    if (d > rad) continue;
+                    int top = topHullY(x, z);
+                    if (top < 0) continue;
+                    int yTop = base + (int) Math.round(h * Math.sqrt(1 - (d / rad) * (d / rad)));
+                    for (int y = top; y <= yTop; y++) set(x, y, z, ShipPart.BUSSARD_BLUE);
+                }
+        }
     }
 
     /** Ist das Bauteil ein Turbolift (in irgendeinem Stil)? */
