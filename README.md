@@ -383,7 +383,7 @@ klicke sie mit der rechten Maustaste an:
 * **Fliegen im Schiff**: im Kreativmodus oder mit geladenem Raumanzug schaltet doppeltes Springen den
   Flug um (Leertaste hoch, Shift runter); landen beendet ihn.
 * Das Schiff wird weich bewegt (wie Boote), es ruckelt im Flug nicht mehr vor und zurück.
-* **Steuer**: **H** übernimmt das Steuer (an der Konsole) bzw. gibt es ab. Am Steuer dreht sich das
+* **Steuer**: **H** übernimmt das Steuer (an der Konsole) bzw. gibt es ab; auch **Shift** gibt das Steuer ab (man bleibt im Schiff stehen, Shift wirft einen nie aus dem Schiff). Am Steuer dreht sich das
   Schiff zum **Fadenkreuz** (Gieren und Nicken), **W** gibt Schub, **S** bremst bzw. fährt rückwärts,
   **L** landet. **Shift** steigt aus, Rechtsklick auf das fliegende Schiff steigt wieder ein.
 * **Antrieb**: jeder **Impulsantrieb**-Block im Schiff gibt Schub, ohne Impulsantrieb hebt es nicht

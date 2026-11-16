@@ -26,7 +26,7 @@ public final class ShipClient {
     private static ShipWalker.State walk;
     private static int walkShip = -1;
     private static int outside;
-    private static boolean flying, lastJump;
+    private static boolean flying, lastJump, lastShift;
     private static int jumpTimer;
 
     /** Flugzustand auch dem Server melden (Raumanzug verbraucht dann Ladung). */
@@ -65,8 +65,14 @@ public final class ShipClient {
         }
         while (HELM.consumeClick()) TurboliftNetwork.sendToServer(new ShipControlMessage(2, 0, 0, 0));
         var in = mc.player.input.keyPresses;
+        boolean shiftDown = in.shift() && !lastShift;
+        lastShift = in.shift();
         if (ship.isPilotEntity(mc.player)) {
             walk = null;
+            if (shiftDown) { // Shift am Steuer: Steuer abgeben (man bleibt im Schiff stehen)
+                TurboliftNetwork.sendToServer(new ShipControlMessage(2, 0, 0, 0));
+                return;
+            }
             int throttle = (in.forward() ? 1 : 0) - (in.backward() ? 1 : 0);
             TurboliftNetwork.sendToServer(new ShipControlMessage(0, mc.player.getYRot(), mc.player.getXRot(), throttle));
             while (LAND.consumeClick()) TurboliftNetwork.sendToServer(new ShipControlMessage(1, 0, 0, 0));
