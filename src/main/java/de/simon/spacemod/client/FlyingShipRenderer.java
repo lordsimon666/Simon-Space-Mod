@@ -25,6 +25,9 @@ public class FlyingShipRenderer extends EntityRenderer<FlyingShipEntity, FlyingS
         public Quaternionf rotation = new Quaternionf();
         public final List<MovingBlockRenderState> blocks = new ArrayList<>();
         public final List<BlockPos> local = new ArrayList<>();
+        /** Blöcke mit eigenem Renderer (Truhen, Waffenständer …). */
+        public final List<net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> bers = new ArrayList<>();
+        public final List<BlockPos> berLocal = new ArrayList<>();
     }
 
     public FlyingShipRenderer(EntityRendererProvider.Context context) {
@@ -70,6 +73,34 @@ public class FlyingShipRenderer extends EntityRenderer<FlyingShipEntity, FlyingS
             i++;
         }
         while (state.blocks.size() > i) state.blocks.remove(state.blocks.size() - 1);
+        extractBlockEntities(entity, s, state, base, partialTicks);
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static void extractBlockEntities(FlyingShipEntity entity, ShipStructure s, State state, Vec3 base, float partialTicks) {
+        state.bers.clear();
+        state.berLocal.clear();
+        var mc = net.minecraft.client.Minecraft.getInstance();
+        var disp = mc.getBlockEntityRenderDispatcher();
+        Vec3 cam = mc.gameRenderer.mainCamera().position();
+        for (ShipStructure.Entry e : s.surface) {
+            if (!e.state().hasBlockEntity()) continue;
+            try {
+                net.minecraft.world.level.block.entity.BlockEntity be = entity.clientBlockEntity(e);
+                if (be == null) continue;
+                net.minecraft.client.renderer.blockentity.BlockEntityRenderer r = disp.getRenderer(be);
+                if (r == null) continue;
+                var rs = (net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState) r.createRenderState();
+                r.extractRenderState(be, rs, partialTicks, cam, null);
+                Vec3 w = ShipPhysics.rotate(state.rotation, e.pos().getX(), e.pos().getY(), e.pos().getZ()).add(base);
+                if (entity.level() instanceof ClientLevel cl)
+                    rs.lightCoords = net.minecraft.util.LightCoordsUtil.getLightCoords(cl, BlockPos.containing(w));
+                state.bers.add(rs);
+                state.berLocal.add(e.pos());
+            } catch (RuntimeException ex) {
+                // ein fehlerhafter Renderer soll das Schiff nicht unsichtbar machen
+            }
+        }
     }
 
     @Override
@@ -81,6 +112,18 @@ public class FlyingShipRenderer extends EntityRenderer<FlyingShipEntity, FlyingS
             poseStack.pushPose();
             poseStack.translate(l.getX() - 0.5, l.getY() - 0.5, l.getZ() - 0.5);
             collector.submitMovingBlock(poseStack, state.blocks.get(i), state.outlineColor);
+            poseStack.popPose();
+        }
+        var disp = net.minecraft.client.Minecraft.getInstance().getBlockEntityRenderDispatcher();
+        for (int i = 0; i < state.bers.size(); i++) {
+            BlockPos l = state.berLocal.get(i);
+            poseStack.pushPose();
+            poseStack.translate(l.getX() - 0.5, l.getY() - 0.5, l.getZ() - 0.5);
+            try {
+                disp.submit(state.bers.get(i), poseStack, collector, camera);
+            } catch (RuntimeException ex) {
+                // weiter mit den anderen
+            }
             poseStack.popPose();
         }
         poseStack.popPose();

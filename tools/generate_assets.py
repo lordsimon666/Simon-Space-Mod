@@ -3168,6 +3168,51 @@ def storage_mining_assets(de, en):
     m["elements"][0]["faces"]["up"] = {"texture": "#top"}
     write_json(os.path.join(ASSETS, "models", "block", "mining_laser.json"), m)
     write_json(os.path.join(ASSETS, "blockstates", "mining_laser.json"), {"variants": {"": {"model": b("mining_laser")}}})
+    # Laserfokus: Hüllenplatte mit Linse (oben und unten), seitlich Hülle
+    def tex_focus(kind):
+        img = noise(new(HULL), 4, 931 if kind == "side" else 932)
+        px = img.load()
+        for i in range(16):
+            px[i, 0] = px[i, 15] = px[0, i] = px[15, i] = shade(HULL, -40)
+        if kind == "lens":
+            for x in range(16):
+                for y in range(16):
+                    d = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** 0.5
+                    if d <= 6.2:
+                        px[x, y] = (70, 74, 82, 255) if d > 5 else (clamp(255 - d * 30), clamp(110 - d * 14), clamp(80 - d * 10), 255)
+        else:
+            for x in range(3, 13):
+                px[x, 7] = px[x, 8] = shade(HULL, -25)
+        return img
+    save(tex_focus("lens"), "laser_focus_lens")
+    save(tex_focus("side"), "laser_focus_side")
+    write_json(os.path.join(ASSETS, "models", "block", "laser_focus.json"), {"parent": "minecraft:block/cube_column",
+        "textures": {"end": b("laser_focus_lens"), "side": b("laser_focus_side")}})
+    write_json(os.path.join(ASSETS, "blockstates", "laser_focus.json"), {"variants": {"": {"model": b("laser_focus")}}})
+    write_json(os.path.join(ASSETS, "items", "laser_focus.json"), item_def(b("laser_focus")))
+    write_json(os.path.join(DATA, "loot_table", "blocks", "laser_focus.json"), loot("laser_focus"))
+    # Laser-Steuerkonsole: Front mit Laser-Symbol und Schalter
+    front = noise(new((70, 74, 82)), 4, 941)
+    fp = front.load()
+    for i in range(16):
+        fp[i, 0] = fp[i, 15] = fp[0, i] = fp[15, i] = (40, 42, 48, 255)
+    for x in range(3, 13):
+        for y in range(2, 9):
+            fp[x, y] = (18, 22, 30, 255)
+    for y in range(3, 8):
+        fp[7, y] = fp[8, y] = (255, 70, 50, 255)                    # Strahl
+    for x in range(5, 11):
+        fp[x, 3] = (160, 160, 170, 255)                               # Laserkopf
+    for x, c in ((4, (60, 220, 90)), (7, (230, 190, 40)), (10, (220, 60, 50))):
+        fp[x, 11] = fp[x + 1, 11] = fp[x, 12] = fp[x + 1, 12] = c + (255,)
+    save(front, "mining_laser_control_front")
+    write_json(os.path.join(ASSETS, "models", "block", "mining_laser_control.json"), {"parent": "minecraft:block/orientable",
+        "textures": {"front": b("mining_laser_control_front"), "side": b("mining_laser_side"), "top": b("mining_laser_top")}})
+    rot = {"north": 0, "east": 90, "south": 180, "west": 270}
+    write_json(os.path.join(ASSETS, "blockstates", "mining_laser_control.json"), {"variants": {
+        f"facing={d}": dict({"model": b("mining_laser_control")}, **({"y": r} if r else {})) for d, r in rot.items()}})
+    write_json(os.path.join(ASSETS, "items", "mining_laser_control.json"), item_def(b("mining_laser_control")))
+    write_json(os.path.join(DATA, "loot_table", "blocks", "mining_laser_control.json"), loot("mining_laser_control"))
     write_json(os.path.join(ASSETS, "items", "mining_laser.json"), item_def(b("mining_laser")))
     write_json(os.path.join(DATA, "loot_table", "blocks", "mining_laser.json"), loot("mining_laser"))
     de.update({
@@ -3177,6 +3222,11 @@ def storage_mining_assets(de, en):
         f"gui.{M}.mining.working": "Baut ab: Schicht %s / %s", f"gui.{M}.mining.no_power": "Kein Strom",
         f"gui.{M}.mining.full": "Lager voll", f"gui.{M}.mining.done": "Nichts mehr abzubauen",
         f"gui.{M}.mining.stopped": "Ausgeschaltet",
+        f"gui.{M}.mining.blocked": "Schiffsblock im Weg (Laserfokus nutzen)",
+        f"block.{M}.laser_focus": "Laserfokus", f"block.{M}.mining_laser_control": "Laser-Steuerkonsole",
+        f"message.{M}.laser_control.on": "%s Bergbaulaser eingeschaltet",
+        f"message.{M}.laser_control.off": "%s Bergbaulaser ausgeschaltet",
+        f"message.{M}.laser_control.none": "Keine Bergbaulaser mit dieser Konsole verbunden",
         f"message.{M}.crate.formed": "Großkiste %s (%s): %s Plätze",
         f"message.{M}.crate.invalid": "Keine fertige Großkiste – baue einen hohlen Quader (3×3×3 bis 8×8×8, innen Luft, alles dieselbe Stufe).",
     })
@@ -3187,6 +3237,11 @@ def storage_mining_assets(de, en):
         f"gui.{M}.mining.working": "Mining: layer %s / %s", f"gui.{M}.mining.no_power": "No power",
         f"gui.{M}.mining.full": "Storage full", f"gui.{M}.mining.done": "Nothing left to mine",
         f"gui.{M}.mining.stopped": "Switched off",
+        f"gui.{M}.mining.blocked": "Ship block in the way (use a laser focus)",
+        f"block.{M}.laser_focus": "Laser Focus", f"block.{M}.mining_laser_control": "Laser Control Console",
+        f"message.{M}.laser_control.on": "%s mining lasers switched on",
+        f"message.{M}.laser_control.off": "%s mining lasers switched off",
+        f"message.{M}.laser_control.none": "No mining lasers connected to this console",
         f"message.{M}.crate.formed": "Crate %s (%s): %s slots",
         f"message.{M}.crate.invalid": "Not a finished crate – build a hollow box (3×3×3 to 8×8×8, air inside).",
     })
@@ -4234,7 +4289,7 @@ def main():
     models_extra += ["ceiling_light", "dual_wall", "dual_floor", "uranium_ore", "deepslate_uranium_ore", "reactor_casing",
                      "reactor_glass", "reactor_controller", "ship_helm", "airlock", "airlock_small", "dilithium_ore",
                      "antimatter_cluster", "deuterium_ice", "ship_part_assembly",
-                     "power_console", "shield_console", "alarm_light", "battery", "hull_glass", "mining_laser"] + [f"crate_{t[0]}" for t in CRATE_TIERS if t[0] != "wood"] + [f"shield_emitter_{k}" for k in ("tos", "refit", "excelsior", "c", "d", "e")]
+                     "power_console", "shield_console", "alarm_light", "battery", "hull_glass", "mining_laser", "laser_focus", "mining_laser_control"] + [f"crate_{t[0]}" for t in CRATE_TIERS if t[0] != "wood"] + [f"shield_emitter_{k}" for k in ("tos", "refit", "excelsior", "c", "d", "e")]
     models_extra += [f"door_{e}_{k}" for e in DOOR_ERAS for k in DOOR_KINDS]
     # Mit der Spitzhacke abbaubar
     write_json(os.path.join(ROOT, "data", "minecraft", "tags", "block", "mineable", "pickaxe.json"),

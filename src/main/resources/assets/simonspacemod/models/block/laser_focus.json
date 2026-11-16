@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "simonspacemod:block/laser_focus_lens",
+    "side": "simonspacemod:block/laser_focus_side"
+  }
+}

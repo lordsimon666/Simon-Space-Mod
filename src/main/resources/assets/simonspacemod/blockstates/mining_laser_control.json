@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "simonspacemod:block/mining_laser_control"
+    },
+    "facing=east": {
+      "model": "simonspacemod:block/mining_laser_control",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "simonspacemod:block/mining_laser_control",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "simonspacemod:block/mining_laser_control",
+      "y": 270
+    }
+  }
+}

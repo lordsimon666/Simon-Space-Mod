@@ -206,7 +206,62 @@ public class FlyingShipEntity extends Entity {
     public void startSeenByPlayer(ServerPlayer player) {
         super.startSeenByPlayer(player);
         if (structure != null) TurboliftNetwork.CHANNEL.send(ShipStructureMessage.of(getId(), structure), PacketDistributor.PLAYER.with(player));
+        var all = blockEntityData(true);
+        if (!all.isEmpty()) TurboliftNetwork.CHANNEL.send(new de.simon.spacemod.flight.ShipBlockEntityMessage(getId(), all), PacketDistributor.PLAYER.with(player));
     }
+
+    // ---- Blockdaten für Renderer (Waffenständer, Truhen …) ----
+
+    /** Server: zuletzt gesendete Anzeigedaten je Block (Hash), damit nur Änderungen rausgehen. */
+    private final Map<BlockPos, Integer> sentBlockData = new HashMap<>();
+    /** Client: Anzeigedaten je Block und daraus gebaute Blockdaten zum Zeichnen. */
+    private final Map<BlockPos, net.minecraft.nbt.CompoundTag> clientBlockData = new HashMap<>();
+    private final Map<BlockPos, BlockEntity> clientBlockEntities = new HashMap<>();
+
+    public Map<BlockPos, net.minecraft.nbt.CompoundTag> clientBlockData() {
+        return clientBlockData;
+    }
+
+    private List<de.simon.spacemod.flight.ShipBlockEntityMessage.Entry> blockEntityData(boolean all) {
+        List<de.simon.spacemod.flight.ShipBlockEntityMessage.Entry> out = new ArrayList<>();
+        if (structure == null || plot < 0) return out;
+        for (ShipStructure.Entry e : structure.blocks) {
+            if (!e.state().hasBlockEntity()) continue;
+            BlockEntity be = liveAt(e.pos());
+            if (be == null) continue;
+            net.minecraft.nbt.CompoundTag tag;
+            try { tag = be.getUpdateTag(level().registryAccess()); } catch (RuntimeException ex) { continue; }
+            if (tag.isEmpty()) continue;
+            int h = tag.hashCode();
+            Integer old = sentBlockData.put(e.pos(), h);
+            if (all || old == null || old != h) out.add(new de.simon.spacemod.flight.ShipBlockEntityMessage.Entry(e.pos().asLong(), tag));
+        }
+        return out;
+    }
+
+    /** Client: Blockdaten eines Schiffsblocks zum Zeichnen (null = Block hat keine). */
+    public @Nullable BlockEntity clientBlockEntity(ShipStructure.Entry e) {
+        BlockState st = e.state();
+        if (!st.hasBlockEntity() || !(st.getBlock() instanceof net.minecraft.world.level.block.EntityBlock eb)) return null;
+        BlockEntity be = clientBlockEntities.get(e.pos());
+        net.minecraft.nbt.CompoundTag tag = clientBlockData.remove(e.pos());
+        if (be == null || be.getBlockState() != st) {
+            be = eb.newBlockEntity(e.pos(), st);
+            if (be == null) return null;
+            be.setLevel(level());
+            clientBlockEntities.put(e.pos(), be);
+            if (tag == null) tag = lastTags.get(e.pos());
+        }
+        if (tag != null) {
+            lastTags.put(e.pos(), tag);
+            try (var reporter = new net.minecraft.util.ProblemReporter.ScopedCollector(be.problemPath(), com.mojang.logging.LogUtils.getLogger())) {
+                be.loadWithComponents(net.minecraft.world.level.storage.TagValueInput.create(reporter, level().registryAccess(), tag));
+            } catch (RuntimeException ex) { /* Anzeige ohne Daten */ }
+        }
+        return be;
+    }
+
+    private final Map<BlockPos, net.minecraft.nbt.CompoundTag> lastTags = new HashMap<>();
 
     // ---- Passagiere ----
 
@@ -623,6 +678,11 @@ public class FlyingShipEntity extends Entity {
                 lastPower = grid.hasPower(sy) ? 1 : 0;
             }
             syncBlocks(sy);
+            if (tickCount % 10 == 0) {
+                var changed = blockEntityData(false);
+                if (!changed.isEmpty()) TurboliftNetwork.CHANNEL.send(new de.simon.spacemod.flight.ShipBlockEntityMessage(getId(), changed),
+                    PacketDistributor.TRACKING_ENTITY.with(this));
+            }
         } else {
             double power = demand <= 0 ? 1 : Math.min(1, structure.powerPerTick / demand);
             lastPower = structure.powerPerTick > 0 ? power : 0;

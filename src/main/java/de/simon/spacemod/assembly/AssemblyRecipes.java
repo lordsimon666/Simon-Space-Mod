@@ -89,6 +89,10 @@ public final class AssemblyRecipes {
         } else if (p.equals("mining_laser")) {
             b.add(Items.IRON_BLOCK, 2).add(Items.DIAMOND_PICKAXE, 1).add(Items.DIAMOND, 3).add(Items.REDSTONE_BLOCK, 2)
                 .add(Items.GLOWSTONE_DUST, 4).add(ModBlocks.DILITHIUM_CRYSTAL.get(), 2).add(Items.HOPPER, 1);
+        } else if (p.equals("laser_focus")) {
+            b.add(Items.IRON_INGOT, 4).add(Items.GLASS, 2).add(Items.DIAMOND, 1).add(Items.REDSTONE, 2);
+        } else if (p.equals("mining_laser_control")) {
+            b.add(Items.IRON_INGOT, 3).add(Items.REDSTONE, 3).add(Items.GLASS_PANE, 2).add(Items.GOLD_INGOT, 1).add(Items.COMPARATOR, 1);
         } else if (p.startsWith("warp_core")) {
             boolean late = p.endsWith("_e") || p.endsWith("_tng");
             b.add(Items.IRON_BLOCK, 2).add(ModBlocks.DILITHIUM_CRYSTAL.get(), p.endsWith("_nx") ? 0 : late ? 4 : 2)

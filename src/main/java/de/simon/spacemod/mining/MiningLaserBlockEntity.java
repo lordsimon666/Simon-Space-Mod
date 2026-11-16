@@ -47,7 +47,9 @@ import org.joml.Quaternionf;
  */
 public class MiningLaserBlockEntity extends BlockEntity {
     public static final int CAPACITY = 100_000, MAX_IN = 4_000, FE_PER_BLOCK = 250, INTERVAL = 2, CHECKS_PER_TICK = 128;
-    public static final int OK = 0, NO_POWER = 1, FULL = 2, DONE = 3, OFF = 4;
+    public static final int OK = 0, NO_POWER = 1, FULL = 2, DONE = 3, OFF = 4, BLOCKED = 5;
+    /** So weit unter dem Laser darf ein Laserfokus sitzen. */
+    public static final int FOCUS_RANGE = 5;
 
     private final SimpleContainer inv = new SimpleContainer(9) {
         @Override
@@ -57,9 +59,9 @@ public class MiningLaserBlockEntity extends BlockEntity {
         }
     };
     private int energy, size = 5, depth = 16, cursor, cooldown, status = OK, emptyPasses;
-    private boolean on = true;
+    private boolean on = false; // startet ausgeschaltet
     /** Sichtbarer Strahl (dieselbe Entity wie beim Phaser) und Nummer des Blocks, auf den er zeigt. */
-    private net.minecraft.world.entity.@Nullable Entity beam;
+    private net.minecraft.world.entity.@Nullable Entity beam, beam2;
     private int beamTarget = -1, beamTicks;
 
     private final IEnergyStorage storage = new IEnergyStorage() {
@@ -112,25 +114,84 @@ public class MiningLaserBlockEntity extends BlockEntity {
         setChanged();
     }
 
+    public boolean isOn() {
+        return on;
+    }
+
+    /** Für die Laser-Steuerkonsole. */
+    public void setOn(boolean value) {
+        if (on == value) return;
+        on = value;
+        cursor = 0;
+        emptyPasses = 0;
+        setChanged();
+    }
+
     public void openMenu(ServerPlayer player) {
         player.openMenu(new SimpleMenuProvider((id, pinv, p) -> new MiningLaserMenu(id, pinv, inv, data, this,
             pl -> !isRemoved() && Shipyard.distanceSqr(pl, level, worldPosition) < 64), Component.translatable("block.simonspacemod.mining_laser")));
     }
 
-    /** Weltlage eines Blocks im Bereich (auf einem fliegenden Schiff: gedreht mit dem Schiff). */
-    private record Spot(ServerLevel level, BlockPos pos, Vec3 from) {}
+    /**
+     * Bezugssystem des Lasers: auf einem fliegenden Schiff die Schiffskoordinaten (Blöcke in der Werft,
+     * Mittelpunkt von Block p bei p), sonst die Welt (Mittelpunkt bei p + 0,5).
+     */
+    private record Frame(ServerLevel world, ServerLevel blocks, @Nullable FlyingShipEntity ship, Quaternionf q, BlockPos origin, BlockPos self) {
+        Vec3 toWorld(double x, double y, double z) {
+            return ship == null ? new Vec3(x + 0.5, y + 0.5, z + 0.5) : ShipPhysics.rotate(q, x, y, z).add(ship.position());
+        }
 
-    private @Nullable Spot spot(ServerLevel here, int[] o) {
+        BlockState at(BlockPos p) {
+            return blocks.getBlockState(ship == null ? p : origin.offset(p));
+        }
+
+        /** Gehört der Block zum Schiff? (fliegend: jeder Block in der Werft; sonst Blöcke der Mod außer Erzen) */
+        boolean shipBlock(BlockPos p) {
+            BlockState st = at(p);
+            if (st.isAir()) return false;
+            if (ship != null) return true;
+            return !isModOre(st) && BuiltInRegistries.BLOCK.getKey(st.getBlock()).getNamespace().equals(SimonSpaceMod.MODID);
+        }
+
+        /** Keine Schiffsblöcke auf dem Weg von der Unterseite von a (Austritt des Strahls) zur Mitte von b. */
+        boolean clear(BlockPos a, BlockPos b) {
+            Vec3 from = new Vec3(0, -0.5, 0), d = Vec3.atLowerCornerOf(b.subtract(a)).subtract(from);
+            int steps = (int) Math.ceil(d.length() * 4);
+            for (int i = 1; i < steps; i++) {
+                Vec3 q = from.add(d.scale(i / (double) steps));
+                BlockPos p = a.offset(BlockPos.containing(q.x + 0.5, q.y + 0.5, q.z + 0.5));
+                if (!p.equals(a) && !p.equals(b) && shipBlock(p)) return false;
+            }
+            return true;
+        }
+    }
+
+    private @Nullable Frame frame(ServerLevel here) {
         if (Shipyard.is(here)) {
             FlyingShipEntity ship = Shipyard.shipAt(worldPosition);
             if (ship == null || !(ship.level() instanceof ServerLevel wl)) return null;
-            BlockPos l = worldPosition.subtract(ship.plotOrigin());
-            Quaternionf q = ship.rotation(1F);
-            Vec3 c = ShipPhysics.rotate(q, l.getX() + o[0], l.getY() - 1 - o[1], l.getZ() + o[2]).add(ship.position());
-            Vec3 from = ShipPhysics.rotate(q, l.getX(), l.getY() - 0.55, l.getZ()).add(ship.position());
-            return new Spot(wl, BlockPos.containing(c), from);
+            return new Frame(wl, here, ship, ship.rotation(1F), ship.plotOrigin(), worldPosition.subtract(ship.plotOrigin()));
         }
-        return new Spot(here, worldPosition.offset(o[0], -1 - o[1], o[2]), Vec3.atBottomCenterOf(worldPosition));
+        return new Frame(here, here, null, new Quaternionf(), BlockPos.ZERO, worldPosition);
+    }
+
+    /** Laserfokus bis zu 5 Blöcke unter dem Laser (dazwischen nur Luft), sonst null. */
+    private static @Nullable BlockPos focus(Frame f) {
+        for (int k = 1; k <= FOCUS_RANGE; k++) {
+            BlockPos p = f.self().below(k);
+            BlockState st = f.at(p);
+            if (st.is(ModBlocks.LASER_FOCUS.get())) return p;
+            if (!st.isAir()) return null;
+        }
+        return null;
+    }
+
+    /** Ein Block im Bereich: Lage im Bezugssystem und in der Welt. */
+    private record Spot(ServerLevel level, BlockPos frame, BlockPos pos) {}
+
+    private static Spot spot(Frame f, BlockPos start, int[] o) {
+        BlockPos t = start.offset(o[0], -1 - o[1], o[2]);
+        return new Spot(f.world(), t, BlockPos.containing(f.toWorld(t.getX(), t.getY(), t.getZ())));
     }
 
     private static boolean mineable(ServerLevel wl, BlockPos p) {
@@ -168,19 +229,24 @@ public class MiningLaserBlockEntity extends BlockEntity {
     public static void serverTick(Level level, BlockPos pos, BlockState state, MiningLaserBlockEntity be) {
         if (!(level instanceof ServerLevel here)) return;
         if (level.getGameTime() % 10 == 0) be.pushOut(here);
-        be.updateBeam(here);
+        Frame f = be.frame(here);
+        BlockPos focus = f == null ? null : focus(f);
+        be.updateBeam(f, focus);
         if (!be.on) { be.status = OFF; return; }
         if (be.cooldown > 0) { be.cooldown--; return; }
+        if (f == null) { be.status = DONE; be.cooldown = 20; return; }
+        // ohne Fokus: zeigt der Laser in einen Schiffsblock (Boden), geht nichts
+        if (focus == null && f.shipBlock(f.self().below())) { be.status = BLOCKED; be.cooldown = 20; return; }
         if (be.energy < FE_PER_BLOCK) { be.status = NO_POWER; return; }
+        BlockPos start = focus != null ? focus : f.self();
         int total = MiningArea.count(be.size, be.depth);
         for (int n = 0; n < CHECKS_PER_TICK; n++) {
             if (be.cursor >= total) { // Durchgang fertig: von vorn (Schiff kann weitergeflogen sein)
                 be.cursor = 0;
                 if (++be.emptyPasses > 1) { be.status = DONE; be.cooldown = 40; return; }
             }
-            Spot s = be.spot(here, MiningArea.offset(be.cursor, be.size));
-            if (s == null) { be.status = DONE; be.cooldown = 20; return; }
-            if (!mineable(s.level(), s.pos())) { be.cursor++; continue; }
+            Spot s = spot(f, start, MiningArea.offset(be.cursor, be.size));
+            if (!mineable(s.level(), s.pos()) || !f.clear(start, s.frame())) { be.cursor++; continue; } // Schiffsblock im Weg
             BlockState st = s.level().getBlockState(s.pos());
             List<ItemStack> drops = Block.getDrops(st, s.level(), s.pos(), null, null, new ItemStack(Items.DIAMOND_PICKAXE));
             if (!be.fits(drops)) { be.status = FULL; be.cooldown = 20; return; }
@@ -205,30 +271,54 @@ public class MiningLaserBlockEntity extends BlockEntity {
 
     /**
      * Roter Strahl von der Linse zum zuletzt abgebauten Block, jeden Tick nachgeführt (das Schiff kann
-     * sich bewegen). Verschwindet kurz nach dem letzten Abbau von selbst.
+     * sich bewegen). Mit Laserfokus: ein Strahl gerade hinunter in den Fokus und ein zweiter vom Fokus
+     * zum Block. Verschwindet kurz nach dem letzten Abbau von selbst.
      */
-    private void updateBeam(ServerLevel here) {
+    private void updateBeam(@Nullable Frame f, @Nullable BlockPos focus) {
         if (beamTicks > 0) beamTicks--;
-        Spot s = beamTicks > 0 && beamTarget >= 0 ? spot(here, MiningArea.offset(beamTarget, size)) : null;
-        if (s == null) {
-            if (beam != null) { beam.discard(); beam = null; }
+        if (f == null || beamTicks <= 0 || beamTarget < 0) {
+            beam = drop(beam);
+            beam2 = drop(beam2);
             return;
         }
-        if (beam == null || beam.isRemoved() || beam.level() != s.level()) {
-            if (beam != null) beam.discard();
-            de.simon.spacemod.entity.PhaserBeamEntity b = ModBlocks.PHASER_BEAM.get().create(s.level(), net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
-            if (b == null) return;
+        BlockPos self = f.self();
+        Vec3 lens = f.toWorld(self.getX(), self.getY() - 0.55, self.getZ());
+        Spot s = spot(f, focus != null ? focus : self, MiningArea.offset(beamTarget, size));
+        Vec3 target = Vec3.atCenterOf(s.pos());
+        if (focus != null) {
+            Vec3 in = f.toWorld(focus.getX(), focus.getY() + 0.45, focus.getZ()), out = f.toWorld(focus.getX(), focus.getY() - 0.5, focus.getZ());
+            beam = aim(beam, f.world(), lens, in);
+            beam2 = aim(beam2, f.world(), out, target);
+        } else {
+            beam = aim(beam, f.world(), lens, target);
+            beam2 = drop(beam2);
+        }
+    }
+
+    private static net.minecraft.world.entity.@Nullable Entity drop(net.minecraft.world.entity.@Nullable Entity e) {
+        if (e != null) e.discard();
+        return null;
+    }
+
+    private static net.minecraft.world.entity.@Nullable Entity aim(net.minecraft.world.entity.@Nullable Entity e, ServerLevel level, Vec3 from, Vec3 to) {
+        if (e == null || e.isRemoved() || e.level() != level) {
+            drop(e);
+            de.simon.spacemod.entity.PhaserBeamEntity b = ModBlocks.PHASER_BEAM.get().create(level, net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
+            if (b == null) return null;
             b.setup(0xFF2A1A, 0xFFD0B0, 0.07F, false);
-            b.aim(s.from(), Vec3.atCenterOf(s.pos()));
-            s.level().addFreshEntity(b);
-            beam = b;
-        } else ((de.simon.spacemod.entity.PhaserBeamEntity) beam).aim(s.from(), Vec3.atCenterOf(s.pos()));
+            b.aim(from, to);
+            level.addFreshEntity(b);
+            return b;
+        }
+        ((de.simon.spacemod.entity.PhaserBeamEntity) e).aim(from, to);
+        return e;
     }
 
     @Override
     public void setRemoved() {
         super.setRemoved();
-        if (beam != null) { beam.discard(); beam = null; }
+        beam = drop(beam);
+        beam2 = drop(beam2);
     }
 
     /** Ausbeute an angrenzende Inventare abgeben (z. B. eine Großkiste darüber oder daneben). */
@@ -259,7 +349,7 @@ public class MiningLaserBlockEntity extends BlockEntity {
         size = Math.max(1, Math.min(MiningArea.MAX_SIZE, input.getIntOr("size", 5)));
         depth = Math.max(1, Math.min(MiningArea.MAX_DEPTH, input.getIntOr("depth", 16)));
         cursor = input.getIntOr("cursor", 0);
-        on = input.getBooleanOr("on", true);
+        on = input.getBooleanOr("on", false);
         NonNullList<ItemStack> items = NonNullList.withSize(9, ItemStack.EMPTY);
         net.minecraft.world.ContainerHelper.loadAllItems(input, items);
         for (int i = 0; i < 9; i++) inv.setItem(i, items.get(i));

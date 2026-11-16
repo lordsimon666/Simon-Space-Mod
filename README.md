@@ -426,6 +426,9 @@ klicke sie mit der rechten Maustaste an:
   und Waffenoffizier teilen sich die Phaser (gemeinsames Nachladen). Das eigene Schiff und die eigene
   Besatzung werden nicht anvisiert. Fliegt das Schiff dabei in den Weltraum oder zurück, bleibt
   die Kamerasicht erhalten; Shift bringt den Waffenoffizier zurück auf seinen Platz im Schiff.
+* **Blöcke mit eigenem Renderer** (Truhen, Gewehrständer, Phaserhalter, Ladestation und solche Blöcke
+  anderer Mods) werden im Flug mitgezeichnet. Ihr Inhalt, z. B. welche Waffen im Ständer hängen, wird
+  alle halbe Sekunde abgeglichen.
 * **Kollision**: stößt das Schiff an Blöcke der Welt, prallt es mit einem dumpfen Schlag ein Stück in die
   Richtung zurück, aus der es kam. Steckt es doch einmal fest (z. B. weil ein Block hineingesetzt wurde),
   schiebt es sich selbst gegen die letzte Flugrichtung bzw. nach oben wieder frei.
@@ -580,6 +583,9 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
 
 ### Bergbaulaser
 
+* **Startet ausgeschaltet.** Anschalten geht im Menü oder über die **Laser-Steuerkonsole**. Ein
+  Rechtsklick auf die Konsole schaltet alle Laser an oder aus, die über Blöcke der Mod mit ihr verbunden
+  sind, also alle im selben Schiff, auch die, an die man nicht herankommt.
 * Zeigt immer **nach unten**. Auf einem fliegenden Schiff heißt das „unten“ im Schiff: Der Abbaubereich
   dreht und neigt sich mit dem Schiff.
 * Einstellbar im Menü: **Fläche 1×1 bis 16×16** und **Tiefe 1 bis 32** (Knöpfe −/+, mit Shift in
@@ -588,13 +594,21 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
   die Ausbeute automatisch, z. B. eine Großkiste direkt daneben oder darüber. Ist alles voll, wartet er.
 * **Strom**: 250 FE je Block, 100 000 FE Speicher. Den Strom liefert das Bordnetz (Warpkern) oder ein
   angrenzender Erzeuger bzw. eine Batterie.
+* **Schiffsblöcke halten den Strahl auf.** Sitzt direkt unter dem Laser ein Schiffsblock (z. B. der
+  Boden), arbeitet er nicht. Blöcke, deren Weg durch einen Schiffsblock führt, lässt er aus.
+* **Laserfokus** (Hüllenblock): Sitzt bis zu **5 Blöcke** unter dem Laser ein Laserfokus, mit nur Luft
+  dazwischen, schießt der Laser gerade hinunter in den Fokus. Der Fokus ist dann der Startpunkt des
+  Abbaus, wie eine Verlängerung des Lasers. So baut man den Laser innen ein und setzt den Fokus in die
+  Außenhülle. Zu sehen sind dann zwei Strahlen: Laser → Fokus und Fokus → Block.
+* Bergbaulaser und Laserfokus gelten beim Abheben als **Hüllenblöcke**, dürfen also außen liegen.
 * Ein **roter Strahl** führt von der Linse zum Block, der gerade abgebaut wird. Im Flug wandert er mit
   dem Schiff mit.
 * Er baut auch die **Erze dieser Mod** ab: Uran, Dilithium, Antimaterie-Einschlüsse und Deuterium-Eis.
   Stehen lässt er Grundgestein, Flüssigkeiten, Blöcke mit Inhalt (Truhen, Maschinen) und alle übrigen
   Blöcke dieser Mod, also auch die eigene Schiffshülle.
 * Rezept (Schiffsteil-Fertigung): Eisenblöcke, Diamantspitzhacke, Diamanten, Redstone-Blöcke,
-  Glowstone, Dilithium und ein Trichter.
+  Glowstone, Dilithium und ein Trichter. Laserfokus: Eisen, Glas, Diamant, Redstone. Steuerkonsole:
+  Eisen, Redstone, Glasscheiben, Gold, Komparator.
 
 ### Luftschleusen
 
@@ -697,7 +711,7 @@ G = Goldbarren, E = Eisenbarren, P = Enderperle, R = Redstone
  E R E
 ```
 
-## Neue Blöcke (156)
+## Neue Blöcke (158)
 
 * **Hülle**: Hüllenpanzerung (+ Stufe), Hüllenplatte, dunkle Hüllenplatte, Hüllenfenster, Hüllenglas,
   Kennungsmarkierung (+ Stufe), roter Zierstreifen, Positionslicht rot/grün, Deflektorschüssel,
@@ -732,7 +746,7 @@ G = Goldbarren, E = Eisenbarren, P = Enderperle, R = Redstone
   Kinofilmen und Next Generation (12 Stück)
 * **Kernreaktor**: Uranerz, Tiefenschiefer-Uranerz, Reaktorhülle, Reaktorglas, Reaktor-Steuerblock
 * **Weltraum**: Luftschleuse (2 x 2 x 2 und 1 x 2 x 2), Dilithium-Erz, Antimaterie-Einschluss, Deuterium-Eis
-* **Werkstatt**: Schiffsteil-Fertigung, Batterie, Bergbaulaser, Großkiste (Holz, Kupfer, Eisen, Gold, Diamant, Netherit)
+* **Werkstatt**: Schiffsteil-Fertigung, Batterie, Bergbaulaser, Laserfokus, Laser-Steuerkonsole, Großkiste (Holz, Kupfer, Eisen, Gold, Diamant, Netherit)
 * **Verteidigung**: Energieverteilung, Schildsteuerung, Alarmleuchte, 6 Schildemitter (NCC-1701 bis -E)
 * **Allgemein**: Deckboden, Korridorwand, Deckenverkleidung, Deckenleuchte, Maschinenraum-Konsole,
   Warpkern, Plasmaleitung

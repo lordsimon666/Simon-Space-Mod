@@ -613,6 +613,11 @@ public final class ModBlocks {
     public static final RegistryObject<BlockEntityType<de.simon.spacemod.mining.MiningLaserBlockEntity>> MINING_LASER_BE =
         BLOCK_ENTITIES.register("mining_laser", () -> new BlockEntityType<>(de.simon.spacemod.mining.MiningLaserBlockEntity::new,
             java.util.Set.of(MINING_LASER.get())));
+    /** Laserfokus: Hüllenblock, durch den ein Bergbaulaser darüber (bis 5 Blöcke) hindurch abbaut. */
+    public static final RegistryObject<Block> LASER_FOCUS = block("laser_focus", Block::new,
+        metal(MapColor.COLOR_LIGHT_GRAY).lightLevel(_ -> 3));
+    public static final RegistryObject<Block> MINING_LASER_CONTROL = block("mining_laser_control",
+        de.simon.spacemod.mining.MiningLaserControlBlock::new, metal(MapColor.COLOR_GRAY).lightLevel(_ -> 5));
     public static final RegistryObject<MenuType<de.simon.spacemod.mining.MiningLaserMenu>> MINING_LASER_MENU = MENUS.register("mining_laser",
         () -> IForgeMenuType.create(de.simon.spacemod.mining.MiningLaserMenu::new));
 

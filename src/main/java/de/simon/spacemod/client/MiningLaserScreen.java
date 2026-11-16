@@ -64,6 +64,7 @@ public class MiningLaserScreen extends AbstractContainerScreen<MiningLaserMenu> 
             case MiningLaserBlockEntity.FULL -> "full";
             case MiningLaserBlockEntity.DONE -> "done";
             case MiningLaserBlockEntity.OFF -> "stopped";
+            case MiningLaserBlockEntity.BLOCKED -> "blocked";
             default -> "working";
         };
         int color = status == MiningLaserBlockEntity.OK ? 0xFF207020 : status == MiningLaserBlockEntity.DONE ? 0xFF404040 : 0xFFB02020;
