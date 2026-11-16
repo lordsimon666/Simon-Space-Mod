@@ -44,6 +44,10 @@ import org.jspecify.annotations.Nullable;
 public class FlyingShipEntity extends Entity {
     private static final EntityDataAccessor<Float> YAW = SynchedEntityData.defineId(FlyingShipEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Float> PITCH = SynchedEntityData.defineId(FlyingShipEntity.class, EntityDataSerializers.FLOAT);
+    /** Geschwindigkeit (Blöcke/Tick) und Drehraten (Grad/Tick) für die Vorhersage auf dem Client. */
+    private static final EntityDataAccessor<org.joml.Vector3fc> VEL = SynchedEntityData.defineId(FlyingShipEntity.class, EntityDataSerializers.VECTOR3);
+    private static final EntityDataAccessor<Float> YAW_RATE = SynchedEntityData.defineId(FlyingShipEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Float> PITCH_RATE = SynchedEntityData.defineId(FlyingShipEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Float> YAW0 = SynchedEntityData.defineId(FlyingShipEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Float> RADIUS = SynchedEntityData.defineId(FlyingShipEntity.class, EntityDataSerializers.FLOAT);
     /** Entity-ID des Piloten (-1 = niemand am Steuer). */
@@ -96,7 +100,7 @@ public class FlyingShipEntity extends Entity {
 
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        builder.define(YAW, 0F).define(PITCH, 0F).define(YAW0, 0F).define(RADIUS, 1F).define(PILOT_ID, -1).define(PLOT_ORIGIN, BlockPos.ZERO);
+        builder.define(VEL, new org.joml.Vector3f()).define(YAW_RATE, 0F).define(PITCH_RATE, 0F).define(YAW, 0F).define(PITCH, 0F).define(YAW0, 0F).define(RADIUS, 1F).define(PILOT_ID, -1).define(PLOT_ORIGIN, BlockPos.ZERO);
     }
 
     public float yaw() { return entityData.get(YAW); }
@@ -121,6 +125,11 @@ public class FlyingShipEntity extends Entity {
         float y = prevYaw + (float) ShipPhysics.wrap(cy - prevYaw) * partial;
         float p = prevPitch + (cp - prevPitch) * partial;
         return new Quaternionf().rotateY((float) Math.toRadians(-y)).rotateX((float) Math.toRadians(p)).rotateY((float) Math.toRadians(y));
+    }
+
+    /** Gierwinkel, wie er gerade gezeichnet wird (Client: vorhergesagt). */
+    public float renderYaw() {
+        return level().isClientSide() ? curYaw : yaw();
     }
 
     /** Client: Drehung des Schiffs um die Hochachse in diesem Tick (Grad). */
@@ -633,15 +642,44 @@ public class FlyingShipEntity extends Entity {
 
     // ---- Flug ----
 
+    /** Client: letzte Lage vom Server und Ticks seitdem (für die Vorhersage). */
+    private @Nullable Vec3 lastServerPos;
+    private float lastServerYaw, lastServerPitch;
+    private int sincePos, sinceRot;
+
+    /**
+     * Client: Schiff gleichmäßig mit der gemeldeten Geschwindigkeit weiterbewegen und Abweichungen zur
+     * Serverlage sanft ausgleichen. Pakete kommen nicht in gleichmäßigem Takt an – ohne Vorhersage ruckt
+     * das Schiff vor und zurück, und mit ihm Kamera und Mitfahrer.
+     */
+    private void predict() {
+        org.joml.Vector3fc vf = entityData.get(VEL);
+        Vec3 vel = new Vec3(vf.x(), vf.y(), vf.z());
+        Vec3 server = interpolation.position();
+        if (lastServerPos == null || !server.equals(lastServerPos)) { lastServerPos = server; sincePos = 0; } else sincePos++;
+        Vec3 target = server.add(vel.scale(Math.min(sincePos, 5)));
+        Vec3 next = position().add(vel);
+        Vec3 err = target.subtract(next);
+        setPos(err.lengthSqr() > 64 ? target : next.add(err.scale(0.3)));
+        float y = yaw(), pt = pitch();
+        if (y != lastServerYaw || pt != lastServerPitch) { lastServerYaw = y; lastServerPitch = pt; sinceRot = 0; } else sinceRot++;
+        float yr = entityData.get(YAW_RATE), pr = entityData.get(PITCH_RATE);
+        float k = Math.min(sinceRot, 5);
+        float ty = y + yr * k, tp = pt + pr * k;
+        curYaw += yr;
+        curPitch += pr;
+        float ey = (float) ShipPhysics.wrap(ty - curYaw), ep = tp - curPitch;
+        if (Math.abs(ey) > 30 || Math.abs(ep) > 30) { curYaw = ty; curPitch = tp; }
+        else { curYaw += ey * 0.3F; curPitch += ep * 0.3F; }
+    }
+
     @Override
     public void tick() {
         if (level().isClientSide()) {
             if (!curInit) { curYaw = yaw(); curPitch = pitch(); curInit = true; }
             prevYaw = curYaw;
             prevPitch = curPitch;
-            curYaw = yaw();
-            curPitch = pitch();
-            interpolation.interpolate();
+            predict();
         } else {
             prevYaw = yaw();
             prevPitch = pitch();
@@ -747,6 +785,9 @@ public class FlyingShipEntity extends Entity {
         velocity = v;
         yawRate = ry[1];
         pitchRate = rp[1];
+        entityData.set(VEL, new org.joml.Vector3f((float) v.x, (float) v.y, (float) v.z));
+        entityData.set(YAW_RATE, (float) yawRate);
+        entityData.set(PITCH_RATE, (float) pitchRate);
         entityData.set(YAW, newYaw);
         entityData.set(PITCH, newPitch);
         setPos(newPos);

@@ -87,7 +87,7 @@ public final class ShipClient {
             walkShip = ship.getId();
             flying = mc.player.getAbilities().flying && mc.player.getAbilities().mayfly; // fliegend eingestiegen
         }
-        float localYaw = mc.player.getYRot() - (ship.yaw() - ship.yaw0());
+        float localYaw = mc.player.getYRot() - (ship.renderYaw() - ship.yaw0());
         var mv = mc.player.input.getMoveVector();
         Vec3 before = walk.pos();
         // Fliegen im Schiff (Kreativmodus oder geladener Raumanzug): doppelt springen schaltet um
@@ -140,6 +140,6 @@ public final class ShipClient {
 
     /** Für Tests/Anzeige: Blickrichtung im Schiffssystem. */
     static float localYaw(float playerYaw, FlyingShipEntity ship) {
-        return (float) ShipPhysics.wrap(playerYaw - (ship.yaw() - ship.yaw0()));
+        return (float) ShipPhysics.wrap(playerYaw - (ship.renderYaw() - ship.yaw0()));
     }
 }

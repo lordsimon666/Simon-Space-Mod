@@ -371,6 +371,9 @@ klicke sie mit der rechten Maustaste an:
 * **Herumlaufen**: im fliegenden Schiff läuft man wie in Valkyrien Skies – WASD, Springen, Sprinten,
   Stufen bis eine halbe Blockhöhe, Kollision mit Wänden, Böden und Möbeln des Schiffs. Die Schwerkraft
   zeigt immer zum Schiffsboden (auch wenn das Schiff nickt). Wer weit vom Schiff wegfällt, steigt ab.
+* **Ruhiger Flug**: Das Schiff fliegt auf dem Client mit der gemeldeten Geschwindigkeit und Drehrate
+  gleichmäßig weiter. Abweichungen zur Serverlage gleicht es sanft aus. Kamera und Mitfahrer ruckeln dadurch
+  nicht mehr vor und zurück, wenn Netzwerkpakete unregelmäßig ankommen.
 * **Mitdrehende Sicht**: an Bord (laufend oder auf einem Stuhl, nicht am Steuer) dreht sich die Ansicht
   mit dem Schiff – wendet es, dreht sich der Blick mit; nickt es, kippt die Kamera mit dem Schiffsboden.
   Spielermodelle stehen immer senkrecht auf dem Schiffsboden. Zielen, Handphaser und Blöcke benutzen
@@ -587,7 +590,8 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
   Rechtsklick auf die Konsole schaltet alle Laser an oder aus, die über Blöcke der Mod mit ihr verbunden
   sind, also alle im selben Schiff, auch die, an die man nicht herankommt.
 * Zeigt immer **nach unten**. Auf einem fliegenden Schiff heißt das „unten“ im Schiff: Der Abbaubereich
-  dreht und neigt sich mit dem Schiff.
+  dreht und neigt sich mit dem Schiff. Bei schräger Lage baut er alle Weltblöcke ab, deren Mitte im
+  gedrehten Bereich liegt. So entstehen keine Lücken, und kein Block wird doppelt getroffen.
 * Einstellbar im Menü: **Fläche 1×1 bis 16×16** und **Tiefe 1 bis 32** (Knöpfe −/+, mit Shift in
   Fünferschritten), dazu an/aus. Er baut Schicht für Schicht von oben ab, etwa 10 Blöcke pro Sekunde.
 * **9 Plätze** für die Ausbeute (Drops wie mit einer Diamantspitzhacke). Angrenzende Inventare bekommen

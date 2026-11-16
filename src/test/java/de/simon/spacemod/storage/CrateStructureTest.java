@@ -74,4 +74,25 @@ class CrateStructureTest {
         }
         assertEquals(16 * 16 * 32, MiningArea.count(MiningArea.MAX_SIZE, MiningArea.MAX_DEPTH));
     }
+
+    @Test
+    void rotatedMiningAreaHasNoGapsOrDoubles() {
+        var start = new BlockPos(0, 10, 0);
+        for (float[] a : new float[][] {{0, 0}, {30, 0}, {45, 20}, {10, -35}, {120, 60}}) {
+            var q = de.simon.spacemod.flight.ShipPhysics.rotation(0, a[0], a[1]);
+            var area = new de.simon.spacemod.mining.MiningArea.Rotated(q, new net.minecraft.world.phys.Vec3(100.3, 70.6, -20.2), start, 8, 6);
+            Set<BlockPos> world = new HashSet<>();
+            int n = 0;
+            for (int i = 0; i < area.total(); i++) {
+                var c = area.get(i);
+                if (c == null) continue;
+                n++;
+                assertTrue(world.add(c.world()));
+                // Mitte des Weltblocks liegt im Quader unter dem Startpunkt
+                assertTrue(c.local().getY() <= 9 && c.local().getY() >= 10 - 6 - 1, "Höhe " + c.local());
+            }
+            // so viele Blöcke wie Volumen (±15 % durch die Rasterung schräger Kanten)
+            assertTrue(Math.abs(n - 8 * 8 * 6) < 8 * 8 * 6 * 0.15, "Anzahl " + n + " bei " + a[0] + "/" + a[1]);
+        }
+    }
 }

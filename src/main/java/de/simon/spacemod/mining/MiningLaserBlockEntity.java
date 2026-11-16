@@ -62,7 +62,8 @@ public class MiningLaserBlockEntity extends BlockEntity {
     private boolean on = false; // startet ausgeschaltet
     /** Sichtbarer Strahl (dieselbe Entity wie beim Phaser) und Nummer des Blocks, auf den er zeigt. */
     private net.minecraft.world.entity.@Nullable Entity beam, beam2;
-    private int beamTarget = -1, beamTicks;
+    private @Nullable BlockPos beamTarget;
+    private int beamTicks;
 
     private final IEnergyStorage storage = new IEnergyStorage() {
         @Override public int receiveEnergy(int max, boolean simulate) {
@@ -189,9 +190,34 @@ public class MiningLaserBlockEntity extends BlockEntity {
     /** Ein Block im Bereich: Lage im Bezugssystem und in der Welt. */
     private record Spot(ServerLevel level, BlockPos frame, BlockPos pos) {}
 
-    private static Spot spot(Frame f, BlockPos start, int[] o) {
-        BlockPos t = start.offset(o[0], -1 - o[1], o[2]);
-        return new Spot(f.world(), t, BlockPos.containing(f.toWorld(t.getX(), t.getY(), t.getZ())));
+    /**
+     * Abbaubereich unter {@code start}. Auf festem Boden die Blöcke direkt (Schicht für Schicht von oben).
+     * Auf einem fliegenden Schiff ist der Bereich gedreht/geneigt: dann alle Weltblöcke, deren Mitte im
+     * gedrehten Quader liegt – so entstehen keine Lücken und kein Block wird doppelt getroffen.
+     */
+    private final class Area {
+        final Frame f;
+        final BlockPos start;
+        final int total;
+        final MiningArea.@Nullable Rotated rot;
+
+        Area(Frame f, BlockPos start) {
+            this.f = f;
+            this.start = start;
+            rot = f.ship() == null ? null : new MiningArea.Rotated(f.q(), f.ship().position(), start, size, depth);
+            total = rot == null ? MiningArea.count(size, depth) : rot.total();
+        }
+
+        /** Block Nummer i (von oben nach unten), null = liegt nicht im Bereich. */
+        @Nullable Spot get(int i) {
+            if (rot == null) {
+                int[] o = MiningArea.offset(i, size);
+                BlockPos t = start.offset(o[0], -1 - o[1], o[2]);
+                return new Spot(f.world(), t, t);
+            }
+            MiningArea.Rotated.Cell c = rot.get(i);
+            return c == null ? null : new Spot(f.world(), c.local(), c.world());
+        }
     }
 
     private static boolean mineable(ServerLevel wl, BlockPos p) {
@@ -239,14 +265,15 @@ public class MiningLaserBlockEntity extends BlockEntity {
         if (focus == null && f.shipBlock(f.self().below())) { be.status = BLOCKED; be.cooldown = 20; return; }
         if (be.energy < FE_PER_BLOCK) { be.status = NO_POWER; return; }
         BlockPos start = focus != null ? focus : f.self();
-        int total = MiningArea.count(be.size, be.depth);
+        Area area = be.new Area(f, start);
+        int total = area.total;
         for (int n = 0; n < CHECKS_PER_TICK; n++) {
             if (be.cursor >= total) { // Durchgang fertig: von vorn (Schiff kann weitergeflogen sein)
                 be.cursor = 0;
                 if (++be.emptyPasses > 1) { be.status = DONE; be.cooldown = 40; return; }
             }
-            Spot s = spot(f, start, MiningArea.offset(be.cursor, be.size));
-            if (!mineable(s.level(), s.pos()) || !f.clear(start, s.frame())) { be.cursor++; continue; } // Schiffsblock im Weg
+            Spot s = area.get(be.cursor);
+            if (s == null || !mineable(s.level(), s.pos()) || !f.clear(start, s.frame())) { be.cursor++; continue; } // Schiffsblock im Weg
             BlockState st = s.level().getBlockState(s.pos());
             List<ItemStack> drops = Block.getDrops(st, s.level(), s.pos(), null, null, new ItemStack(Items.DIAMOND_PICKAXE));
             if (!be.fits(drops)) { be.status = FULL; be.cooldown = 20; return; }
@@ -260,7 +287,7 @@ public class MiningLaserBlockEntity extends BlockEntity {
             be.emptyPasses = 0;
             be.status = OK;
             be.cooldown = INTERVAL;
-            be.beamTarget = be.cursor - 1;
+            be.beamTarget = s.pos();
             be.beamTicks = 8;
             Vec3 to = Vec3.atCenterOf(s.pos());
             s.level().sendParticles(ParticleTypes.FLAME, to.x, to.y, to.z, 3, 0.25, 0.25, 0.25, 0.01);
@@ -276,15 +303,14 @@ public class MiningLaserBlockEntity extends BlockEntity {
      */
     private void updateBeam(@Nullable Frame f, @Nullable BlockPos focus) {
         if (beamTicks > 0) beamTicks--;
-        if (f == null || beamTicks <= 0 || beamTarget < 0) {
+        if (f == null || beamTicks <= 0 || beamTarget == null) {
             beam = drop(beam);
             beam2 = drop(beam2);
             return;
         }
         BlockPos self = f.self();
         Vec3 lens = f.toWorld(self.getX(), self.getY() - 0.55, self.getZ());
-        Spot s = spot(f, focus != null ? focus : self, MiningArea.offset(beamTarget, size));
-        Vec3 target = Vec3.atCenterOf(s.pos());
+        Vec3 target = Vec3.atCenterOf(beamTarget);
         if (focus != null) {
             Vec3 in = f.toWorld(focus.getX(), focus.getY() + 0.45, focus.getZ()), out = f.toWorld(focus.getX(), focus.getY() - 0.5, focus.getZ());
             beam = aim(beam, f.world(), lens, in);
