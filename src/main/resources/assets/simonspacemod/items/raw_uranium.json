@@ -1,6 +1,12 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "simonspacemod:item/raw_uranium"
+    "model": "minecraft:item/raw_iron",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": -7012450
+      }
+    ]
   }
 }

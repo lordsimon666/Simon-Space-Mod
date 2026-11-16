@@ -2301,8 +2301,6 @@ def tex_reactor_front(lit):
 def uranium_reactor_assets(de, en):
     save(_speckled((125, 125, 125), (80, 200, 70), 601, glow=True), "uranium_ore")
     save(_speckled((70, 70, 78), (80, 200, 70), 602, glow=True), "deepslate_uranium_ore")
-    save(tex_item_raw_uranium(), "item/raw_uranium")
-    save(tex_item_uranium_ingot(), "item/uranium_ingot")
     save(tex_reactor_casing(), "reactor_casing")
     save(tex_reactor_glass(), "reactor_glass")
     save(tex_reactor_front(False), "reactor_front")
@@ -2324,9 +2322,6 @@ def uranium_reactor_assets(de, en):
         f"facing={d},lit={str(l).lower()}": dict({"model": b("reactor_controller" + ("_lit" if l else ""))}, **({"y": r} if r else {}))
         for d, r in rot.items() for l in (False, True)}})
     write_json(os.path.join(ASSETS, "items", "reactor_controller.json"), item_def(b("reactor_controller")))
-    for it in ("raw_uranium", "uranium_ingot"):
-        write_json(os.path.join(ASSETS, "models", "item", it + ".json"), {"parent": "minecraft:item/generated", "textures": {"layer0": f"{MODID}:item/{it}"}})
-        write_json(os.path.join(ASSETS, "items", it + ".json"), item_def(f"{MODID}:item/{it}"))
     # Loot: Erze mit Behutsamkeit/Glück, Rest droppt sich selbst
     for ore in ("uranium_ore", "deepslate_uranium_ore"):
         write_json(os.path.join(DATA, "loot_table", "blocks", ore + ".json"), {
@@ -3311,7 +3306,7 @@ def icon_antimatter(core, rim, outline):
 VANILLA_ORES = {
     # Name: (Vanilla-Untergrund, Farben hell/mittel/dunkel, Saat)
     "uranium_ore": ("minecraft:block/stone", (150, 240, 120), (90, 200, 70), (40, 120, 40), 701),
-    "deepslate_uranium_ore": ("minecraft:block/deepslate", (150, 240, 120), (90, 200, 70), (40, 120, 40), 702),
+    "deepslate_uranium_ore": ("minecraft:block/deepslate", (150, 240, 120), (90, 200, 70), (40, 120, 40), 701),  # gleiches Muster
     "dilithium_ore": ("minecraft:block/deepslate", (255, 190, 235), (235, 110, 200), (150, 50, 130), 703),
     "antimatter_cluster": ("minecraft:block/obsidian", (255, 200, 255), (220, 80, 255), (120, 20, 170), 704),
     "deuterium_ice": ("minecraft:block/packed_ice", (240, 255, 255), (150, 230, 255), (60, 140, 210), 705),
@@ -3327,8 +3322,17 @@ def vanilla_style_ores_items():
             "parent": "minecraft:block/block", "render_type": "minecraft:cutout",
             "textures": {"particle": base, "base": base, "ore": b(name)},
             "elements": [cube("#base"), cube("#ore")]})
-    save(icon_ingot((235, 255, 215), (120, 200, 90), (70, 140, 55), (35, 70, 30)), "item/uranium_ingot")
-    save(icon_raw((150, 215, 120), (95, 160, 80), (60, 110, 55), (30, 55, 30), 711), "item/raw_uranium")
+    # Rohuran und Uranbarren: Vanilla-Roheisen bzw. -Eisenbarren, im Spiel grün eingefärbt (keine kopierte Datei)
+    def argb(r, g, b_):
+        v = (0xFF << 24) | (r << 16) | (g << 8) | b_
+        return v - (1 << 32)
+    for it, model, tint in (("uranium_ingot", "minecraft:item/iron_ingot", argb(158, 255, 128)),
+                            ("raw_uranium", "minecraft:item/raw_iron", argb(148, 255, 158))):
+        write_json(os.path.join(ASSETS, "items", it + ".json"), {"model": {"type": "minecraft:model", "model": model,
+            "tints": [{"type": "minecraft:constant", "value": tint}]}})
+        for f in (os.path.join(ASSETS, "models", "item", it + ".json"), os.path.join(ASSETS, "textures", "item", it + ".png")):
+            if os.path.exists(f):
+                os.remove(f)
     save(icon_gem((255, 210, 240), (235, 120, 205), (170, 60, 150), (90, 25, 80)), "item/dilithium_crystal")
     save(icon_antimatter((255, 240, 255), (190, 60, 240), (70, 15, 100)), "item/antimatter")
 

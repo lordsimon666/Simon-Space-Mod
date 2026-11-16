@@ -1,6 +1,12 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "simonspacemod:item/uranium_ingot"
+    "model": "minecraft:item/iron_ingot",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": -6357120
+      }
+    ]
   }
 }

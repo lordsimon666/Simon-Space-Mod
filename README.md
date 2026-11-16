@@ -653,9 +653,10 @@ Kupfer, Glas, Uran, Diamanten, Redstone).
 
 Uranerz, Tiefenschiefer-Uranerz, Dilithium-Erz, Antimaterie-Einschluss und Deuterium-Eis sehen aus wie
 Vanilla-Erze. Der Untergrund ist die echte Textur aus dem Spiel (Stein, Tiefenschiefer, Obsidian bzw.
-Packeis), darüber liegt eine eigene Erzschicht. So passen sie auch zu Texturpaketen. Uranbarren, Rohuran,
-Dilithiumkristall und Antimaterie sind im Vanilla-Pixelstil gezeichnet, mit dunkler Kontur, Licht von oben
-links und Facetten. Es sind keine Mojang-Texturen in der Mod enthalten.
+Packeis), darüber liegt eine eigene Erzschicht. So passen sie auch zu Texturpaketen. Beide Uranerze haben
+dasselbe Muster. **Rohuran und Uranbarren** sind die Vanilla-Texturen von Roheisen und Eisenbarren, im
+Spiel grün eingefärbt (wie Vanilla die Blätter einfärbt). Dilithiumkristall und Antimaterie sind im
+Vanilla-Pixelstil gezeichnet. Es sind keine Mojang-Texturen in der Mod enthalten.
 
 ### Waffensounds
 
