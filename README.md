@@ -566,7 +566,13 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
   stapelbare Sachen (Werkzeuge, Rüstung) bleiben bei 1 je Platz. Ein Upgrade lässt sich nur herausnehmen,
   wenn danach kein Platz überquillt. Große Stapel nimmt man stapelweise heraus (64 auf einmal).
 * **Jeder Block** öffnet das Menü und nimmt über Trichter, Rohre usw. Gegenstände an bzw. gibt sie ab.
-  Das Menü zeigt 9 × 6 Plätze mit einer **Bildlaufleiste** (Mausrad, mit Shift seitenweise, oder ziehen).
+  Das Menü zeigt 9 × 9 Plätze mit einer **Bildlaufleiste** (Mausrad, mit Shift seitenweise, oder ziehen).
+* **Sortieren** (Knöpfe oben rechts): Der linke Knopf fasst gleiche Sachen zu möglichst großen Stapeln
+  zusammen, mit Stack-Upgrades also auch über 64, und ordnet sie. Volle Stapel kommen zuerst, der
+  angebrochene steht am Ende seiner Gruppe (z. B. Bruchstein 64, 64, 8, danach die nächste Sorte). Der
+  rechte Knopf wählt die Sortierart:
+  **A** = nach Name (Standard), **M** = nach Mod, **#** = nach Gesamtmenge in der Kiste (wovon am
+  meisten da ist, steht vorn: 2 Stapel Bruchstein vor 1 Stapel Erde). Die Wahl merkt sich die Kiste.
   Shift-Klick aus dem eigenen Inventar sortiert in die ganze Kiste ein, nicht nur in den sichtbaren Teil.
 * Wird ein Block der Kiste abgebaut oder gesprengt, fällt der ganze Inhalt heraus, wie bei einer Truhe.
   Zum Vergrößern also vorher ausräumen. Die Kiste fliegt im Schiff mit, samt Inhalt.

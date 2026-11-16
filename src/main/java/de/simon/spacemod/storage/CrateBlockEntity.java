@@ -143,6 +143,23 @@ public class CrateBlockEntity extends BlockEntity {
         return items.size();
     }
 
+    private CrateSort.Mode sortMode = CrateSort.Mode.NAME;
+
+    public CrateSort.Mode sortMode() {
+        return sortMode;
+    }
+
+    void cycleSortMode() {
+        sortMode = CrateSort.Mode.values()[(sortMode.ordinal() + 1) % CrateSort.Mode.values().length];
+        setChanged();
+    }
+
+    /** Alles zu möglichst großen Stapeln zusammenfassen und nach der gewählten Art ordnen. */
+    void sort() {
+        CrateSort.sort(items, sortMode, this::limitFor);
+        setChanged();
+    }
+
     public CrateTier tier() {
         return tier;
     }
@@ -245,6 +262,7 @@ public class CrateBlockEntity extends BlockEntity {
         if (isMaster()) {
             tier = CrateTier.values()[Math.max(0, Math.min(CrateTier.values().length - 1, input.getIntOr("tier", 0)))];
             sx = input.getIntOr("sx", 3); sy = input.getIntOr("sy", 3); sz = input.getIntOr("sz", 3);
+            sortMode = CrateSort.Mode.values()[Math.max(0, Math.min(CrateSort.Mode.values().length - 1, input.getIntOr("sort", 0)))];
             items = NonNullList.withSize(input.getIntOr("size", sx * sy * sz * tier.slotsPerBlock), ItemStack.EMPTY);
             for (SlotStack s : input.listOrEmpty("Items", SlotStack.CODEC))
                 if (s.slot() >= 0 && s.slot() < items.size()) items.set(s.slot(), s.full());
@@ -264,6 +282,7 @@ public class CrateBlockEntity extends BlockEntity {
         output.putInt("tier", tier.ordinal());
         output.putInt("sx", sx); output.putInt("sy", sy); output.putInt("sz", sz);
         output.putInt("size", items.size());
+        output.putInt("sort", sortMode.ordinal());
         var list = output.list("Items", SlotStack.CODEC);
         for (int i = 0; i < items.size(); i++) if (!items.get(i).isEmpty()) list.add(SlotStack.of(i, items.get(i)));
         var up = output.list("Upgrades", SlotStack.CODEC);

@@ -20,8 +20,10 @@ import org.jspecify.annotations.Nullable;
  * Menü-Knopf an den Server.
  */
 public class CrateMenu extends AbstractContainerMenu {
-    public static final int COLS = 9, ROWS = 6, VISIBLE = COLS * ROWS;
-    public static final int SLOT_X = 8, SLOT_Y = 18, INV_Y = 140, UP_X = 196, UP_Y = 18;
+    public static final int COLS = 9, ROWS = 9, VISIBLE = COLS * ROWS;
+    /** Knöpfe oben rechts (Bildlauf-Knöpfe sind die Zeilennummern darunter). */
+    public static final int BTN_SORT = 1_000_000, BTN_MODE = 1_000_001;
+    public static final int SLOT_X = 8, SLOT_Y = 18, INV_Y = 18 + ROWS * 18 + 14, UP_X = 196, UP_Y = 18;
     /** Erster Platz des Spielerinventars (nach Kiste und Upgrade-Plätzen). */
     public static final int PLAYER_START = VISIBLE + CrateBlockEntity.UPGRADE_SLOTS;
 
@@ -32,7 +34,7 @@ public class CrateMenu extends AbstractContainerMenu {
     private int offset;
 
     public CrateMenu(int id, Inventory inv, FriendlyByteBuf buf) {
-        this(id, inv, null, new RawContainer(VISIBLE), new SimpleContainer(CrateBlockEntity.UPGRADE_SLOTS), new SimpleContainerData(3), p -> true);
+        this(id, inv, null, new RawContainer(VISIBLE), new SimpleContainer(CrateBlockEntity.UPGRADE_SLOTS), new SimpleContainerData(4), p -> true);
     }
 
     CrateMenu(int id, Inventory inv, CrateBlockEntity master, Predicate<Player> stillValid) {
@@ -41,11 +43,12 @@ public class CrateMenu extends AbstractContainerMenu {
                 return switch (i) {
                     case 0 -> master.capacity() & 0x7FFF;
                     case 1 -> master.capacity() >> 15;
-                    default -> master.multiplier();
+                    case 2 -> master.multiplier();
+                    default -> master.sortMode().ordinal();
                 };
             }
             @Override public void set(int i, int v) {}
-            @Override public int getCount() { return 3; }
+            @Override public int getCount() { return 4; }
         }, stillValid);
     }
 
@@ -89,6 +92,11 @@ public class CrateMenu extends AbstractContainerMenu {
         return Math.max(1, data.get(2));
     }
 
+    public CrateSort.Mode sortMode() {
+        CrateSort.Mode[] m = CrateSort.Mode.values();
+        return m[Math.max(0, Math.min(m.length - 1, data.get(3)))];
+    }
+
     public int offset() {
         return offset;
     }
@@ -100,6 +108,8 @@ public class CrateMenu extends AbstractContainerMenu {
     /** Knopf = neue oberste Zeile. */
     @Override
     public boolean clickMenuButton(Player player, int id) {
+        if (id == BTN_SORT) { if (master != null) master.sort(); return true; }
+        if (id == BTN_MODE) { if (master != null) master.cycleSortMode(); return true; }
         int o = Math.max(0, Math.min(maxOffset(), id));
         if (o == offset) return false;
         offset = o;
