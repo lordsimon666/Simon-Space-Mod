@@ -23,7 +23,8 @@ class EnterpriseBlueprintTest {
                 "NCC_1701_B,0.4", "NCC_1701_B,0.5", "NCC_1701_B,0.75", "NCC_1701_B,1.0",
                 "NCC_1701_C,0.4", "NCC_1701_C,0.75", "NCC_1701_C,1.0",
                 "NCC_1701_D,0.4", "NCC_1701_D,0.75", "NCC_1701_D,1.0",
-                "NCC_1701_E,0.4", "NCC_1701_E,0.75", "NCC_1701_E,1.0"})
+                "NCC_1701_E,0.4", "NCC_1701_E,0.75", "NCC_1701_E,1.0",
+                "NCC_1701_F,0.4", "NCC_1701_F,0.75", "NCC_1701_F,1.0"})
     void blueprintIsConsistent(ShipDesign design, double scale) throws Exception {
         EnterpriseBlueprint bp = new EnterpriseBlueprint(design, scale);
         Map<ShipPart, Integer> counts = new EnumMap<>(ShipPart.class);
@@ -118,7 +119,7 @@ class EnterpriseBlueprintTest {
         assertEquals(guns, bp.phasers.size(), "Phaserliste unvollständig");
         assertTrue(bp.cameras.size() >= 7, "zu wenige Kameras: " + bp.cameraNames);
         assertTrue(bp.torpedoes.size() >= 2, "Torpedowerfer fehlen: " + bp.torpedoes.size());
-        assertEquals(design == ShipDesign.NCC_1701_E, !bp.quantums.isEmpty(), "Quantentorpedos nur bei der E");
+        assertEquals(design.late, !bp.quantums.isEmpty(), "Quantentorpedos nur bei der E und F");
         for (BlockPos c : bp.cameras)
             for (int dy = -1; dy <= 2; dy++) {
                 var cp = bp.get(c.getX(), c.getY() + dy, c.getZ());

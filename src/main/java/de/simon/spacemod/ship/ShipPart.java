@@ -155,7 +155,8 @@ public enum ShipPart {
     POWER_CONSOLE(0xD08030),
     ALARM_LIGHT(0xE02020),
     SHIELD_EMITTER(0x60A0FF),
-    SHIELD_CONSOLE(0x4080E0);
+    SHIELD_CONSOLE(0x4080E0),
+    WARP_CORE_F(0x8050FF);
 
     /** Farbe für Vorschaubilder. */
     public final int color;

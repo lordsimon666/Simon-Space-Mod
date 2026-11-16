@@ -20,15 +20,15 @@ import net.minecraft.world.level.saveddata.SavedDataType;
 /**
  * Enterprises im Weltraum: in jedem 1000 x 1000-Feld steht in der Mitte ein Schiff in voller Größe
  * (Höhe um Y 500). Welche Enterprise es ist, entscheidet der Zufall – je neuer, desto seltener:
- * NX-01 am häufigsten, NCC-1701-E am seltensten. Gebaut wird, sobald ein Spieler näher als 700
+ * NX-01 am häufigsten, NCC-1701-F am seltensten. Gebaut wird, sobald ein Spieler näher als 700
  * Blöcke kommt (immer nur ein Schiff gleichzeitig).
  */
 public final class SpaceShips {
     public static final int SPACING = 1000;
     public static final int CENTER_Y = 500;
     private static final int TRIGGER = 700;
-    /** Gewichte je Schiff in der Reihenfolge von {@link ShipDesign#values()} (NX-01 ... E). */
-    private static final int[] WEIGHTS = {7, 6, 5, 4, 3, 2, 1};
+    /** Gewichte je Schiff in der Reihenfolge von {@link ShipDesign#values()} (NX-01 ... F); die F halb so oft wie die E. */
+    private static final int[] WEIGHTS = {14, 12, 10, 8, 6, 4, 2, 1};
     private static boolean busy;
     private static final org.slf4j.Logger LOGGER = com.mojang.logging.LogUtils.getLogger();
 
@@ -57,6 +57,7 @@ public final class SpaceShips {
             case NCC_1701_C -> 263;
             case NCC_1701_D -> 322;
             case NCC_1701_E -> 343;
+            case NCC_1701_F -> 531;
         };
     }
 

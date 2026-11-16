@@ -15,7 +15,9 @@ public enum ShipDesign {
     /** USS Enterprise NCC-1701-D, Galaxy-Klasse (642 m). */
     NCC_1701_D("ncc-1701-d", "NCC-1701-D", Era.TNG),
     /** USS Enterprise NCC-1701-E, Sovereign-Klasse (685 m). */
-    NCC_1701_E("ncc-1701-e", "NCC-1701-E", Era.TNG);
+    NCC_1701_E("ncc-1701-e", "NCC-1701-E", Era.TNG),
+    /** USS Enterprise NCC-1701-F, Odyssey-Klasse (1061 m). */
+    NCC_1701_F("ncc-1701-f", "NCC-1701-F", Era.TNG);
 
     /** Bau-Epoche: bestimmt Farben, Brücke und Räume. */
     public enum Era { NX, TOS, REFIT, EXCELSIOR, TNG }
@@ -33,6 +35,8 @@ public enum ShipDesign {
     public final boolean tng;
     /** NX-01 aus "Star Trek: Enterprise" (22. Jahrhundert)? */
     public final boolean nx;
+    /** Neueste Bauart (E und F): Quantentorpedos, Form und Farben aus demselben Modell. */
+    public final boolean late;
 
     ShipDesign(String id, String registry, Era era) {
         this.id = id;
@@ -42,5 +46,6 @@ public enum ShipDesign {
         this.excelsior = era == Era.EXCELSIOR;
         this.tng = era == Era.TNG;
         this.nx = era == Era.NX;
+        this.late = "ncc-1701-e".equals(id) || "ncc-1701-f".equals(id);
     }
 }

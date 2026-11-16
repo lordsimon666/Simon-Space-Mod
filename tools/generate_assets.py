@@ -1771,6 +1771,27 @@ def tex_warp_core_e_top():
     return img
 
 
+def tex_warp_core_f():
+    """Enterprise-F: violett-blaue Energiebänder (noch stärker als die E)."""
+    img = tex_warp_core_e()
+    px = img.load()
+    for x in range(16):
+        for y in range(16):
+            r, g, b_, a = px[x, y]
+            px[x, y] = (clamp(r * 0.9 + 70), clamp(g * 0.75), b_, a)
+    return img
+
+
+def tex_warp_core_f_top():
+    img = tex_warp_core_e_top()
+    px = img.load()
+    for x in range(16):
+        for y in range(16):
+            r, g, b_, a = px[x, y]
+            px[x, y] = (clamp(r * 0.9 + 70), clamp(g * 0.75), b_, a)
+    return img
+
+
 def tex_armory_metal():
     img = noise(new((78, 82, 92)), 4, 500)
     px = img.load()
@@ -2820,7 +2841,7 @@ def tex_shield_emitter(tier):
     px = img.load()
     for i in range(16):
         px[i, 0] = px[i, 15] = px[0, i] = px[15, i] = (55, 58, 66, 255)
-    glow = [(90, 160, 255), (110, 180, 255), (80, 200, 255), (120, 200, 255), (150, 210, 255), (180, 225, 255)][tier - 1]
+    glow = [(90, 160, 255), (110, 180, 255), (80, 200, 255), (120, 200, 255), (150, 210, 255), (180, 225, 255), (200, 170, 255)][tier - 1]
     for x in range(16):
         for y in range(16):
             d = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** 0.5
@@ -2880,7 +2901,8 @@ def defense_assets(de, en):
     write_json(os.path.join(DATA, "loot_table", "blocks", "alarm_light.json"), loot("alarm_light"))
     # Schildemitter je Schiff
     names = {"tos": ("NCC-1701", "NCC-1701"), "refit": ("NCC-1701-A", "NCC-1701-A"), "excelsior": ("NCC-1701-B", "NCC-1701-B"),
-             "c": ("NCC-1701-C", "NCC-1701-C"), "d": ("NCC-1701-D", "NCC-1701-D"), "e": ("NCC-1701-E", "NCC-1701-E")}
+             "c": ("NCC-1701-C", "NCC-1701-C"), "d": ("NCC-1701-D", "NCC-1701-D"), "e": ("NCC-1701-E", "NCC-1701-E"),
+             "f": ("NCC-1701-F", "NCC-1701-F")}
     for i, k in enumerate(names):
         n = f"shield_emitter_{k}"
         save(tex_shield_emitter(i + 1), n)
@@ -2902,7 +2924,7 @@ def defense_assets(de, en):
         "key": {"I": "minecraft:iron_ingot", "R": "minecraft:redstone_lamp", "D": "minecraft:red_dye"},
         "pattern": [" I ", "DRD", " I "], "result": {"id": f"{M}:alarm_light", "count": 2}})
     extra = {1: "minecraft:lapis_block", 2: "minecraft:gold_block", 3: "minecraft:emerald", 4: f"{M}:dilithium_crystal",
-             5: f"{M}:dilithium_crystal", 6: f"{M}:antimatter_pod"}
+             5: f"{M}:dilithium_crystal", 6: f"{M}:antimatter_pod", 7: f"{M}:antimatter_pod"}
     prev = None
     for i, k in enumerate(names):
         n = f"shield_emitter_{k}"
@@ -3106,7 +3128,7 @@ def base_shield_assets(de, en):
             if (x + 2 * y) % 5 == 0 or (x - 2 * y) % 5 == 0:
                 sp[x, y] = (90, 180, 255, 255)
     save(top, "base_shield_top")
-    ships = [("tos", "NCC-1701"), ("refit", "NCC-1701-A"), ("excelsior", "NCC-1701-B"), ("c", "NCC-1701-C"), ("d", "NCC-1701-D"), ("e", "NCC-1701-E")]
+    ships = [("tos", "NCC-1701"), ("refit", "NCC-1701-A"), ("excelsior", "NCC-1701-B"), ("c", "NCC-1701-C"), ("d", "NCC-1701-D"), ("e", "NCC-1701-E"), ("f", "NCC-1701-F")]
     for i, (k, ship) in enumerate(ships):
         tier = i + 1
         n = f"base_shield_{k}"
@@ -3188,11 +3210,13 @@ def storage_mining_assets(de, en):
         f"message.{M}.torpedo.spread": "Full Spread: %s Photonentorpedos!",
         f"message.{M}.torpedo.photon_left": "Photonentorpedo abgefeuert (%s / %s im Werfer)",
         f"message.{M}.torpedo.quantum_left": "Quantentorpedo abgefeuert (%s / %s im Werfer)",
+        f"message.{M}.torpedo.quantum_pair": "Quanten-Doppelsalve! (%s / %s Salven im Werfer)",
         f"key.{M}.spread": "Full spread (photon torpedoes)",
         f"message.{M}.torpedo.no_spread": "No full spread launcher (NCC-1701-C and -D only)",
         f"message.{M}.torpedo.spread": "Full spread: %s photon torpedoes!",
         f"message.{M}.torpedo.photon_left": "Photon torpedo away (%s / %s in launcher)",
         f"message.{M}.torpedo.quantum_left": "Quantum torpedo away (%s / %s in launcher)",
+        f"message.{M}.torpedo.quantum_pair": "Dual quantum salvo! (%s / %s salvos in launcher)",
         f"gui.{M}.crate.sort": "Sortieren (gleiche Sachen zu vollen Stapeln zusammenfassen)",
         f"gui.{M}.crate.mode": "Sortieren nach: %s (klicken zum Wechseln)",
         f"gui.{M}.crate.mode.name": "Name", f"gui.{M}.crate.mode.mod": "Mod", f"gui.{M}.crate.mode.count": "Anzahl in der Kiste",
@@ -3632,7 +3656,7 @@ def armory_assets(de, en):
         write_json(os.path.join(ASSETS, "blockstates", name + ".json"), bs)
         write_json(os.path.join(ASSETS, "items", name + ".json"), item_def(b(name)))
         write_json(os.path.join(DATA, "loot_table", "blocks", name + ".json"), loot(name))
-    for name in ("warp_core_nx", "warp_core_e"):
+    for name in ("warp_core_nx", "warp_core_e", "warp_core_f"):
         write_json(os.path.join(ASSETS, "models", "block", name + ".json"),
                    {"parent": "minecraft:block/cube_column", "textures": {"end": b(name + "_top"), "side": b(name)}})
         write_json(os.path.join(ASSETS, "blockstates", name + ".json"), {"variants": {"": {"model": b(name)}}})
@@ -3642,9 +3666,10 @@ def armory_assets(de, en):
                  "phaser_holder": ("Phaser-Wandhalter (4 Phaser)", "Phaser Wall Holder (4 phasers)"),
                  "charging_station": ("Ladestation", "Charging Station"),
                  "warp_core_nx": ("Warpkern (NX-01)", "Warp Core (NX-01)"),
-                 "warp_core_e": ("Warpkern (Enterprise-E)", "Warp Core (Enterprise-E)")}.items():
+                 "warp_core_e": ("Warpkern (Enterprise-E)", "Warp Core (Enterprise-E)"),
+                 "warp_core_f": ("Warpkern (Enterprise-F)", "Warp Core (Enterprise-F)")}.items():
         de[f"block.{MODID}.{k}"], en[f"block.{MODID}.{k}"] = v
-    return ["rifle_rack", "phaser_holder", "charging_station", "warp_core_nx", "warp_core_e"]
+    return ["rifle_rack", "phaser_holder", "charging_station", "warp_core_nx", "warp_core_e", "warp_core_f"]
 
 
 TEXTURES = {
@@ -3769,6 +3794,8 @@ TEXTURES = {
     "warp_core_nx_top": tex_warp_core_nx_top,
     "warp_core_e": tex_warp_core_e,
     "warp_core_e_top": tex_warp_core_e_top,
+    "warp_core_f": tex_warp_core_f,
+    "warp_core_f_top": tex_warp_core_f_top,
     "armory_metal": tex_armory_metal,
     "holder_plate": tex_holder_plate,
     "charger_side": tex_charger_side,
@@ -4121,7 +4148,21 @@ def _with_magazine(base, color):
 TEXTURES["torpedo_launcher_spread"] = lambda: _with_magazine(tex_torpedo, (255, 140, 40))
 TEXTURES["quantum_launcher_rapid"] = lambda: _with_magazine(tex_quantum_launcher, (90, 170, 255))
 TEXTURES["torpedo_launcher_rapid"] = lambda: _with_magazine(tex_torpedo, (255, 225, 90))
-SIMPLE += ["torpedo_launcher_spread", "quantum_launcher_rapid", "torpedo_launcher_rapid"]
+
+
+def _dual_quantum():
+    """Doppel-Quantenwerfer: zwei Mündungen nebeneinander, darunter die Ladelichter."""
+    img = _with_magazine(tex_quantum_launcher, (150, 200, 255))
+    px = img.load()
+    for cx in (4, 11):
+        for x in range(cx - 2, cx + 2):
+            for y in range(4, 9):
+                px[x, y] = (20, 30, 60, 255) if (x in (cx - 2, cx + 1) or y in (4, 8)) else (140, 190, 255, 255)
+    return img
+
+
+TEXTURES["quantum_launcher_dual"] = _dual_quantum
+SIMPLE += ["torpedo_launcher_spread", "quantum_launcher_rapid", "torpedo_launcher_rapid", "quantum_launcher_dual"]
 
 NAMES = {
     "hull_plating": ("Hüllenpanzerung", "Hull Plating"),
@@ -4226,6 +4267,7 @@ NAMES = {
     "torpedo_launcher_spread": ("Photonentorpedo-Werfer (Full Spread)", "Photon Torpedo Launcher (Full Spread)"),
     "quantum_launcher_rapid": ("Schnellfeuer-Quantentorpedo-Werfer", "Rapid Quantum Torpedo Launcher"),
     "torpedo_launcher_rapid": ("Schnellfeuer-Photonentorpedo-Werfer", "Rapid Photon Torpedo Launcher"),
+    "quantum_launcher_dual": ("Doppel-Quantentorpedo-Werfer", "Dual Quantum Torpedo Launcher"),
     "deflector_ring": ("Deflektorring (Kupfer)", "Deflector Ring (Copper)"),
     "deflector_violet": ("Deflektorschüssel (Galaxy, violett)", "Deflector Dish (Galaxy, Violet)"),
     "turbolift_nx": ("Turbolift (NX-01)", "Turbolift (NX-01)"),
@@ -4378,7 +4420,7 @@ def main():
     models_extra += ["ceiling_light", "dual_wall", "dual_floor", "uranium_ore", "deepslate_uranium_ore", "reactor_casing",
                      "reactor_glass", "reactor_controller", "ship_helm", "airlock", "airlock_small", "dilithium_ore",
                      "antimatter_cluster", "deuterium_ice", "ship_part_assembly",
-                     "power_console", "shield_console", "alarm_light", "battery", "hull_glass", "mining_laser", "laser_focus", "mining_laser_control"] + [f"base_shield_{k}" for k in ("tos", "refit", "excelsior", "c", "d", "e")] + [f"crate_{t[0]}" for t in CRATE_TIERS if t[0] != "wood"] + [f"shield_emitter_{k}" for k in ("tos", "refit", "excelsior", "c", "d", "e")]
+                     "power_console", "shield_console", "alarm_light", "battery", "hull_glass", "mining_laser", "laser_focus", "mining_laser_control"] + [f"base_shield_{k}" for k in ("tos", "refit", "excelsior", "c", "d", "e", "f")] + [f"crate_{t[0]}" for t in CRATE_TIERS if t[0] != "wood"] + [f"shield_emitter_{k}" for k in ("tos", "refit", "excelsior", "c", "d", "e", "f")]
     models_extra += [f"door_{e}_{k}" for e in DOOR_ERAS for k in DOOR_KINDS]
     # Mit der Spitzhacke abbaubar
     write_json(os.path.join(ROOT, "data", "minecraft", "tags", "block", "mineable", "pickaxe.json"),

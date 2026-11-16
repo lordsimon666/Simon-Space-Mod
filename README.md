@@ -8,7 +8,7 @@ Befehl in die Welt setzt – wahlweise die **NX-01** („Star Trek: Enterprise�
 ## Befehl
 
 ```
-/enterprise spawn [nx-01|ncc-1701|ncc-1701-a|ncc-1701-b|ncc-1701-c|ncc-1701-d|ncc-1701-e] [full|compact|mini|scale <faktor>] [x y z] [north|east|south|west]
+/enterprise spawn [nx-01|ncc-1701|ncc-1701-a|ncc-1701-b|ncc-1701-c|ncc-1701-d|ncc-1701-e|ncc-1701-f] [full|compact|mini|scale <faktor>] [x y z] [north|east|south|west]
 ```
 
 * Ohne Schiffsangabe wird die **NCC-1701** gebaut, z.B. `/enterprise spawn full`.
@@ -19,6 +19,7 @@ Befehl in die Welt setzt – wahlweise die **NX-01** („Star Trek: Enterprise�
 * `/enterprise spawn ncc-1701-c full` – **NCC-1701-C**, 528 x 329 x 137 Blöcke
 * `/enterprise spawn ncc-1701-d full` – **NCC-1701-D**, 645 x 467 x 146 Blöcke
 * `/enterprise spawn ncc-1701-e full` – **NCC-1701-E**, 687 x 241 x 82 Blöcke
+* `/enterprise spawn ncc-1701-f full` – **NCC-1701-F** (Odyssey-Klasse), rund 1063 x 377 x 151 Blöcke
 
 ### NX-01 (Star Trek: Enterprise)
 
@@ -35,6 +36,20 @@ Die Decks heißen wie in der Serie mit Buchstaben (A-Deck = Brücke, B-Deck, C-D
 * D-Deck: Messe und Sporthalle, E-Deck: Waffenkammer und Arrest, darunter Quartiere
 * **Maschinenraum** hinten in der Untertasse mit **waagerechtem Warpreaktor**
 * Graue Metallwände und Gitterböden in allen Gängen
+
+### NCC-1701-F (Odyssey-Klasse)
+
+Die größte Enterprise: **1061 m** lang, mit lang gestreckter, flacher Untertasse, Sekundärrumpf und zwei
+Gondeln. Rumpf und Farben stammen aus einem 3D-Modell (Quelle unten). Innen ist sie aufgebaut wie die E,
+mit Brücke, Decks, Maschinenraum, Waffenkammer usw. Weil die Untertasse flach ist, liegen die Holodecks
+bei kleineren Bauformen im Sekundärrumpf.
+
+* **Doppel-Quantenwerfer** unter der Untertasse: jede Salve sind **zwei Quantentorpedos nebeneinander**,
+  5 Salven (10 Torpedos) bevor nachgeladen wird (Taste **O**). Dazu Schnellfeuer-Photonenwerfer mit 5 Schuss.
+* **Warpkern der Enterprise-F**: 40 000 FE/t (die E hat 30 000), Warpkernbruch mit 170 Blöcken Radius.
+* **Phaser** eine Stufe stärker als bei der E, **Schildemitter Stufe 7** (1420 Leben je Schildblock).
+  Es gibt auch ein **Basisschild Stufe 7** (NCC-1701-F).
+* Im Weltraum ist sie **seltener als die E** (halb so oft).
 
 ### NCC-1701-C, -D und -E (Next Generation)
 
@@ -481,7 +496,7 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
 * **Einschalten** an der Schildsteuerung: die Hülle wird vermessen und das Schild etwa **2 Blöcke**
   vor dem Rumpf berechnet. Es ist geglättet: kleine Vertiefungen (z. B. viele 1-Block-Rillen) werden
   überbrückt (dort ist der Abstand größer), einzeln herausstehende Blöcke bekommen nur 1 Block Abstand.
-* Jeder Schildblock hat **Leben**: Stufe 1 260, 2 390, 3 520, 4 690, 5 870, 6 1130. Schaden machen nur
+* Jeder Schildblock hat **Leben**: Stufe 1 260, 2 390, 3 520, 4 690, 5 870, 6 1130, 7 (F) 1420. Schaden machen nur
   **Explosionen** (je stärker, desto mehr) und **Phaser**: ein Phaserstoß weniger als ein
   **Photonentorpedo**, ein **Quantentorpedo** noch mehr. Solange das Schild an der Stelle Leben hat,
   bleiben Hülle und Besatzung dahinter unversehrt; Strahlen und Torpedos enden am Schild.
@@ -672,7 +687,7 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
   landet mit Sanftem Fall in der Oberwelt.
 * **Enterprises**: in jedem 1000 x 1000-Feld steht in der Mitte (Y ~500) eine Enterprise in voller
   Größe – die Schiffe sind also 1000 Blöcke voneinander entfernt. Je neuer, desto seltener:
-  NX-01 7/28, NCC-1701 6/28, -A 5/28, -B 4/28, -C 3/28, -D 2/28, -E 1/28. Sie entstehen, sobald ein
+  NX-01 14/57, NCC-1701 12/57, -A 10/57, -B 8/57, -C 6/57, -D 4/57, -E 2/57, -F 1/57. Sie entstehen, sobald ein
   Spieler näher als 700 Blöcke kommt (eins nach dem anderen).
 * **Asteroiden** (3 bis 12 Blöcke Radius) liegen in einem lockeren Raster aus 110-Block-Zellen
   (etwa 70 % belegt, leicht versetzt): zwischen zwei Asteroiden sind immer mindestens rund 50 bis 100
@@ -751,7 +766,7 @@ G = Goldbarren, E = Eisenbarren, P = Enderperle, R = Redstone
  E R E
 ```
 
-## Neue Blöcke (167)
+## Neue Blöcke (172)
 
 * **Hülle**: Hüllenpanzerung (+ Stufe), Hüllenplatte, dunkle Hüllenplatte, Hüllenfenster, Hüllenglas,
   Kennungsmarkierung (+ Stufe), roter Zierstreifen, Positionslicht rot/grün, Deflektorschüssel,
@@ -777,17 +792,17 @@ G = Goldbarren, E = Eisenbarren, P = Enderperle, R = Redstone
 * **NX-01**: Metallwand, Konsole, Sitz, Kommandantensessel, Dekontaminations-Leuchte
 * **Turbolifte**: Turbolift und Turbolift-Tür im Stil von NX-01, Refit, Excelsior und Next Generation
 * **Waffen**: Phasenkanone (NX-01), Phaserbank (Originalserie), Phaser-Emitter (Refit/Excelsior),
-  Phaserstreifen (Next Generation), Photonentorpedo-Werfer, Full-Spread-Werfer (C/D), Quantentorpedo-Werfer, Schnellfeuer-Photonen- und -Quantenwerfer (E), Waffenstation
+  Phaserstreifen (Next Generation), Photonentorpedo-Werfer, Full-Spread-Werfer (C/D), Quantentorpedo-Werfer, Schnellfeuer-Photonen- und -Quantenwerfer (E), Doppel-Quantenwerfer (F), Waffenstation
   (4 Varianten je Epoche)
-* **Waffenkammer und Strom**: Gewehrständer, Phaser-Wandhalter, Ladestation, Warpkern der NX-01
-  und der Enterprise-E
+* **Waffenkammer und Strom**: Gewehrständer, Phaser-Wandhalter, Ladestation, Warpkern der NX-01,
+  der Enterprise-E und der Enterprise-F
 * **Zweiseitig**: Wand mit zwei Seiten und Boden/Decke mit eigener Ober- und Unterseite (je 16 Materialien)
 * **Türen**: 2 x 2 Schiebetür, Sicherheitstür und Kommandotür im Stil von NX-01, Originalserie,
   Kinofilmen und Next Generation (12 Stück)
 * **Kernreaktor**: Uranerz, Tiefenschiefer-Uranerz, Reaktorhülle, Reaktorglas, Reaktor-Steuerblock
 * **Weltraum**: Luftschleuse (2 x 2 x 2 und 1 x 2 x 2), Dilithium-Erz, Antimaterie-Einschluss, Deuterium-Eis
 * **Werkstatt**: Schiffsteil-Fertigung, Batterie, Bergbaulaser, Laserfokus, Laser-Steuerkonsole, Großkiste (Holz, Kupfer, Eisen, Gold, Diamant, Netherit)
-* **Verteidigung**: Energieverteilung, Schildsteuerung, 6 Basisschilde (NCC-1701 bis -E), Alarmleuchte, 6 Schildemitter (NCC-1701 bis -E)
+* **Verteidigung**: Energieverteilung, Schildsteuerung, 7 Basisschilde (NCC-1701 bis -F), Alarmleuchte, 7 Schildemitter (NCC-1701 bis -F)
 * **Allgemein**: Deckboden, Korridorwand, Deckenverkleidung, Deckenleuchte, Maschinenraum-Konsole,
   Warpkern, Plasmaleitung
 
@@ -796,18 +811,25 @@ Sternenflotten-Stiefel. Alles ist im Kreativ-Tab „Simon Space Mod“ zu finden
 
 ## Außenform aus echten 3D-Modellen
 
-Die Außenhülle aller sieben Schiffe stammt aus 3D-Modellen und ist dadurch sehr genau. Das Werkzeug
+Die Außenhülle aller acht Schiffe stammt aus 3D-Modellen und ist dadurch sehr genau. Das Werkzeug
 `tools/voxelize_stl.py` rechnet ein STL-Modell auf die echte Schiffslänge in Blöcken um
-(NX-01: 225, NCC-1701: 289, -A: 305, -B: 467, -C: 526, -D: 643, -E: 685) und füllt das Innere. Die Ergebnisse liegen in
+(NX-01: 225, NCC-1701: 289, -A: 305, -B: 467, -C: 526, -D: 643, -E: 685, -F: 1061) und füllt das Innere,
+jedes Teilnetz des Modells für sich (so heben sich überlappende Teile nicht auf). `tools/glb_to_stl.py`
+wandelt ein GLB-Modell dafür in eine STL-Datei um. Die Ergebnisse liegen in
 `src/main/resources/ships/`. Beim Bauen vermisst die Mod die Form automatisch (Untertasse, Gondeln,
 Unterrumpf) und erzeugt daraus Decks, Räume, Brücke, Maschinenraum, Farben und Beschriftung.
 Fehlt ein Modell, wird die eingebaute, berechnete Form verwendet.
 
-**Modell-Quelle:** „Star Trek USS Enterprise Ultimate Collection“ von **Alexei Bruton (Solid_Alexei)**,
+**Modell-Quelle (NX-01 bis -E):** „Star Trek USS Enterprise Ultimate Collection“ von **Alexei Bruton (Solid_Alexei)**,
 Thingiverse #1423364 (Spiegel: archive.org/details/thingiverse-1423364), Lizenz
 **CC BY-NC 4.0** (https://creativecommons.org/licenses/by-nc/4.0/) – Namensnennung, nicht kommerziell.
 Die Modelle wurden in Blockraster umgewandelt. Deshalb darf auch diese Mod nur nicht-kommerziell
 verwendet werden.
+
+**Modell-Quelle (NCC-1701-F, Form und Farben):** „Star Trek Online | Odessey Class | Enterprise F“ von
+**LoganRolphh** – https://sketchfab.com/3d-models/star-trek-online-odessey-class-enterprise-f-77083261ba20433ea03f9c235926c36c,
+Lizenz **CC BY 4.0** (https://creativecommons.org/licenses/by/4.0/), verändert (in Blockraster und
+Farbklassen umgerechnet).
 
 ### Hüllenmarkierungen
 

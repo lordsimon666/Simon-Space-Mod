@@ -40,6 +40,7 @@ public final class WarpBreach {
 
     /** Radius je nach stärkstem Warpkern. */
     public static double radius(BlockState core) {
+        if (core.is(ModBlocks.WARP_CORE_F.get())) return 170;
         if (core.is(ModBlocks.WARP_CORE_E.get())) return 150;
         if (core.is(ModBlocks.WARP_CORE_TNG.get())) return 135;
         if (core.is(ModBlocks.WARP_CORE_NX.get())) return 110;

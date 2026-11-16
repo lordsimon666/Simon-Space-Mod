@@ -145,13 +145,13 @@ public final class ShipBuildManager {
                 case NCC_1701 -> ModBlocks.PHASER_TOS.get();
                 case NCC_1701_A, NCC_1701_B -> ModBlocks.PHASER_MOVIE.get();
                 case NCC_1701_C, NCC_1701_D -> ModBlocks.PHASER_TNG.get();
-                case NCC_1701_E -> ModBlocks.PHASER_FC.get();
+                case NCC_1701_E, NCC_1701_F -> ModBlocks.PHASER_FC.get();
             };
             net.minecraft.world.item.Item rifle = switch (bp.design) {
                 case NX_01 -> ModBlocks.RIFLE_NX.get();
                 case NCC_1701 -> ModBlocks.RIFLE_TOS.get();
                 case NCC_1701_D -> ModBlocks.RIFLE_TNG.get();
-                case NCC_1701_E -> ModBlocks.RIFLE_FC.get();
+                case NCC_1701_E, NCC_1701_F -> ModBlocks.RIFLE_FC.get();
                 default -> null;
             };
             var rnd = level.getRandom();
@@ -207,7 +207,7 @@ public final class ShipBuildManager {
             for (BlockPos p : blueprint.quantums) quants.add(placement.toWorld(blueprint, p.getX(), p.getY(), p.getZ()));
             for (BlockPos st : blueprint.weaponStations)
                 weapons.set(placement.toWorld(blueprint, st.getX(), st.getY(), st.getZ()), phasers, cams, focus, blueprint.cameraNames,
-                    blueprint.design.ordinal() + 1, shipMin, shipMax, torps, quants); // Stärke: NX-01 = 1 ... Enterprise-E = 7
+                    blueprint.design.ordinal() + 1, shipMin, shipMax, torps, quants); // Stärke: NX-01 = 1 ... Enterprise-E = 7, F = 8
             stockArmory(level);
             onDone.accept(this);
         }

@@ -5,7 +5,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
 /**
- * Schildemitter einer Enterprise (Stufe 1 = NCC-1701 ... 6 = NCC-1701-E). Je höher die Stufe, desto
+ * Schildemitter einer Enterprise (Stufe 1 = NCC-1701 ... 6 = NCC-1701-E, 7 = NCC-1701-F). Je höher die Stufe, desto
  * mehr Leben je Schildblock und desto schnellere Regeneration. Die NX-01 hat noch keine Schilde.
  */
 public class ShieldEmitterBlock extends Block {
@@ -30,7 +30,8 @@ public class ShieldEmitterBlock extends Block {
             case 3 -> 520;
             case 4 -> 690;
             case 5 -> 870;
-            default -> tier >= 6 ? 1130 : 170;
+            case 6 -> 1130;
+            default -> tier >= 7 ? 1420 : 170;
         };
     }
 }

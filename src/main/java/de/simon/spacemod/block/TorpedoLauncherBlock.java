@@ -16,16 +16,23 @@ public class TorpedoLauncherBlock extends Block {
     public final int magazine;
     /** Kann alle Schüsse auf einmal fächerförmig abfeuern (Full Spread). */
     public final boolean spread;
+    /** Doppelwerfer: jede Salve sind 2 Torpedos nebeneinander. */
+    public final boolean pair;
 
     public TorpedoLauncherBlock(BlockBehaviour.Properties properties, boolean quantum) {
         this(properties, quantum, 1, false);
     }
 
     public TorpedoLauncherBlock(BlockBehaviour.Properties properties, boolean quantum, int magazine, boolean spread) {
+        this(properties, quantum, magazine, spread, false);
+    }
+
+    public TorpedoLauncherBlock(BlockBehaviour.Properties properties, boolean quantum, int magazine, boolean spread, boolean pair) {
         super(properties);
         this.quantum = quantum;
         this.magazine = magazine;
         this.spread = spread;
+        this.pair = pair;
     }
 
     /** Nachladezeit in Ticks, nachdem der letzte Schuss gefallen ist. */
@@ -36,6 +43,6 @@ public class TorpedoLauncherBlock extends Block {
 
     @Override
     protected MapCodec<? extends Block> codec() {
-        return simpleCodec(p -> new TorpedoLauncherBlock(p, quantum, magazine, spread));
+        return simpleCodec(p -> new TorpedoLauncherBlock(p, quantum, magazine, spread, pair));
     }
 }

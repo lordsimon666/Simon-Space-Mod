@@ -25,10 +25,15 @@ def load_stl(path):
         f.read(80)
         n = struct.unpack('<I', f.read(4))[0]
         tris = np.frombuffer(f.read(50 * n), dt)
-    return tris['v'].astype(np.float64)
+    return tris['v'].astype(np.float64), tris['a'].astype(np.int64)
 
 
-def voxelize(tris, length):
+def voxelize(tris, length, groups=None):
+    """groups: Teilnetz je Dreieck (aus dem Attributfeld der STL). Jedes Teilnetz wird für sich nach der
+    Gerade/Ungerade-Regel gefüllt und die Ergebnisse vereinigt – so heben sich überlappende Teile
+    (z. B. Untertasse und Sekundärrumpf) nicht gegenseitig auf."""
+    if groups is None:
+        groups = np.zeros(len(tris), dtype=np.int64)
     lo = tris.reshape(-1, 3).min(0)
     hi = tris.reshape(-1, 3).max(0)
     size = hi - lo
@@ -43,7 +48,7 @@ def voxelize(tris, length):
 
     # Strahlen entlang der Hochachse (y) durch die Mitte jeder (x, z)-Säule
     hits = [[] for _ in range(sx * sz)]
-    for tri in t:
+    for tri, grp in zip(t, groups):
         a, b, c = tri
         x0, x1 = min(a[0], b[0], c[0]), max(a[0], b[0], c[0])
         z0, z1 = min(a[2], b[2], c[2]), max(a[2], b[2], c[2])
@@ -64,23 +69,29 @@ def voxelize(tris, length):
                 l3 = 1 - l1 - l2
                 if l1 < 0 or l2 < 0 or l3 < 0:
                     continue
-                hits[ix * sz + iz].append(l1 * a[1] + l2 * b[1] + l3 * c[1])
+                hits[ix * sz + iz].append((int(grp), l1 * a[1] + l2 * b[1] + l3 * c[1]))
 
     grid = np.zeros((sx, sy, sz), dtype=bool)
     for ix in range(sx):
         for iz in range(sz):
-            h = hits[ix * sz + iz]
-            if len(h) < 2:
+            col = hits[ix * sz + iz]
+            if len(col) < 2:
                 continue
-            h.sort()
-            # doppelte Treffer (Kanten zwischen zwei Dreiecken) zusammenfassen
-            u = [h[0]]
-            for v in h[1:]:
-                if v - u[-1] > 1e-6:
-                    u.append(v)
-            for k in range(0, len(u) - 1, 2):
-                y0, y1 = u[k], u[k + 1]
-                grid[ix, max(0, int(np.floor(y0 + 0.5))):min(sy, int(np.floor(y1 + 0.5)) + 1), iz] = True
+            by_group = {}
+            for g, v in col:
+                by_group.setdefault(g, []).append(v)
+            for h in by_group.values():
+                if len(h) < 2:
+                    continue
+                h.sort()
+                # doppelte Treffer (Kanten zwischen zwei Dreiecken) zusammenfassen
+                u = [h[0]]
+                for v in h[1:]:
+                    if v - u[-1] > 1e-6:
+                        u.append(v)
+                for k in range(0, len(u) - 1, 2):
+                    y0, y1 = u[k], u[k + 1]
+                    grid[ix, max(0, int(np.floor(y0 + 0.5))):min(sy, int(np.floor(y1 + 0.5)) + 1), iz] = True
     return grid
 
 
@@ -117,7 +128,8 @@ def preview(grid, path):
 
 if __name__ == '__main__':
     stl, length, out = sys.argv[1], int(sys.argv[2]), sys.argv[3]
-    g = orient_bow_first(voxelize(load_stl(stl), length))
+    tris, groups = load_stl(stl)
+    g = orient_bow_first(voxelize(tris, length, groups))
     save(g, out)
     print('size (Länge, Höhe, Breite):', g.shape, 'Blöcke:', int(g.sum()))
     if len(sys.argv) > 4:

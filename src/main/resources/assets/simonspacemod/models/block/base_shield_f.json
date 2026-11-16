@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "simonspacemod:block/base_shield_top",
+    "side": "simonspacemod:block/base_shield_side_f"
+  }
+}

@@ -257,6 +257,9 @@ public final class ModBlocks {
         p -> new WarpCoreBlock(p, 5_000), glowing(glass(MapColor.COLOR_LIGHT_BLUE), 13));
     public static final RegistryObject<Block> WARP_CORE_E = block("warp_core_e",
         p -> new WarpCoreBlock(p, 30_000), glowing(glass(MapColor.COLOR_BLUE), 15));
+    /** Warpkern der Enterprise-F (Odyssey-Klasse): der stärkste. */
+    public static final RegistryObject<Block> WARP_CORE_F = block("warp_core_f",
+        p -> new WarpCoreBlock(p, 40_000), glowing(glass(MapColor.COLOR_PURPLE), 15));
     public static final RegistryObject<Block> PLASMA_CONDUIT = block("plasma_conduit", Block::new, glowing(metal(MapColor.COLOR_BLUE), 10));
     public static final RegistryObject<Block> TRANSPORTER_PAD = block("transporter_pad", TransporterPadBlock::new, glowing(metal(MapColor.METAL), 9).noOcclusion());
     public static final RegistryObject<Block> TURBOLIFT = block("turbolift", TurboliftBlock::new, glowing(metal(MapColor.COLOR_YELLOW), 8));
@@ -281,6 +284,9 @@ public final class ModBlocks {
     /** Torpedowerfer der C und D: 5 Schuss, Full Spread mit F. */
     public static final RegistryObject<Block> TORPEDO_LAUNCHER_SPREAD = block("torpedo_launcher_spread",
         p -> new TorpedoLauncherBlock(p, false, 5, true), glowing(metal(MapColor.COLOR_ORANGE), 10));
+    /** Doppel-Quantenwerfer der F: 5 Salven zu je 2 Quantentorpedos nebeneinander. */
+    public static final RegistryObject<Block> QUANTUM_LAUNCHER_DUAL = block("quantum_launcher_dual",
+        p -> new TorpedoLauncherBlock(p, true, 5, false, true), glowing(metal(MapColor.COLOR_BLUE), 12));
     /** Schnellfeuer-Photonenwerfer der E: 5 Schuss, kein Full Spread. */
     public static final RegistryObject<Block> TORPEDO_LAUNCHER_RAPID = block("torpedo_launcher_rapid",
         p -> new TorpedoLauncherBlock(p, false, 5, false), glowing(metal(MapColor.COLOR_ORANGE), 10));
@@ -513,7 +519,7 @@ public final class ModBlocks {
         metal(MapColor.COLOR_RED).noOcclusion().lightLevel(s -> s.getValue(de.simon.spacemod.defense.AlarmLightBlock.LIT) ? 14 : 0)
             .emissiveRendering(s -> s.getValue(de.simon.spacemod.defense.AlarmLightBlock.LIT)));
     /** Schildemitter je Schiff: NCC-1701 (Stufe 1) bis NCC-1701-E (Stufe 6). */
-    public static final String[] SHIELD_EMITTERS = {"tos", "refit", "excelsior", "c", "d", "e"};
+    public static final String[] SHIELD_EMITTERS = {"tos", "refit", "excelsior", "c", "d", "e", "f"};
     public static final java.util.List<RegistryObject<Block>> SHIELD_EMITTER = new java.util.ArrayList<>();
     static {
         for (int i = 0; i < SHIELD_EMITTERS.length; i++) {

@@ -198,6 +198,16 @@ public final class EnterpriseBlueprint {
         lightRooms();
         brightenBridge();
         removeBeams();
+        // Abschluss: kein Turbolift-Halt steht über Luft (z. B. wo die Hülle unten schon einwärts gebogen ist)
+        for (LiftStop st : liftStops) {
+            BlockPos p = st.pos();
+            if (get(p.getX(), p.getY() - 1, p.getZ()) == ShipPart.AIR) set(p.getX(), p.getY() - 1, p.getZ(), ShipPart.DECK_FLOOR);
+            // auch das Feld vor der Tür (dort steigt man aus)
+            Direction fd = facing(codeAt(p.getX(), p.getY(), p.getZ()));
+            int ex = p.getX() + (fd == Direction.SOUTH ? 1 : fd == Direction.NORTH ? -1 : 0);
+            int ez = p.getZ() + (fd == Direction.EAST ? 1 : fd == Direction.WEST ? -1 : 0);
+            if (get(ex, p.getY(), ez) == ShipPart.AIR && get(ex, p.getY() - 1, ez) == ShipPart.AIR) set(ex, p.getY() - 1, ez, ShipPart.DECK_FLOOR);
+        }
         wallsToCeiling();
         fixLights();
         fixFloorHoles();
@@ -1881,7 +1891,7 @@ public final class EnterpriseBlueprint {
             // Galaxy: breites Oval – violetter Rand, hellblau leuchtender Ring, violette Fläche mit hellblauem
             // abgerundeten Rechteck in der Mitte (nach dem Studiomodell)
             case NCC_1701_D -> { cy = yc + 0.05 * hy; ry = 0.36 * hy; rz = 0.42 * hz; outer = ShipPart.DEFLECTOR_VIOLET; depth = 0; }
-            case NCC_1701_E -> { cy = yc - 0.1 * hy; ry = rz = 0.5 * m; depth = 0.12; }
+            case NCC_1701_E, NCC_1701_F -> { cy = yc - 0.1 * hy; ry = rz = 0.5 * m; depth = 0.12; }
             default -> { return; }
         }
         if (design == ShipDesign.NCC_1701_B) {
@@ -2101,7 +2111,14 @@ public final class EnterpriseBlueprint {
     }
 
     /** Lage des Maschinenraums: {x von, x bis, Boden, Decke}. */
+    private int[] engineeringBoxCache;
+
     private int[] engineeringBox() {
+        if (engineeringBoxCache == null) engineeringBoxCache = computeEngineeringBox();
+        return engineeringBoxCache;
+    }
+
+    private int[] computeEngineeringBox() {
         if (nx) {
             // NX-01: Maschinenraum hinten in der Untertasse zwischen den Auslegern
             int x0 = (int) Math.round(sCx + 0.4 * sR);
@@ -2111,7 +2128,24 @@ public final class EnterpriseBlueprint {
         double f0 = eXf + (refit || excelsior || tng ? 0.15 : 0.12) * (eXr - eXf), f1 = eXf + (refit ? 0.45 : excelsior || tng ? 0.5 : 0.6) * (eXr - eXf);
         int x0 = (int) Math.round((f0 + f1) / 2);
         int yF = (int) Math.round(eY) - 3;
+        if (model != null && !fitsEngineering(x0, yF)) { // Rumpf schmaler als gedacht (z. B. F): Lage suchen, in die der Raum ganz passt
+            search:
+            for (int dx = 0; dx <= 120; dx += 4)
+                for (int sx : dx == 0 ? new int[] {1} : new int[] {1, -1})
+                    for (int dy = 0; dy <= 12; dy++)
+                        for (int sy : dy == 0 ? new int[] {1} : new int[] {1, -1})
+                            if (fitsEngineering(x0 + sx * dx, yF + sy * dy)) { x0 += sx * dx; yF += sy * dy; break search; }
+        }
         return new int[] {x0 - 10, x0 + 10, yF, yF + 7};
+    }
+
+    /** Passt der Maschinenraum (mit einem Block Hülle rundum) bei dieser Höhe ganz in das Modell? */
+    private boolean fitsEngineering(int x0, int yF) {
+        for (int x = x0 - 11; x <= x0 + 11; x += 2)
+            for (int y = yF - 1; y <= yF + 8; y++)
+                for (int z = -7; z <= 7; z += 2)
+                    if (!ms(x, y, z)) return false;
+        return true;
     }
 
     /** Bauteil-Zuordnung für die Form aus dem 3D-Modell. */
@@ -2376,6 +2410,7 @@ public final class EnterpriseBlueprint {
         FONT6x9.put('X', new String[] {"100001", "100001", "010010", "010010", "001100", "010010", "010010", "100001", "100001"});
         FONT6x9.put('D', new String[] {"111100", "100010", "100001", "100001", "100001", "100001", "100001", "100010", "111100"});
         FONT6x9.put('E', new String[] {"111111", "100000", "100000", "100000", "111110", "100000", "100000", "100000", "111111"});
+        FONT6x9.put('F', new String[] {"111111", "100000", "100000", "100000", "111110", "100000", "100000", "100000", "100000"});
         FONT5x7.put('N', new String[] {"10001", "11001", "10101", "10011", "10001", "10001", "10001"});
         FONT5x7.put('C', new String[] {"01110", "10001", "10000", "10000", "10000", "10001", "01110"});
         FONT5x7.put('-', new String[] {"000", "000", "000", "111", "000", "000", "000"});
@@ -2395,6 +2430,7 @@ public final class EnterpriseBlueprint {
         FONT3x5.put('U', new String[] {"101", "101", "101", "101", "111"});
         FONT3x5.put('S', new String[] {"111", "100", "111", "001", "111"});
         FONT3x5.put('E', new String[] {"111", "100", "110", "100", "111"});
+        FONT3x5.put('F', new String[] {"111", "100", "110", "100", "100"});
         FONT3x5.put('T', new String[] {"111", "010", "010", "010", "010"});
         FONT3x5.put('R', new String[] {"110", "101", "110", "101", "101"});
         FONT3x5.put('P', new String[] {"110", "101", "110", "100", "100"});
@@ -2779,7 +2815,7 @@ public final class EnterpriseBlueprint {
                 int ey = (int) Math.round(eY + eR * 0.25);
                 int ex = (int) Math.round(eXf + 0.3 * (eXr - eXf));
                 sideText(regText, side > 0 ? ex + reg : ex, ey + 2, side);
-                if (design != ShipDesign.NCC_1701_C && !(design == ShipDesign.NCC_1701_E && colors != null)) {
+                if (design != ShipDesign.NCC_1701_C && !(design.late && colors != null)) {
                     int ny = (int) Math.round(nY + nR * 0.5);
                     int x0 = (int) Math.round(nX0 + nR * 1.6);
                     pennant(x0, (int) Math.round(nX0 + 0.7 * (nX1 - nX0)), ny, side, (int) Math.max(1, nR * 0.15));
@@ -2866,8 +2902,8 @@ public final class EnterpriseBlueprint {
                     if (surfaceWeapon(x, z, false, ShipPart.TORPEDO_LAUNCHER, NONE)) break;
             return;
         }
-        if (design == ShipDesign.NCC_1701_E) {
-            // Quanten: Schnellfeuerwerfer unter der Untertasse, direkt vor dem Hals
+        if (design.late) {
+            // Quanten: Schnellfeuerwerfer (F: Doppelwerfer) unter der Untertasse, direkt vor dem Hals
             for (int z : new int[] {-1, 0, 1}) {
                 boolean done = false;
                 for (double rf = 0.1; !done && rf <= 0.7; rf += 0.03)
@@ -3326,7 +3362,8 @@ public final class EnterpriseBlueprint {
         int yF = box[2];
         room(x0 - 10, x0 + 10, yF, yF + 7, -6, 6, tng ? ShipPart.TNG_WALL : ShipPart.CORRIDOR_WALL);
 
-        ShipPart core = nx ? ShipPart.WARP_CORE_NX : design == ShipDesign.NCC_1701_E ? ShipPart.WARP_CORE_E
+        ShipPart core = nx ? ShipPart.WARP_CORE_NX : design == ShipDesign.NCC_1701_F ? ShipPart.WARP_CORE_F
+            : design == ShipDesign.NCC_1701_E ? ShipPart.WARP_CORE_E
             : tng ? ShipPart.WARP_CORE_TNG : ShipPart.WARP_CORE;
         ShipPart conduit = ShipPart.PLASMA_CONDUIT;
         ShipPart console = tng ? ShipPart.TNG_CONSOLE : ShipPart.ENGINEERING_CONSOLE;
@@ -3462,12 +3499,13 @@ public final class EnterpriseBlueprint {
     }
 
     public static boolean isWarpCore(ShipPart p) {
-        return p == ShipPart.WARP_CORE || p == ShipPart.WARP_CORE_TNG || p == ShipPart.WARP_CORE_NX || p == ShipPart.WARP_CORE_E;
+        return p == ShipPart.WARP_CORE || p == ShipPart.WARP_CORE_TNG || p == ShipPart.WARP_CORE_NX || p == ShipPart.WARP_CORE_E
+            || p == ShipPart.WARP_CORE_F;
     }
 
     /** Hatte die Epoche Phasergewehre? (NX-01, Originalserie, D und E – Kinofilme und C nicht) */
     public boolean hasRifles() {
-        return nx || design == ShipDesign.NCC_1701 || design == ShipDesign.NCC_1701_D || design == ShipDesign.NCC_1701_E;
+        return nx || design == ShipDesign.NCC_1701 || design == ShipDesign.NCC_1701_D || design.late;
     }
 
     /**
@@ -3579,7 +3617,7 @@ public final class EnterpriseBlueprint {
                     switch (p) {
                         case TURBOLIFT, TURBOLIFT_DOOR, TURBOLIFT_FRAME, TRANSPORTER_PAD, TRANSPORTER_WALL, TRANSPORTER_PLATFORM,
                              ENGINEERING_CONSOLE, TNG_CONSOLE, ENT_CONSOLE, LADDER, BIOBED, CONFERENCE_TABLE, VIEWSCREEN,
-                             HOLODECK_GRID, IRON_BARS, FORCE_FIELD, PLASMA_CONDUIT, WARP_CORE, WARP_CORE_TNG, WARP_CORE_NX, WARP_CORE_E,
+                             HOLODECK_GRID, IRON_BARS, FORCE_FIELD, PLASMA_CONDUIT, WARP_CORE, WARP_CORE_TNG, WARP_CORE_NX, WARP_CORE_E, WARP_CORE_F,
                              TURBOLIFT_NX, TURBOLIFT_REFIT, TURBOLIFT_EXCELSIOR, TURBOLIFT_TNG,
                              POWER_CONSOLE, ALARM_LIGHT, SHIELD_EMITTER, SHIELD_CONSOLE -> { return true; }
                         default -> {}
@@ -3925,6 +3963,7 @@ public final class EnterpriseBlueprint {
             set(cx, f + 1, 1, ShipPart.TURBOLIFT_FRAME);
             set(cx, f + 2, 1, ShipPart.TURBOLIFT_FRAME);
             for (int y = f + 1; y <= f + 3; y++) set(cx - 1, y, 0, ShipPart.TURBOLIFT_FRAME); // Rückseite des Schachts
+            if (get(cx, f, 0) == ShipPart.AIR) set(cx, f, 0, ShipPart.DECK_FLOOR); // Halt nie über Luft (gebogene Hülle)
             liftStops.add(new LiftStop(new BlockPos(cx, f + 1, 0), deckLabel(deck) + " – " + deckName));
 
             for (Band band : bands)
@@ -4180,6 +4219,17 @@ public final class EnterpriseBlueprint {
                 for (int dx = -3; dx <= 3; dx++)
                     for (int dz = 0; dz <= 1; dz++)
                         if (free(gx + dx, y, gz + dz)) set(gx + dx, y, gz + dz, ShipPart.CONFERENCE_TABLE);
+                if (get(gx, y, gz) != ShipPart.CONFERENCE_TABLE) // Mitte zugestellt (schmaler Raum): kleinerer Tisch woanders im Raum
+                    for (int[] c : cells) {
+                        boolean room3 = true;
+                        for (int dx = -1; dx <= 1 && room3; dx++)
+                            for (int dz = 0; dz <= 1 && room3; dz++) room3 = free(c[0] + dx, y, c[1] + dz);
+                        if (!room3) continue;
+                        for (int dx = -1; dx <= 1; dx++) for (int dz = 0; dz <= 1; dz++) set(c[0] + dx, y, c[1] + dz, ShipPart.CONFERENCE_TABLE);
+                        gx = c[0];
+                        gz = c[1];
+                        break;
+                    }
                 if (get(gx, y, gz) == ShipPart.CONFERENCE_TABLE && !tng) set(gx, y + 1, gz, ShipPart.TABLE_VIEWER);
                 for (int dx = -3; dx <= 3; dx += 2) {
                     if (free(gx + dx, y, gz - 1)) set(gx + dx, y, gz - 1, chair, Direction.EAST);
@@ -4235,6 +4285,7 @@ public final class EnterpriseBlueprint {
             }
             case TEN_FORWARD -> buildTenForward(room, cells, f);
             case HOLODECK -> {
+                saucerHolodecks = true;
                 // Schwarzer Raum mit gelbem Gitter an Wänden, Boden und Decke, Bedienfeld neben der Tür
                 recolorWalls(cells, f, ShipPart.CORRIDOR_WALL, ShipPart.HOLODECK_GRID);
                 // Gitterdecke in der Zwischendecke (f+4) – der Raum bleibt 3 hoch wie alle anderen, so
@@ -4531,8 +4582,12 @@ public final class EnterpriseBlueprint {
         return best;
     }
 
+    /** Hat die Untertasse Holodecks bekommen? (Sonst – flache Untertasse wie bei der F – im Sekundärrumpf.) */
+    private boolean saucerHolodecks;
+
     /** Decks der Sekundärhülle: Mittelgang mit Turbolift vorne, Räume links und rechts. */
     private void layoutSecondaryDecks() {
+        boolean holoLeft = tng && !saucerHolodecks;
         int xs = (int) Math.round(eXf + 0.13 * (eXr - eXf));
         int xe = (int) Math.round(eXr - 22 * s) - 1;
         String[] names = {"Frachtraum", "Quartiere", "Labore", "Lager"};
@@ -4548,6 +4603,8 @@ public final class EnterpriseBlueprint {
                 case 2 -> RoomType.LAB;
                 default -> RoomType.STORAGE;
             };
+            boolean holo = holoLeft && type == RoomType.LAB;
+            if (holo) { type = RoomType.HOLODECK; holoLeft = false; }
             for (int x = xs; x <= xe; x++)
                 for (int z = -zOffset; z <= zOffset; z++) {
                     if (compAt(x, f + 1, z) != SECONDARY) continue;
@@ -4568,7 +4625,8 @@ public final class EnterpriseBlueprint {
                 for (int side : new int[] {-1, 1}) furnishSecondaryRoom(type, x0, side, f);
             set(xs, f + 1, 0, ShipPart.TURBOLIFT, Direction.SOUTH);
             set(xs, f + 2, 0, ShipPart.TURBOLIFT_DOOR, Direction.SOUTH);
-            liftStops.add(new LiftStop(new BlockPos(xs, f + 1, 0), deckLabel(deck) + " – " + names[Math.floorMod(deck, 4)]));
+            if (get(xs, f, 0) == ShipPart.AIR) set(xs, f, 0, ShipPart.DECK_FLOOR);
+            liftStops.add(new LiftStop(new BlockPos(xs, f + 1, 0), deckLabel(deck) + " – " + (holo ? "Holodecks" : names[Math.floorMod(deck, 4)])));
         }
     }
 
@@ -4581,6 +4639,7 @@ public final class EnterpriseBlueprint {
                 boolean nearDoor = Math.abs(x - (x0 + 4)) <= 1 && az <= 4;
                 if (nearDoor) continue;
                 switch (type) {
+                    case HOLODECK -> set(x, f, z, ShipPart.HOLODECK_GRID); // Gitterboden
                     case CARGO, STORAGE -> {
                         if (Math.floorMod(x, 3) != 0 && az >= 5) {
                             set(x, y, z, ShipPart.CARGO_CONTAINER);
@@ -4648,7 +4707,7 @@ public final class EnterpriseBlueprint {
         int k = colors.lookup(x, y, z, s);
         boolean nacelle = c == NACELLE || c == BUSSARD;
         // Schrift des Modells auf Ober-/Unterseite der Untertasse weglassen – die Mod schreibt die Kennung selbst
-        if (c == SAUCER && (k == ShipColors.BLACK || k == ShipColors.RED && design != ShipDesign.NCC_1701_E)
+        if (c == SAUCER && (k == ShipColors.BLACK || k == ShipColors.RED && !design.late)
             && (compAt(x, y + 1, z) == NONE || compAt(x, y - 1, z) == NONE)) return st;
         if (design == ShipDesign.NCC_1701_D) {
             // Die Textur der D hat Licht und blaue Spiegelungen eingebrannt: Blau nur als Warpgitter an den
@@ -4659,8 +4718,8 @@ public final class EnterpriseBlueprint {
             if (k == ShipColors.BLACK && !nacelle && flat) return st;
             if ((k == ShipColors.DARK || k == ShipColors.MID) && !nacelle && flat) return st; // eingebrannte Schatten
         }
-        if (design == ShipDesign.NCC_1701_E) {
-            // Das Farbmodell der E hat dieselbe Form und saubere Eckpunktfarben: auch kleine Teile übernehmen
+        if (design.late) {
+            // Das Farbmodell der E (und der F) hat dieselbe Form und saubere Eckpunktfarben: auch kleine Teile übernehmen
             switch (k) {
                 case ShipColors.RED -> {
                     if (nacelle && x < nX0 + nR * 1.6) return ShipPart.BUSSARD_RED;

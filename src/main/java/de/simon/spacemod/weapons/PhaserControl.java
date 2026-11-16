@@ -488,14 +488,18 @@ public final class PhaserControl {
         // Full Spread: alle Torpedos fliegen auf Bögen sternförmig hinaus (gleichmäßig im Kreis verteilt,
         // keiner geradeaus) und laufen am Ziel wieder zusammen
         double amp = Math.max(4, Math.min(40, dist * 0.25));
-        for (int i = 0; i < shots; i++) {
+        // Doppelwerfer (F): jede Salve sind 2 Torpedos nebeneinander, parallel aufs Ziel
+        int per = l.block().pair ? 2 : 1;
+        for (int n = 0; n < shots * per; n++) {
+            int i = n / per;
+            double side = per == 2 ? (n % 2 == 0 ? -1.2 : 1.2) : 0;
             Vec3 bulge = Vec3.ZERO;
             if (spread) {
                 double a = 2 * Math.PI * i / shots;
                 bulge = up.scale(Math.cos(a) * amp).add(right.scale(Math.sin(a) * amp));
             }
-            Vec3 aimAt = tgt;
-            Vec3 start = c.add(dir.scale(1.0)).add(bulge.lengthSqr() > 0 ? bulge.normalize().scale(0.4) : Vec3.ZERO);
+            Vec3 aimAt = side == 0 ? tgt : tgt.add(right.scale(side));
+            Vec3 start = c.add(dir.scale(1.0)).add(bulge.lengthSqr() > 0 ? bulge.normalize().scale(0.4) : Vec3.ZERO).add(right.scale(side));
             TorpedoEntity t = ModBlocks.TORPEDO.get().create(level, EntitySpawnReason.TRIGGERED);
             if (t == null) continue;
             t.setPos(start.x, start.y, start.z);
@@ -504,7 +508,7 @@ public final class PhaserControl {
             // Der Werfer kann weit von der Kamera weg in einem ruhenden Chunk liegen: vorher aktiv laden,
             // sonst bewegt sich der Torpedo nicht (er sichert sich danach im Flug selbst weiter)
             chunks.addTicketWithRadius(TicketType.ENDER_PEARL, ChunkPos.containing(BlockPos.containing(start)), 2);
-            if (i == 0) chunks.addTicketWithRadius(TicketType.ENDER_PEARL,
+            if (n == 0) chunks.addTicketWithRadius(TicketType.ENDER_PEARL,
                 ChunkPos.containing(BlockPos.containing(start.add(aimAt.subtract(start).normalize().scale(64)))), 2);
             level.addFreshEntity(t);
         }
@@ -512,6 +516,7 @@ public final class PhaserControl {
             SoundSource.BLOCKS, 3.0F, 0.95F + level.getRandom().nextFloat() * 0.1F);
         int left = MAGAZINES.ready(l.key(), l.block().magazine, now + TorpedoMagazines.GAP);
         if (spread) player.sendOverlayMessage(Component.translatable("message.simonspacemod.torpedo.spread", shots));
+        else if (l.block().pair) player.sendOverlayMessage(Component.translatable("message.simonspacemod.torpedo.quantum_pair", left, l.block().magazine));
         else if (l.block().magazine > 1) player.sendOverlayMessage(Component.translatable(
             quantum ? "message.simonspacemod.torpedo.quantum_left" : "message.simonspacemod.torpedo.photon_left", left, l.block().magazine));
         else player.sendOverlayMessage(Component.translatable(quantum ? "message.simonspacemod.torpedo.quantum" : "message.simonspacemod.torpedo.photon"));

@@ -38,7 +38,7 @@ public enum TorpedoStyle {
 
     /** @param tier Schiff: 1 = NX-01 ... 7 = Enterprise-E */
     public static TorpedoStyle photon(int tier) {
-        return switch (Math.max(1, Math.min(7, tier))) {
+        return switch (Math.max(1, Math.min(8, tier))) { // 8 = Enterprise-F: wie die E
             case 1 -> PHOTONIC_NX;
             case 2 -> PHOTON_TOS;
             case 3 -> PHOTON_MOVIE_A;

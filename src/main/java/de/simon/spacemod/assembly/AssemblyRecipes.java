@@ -91,7 +91,7 @@ public final class AssemblyRecipes {
                 .add(Items.GLOWSTONE_DUST, 4).add(ModBlocks.DILITHIUM_CRYSTAL.get(), 2).add(Items.HOPPER, 1);
         } else if (p.startsWith("base_shield")) {
             // je höher die Stufe, desto aufwendiger (wie die Schildemitter)
-            int tier = 1 + java.util.List.of("tos", "refit", "excelsior", "c", "d", "e").indexOf(p.substring("base_shield_".length()));
+            int tier = 1 + java.util.List.of("tos", "refit", "excelsior", "c", "d", "e", "f").indexOf(p.substring("base_shield_".length()));
             b.add(Items.IRON_BLOCK, 3 + tier).add(Items.DIAMOND, 2 + 2 * tier).add(Items.REDSTONE_BLOCK, 4).add(Items.LAPIS_BLOCK, 4)
                 .add(Items.GLOWSTONE, 4).add(Items.BEACON, 1);
             if (tier >= 3) b.add(ModBlocks.DILITHIUM_CRYSTAL.get(), 2 * tier);
@@ -101,14 +101,14 @@ public final class AssemblyRecipes {
         } else if (p.equals("mining_laser_control")) {
             b.add(Items.IRON_INGOT, 3).add(Items.REDSTONE, 3).add(Items.GLASS_PANE, 2).add(Items.GOLD_INGOT, 1).add(Items.COMPARATOR, 1);
         } else if (p.startsWith("warp_core")) {
-            boolean late = p.endsWith("_e") || p.endsWith("_tng");
+            boolean late = p.endsWith("_e") || p.endsWith("_tng") || p.endsWith("_f");
             b.add(Items.IRON_BLOCK, 2).add(ModBlocks.DILITHIUM_CRYSTAL.get(), p.endsWith("_nx") ? 0 : late ? 4 : 2)
                 .add(ModBlocks.ANTIMATTER_POD.get(), late ? 3 : 2).add(ModBlocks.DEUTERIUM.get(), 3)
                 .add(Items.REDSTONE_BLOCK, 1).add(late ? Items.DIAMOND : Items.GOLD_INGOT, late ? 2 : 3);
             b.count = 2;
         } else if (p.startsWith("shield_emitter")) {
             // je neuer das Schiff, desto aufwendiger
-            int tier = 1 + java.util.List.of("tos", "refit", "excelsior", "c", "d", "e").indexOf(p.substring("shield_emitter_".length()));
+            int tier = 1 + java.util.List.of("tos", "refit", "excelsior", "c", "d", "e", "f").indexOf(p.substring("shield_emitter_".length()));
             b.add(Items.IRON_BLOCK, 1 + tier / 2).add(Items.DIAMOND, tier).add(Items.REDSTONE_BLOCK, 2).add(Items.GLOWSTONE_DUST, 4)
                 .add(Items.LAPIS_BLOCK, 2);
             if (tier >= 4) b.add(ModBlocks.DILITHIUM_CRYSTAL.get(), tier - 2);

@@ -21,6 +21,13 @@ public final class ShipPalette {
 
     /** Bauart-eigene Blöcke: Full-Spread-Werfer der C und D, Schnellfeuer-Photonen- und -Quantenwerfer der E. */
     public static BlockState forDesign(BlockState st, ShipDesign design) {
+        // Schildemitter je Schiff: NCC-1701 = Stufe 1 … NCC-1701-F = Stufe 7
+        if (st.getBlock() instanceof de.simon.spacemod.defense.ShieldEmitterBlock && design.ordinal() >= 1)
+            return ModBlocks.SHIELD_EMITTER.get(Math.min(ModBlocks.SHIELD_EMITTER.size() - 1, design.ordinal() - 1)).get().defaultBlockState();
+        if (design == ShipDesign.NCC_1701_F && st.is(ModBlocks.TORPEDO_LAUNCHER.get()))
+            return ModBlocks.TORPEDO_LAUNCHER_RAPID.get().defaultBlockState();
+        if (design == ShipDesign.NCC_1701_F && st.is(ModBlocks.QUANTUM_LAUNCHER.get()))
+            return ModBlocks.QUANTUM_LAUNCHER_DUAL.get().defaultBlockState();
         if ((design == ShipDesign.NCC_1701_C || design == ShipDesign.NCC_1701_D) && st.is(ModBlocks.TORPEDO_LAUNCHER.get()))
             return ModBlocks.TORPEDO_LAUNCHER_SPREAD.get().defaultBlockState();
         if (design == ShipDesign.NCC_1701_E && st.is(ModBlocks.TORPEDO_LAUNCHER.get()))
@@ -157,6 +164,7 @@ public final class ShipPalette {
             case PHASE_CANNON -> ModBlocks.PHASE_CANNON.get().defaultBlockState();
             case WARP_CORE_NX -> ModBlocks.WARP_CORE_NX.get().defaultBlockState();
             case WARP_CORE_E -> ModBlocks.WARP_CORE_E.get().defaultBlockState();
+            case WARP_CORE_F -> ModBlocks.WARP_CORE_F.get().defaultBlockState();
             case RIFLE_RACK -> ModBlocks.RIFLE_RACK.get().defaultBlockState().setValue(de.simon.spacemod.block.RifleRackBlock.HALF,
                 EnterpriseBlueprint.variant(cellCode) == 1 ? DoubleBlockHalf.UPPER : DoubleBlockHalf.LOWER);
             case PHASER_HOLDER -> ModBlocks.PHASER_HOLDER.get().defaultBlockState();
