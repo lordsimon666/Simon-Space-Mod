@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "X": "minecraft:netherite_ingot",
+    "R": "minecraft:redstone"
+  },
+  "pattern": [
+    "XR"
+  ],
+  "result": {
+    "id": "simonspacemod:crate_upgrade_diamond_to_netherite"
+  }
+}

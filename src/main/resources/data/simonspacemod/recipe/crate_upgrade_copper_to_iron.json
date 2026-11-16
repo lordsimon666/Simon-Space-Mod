@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "X": "minecraft:iron_ingot",
+    "R": "minecraft:redstone"
+  },
+  "pattern": [
+    " X ",
+    "XRX",
+    " X "
+  ],
+  "result": {
+    "id": "simonspacemod:crate_upgrade_copper_to_iron"
+  }
+}

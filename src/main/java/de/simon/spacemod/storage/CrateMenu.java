@@ -21,7 +21,9 @@ import org.jspecify.annotations.Nullable;
  */
 public class CrateMenu extends AbstractContainerMenu {
     public static final int COLS = 9, ROWS = 6, VISIBLE = COLS * ROWS;
-    public static final int SLOT_X = 8, SLOT_Y = 18, INV_Y = 140;
+    public static final int SLOT_X = 8, SLOT_Y = 18, INV_Y = 140, UP_X = 196, UP_Y = 18;
+    /** Erster Platz des Spielerinventars (nach Kiste und Upgrade-Plätzen). */
+    public static final int PLAYER_START = VISIBLE + CrateBlockEntity.UPGRADE_SLOTS;
 
     private final Container window;
     private final @Nullable CrateBlockEntity master;
@@ -30,18 +32,25 @@ public class CrateMenu extends AbstractContainerMenu {
     private int offset;
 
     public CrateMenu(int id, Inventory inv, FriendlyByteBuf buf) {
-        this(id, inv, null, new SimpleContainer(VISIBLE), new SimpleContainerData(2), p -> true);
+        this(id, inv, null, new RawContainer(VISIBLE), new SimpleContainer(CrateBlockEntity.UPGRADE_SLOTS), new SimpleContainerData(3), p -> true);
     }
 
     CrateMenu(int id, Inventory inv, CrateBlockEntity master, Predicate<Player> stillValid) {
-        this(id, inv, master, new CrateBlockEntity.Window(master), new ContainerData() {
-            @Override public int get(int i) { return i == 0 ? master.capacity() & 0x7FFF : master.capacity() >> 15; }
+        this(id, inv, master, new CrateBlockEntity.Window(master), master.upgrades, new ContainerData() {
+            @Override public int get(int i) {
+                return switch (i) {
+                    case 0 -> master.capacity() & 0x7FFF;
+                    case 1 -> master.capacity() >> 15;
+                    default -> master.multiplier();
+                };
+            }
             @Override public void set(int i, int v) {}
-            @Override public int getCount() { return 2; }
+            @Override public int getCount() { return 3; }
         }, stillValid);
     }
 
-    private CrateMenu(int id, Inventory inv, @Nullable CrateBlockEntity master, Container window, ContainerData data, Predicate<Player> stillValid) {
+    private CrateMenu(int id, Inventory inv, @Nullable CrateBlockEntity master, Container window, Container upgrades, ContainerData data,
+                      Predicate<Player> stillValid) {
         super(ModBlocks.CRATE_MENU.get(), id);
         this.window = window;
         this.master = master;
@@ -53,6 +62,19 @@ public class CrateMenu extends AbstractContainerMenu {
                 @Override public boolean isActive() { return offset * COLS + k < capacity(); }
                 @Override public boolean mayPlace(ItemStack stack) { return isActive(); }
                 @Override public boolean mayPickup(Player player) { return isActive(); }
+                @Override public int getMaxStackSize(ItemStack stack) { return CrateBlockEntity.limit(stack, multiplier()); }
+                @Override public int getMaxStackSize() { return 64 * multiplier(); }
+                // aus großen Stapeln höchstens einen normalen Stapel auf einmal nehmen
+                @Override public ItemStack remove(int amount) { return super.remove(Math.min(amount, getItem().getMaxStackSize())); }
+            });
+        }
+        for (int i = 0; i < CrateBlockEntity.UPGRADE_SLOTS; i++) {
+            final int k = i;
+            addSlot(new Slot(upgrades, i, UP_X, UP_Y + i * 18) {
+                @Override public boolean mayPlace(ItemStack stack) { return stack.getItem() instanceof StackUpgradeItem; }
+                @Override public int getMaxStackSize() { return 1; }
+                // nur entfernen, wenn danach kein Platz überquillt
+                @Override public boolean mayPickup(Player player) { return master == null || master.canRemoveUpgrade(k); }
             });
         }
         addStandardInventorySlots(inv, SLOT_X, INV_Y);
@@ -61,6 +83,10 @@ public class CrateMenu extends AbstractContainerMenu {
 
     public int capacity() {
         return data.get(0) | data.get(1) << 15;
+    }
+
+    public int multiplier() {
+        return Math.max(1, data.get(2));
     }
 
     public int offset() {
@@ -91,8 +117,15 @@ public class CrateMenu extends AbstractContainerMenu {
         Slot slot = slots.get(index);
         if (!slot.hasItem()) return ItemStack.EMPTY;
         ItemStack stack = slot.getItem(), copy = stack.copy();
-        if (index < VISIBLE) {
-            if (!moveItemStackTo(stack, VISIBLE, slots.size(), true)) return ItemStack.EMPTY;
+        if (index < VISIBLE) { // höchstens ein normaler Stapel je Schritt (wird wiederholt, solange Platz ist)
+            int n = Math.min(stack.getCount(), stack.getMaxStackSize());
+            ItemStack part = stack.copyWithCount(n);
+            if (!moveItemStackTo(part, PLAYER_START, slots.size(), true)) return ItemStack.EMPTY;
+            stack.shrink(n - part.getCount());
+        } else if (index < PLAYER_START) {
+            if (!moveItemStackTo(stack, PLAYER_START, slots.size(), true)) return ItemStack.EMPTY;
+        } else if (stack.getItem() instanceof StackUpgradeItem && moveItemStackTo(stack, VISIBLE, PLAYER_START, false)) {
+            // Upgrade eingesetzt
         } else if (master != null) {
             int before = stack.getCount();
             master.insert(stack); // ins ganze Inventar, nicht nur den sichtbaren Teil
@@ -101,5 +134,23 @@ public class CrateMenu extends AbstractContainerMenu {
         if (stack.isEmpty()) slot.setByPlayer(ItemStack.EMPTY);
         else slot.setChanged();
         return stack.getCount() == copy.getCount() ? ItemStack.EMPTY : copy;
+    }
+
+    /** Client: Inventar ohne Kappung auf 99 – mit Stack-Upgrades kommen größere Stapel vom Server. */
+    static final class RawContainer implements Container {
+        private final net.minecraft.core.NonNullList<ItemStack> items;
+
+        RawContainer(int size) { items = net.minecraft.core.NonNullList.withSize(size, ItemStack.EMPTY); }
+
+        @Override public int getContainerSize() { return items.size(); }
+        @Override public boolean isEmpty() { return items.stream().allMatch(ItemStack::isEmpty); }
+        @Override public ItemStack getItem(int i) { return items.get(i); }
+        @Override public ItemStack removeItem(int i, int n) { return net.minecraft.world.ContainerHelper.removeItem(items, i, n); }
+        @Override public ItemStack removeItemNoUpdate(int i) { return net.minecraft.world.ContainerHelper.takeItem(items, i); }
+        @Override public void setItem(int i, ItemStack s) { items.set(i, s); }
+        @Override public int getMaxStackSize() { return Integer.MAX_VALUE; }
+        @Override public void setChanged() {}
+        @Override public boolean stillValid(Player p) { return true; }
+        @Override public void clearContent() { items.clear(); }
     }
 }

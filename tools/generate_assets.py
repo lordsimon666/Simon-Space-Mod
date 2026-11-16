@@ -3058,8 +3058,83 @@ def tex_laser(kind):
     return img
 
 
+def icon_tier_upgrade(frm, to):
+    """Stufen-Upgrade: Platte in der alten Farbe, Pfeil in der neuen."""
+    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    px = img.load()
+    for x in range(2, 14):
+        for y in range(3, 13):
+            edge = x in (2, 13) or y in (3, 12)
+            px[x, y] = shade(frm, -40) + () if edge else shade(frm, -5 if (x + y) % 5 else 10)
+    for y in range(5, 11):                      # Pfeil nach oben
+        for x in range(7, 9):
+            px[x, y] = shade(to, 0)
+    for i, w in enumerate((0, 1, 2)):
+        for x in range(7 - w, 9 + w):
+            px[x, 5 + i - 1 if i else 4] = shade(to, 30)
+    for x in range(5, 11):
+        px[x, 6] = shade(to, 10) if 5 < x < 10 else px[x, 6]
+    return img
+
+
+def icon_stack_upgrade(color, n):
+    """Stack-Upgrade: übereinander gestapelte Kisten, je Stufe eine mehr."""
+    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    px = img.load()
+    for k in range(n + 1):
+        y0 = 13 - k * 3
+        for x in range(3, 13):
+            for y in range(y0, y0 + 3):
+                if 0 <= y < 16:
+                    px[x, y] = shade(color, -45) if y == y0 + 2 or x in (3, 12) else shade(color, 15 - k * 4)
+    return img
+
 def storage_mining_assets(de, en):
     M = MODID
+    tier_colors = {t[0]: t[1] for t in CRATE_TIERS}
+    tier_names = {t[0]: (t[2], t[3]) for t in CRATE_TIERS}
+    order = [t[0] for t in CRATE_TIERS]
+    cost = {"copper": ("minecraft:copper_ingot", 4), "iron": ("minecraft:iron_ingot", 4), "gold": ("minecraft:gold_ingot", 4),
+            "diamond": ("minecraft:diamond", 2), "netherite": ("minecraft:netherite_ingot", 1)}
+    for i in range(len(order) - 1):
+        frm, to = order[i], order[i + 1]
+        n = f"crate_upgrade_{frm}_to_{to}"
+        save(icon_tier_upgrade(tier_colors[frm], tier_colors[to]), "item/" + n)
+        write_json(os.path.join(ASSETS, "models", "item", n + ".json"), {"parent": "minecraft:item/generated", "textures": {"layer0": f"{M}:item/{n}"}})
+        write_json(os.path.join(ASSETS, "items", n + ".json"), item_def(f"{M}:item/{n}"))
+        ing, k = cost[to]
+        pattern = {4: [" X ", "XRX", " X "], 2: ["X", "R", "X"], 1: ["XR"]}[k]
+        write_json(os.path.join(DATA, "recipe", n + ".json"), {"type": "minecraft:crafting_shaped", "category": "misc",
+            "key": {"X": ing, "R": "minecraft:redstone"}, "pattern": pattern, "result": {"id": f"{M}:{n}"}})
+        de[f"item.{M}.{n}"] = f"Kisten-Upgrade {tier_names[frm][0]} → {tier_names[to][0]}"
+        en[f"item.{M}.{n}"] = f"Crate Upgrade {tier_names[frm][1]} → {tier_names[to][1]}"
+    stack = [(1, 2, (200, 200, 205), "minecraft:iron_block", "minecraft:chest"), (2, 4, (236, 200, 60), "minecraft:gold_block", None),
+             (3, 8, (90, 220, 215), "minecraft:diamond_block", None), (4, 16, (66, 60, 64), "minecraft:netherite_ingot", None)]
+    for tier, mult, color, ing, center in stack:
+        n = f"stack_upgrade_tier_{tier}"
+        save(icon_stack_upgrade(color, tier), "item/" + n)
+        write_json(os.path.join(ASSETS, "models", "item", n + ".json"), {"parent": "minecraft:item/generated", "textures": {"layer0": f"{M}:item/{n}"}})
+        write_json(os.path.join(ASSETS, "items", n + ".json"), item_def(f"{M}:item/{n}"))
+        write_json(os.path.join(DATA, "recipe", n + ".json"), {"type": "minecraft:crafting_shaped", "category": "misc",
+            "key": {"X": ing, "C": center or f"{M}:stack_upgrade_tier_{tier - 1}"}, "pattern": [" X ", "XCX", " X "], "result": {"id": f"{M}:{n}"}})
+        de[f"item.{M}.{n}"] = f"Stack-Upgrade Stufe {tier} ({mult}×)"
+        en[f"item.{M}.{n}"] = f"Stack Upgrade Tier {tier} ({mult}×)"
+    de.update({
+        f"tooltip.{M}.stack_upgrade": "In einen Upgrade-Platz der Großkiste: %s× so viel je Platz (bis %s). Mehrere zählen zusammen.",
+        f"tooltip.{M}.tier_upgrade": "Rechtsklick auf eine Großkiste: eine Stufe höher, Inhalt bleibt. Braucht eins je Block der Kiste (3×3×3: 26).",
+        f"message.{M}.crate.mixed": "Alle Blöcke einer Großkiste müssen dieselbe Stufe haben.",
+        f"message.{M}.crate.wrong_tier": "Dieses Upgrade passt nur auf eine %s.",
+        f"message.{M}.crate.need_upgrades": "Für diese Kiste brauchst du %s Upgrades (du hast %s).",
+        f"message.{M}.crate.upgraded": "Aufgewertet zu %s (%s Upgrades verbraucht)",
+    })
+    en.update({
+        f"tooltip.{M}.stack_upgrade": "Put into a crate upgrade slot: %s× as much per slot (up to %s). Several add up.",
+        f"tooltip.{M}.tier_upgrade": "Right-click a crate: one tier higher, contents stay. Needs one per crate block (3×3×3: 26).",
+        f"message.{M}.crate.mixed": "All blocks of a crate must be the same tier.",
+        f"message.{M}.crate.wrong_tier": "This upgrade only fits a %s.",
+        f"message.{M}.crate.need_upgrades": "This crate needs %s upgrades (you have %s).",
+        f"message.{M}.crate.upgraded": "Upgraded to %s (%s upgrades used)",
+    })
     for tid, color, dn, en_name in CRATE_TIERS:
         n = f"crate_{tid}"
         save(tex_crate(color), n)
@@ -3097,7 +3172,7 @@ def storage_mining_assets(de, en):
         f"gui.{M}.mining.full": "Lager voll", f"gui.{M}.mining.done": "Nichts mehr abzubauen",
         f"gui.{M}.mining.stopped": "Ausgeschaltet",
         f"message.{M}.crate.formed": "Großkiste %s (%s): %s Plätze",
-        f"message.{M}.crate.invalid": "Keine fertige Großkiste – baue einen hohlen Quader (3×3×3 bis 8×8×8, innen Luft).",
+        f"message.{M}.crate.invalid": "Keine fertige Großkiste – baue einen hohlen Quader (3×3×3 bis 8×8×8, innen Luft, alles dieselbe Stufe).",
     })
     en.update({
         f"block.{M}.mining_laser": "Mining Laser",

@@ -544,7 +544,24 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
   | Diamant   | 108             | 2 916  | 55 296 |
   | Netherit  | 132             | 3 564  | 67 584 |
 
-  Bei gemischten Stufen zählt die niedrigste verbaute.
+  **Alle Blöcke einer Kiste müssen dieselbe Stufe haben**, gemischte Stufen ergeben keine Kiste.
+* **Stufen-Upgrades** (wie bei Sophisticated Storage): Holz → Kupfer, Kupfer → Eisen, Eisen → Gold,
+  Gold → Diamant, Diamant → Netherit. Mit Rechtsklick auf die fertige Kiste wird sie eine Stufe höher.
+  Inhalt und Upgrades bleiben erhalten. Man braucht **ein Upgrade je Block der Kiste**: bei 3×3×3 also 26,
+  bei 8×8×8 296. Auf einen einzelnen Kistenblock angewandt kostet es eins. Rezept an der Werkbank:
+  4 Kupfer-, Eisen- oder Goldbarren (bzw. 2 Diamanten oder 1 Netheritbarren) und Redstone.
+* **4 Upgrade-Plätze** rechts im Menü für **Stack-Upgrades** (wie bei Sophisticated Storage):
+
+  | Upgrade | Faktor | Stück je Platz | Rezept (Werkbank) |
+  |---------|--------|----------------|-------------------|
+  | Stufe 1 | 2×     | 128            | 4 Eisenblöcke um eine Truhe |
+  | Stufe 2 | 4×     | 256            | 4 Goldblöcke um Stufe 1 |
+  | Stufe 3 | 8×     | 512            | 4 Diamantblöcke um Stufe 2 |
+  | Stufe 4 | 16×    | 1024           | 4 Netheritbarren um Stufe 3 |
+
+  Mehrere Stack-Upgrades zählen zusammen (z. B. 2× + 4× = 6×, höchstens 4 × 16× = 64×). Nicht
+  stapelbare Sachen (Werkzeuge, Rüstung) bleiben bei 1 je Platz. Ein Upgrade lässt sich nur herausnehmen,
+  wenn danach kein Platz überquillt. Große Stapel nimmt man stapelweise heraus (64 auf einmal).
 * **Jeder Block** öffnet das Menü und nimmt über Trichter, Rohre usw. Gegenstände an bzw. gibt sie ab.
   Das Menü zeigt 9 × 6 Plätze mit einer **Bildlaufleiste** (Mausrad, mit Shift seitenweise, oder ziehen).
   Shift-Klick aus dem eigenen Inventar sortiert in die ganze Kiste ein, nicht nur in den sichtbaren Teil.
@@ -561,8 +578,11 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
   die Ausbeute automatisch, z. B. eine Großkiste direkt daneben oder darüber. Ist alles voll, wartet er.
 * **Strom**: 250 FE je Block, 100 000 FE Speicher. Den Strom liefert das Bordnetz (Warpkern) oder ein
   angrenzender Erzeuger bzw. eine Batterie.
-* Er lässt Grundgestein, Flüssigkeiten, Blöcke mit Inhalt (Truhen, Maschinen) und alle Blöcke dieser Mod
-  stehen, also auch die eigene Schiffshülle.
+* Ein **roter Strahl** führt von der Linse zum Block, der gerade abgebaut wird. Im Flug wandert er mit
+  dem Schiff mit.
+* Er baut auch die **Erze dieser Mod** ab: Uran, Dilithium, Antimaterie-Einschlüsse und Deuterium-Eis.
+  Stehen lässt er Grundgestein, Flüssigkeiten, Blöcke mit Inhalt (Truhen, Maschinen) und alle übrigen
+  Blöcke dieser Mod, also auch die eigene Schiffshülle.
 * Rezept (Schiffsteil-Fertigung): Eisenblöcke, Diamantspitzhacke, Diamanten, Redstone-Blöcke,
   Glowstone, Dilithium und ein Trichter.
 

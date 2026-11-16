@@ -580,6 +580,33 @@ public final class ModBlocks {
     public static final RegistryObject<MenuType<de.simon.spacemod.storage.CrateMenu>> CRATE_MENU = MENUS.register("crate",
         () -> IForgeMenuType.create(de.simon.spacemod.storage.CrateMenu::new));
 
+    // Stack-Upgrades (2×, 4×, 8×, 16×) und Stufen-Upgrades für die Großkiste
+    public static final List<RegistryObject<Item>> STACK_UPGRADES = List.of(stackUpgrade(1, 2), stackUpgrade(2, 4), stackUpgrade(3, 8), stackUpgrade(4, 16));
+    public static final List<RegistryObject<Item>> TIER_UPGRADES = tierUpgrades();
+
+    private static RegistryObject<Item> stackUpgrade(int tier, int mult) {
+        String name = "stack_upgrade_tier_" + tier;
+        RegistryObject<Item> item = ITEMS.register(name, () -> new de.simon.spacemod.storage.StackUpgradeItem(
+            new Item.Properties().setId(ITEMS.key(name)).stacksTo(16), mult));
+        TAB_ITEMS.add(item);
+        return item;
+    }
+
+    private static List<RegistryObject<Item>> tierUpgrades() {
+        List<RegistryObject<Item>> list = new ArrayList<>();
+        var tiers = de.simon.spacemod.storage.CrateTier.values();
+        for (int i = 0; i + 1 < tiers.length; i++) {
+            var from = tiers[i];
+            var to = tiers[i + 1];
+            String name = "crate_upgrade_" + from.id + "_to_" + to.id;
+            RegistryObject<Item> item = ITEMS.register(name, () -> new de.simon.spacemod.storage.TierUpgradeItem(
+                new Item.Properties().setId(ITEMS.key(name)), from, to));
+            TAB_ITEMS.add(item);
+            list.add(item);
+        }
+        return List.copyOf(list);
+    }
+
     // --- Bergbaulaser ---
     public static final RegistryObject<Block> MINING_LASER = block("mining_laser", de.simon.spacemod.mining.MiningLaserBlock::new,
         metal(MapColor.COLOR_GRAY).noOcclusion().lightLevel(_ -> 4));

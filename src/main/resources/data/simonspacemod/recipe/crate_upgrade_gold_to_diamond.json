@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "X": "minecraft:diamond",
+    "R": "minecraft:redstone"
+  },
+  "pattern": [
+    "X",
+    "R",
+    "X"
+  ],
+  "result": {
+    "id": "simonspacemod:crate_upgrade_gold_to_diamond"
+  }
+}

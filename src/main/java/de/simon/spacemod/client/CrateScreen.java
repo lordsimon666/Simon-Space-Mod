@@ -14,7 +14,7 @@ public class CrateScreen extends AbstractContainerScreen<CrateMenu> {
     private boolean dragging;
 
     public CrateScreen(CrateMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title, 190, 222);
+        super(menu, inventory, title, 218, 222);
         this.inventoryLabelY = this.imageHeight - 94;
     }
 
@@ -37,7 +37,9 @@ public class CrateScreen extends AbstractContainerScreen<CrateMenu> {
     public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float a) {
         super.extractBackground(g, mouseX, mouseY, a);
         int xo = leftPos, yo = topPos;
-        panel(g, xo, yo, xo + imageWidth, yo + imageHeight);
+        panel(g, xo, yo, xo + 190, yo + imageHeight);
+        // Upgrade-Leiste rechts
+        panel(g, xo + 188, yo + 6, xo + imageWidth, yo + 18 + CrateMenu.UP_Y + 4 * 18 - 6);
         for (Slot s : menu.slots) slotBox(g, xo + s.x - 1, yo + s.y - 1, s.isActive());
         // Bildlaufleiste
         int max = menu.maxOffset();
@@ -55,7 +57,10 @@ public class CrateScreen extends AbstractContainerScreen<CrateMenu> {
         int cap = menu.capacity();
         int first = menu.offset() * CrateMenu.COLS + 1, last = Math.min(cap, first + CrateMenu.VISIBLE - 1);
         String info = first + "–" + last + " / " + cap;
-        g.text(font, info, imageWidth - 8 - font.width(info), inventoryLabelY, 0xFF404040, false);
+        g.text(font, info, 190 - 8 - font.width(info), inventoryLabelY, 0xFF404040, false);
+        g.text(font, "Up", CrateMenu.UP_X, 7, 0xFF404040, false);
+        String mult = menu.multiplier() + "×";
+        g.text(font, mult, CrateMenu.UP_X + 9 - font.width(mult) / 2, CrateMenu.UP_Y + 4 * 18 + 2, 0xFF404040, false);
     }
 
     private void scrollTo(int row) {

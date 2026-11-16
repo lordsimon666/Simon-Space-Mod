@@ -30,11 +30,41 @@ import org.jspecify.annotations.Nullable;
  * Block öffnet das Menü und nimmt über Trichter/Rohre Gegenstände an und gibt sie ab.
  */
 public class CrateBlockEntity extends BlockEntity {
-    private record SlotStack(int slot, ItemStack stack) {
+    /** Gespeicherter Platz: Menge extra, denn mit Stack-Upgrades sind mehr als 99 Stück möglich. */
+    private record SlotStack(int slot, ItemStack stack, int n) {
         static final Codec<SlotStack> CODEC = RecordCodecBuilder.create(i -> i.group(
             Codec.INT.fieldOf("Slot").forGetter(SlotStack::slot),
-            ItemStack.MAP_CODEC.forGetter(SlotStack::stack)).apply(i, SlotStack::new));
+            ItemStack.MAP_CODEC.forGetter(SlotStack::stack),
+            Codec.INT.optionalFieldOf("n", 0).forGetter(SlotStack::n)).apply(i, SlotStack::new));
+
+        static SlotStack of(int slot, ItemStack s) {
+            return new SlotStack(slot, s.copyWithCount(1), s.getCount());
+        }
+
+        ItemStack full() {
+            return n > 0 ? stack.copyWithCount(n) : stack;
+        }
     }
+
+    public static final int UPGRADE_SLOTS = 4;
+    /** Upgrade-Plätze (nur im Hauptblock benutzt). */
+    final net.minecraft.world.SimpleContainer upgrades = new net.minecraft.world.SimpleContainer(UPGRADE_SLOTS) {
+        @Override
+        public void setChanged() {
+            super.setChanged();
+            CrateBlockEntity.this.setChanged();
+        }
+
+        @Override
+        public int getMaxStackSize() {
+            return 1;
+        }
+
+        @Override
+        public boolean canPlaceItem(int slot, ItemStack stack) {
+            return stack.getItem() instanceof StackUpgradeItem;
+        }
+    };
 
     /** Weg zum Hauptblock; null = gehört zu keiner fertigen Kiste. */
     private @Nullable BlockPos toMaster;
@@ -62,6 +92,51 @@ public class CrateBlockEntity extends BlockEntity {
 
     private boolean isMaster() {
         return BlockPos.ZERO.equals(toMaster);
+    }
+
+    /** Stapelvielfaches aus den eingesetzten Stack-Upgrades (die Faktoren werden addiert, ohne Upgrade 1). */
+    public int multiplier() {
+        return multiplierWithout(-1);
+    }
+
+    int multiplierWithout(int skipSlot) {
+        int sum = 0;
+        for (int i = 0; i < UPGRADE_SLOTS; i++)
+            if (i != skipSlot && upgrades.getItem(i).getItem() instanceof StackUpgradeItem u) sum += u.multiplier;
+        return Math.max(1, sum);
+    }
+
+    /** Höchstmenge je Platz für diese Sorte (nicht stapelbare Sachen bleiben bei 1). */
+    public static int limit(ItemStack s, int multiplier) {
+        return s.getMaxStackSize() <= 1 ? 1 : s.getMaxStackSize() * multiplier;
+    }
+
+    public int limitFor(ItemStack s) {
+        return limit(s, multiplier());
+    }
+
+    /** Darf das Upgrade im Platz entfernt werden, ohne dass Plätze überquellen? */
+    boolean canRemoveUpgrade(int slot) {
+        int m = multiplierWithout(slot);
+        for (ItemStack s : items) if (!s.isEmpty() && s.getCount() > limit(s, m)) return false;
+        return true;
+    }
+
+    /** Stufe der ganzen Kiste wechseln (Stufen-Upgrade): mehr Plätze, Inhalt bleibt. */
+    void changeTier(CrateTier to) {
+        NonNullList<ItemStack> bigger = NonNullList.withSize(sx * sy * sz * to.slotsPerBlock, ItemStack.EMPTY);
+        for (int i = 0; i < Math.min(items.size(), bigger.size()); i++) bigger.set(i, items.get(i));
+        items = bigger;
+        tier = to;
+        setChanged();
+    }
+
+    public CrateStructure.Box box() {
+        return new CrateStructure.Box(worldPosition, sx, sy, sz);
+    }
+
+    public int shellBlocks() {
+        return sx * sy * sz - (sx - 2) * (sy - 2) * (sz - 2);
     }
 
     public int capacity() {
@@ -106,7 +181,10 @@ public class CrateBlockEntity extends BlockEntity {
     void dissolve(BlockPos at) {
         CrateBlockEntity m = master();
         if (m == null || level == null) { leave(); return; }
-        for (ItemStack s : m.items) if (!s.isEmpty()) Containers.dropItemStack(level, at.getX() + 0.5, at.getY() + 0.5, at.getZ() + 0.5, s);
+        for (ItemStack s : m.items) // große Stapel in normalen Stapeln herauswerfen
+            while (!s.isEmpty()) Containers.dropItemStack(level, at.getX() + 0.5, at.getY() + 0.5, at.getZ() + 0.5, s.split(s.getMaxStackSize()));
+        Containers.dropContents(level, at, m.upgrades);
+        m.upgrades.clearContent();
         BlockPos min = m.worldPosition;
         for (int x = 0; x < m.sx; x++)
             for (int y = 0; y < m.sy; y++)
@@ -122,7 +200,8 @@ public class CrateBlockEntity extends BlockEntity {
                 for (int z = 0; z < sz; z++) {
                     BlockPos p = worldPosition.offset(x, y, z);
                     boolean shell = x == 0 || y == 0 || z == 0 || x == sx - 1 || y == sy - 1 || z == sz - 1;
-                    if (shell ? !(level.getBlockEntity(p) instanceof CrateBlockEntity c && c.master() == this) : !level.getBlockState(p).isAir())
+                    if (shell ? !(level.getBlockEntity(p) instanceof CrateBlockEntity c && c.master() == this
+                        && level.getBlockState(p).getBlock() instanceof CrateBlock cb && cb.tier == tier) : !level.getBlockState(p).isAir())
                         return false;
                 }
         return true;
@@ -147,12 +226,12 @@ public class CrateBlockEntity extends BlockEntity {
         for (int i = 0; i < items.size() && !stack.isEmpty(); i++) {
             ItemStack s = items.get(i);
             if (!s.isEmpty() && ItemStack.isSameItemSameComponents(s, stack)) {
-                int n = Math.min(stack.getCount(), s.getMaxStackSize() - s.getCount());
+                int n = Math.min(stack.getCount(), limitFor(s) - s.getCount());
                 if (n > 0) { s.grow(n); stack.shrink(n); }
             }
         }
         for (int i = 0; i < items.size() && !stack.isEmpty(); i++)
-            if (items.get(i).isEmpty()) items.set(i, stack.split(stack.getMaxStackSize()));
+            if (items.get(i).isEmpty()) items.set(i, stack.split(limitFor(stack)));
         setChanged();
     }
 
@@ -168,7 +247,10 @@ public class CrateBlockEntity extends BlockEntity {
             sx = input.getIntOr("sx", 3); sy = input.getIntOr("sy", 3); sz = input.getIntOr("sz", 3);
             items = NonNullList.withSize(input.getIntOr("size", sx * sy * sz * tier.slotsPerBlock), ItemStack.EMPTY);
             for (SlotStack s : input.listOrEmpty("Items", SlotStack.CODEC))
-                if (s.slot() >= 0 && s.slot() < items.size()) items.set(s.slot(), s.stack());
+                if (s.slot() >= 0 && s.slot() < items.size()) items.set(s.slot(), s.full());
+            upgrades.clearContent();
+            for (SlotStack s : input.listOrEmpty("Upgrades", SlotStack.CODEC))
+                if (s.slot() >= 0 && s.slot() < UPGRADE_SLOTS) upgrades.setItem(s.slot(), s.full());
         } else items = NonNullList.withSize(0, ItemStack.EMPTY);
     }
 
@@ -183,7 +265,9 @@ public class CrateBlockEntity extends BlockEntity {
         output.putInt("sx", sx); output.putInt("sy", sy); output.putInt("sz", sz);
         output.putInt("size", items.size());
         var list = output.list("Items", SlotStack.CODEC);
-        for (int i = 0; i < items.size(); i++) if (!items.get(i).isEmpty()) list.add(new SlotStack(i, items.get(i)));
+        for (int i = 0; i < items.size(); i++) if (!items.get(i).isEmpty()) list.add(SlotStack.of(i, items.get(i)));
+        var up = output.list("Upgrades", SlotStack.CODEC);
+        for (int i = 0; i < UPGRADE_SLOTS; i++) if (!upgrades.getItem(i).isEmpty()) up.add(SlotStack.of(i, upgrades.getItem(i)));
     }
 
     @Override
@@ -232,7 +316,8 @@ public class CrateBlockEntity extends BlockEntity {
             if (stack.isEmpty() || slot < 0 || slot >= l.size()) return stack;
             ItemStack cur = l.get(slot);
             if (!cur.isEmpty() && !ItemStack.isSameItemSameComponents(cur, stack)) return stack;
-            int limit = Math.min(64, stack.getMaxStackSize()) - cur.getCount();
+            CrateBlockEntity m = master();
+            int limit = (m == null ? stack.getMaxStackSize() : m.limitFor(stack)) - cur.getCount();
             if (limit <= 0) return stack;
             int n = Math.min(limit, stack.getCount());
             if (!simulate) {
@@ -255,7 +340,10 @@ public class CrateBlockEntity extends BlockEntity {
             return out;
         }
 
-        @Override public int getSlotLimit(int slot) { return 64; }
+        @Override public int getSlotLimit(int slot) {
+            CrateBlockEntity m = master();
+            return 64 * (m == null ? 1 : m.multiplier());
+        }
 
         @Override public boolean isItemValid(int slot, @NotNull ItemStack stack) { return true; }
     }

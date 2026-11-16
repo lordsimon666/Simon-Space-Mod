@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "X": "minecraft:diamond_block",
+    "C": "simonspacemod:stack_upgrade_tier_2"
+  },
+  "pattern": [
+    " X ",
+    "XCX",
+    " X "
+  ],
+  "result": {
+    "id": "simonspacemod:stack_upgrade_tier_3"
+  }
+}

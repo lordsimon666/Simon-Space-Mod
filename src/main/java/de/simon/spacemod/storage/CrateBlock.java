@@ -70,13 +70,28 @@ public class CrateBlock extends BaseEntityBlock {
             if (level.getBlockEntity(p) instanceof CrateBlockEntity c && c.formed()) return null;
         CrateStructure.Box box = CrateStructure.validate(blocks, p -> level.getBlockState(p).isAir());
         if (box == null || !(level.getBlockEntity(box.min()) instanceof CrateBlockEntity master)) return null;
-        CrateTier tier = CrateTier.NETHERITE;
-        for (BlockPos p : blocks)
-            if (level.getBlockState(p).getBlock() instanceof CrateBlock cb && cb.tier.ordinal() < tier.ordinal()) tier = cb.tier;
+        CrateTier tier = sameTier(level, blocks);
+        if (tier == null) return null; // alle Blöcke müssen dieselbe Stufe haben
         master.formAsMaster(box, tier);
         for (BlockPos p : blocks)
             if (!p.equals(box.min()) && level.getBlockEntity(p) instanceof CrateBlockEntity c) c.join(box.min());
         return box;
+    }
+
+    /** Gemeinsame Stufe aller Blöcke, null bei gemischten Stufen. */
+    static @Nullable CrateTier sameTier(Level level, Set<BlockPos> blocks) {
+        CrateTier tier = null;
+        for (BlockPos p : blocks) {
+            if (!(level.getBlockState(p).getBlock() instanceof CrateBlock cb)) return null;
+            if (tier == null) tier = cb.tier;
+            else if (tier != cb.tier) return null;
+        }
+        return tier;
+    }
+
+    @Override
+    protected boolean shouldChangedStateKeepBlockEntity(BlockState old) {
+        return old.getBlock() instanceof CrateBlock; // Stufen-Upgrade: Inhalt bleibt erhalten
     }
 
     @Override
@@ -87,7 +102,11 @@ public class CrateBlock extends BaseEntityBlock {
             CrateBlockEntity m = be.master();
             if (m != null && !m.intact()) { be.dissolve(pos); m = null; } // z. B. per Befehl ein Loch hineingesetzt
             if (m != null) be.openMenu(sp, pos);
-            else sp.sendOverlayMessage(Component.translatable("message.simonspacemod.crate.invalid"));
+            else {
+                Set<BlockPos> blocks = CrateStructure.connected(pos, p -> level.getBlockState(p).getBlock() instanceof CrateBlock);
+                boolean mixed = CrateStructure.validate(blocks, p -> level.getBlockState(p).isAir()) != null && sameTier(level, blocks) == null;
+                sp.sendOverlayMessage(Component.translatable(mixed ? "message.simonspacemod.crate.mixed" : "message.simonspacemod.crate.invalid"));
+            }
         }
         return InteractionResult.SUCCESS;
     }

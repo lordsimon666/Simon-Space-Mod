@@ -58,6 +58,9 @@ public class MiningLaserBlockEntity extends BlockEntity {
     };
     private int energy, size = 5, depth = 16, cursor, cooldown, status = OK, emptyPasses;
     private boolean on = true;
+    /** Sichtbarer Strahl (dieselbe Entity wie beim Phaser) und Nummer des Blocks, auf den er zeigt. */
+    private net.minecraft.world.entity.@Nullable Entity beam;
+    private int beamTarget = -1, beamTicks;
 
     private final IEnergyStorage storage = new IEnergyStorage() {
         @Override public int receiveEnergy(int max, boolean simulate) {
@@ -135,7 +138,13 @@ public class MiningLaserBlockEntity extends BlockEntity {
         BlockState st = wl.getBlockState(p);
         if (st.isAir() || st.getBlock() instanceof LiquidBlock) return false;
         if (st.getDestroySpeed(wl, p) < 0 || wl.getBlockEntity(p) != null) return false; // Grundgestein, Kisten, Maschinen
+        if (isModOre(st)) return true; // Erze der Mod (Uran, Dilithium, Antimaterie, Deuterium-Eis)
         return !BuiltInRegistries.BLOCK.getKey(st.getBlock()).getNamespace().equals(SimonSpaceMod.MODID); // keine Schiffsblöcke
+    }
+
+    static boolean isModOre(BlockState st) {
+        return st.is(ModBlocks.URANIUM_ORE.get()) || st.is(ModBlocks.DEEPSLATE_URANIUM_ORE.get()) || st.is(ModBlocks.DILITHIUM_ORE.get())
+            || st.is(ModBlocks.ANTIMATTER_CLUSTER.get()) || st.is(ModBlocks.DEUTERIUM_ICE.get());
     }
 
     private boolean fits(List<ItemStack> drops) {
@@ -159,6 +168,7 @@ public class MiningLaserBlockEntity extends BlockEntity {
     public static void serverTick(Level level, BlockPos pos, BlockState state, MiningLaserBlockEntity be) {
         if (!(level instanceof ServerLevel here)) return;
         if (level.getGameTime() % 10 == 0) be.pushOut(here);
+        be.updateBeam(here);
         if (!be.on) { be.status = OFF; return; }
         if (be.cooldown > 0) { be.cooldown--; return; }
         if (be.energy < FE_PER_BLOCK) { be.status = NO_POWER; return; }
@@ -184,21 +194,41 @@ public class MiningLaserBlockEntity extends BlockEntity {
             be.emptyPasses = 0;
             be.status = OK;
             be.cooldown = INTERVAL;
-            beam(s);
+            be.beamTarget = be.cursor - 1;
+            be.beamTicks = 8;
+            Vec3 to = Vec3.atCenterOf(s.pos());
+            s.level().sendParticles(ParticleTypes.FLAME, to.x, to.y, to.z, 3, 0.25, 0.25, 0.25, 0.01);
             be.setChanged();
             return;
         }
     }
 
-    /** Sichtbarer Strahl vom Laser zum Block. */
-    private static void beam(Spot s) {
-        Vec3 to = Vec3.atCenterOf(s.pos()), d = to.subtract(s.from());
-        int steps = Math.min(48, (int) Math.ceil(d.length() * 1.5));
-        for (int i = 0; i <= steps; i++) {
-            Vec3 p = s.from().add(d.scale(i / (double) Math.max(1, steps)));
-            s.level().sendParticles(ParticleTypes.ELECTRIC_SPARK, p.x, p.y, p.z, 1, 0, 0, 0, 0);
+    /**
+     * Roter Strahl von der Linse zum zuletzt abgebauten Block, jeden Tick nachgeführt (das Schiff kann
+     * sich bewegen). Verschwindet kurz nach dem letzten Abbau von selbst.
+     */
+    private void updateBeam(ServerLevel here) {
+        if (beamTicks > 0) beamTicks--;
+        Spot s = beamTicks > 0 && beamTarget >= 0 ? spot(here, MiningArea.offset(beamTarget, size)) : null;
+        if (s == null) {
+            if (beam != null) { beam.discard(); beam = null; }
+            return;
         }
-        s.level().sendParticles(ParticleTypes.FLAME, to.x, to.y, to.z, 3, 0.25, 0.25, 0.25, 0.01);
+        if (beam == null || beam.isRemoved() || beam.level() != s.level()) {
+            if (beam != null) beam.discard();
+            de.simon.spacemod.entity.PhaserBeamEntity b = ModBlocks.PHASER_BEAM.get().create(s.level(), net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
+            if (b == null) return;
+            b.setup(0xFF2A1A, 0xFFD0B0, 0.07F, false);
+            b.aim(s.from(), Vec3.atCenterOf(s.pos()));
+            s.level().addFreshEntity(b);
+            beam = b;
+        } else ((de.simon.spacemod.entity.PhaserBeamEntity) beam).aim(s.from(), Vec3.atCenterOf(s.pos()));
+    }
+
+    @Override
+    public void setRemoved() {
+        super.setRemoved();
+        if (beam != null) { beam.discard(); beam = null; }
     }
 
     /** Ausbeute an angrenzende Inventare abgeben (z. B. eine Großkiste darüber oder daneben). */
