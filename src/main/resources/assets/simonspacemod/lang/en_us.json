@@ -218,6 +218,8 @@
   "block.simonspacemod.deepslate_uranium_ore": "Deepslate Uranium Ore",
   "item.simonspacemod.raw_uranium": "Raw Uranium",
   "item.simonspacemod.uranium_ingot": "Uranium Ingot",
+  "item.simonspacemod.atomic_chicken": "Atomic Chicken",
+  "item.simonspacemod.atomic_chicken.tooltip": "Fully cooked. Guaranteed. Glows in the dark.",
   "block.simonspacemod.reactor_casing": "Reactor Casing",
   "block.simonspacemod.reactor_glass": "Reactor Glass",
   "block.simonspacemod.reactor_controller": "Reactor Controller",

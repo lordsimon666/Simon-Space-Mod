@@ -27,6 +27,32 @@ public final class AssemblyRecipes {
 
     private static List<Recipe> all;
 
+    /** Stufen von Schildemittern und Basisschilden (Stufe 1 = Originalserie). */
+    private static final List<String> TIERS = List.of("tos", "refit", "excelsior", "c", "d", "e", "f");
+
+    /**
+     * Vorige Stufe, von der ein Block zwei Stück braucht: Warpkerne NX-01 → Originalserie bis B →
+     * Next Generation → E → F; Photonenwerfer → Full Spread (C/D) → Schnellfeuer (E) → Quantenwerfer →
+     * Schnellfeuer-Quantenwerfer → Doppel-Quantenwerfer (F).
+     */
+    static final java.util.Map<String, String> PREVIOUS = java.util.Map.of(
+        "warp_core", "warp_core_nx",
+        "warp_core_tng", "warp_core",
+        "warp_core_e", "warp_core_tng",
+        "warp_core_f", "warp_core_e",
+        "torpedo_launcher_spread", "torpedo_launcher",
+        "torpedo_launcher_rapid", "torpedo_launcher_spread",
+        "quantum_launcher", "torpedo_launcher_rapid",
+        "quantum_launcher_rapid", "quantum_launcher",
+        "quantum_launcher_dual", "quantum_launcher_rapid");
+
+    /** Block-Item der Mod über den Registernamen. */
+    private static Item mod(String path) {
+        for (RegistryObject<Block> ro : ModBlocks.BLOCKS.getEntries())
+            if (ro.getId().getPath().equals(path)) return ro.get().asItem();
+        throw new IllegalArgumentException("unbekannter Block " + path);
+    }
+
     private AssemblyRecipes() {}
 
     /** Beim Serverstart einmal aufbauen (und zählen), damit Fehler sofort auffallen. */
@@ -91,15 +117,25 @@ public final class AssemblyRecipes {
                 .add(Items.GLOWSTONE_DUST, 4).add(ModBlocks.DILITHIUM_CRYSTAL.get(), 2).add(Items.HOPPER, 1);
         } else if (p.startsWith("base_shield")) {
             // je höher die Stufe, desto aufwendiger (wie die Schildemitter)
-            int tier = 1 + java.util.List.of("tos", "refit", "excelsior", "c", "d", "e", "f").indexOf(p.substring("base_shield_".length()));
-            b.add(Items.IRON_BLOCK, 3 + tier).add(Items.DIAMOND, 2 + 2 * tier).add(Items.REDSTONE_BLOCK, 4).add(Items.LAPIS_BLOCK, 4)
-                .add(Items.GLOWSTONE, 4).add(Items.BEACON, 1);
-            if (tier >= 3) b.add(ModBlocks.DILITHIUM_CRYSTAL.get(), 2 * tier);
-            if (tier >= 6) b.add(ModBlocks.ANTIMATTER_POD.get(), 2);
+            // Stufe 1 (Originalserie) ist das Grundschild, jede weitere braucht zwei der vorigen Stufe
+            int tier = 1 + TIERS.indexOf(p.substring("base_shield_".length()));
+            if (tier == 1)
+                b.add(Items.IRON_BLOCK, 4).add(Items.DIAMOND, 4).add(Items.REDSTONE_BLOCK, 4).add(Items.LAPIS_BLOCK, 4)
+                    .add(Items.GLOWSTONE, 4).add(Items.BEACON, 1);
+            else {
+                b.add(mod("base_shield_" + TIERS.get(tier - 2)), 2).add(Items.DIAMOND, 2 * tier).add(Items.REDSTONE_BLOCK, 2);
+                if (tier >= 3) b.add(ModBlocks.DILITHIUM_CRYSTAL.get(), tier);
+                if (tier >= 6) b.add(ModBlocks.ANTIMATTER_POD.get(), 2);
+            }
         } else if (p.equals("laser_focus")) {
             b.add(Items.IRON_INGOT, 4).add(Items.GLASS, 2).add(Items.DIAMOND, 1).add(Items.REDSTONE, 2);
         } else if (p.equals("mining_laser_control")) {
             b.add(Items.IRON_INGOT, 3).add(Items.REDSTONE, 3).add(Items.GLASS_PANE, 2).add(Items.GOLD_INGOT, 1).add(Items.COMPARATOR, 1);
+        } else if (p.startsWith("warp_core") && PREVIOUS.containsKey(p)) {
+            // neuere Warpkerne: zwei der vorigen Generation plus Dilithium und Antimaterie
+            boolean late = !p.equals("warp_core");
+            b.add(mod(PREVIOUS.get(p)), 2).add(ModBlocks.DILITHIUM_CRYSTAL.get(), late ? 4 : 2)
+                .add(ModBlocks.ANTIMATTER_POD.get(), late ? 2 : 1).add(late ? Items.DIAMOND : Items.GOLD_INGOT, late ? 2 : 3);
         } else if (p.startsWith("warp_core")) {
             boolean late = p.endsWith("_e") || p.endsWith("_tng") || p.endsWith("_f");
             b.add(Items.IRON_BLOCK, 2).add(ModBlocks.DILITHIUM_CRYSTAL.get(), p.endsWith("_nx") ? 0 : late ? 4 : 2)
@@ -108,11 +144,15 @@ public final class AssemblyRecipes {
             b.count = 2;
         } else if (p.startsWith("shield_emitter")) {
             // je neuer das Schiff, desto aufwendiger
-            int tier = 1 + java.util.List.of("tos", "refit", "excelsior", "c", "d", "e", "f").indexOf(p.substring("shield_emitter_".length()));
-            b.add(Items.IRON_BLOCK, 1 + tier / 2).add(Items.DIAMOND, tier).add(Items.REDSTONE_BLOCK, 2).add(Items.GLOWSTONE_DUST, 4)
-                .add(Items.LAPIS_BLOCK, 2);
-            if (tier >= 4) b.add(ModBlocks.DILITHIUM_CRYSTAL.get(), tier - 2);
-            if (tier >= 6) b.add(ModBlocks.ANTIMATTER_POD.get(), 1);
+            // Stufe 1 (Originalserie) ist der Grundemitter, jede weitere braucht zwei der vorigen Stufe
+            int tier = 1 + TIERS.indexOf(p.substring("shield_emitter_".length()));
+            if (tier == 1)
+                b.add(Items.IRON_BLOCK, 1).add(Items.DIAMOND, 1).add(Items.REDSTONE_BLOCK, 2).add(Items.GLOWSTONE_DUST, 4).add(Items.LAPIS_BLOCK, 2);
+            else {
+                b.add(mod("shield_emitter_" + TIERS.get(tier - 2)), 2).add(Items.DIAMOND, tier).add(Items.REDSTONE_BLOCK, 1);
+                if (tier >= 4) b.add(ModBlocks.DILITHIUM_CRYSTAL.get(), tier - 2);
+                if (tier >= 6) b.add(ModBlocks.ANTIMATTER_POD.get(), 1);
+            }
         } else if (p.equals("battery")) {
             b.add(Items.IRON_INGOT, 4).add(Items.COPPER_BLOCK.weathering().unaffected(), 3).add(Items.REDSTONE_BLOCK, 1).add(Items.GOLD_INGOT, 1);
         } else if (p.startsWith("reactor_")) {
@@ -128,6 +168,12 @@ public final class AssemblyRecipes {
             if (p.contains("security")) b.add(Items.DYE.yellow(), 2);
             if (p.contains("command")) b.add(Items.DYE.red(), 2);
             if (p.equals("turbolift")) b.add(Items.ENDER_PEARL, 1);
+        } else if (PREVIOUS.containsKey(p)) {
+            // stärkere Werfer: zwei der vorigen Stufe (Doppel-Quantenwerfer = zwei Schnellfeuer-Quantenwerfer)
+            b.add(mod(PREVIOUS.get(p)), 2);
+            if (p.contains("quantum")) b.add(ModBlocks.DILITHIUM_CRYSTAL.get(), 2).add(ModBlocks.ANTIMATTER_POD.get(), 1).add(Items.DIAMOND, 2);
+            else b.add(Items.REDSTONE, 4).add(Items.GOLD_INGOT, 2).add(Items.DIAMOND, 1);
+            if (p.equals("quantum_launcher")) b.add(Items.ENDER_PEARL, 2).add(Items.TNT, 4);
         } else if (p.contains("torpedo") || p.contains("quantum") || p.contains("launcher")) {
             if (p.contains("quantum")) // Quantentorpedos: deutlich teurer, mit Dilithium und Antimaterie
                 b.add(Items.IRON_BLOCK, 2).add(Items.REDSTONE_BLOCK, 2).add(Items.TNT, 4).add(Items.GOLD_INGOT, 6).add(Items.DIAMOND, 4)

@@ -30,7 +30,8 @@ public class ReactorMenu extends AbstractContainerMenu {
             addSlot(new Slot(fuel, i, 62 + col * 18, 17 + row * 18) {
                 @Override
                 public boolean mayPlace(ItemStack stack) {
-                    return stack.is(ModBlocks.URANIUM_INGOT.get());
+                    return stack.is(ModBlocks.URANIUM_INGOT.get())
+                        || de.simon.spacemod.block.entity.ReactorControllerBlockEntity.isChicken(stack); // Easter Egg
                 }
             });
         }
@@ -55,7 +56,8 @@ public class ReactorMenu extends AbstractContainerMenu {
         ItemStack stack = slot.getItem(), copy = stack.copy();
         if (index < fuelSlots) {
             if (!moveItemStackTo(stack, fuelSlots, this.slots.size(), true)) return ItemStack.EMPTY;
-        } else if (!stack.is(ModBlocks.URANIUM_INGOT.get()) || !moveItemStackTo(stack, 0, fuelSlots, false)) {
+        } else if (!(stack.is(ModBlocks.URANIUM_INGOT.get()) || de.simon.spacemod.block.entity.ReactorControllerBlockEntity.isChicken(stack))
+            || !moveItemStackTo(stack, 0, fuelSlots, false)) {
             return ItemStack.EMPTY;
         }
         if (stack.isEmpty()) slot.setByPlayer(ItemStack.EMPTY);

@@ -319,6 +319,10 @@ public final class ModBlocks {
         BlockBehaviour.Properties.of().mapColor(MapColor.DEEPSLATE).strength(4.5F, 3F).sound(SoundType.DEEPSLATE).requiresCorrectToolForDrops().lightLevel(_ -> 3));
     public static final RegistryObject<Item> RAW_URANIUM = simpleItem("raw_uranium");
     public static final RegistryObject<Item> URANIUM_INGOT = simpleItem("uranium_ingot");
+    /** Easter Egg: Hühnchen aus dem laufenden Reaktor. */
+    public static final RegistryObject<Item> ATOMIC_CHICKEN = ITEMS.register("atomic_chicken",
+        () -> new de.simon.spacemod.item.AtomicChickenItem(new Item.Properties().setId(ITEMS.key("atomic_chicken"))));
+    static { TAB_ITEMS.add(ATOMIC_CHICKEN); }
 
     public static final RegistryObject<Block> REACTOR_CASING = block("reactor_casing", Block::new, metal(MapColor.COLOR_GRAY));
     public static final RegistryObject<Block> REACTOR_GLASS = block("reactor_glass", net.minecraft.world.level.block.TransparentBlock::new,

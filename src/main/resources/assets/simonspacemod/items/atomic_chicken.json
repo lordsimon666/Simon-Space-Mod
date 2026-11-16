@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "minecraft:item/cooked_chicken",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": -6881446
+      }
+    ]
+  }
+}

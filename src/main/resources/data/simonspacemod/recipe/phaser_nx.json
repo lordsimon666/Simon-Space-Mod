@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "I": "minecraft:iron_ingot",
+    "R": "minecraft:redstone",
+    "G": "minecraft:glowstone_dust",
+    "D": "minecraft:diamond"
+  },
+  "pattern": [
+    "IRG",
+    "ID ",
+    "I  "
+  ],
+  "result": {
+    "id": "simonspacemod:phaser_nx"
+  }
+}

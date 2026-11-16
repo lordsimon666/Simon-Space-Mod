@@ -2388,6 +2388,8 @@ def uranium_reactor_assets(de, en):
     de.update({
         f"block.{MODID}.uranium_ore": "Uranerz", f"block.{MODID}.deepslate_uranium_ore": "Tiefenschiefer-Uranerz",
         f"item.{MODID}.raw_uranium": "Roh-Uran", f"item.{MODID}.uranium_ingot": "Uranbarren",
+        f"item.{MODID}.atomic_chicken": "Atom-Hühnchen",
+        f"item.{MODID}.atomic_chicken.tooltip": "Durchgegart. Garantiert. Leuchtet im Dunkeln.",
         f"block.{MODID}.reactor_casing": "Reaktorhülle", f"block.{MODID}.reactor_glass": "Reaktorglas",
         f"block.{MODID}.reactor_controller": "Reaktor-Steuerblock",
         f"gui.{MODID}.reactor": "Kernreaktor", f"gui.{MODID}.reactor.invalid": "Kein gültiger",
@@ -2397,6 +2399,8 @@ def uranium_reactor_assets(de, en):
     en.update({
         f"block.{MODID}.uranium_ore": "Uranium Ore", f"block.{MODID}.deepslate_uranium_ore": "Deepslate Uranium Ore",
         f"item.{MODID}.raw_uranium": "Raw Uranium", f"item.{MODID}.uranium_ingot": "Uranium Ingot",
+        f"item.{MODID}.atomic_chicken": "Atomic Chicken",
+        f"item.{MODID}.atomic_chicken.tooltip": "Fully cooked. Guaranteed. Glows in the dark.",
         f"block.{MODID}.reactor_casing": "Reactor Casing", f"block.{MODID}.reactor_glass": "Reactor Glass",
         f"block.{MODID}.reactor_controller": "Reactor Controller",
         f"gui.{MODID}.reactor": "Nuclear Reactor", f"gui.{MODID}.reactor.invalid": "No valid",
@@ -3484,7 +3488,9 @@ def vanilla_style_ores_items():
         v = (0xFF << 24) | (r << 16) | (g << 8) | b_
         return v - (1 << 32)
     for it, model, tint in (("uranium_ingot", "minecraft:item/iron_ingot", argb(158, 255, 128)),
-                            ("raw_uranium", "minecraft:item/raw_iron", argb(148, 255, 158))):
+                            ("raw_uranium", "minecraft:item/raw_iron", argb(148, 255, 158)),
+                            # Easter Egg: gebratenes Hühnchen, leuchtend grün eingefärbt
+                            ("atomic_chicken", "minecraft:item/cooked_chicken", argb(150, 255, 90))):
         write_json(os.path.join(ASSETS, "items", it + ".json"), {"model": {"type": "minecraft:model", "model": model,
             "tints": [{"type": "minecraft:constant", "value": tint}]}})
         for f in (os.path.join(ASSETS, "models", "item", it + ".json"), os.path.join(ASSETS, "textures", "item", it + ".png")):

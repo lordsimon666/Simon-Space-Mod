@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "P": "simonspacemod:phaser_nx",
+    "D": "minecraft:diamond",
+    "R": "minecraft:redstone_block"
+  },
+  "pattern": [
+    "PDP",
+    " R "
+  ],
+  "result": {
+    "id": "simonspacemod:phaser_tos"
+  }
+}

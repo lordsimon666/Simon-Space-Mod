@@ -288,7 +288,10 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
   Quellen: Memory Alpha, Ex Astris Scientia und die Technical Manuals. Nicht alles davon ist im
   Kanon eindeutig belegt, besonders die Werferzahlen von B, C und E.
 * **Handphaser und Phasergewehre** je Epoche (Gewehre nur, wo es im Original welche gab), als
-  3D-Modelle:
+  3D-Modelle. An der **Werkbank**: der NX-Phaser aus Eisen, Redstone, Glowstone und einem Diamanten, jeder
+  neuere Phaser aus **zwei der vorigen Epoche** (NX → Originalserie → Kinofilme → Next Generation → E) plus
+  Diamant und Redstoneblöcken (ab Next Generation mit Dilithium). Das NX-Gewehr entsteht aus zwei NX-Phasern,
+  jedes neuere Gewehr aus zwei der vorigen (NX → Originalserie → Next Generation → E):
 
   | Epoche | Handphaser | Gewehr |
   |---|---|---|
@@ -578,9 +581,14 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
 * **Dauer** je nach Block (einfache Hüllenplatten 4 s, Warpkerne, Luftschleusen und Reaktor-Steuerblock
   bis 15 s), dabei **80 FE pro Tick**. Strom kommt über die Hülle (Bordnetz), über Kabel anderer
   Mods oder von einem angrenzenden Reaktor. Ohne Strom steht „Kein Strom“ und nichts passiert.
-* Der **Quantentorpedo-Werfer** ist deutlich teurer als der normale Torpedowerfer: 2 Eisenblöcke,
-  2 Redstoneblöcke, 4 TNT, 6 Gold, 4 Diamanten, **4 Dilithiumkristalle**, **2 Antimaterie-Kapseln** und
-  2 Enderperlen (15 s). Der normale Werfer braucht Eisen, Redstone, TNT, Gold und 1 Diamant.
+* **Stufen bauen aufeinander auf**: jede höhere Stufe braucht **zwei Stück der vorigen** plus einige
+  Zutaten (Diamanten, Redstone, ab höheren Stufen Dilithium und Antimaterie):
+  * **Warpkerne**: NX-01 → Originalserie bis B → Next Generation → E → F
+  * **Torpedowerfer**: Photonenwerfer → Full-Spread-Werfer (C/D) → Schnellfeuer-Photonenwerfer (E) →
+    Quantenwerfer → Schnellfeuer-Quantenwerfer → **Doppel-Quantenwerfer** (zwei Schnellfeuer-Quantenwerfer)
+  * **Schildemitter** und **Basisschilde**: Stufe 1 (Originalserie) ist das Grundschild aus Grundstoffen
+    (Basisschild mit Leuchtfeuer), danach Refit → Excelsior → C → D → E → F
+  * Die Grundstufen (NX-Warpkern, Photonenwerfer, Schildemitter und Basisschild Stufe 1) brauchen nur Grundstoffe.
 * Einfache Bauteile (Hülle, Wände, Böden, Teppich) ergeben 8 Stück, Lichter und Fenster 4, Warpkerne
   2, alles andere 1. Trichter können Zutaten einfüllen und das Ergebnis herausholen.
 
@@ -727,6 +735,12 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
   einem Erzeuger verbunden ist. Kabel braucht man im Schiff nicht. Speicher, die selbst Strom
   abgeben (Batterien), zählen dabei als Erzeuger.
 * Rechtsklick auf den Steuerblock zeigt Größe, Leistung, Brennstand und Energie.
+* **Easter Egg – Atom-Hühnchen**: Legt man rohes oder gebratenes Hühnchen in einen **laufenden** Reaktor
+  (der gerade Uran verbrennt), wird daraus ein grün schimmerndes **Atom-Hühnchen**. Ein lebendes Huhn oder
+  ein hingeworfenes Hühnchen direkt am Steuerblock landet ebenfalls als Atom-Hühnchen im Reaktor, aber nur,
+  wenn ein Eingabeplatz frei ist. Es ist immer durchgegart (sättigt wie gebratenes Hühnchen), gibt aber beim
+  Essen **eine Minute lang alle schädlichen Effekte** (Vergiftung, Wither, Übelkeit, Blindheit, Langsamkeit …).
+  Milch hilft.
 
 Reaktorhülle (8×), Reaktorglas (4×) und Steuerblock baut die **Schiffsteil-Fertigung** (Eisen,
 Kupfer, Glas, Uran, Diamanten, Redstone).

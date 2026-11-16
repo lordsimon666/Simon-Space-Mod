@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "P": "simonspacemod:phaser_tng",
+    "D": "minecraft:diamond",
+    "R": "minecraft:redstone_block",
+    "C": "simonspacemod:dilithium_crystal"
+  },
+  "pattern": [
+    "PDP",
+    "RCR"
+  ],
+  "result": {
+    "id": "simonspacemod:phaser_fc"
+  }
+}

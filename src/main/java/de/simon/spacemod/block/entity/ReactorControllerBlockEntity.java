@@ -47,7 +47,7 @@ public class ReactorControllerBlockEntity extends BlockEntity {
     public final SimpleContainer inventory = new SimpleContainer(9) {
         @Override
         public boolean canPlaceItem(int slot, ItemStack stack) {
-            return slot < slots() && stack.is(ModBlocks.URANIUM_INGOT.get());
+            return slot < slots() && (stack.is(ModBlocks.URANIUM_INGOT.get()) || isChicken(stack));
         }
 
         @Override
@@ -123,8 +123,48 @@ public class ReactorControllerBlockEntity extends BlockEntity {
                     if (e.canReceive()) be.extract(e.receiveEnergy(Math.min(be.energy, ReactorMath.MAX_OUTPUT), false), false);
                 });
             }
+        if (be.currentOutput > 0 && level instanceof net.minecraft.server.level.ServerLevel sl) be.cookChickens(sl, pos);
         boolean lit = be.currentOutput > 0;
         if (state.getValue(ReactorControllerBlock.LIT) != lit) level.setBlock(pos, state.setValue(ReactorControllerBlock.LIT, lit), Block.UPDATE_CLIENTS);
+    }
+
+    /** Darf als Easter Egg in den Reaktor: rohes oder gebratenes Hühnchen. */
+    public static boolean isChicken(ItemStack stack) {
+        return stack.is(net.minecraft.world.item.Items.CHICKEN) || stack.is(net.minecraft.world.item.Items.COOKED_CHICKEN);
+    }
+
+    /**
+     * Easter Egg: Hühnchen in einem laufenden Reaktor wird zum Atom-Hühnchen – in den Eingabeplätzen sofort,
+     * ein lebendes Huhn oder ein hingeworfenes Hühnchen am Steuerblock nur, wenn ein Eingabeplatz frei ist.
+     */
+    private void cookChickens(net.minecraft.server.level.ServerLevel level, BlockPos pos) {
+        boolean changed = false;
+        for (int i = 0; i < slots(); i++) {
+            ItemStack st = inventory.getItem(i);
+            if (!isChicken(st)) continue;
+            inventory.setItem(i, new ItemStack(ModBlocks.ATOMIC_CHICKEN.get(), st.getCount()));
+            changed = true;
+        }
+        if (level.getGameTime() % 10 == 0) {
+            net.minecraft.world.phys.AABB box = new net.minecraft.world.phys.AABB(pos).inflate(1.5);
+            for (net.minecraft.world.entity.Entity e : level.getEntities((net.minecraft.world.entity.Entity) null, box,
+                    e -> e instanceof net.minecraft.world.entity.animal.chicken.Chicken
+                        || e instanceof net.minecraft.world.entity.item.ItemEntity ie && isChicken(ie.getItem()))) {
+                int free = -1;
+                for (int i = 0; i < slots() && free < 0; i++) if (inventory.getItem(i).isEmpty()) free = i;
+                if (free < 0) break;
+                int n = e instanceof net.minecraft.world.entity.item.ItemEntity ie ? ie.getItem().getCount() : 1;
+                inventory.setItem(free, new ItemStack(ModBlocks.ATOMIC_CHICKEN.get(), n));
+                e.discard();
+                changed = true;
+            }
+        }
+        if (changed) {
+            level.playSound(null, pos, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE.value(), net.minecraft.sounds.SoundSource.BLOCKS, 0.4F, 1.6F);
+            level.sendParticles(net.minecraft.core.particles.ParticleTypes.HAPPY_VILLAGER, pos.getX() + 0.5, pos.getY() + 1.1, pos.getZ() + 0.5,
+                12, 0.4, 0.3, 0.4, 0.05);
+            inventory.setChanged();
+        }
     }
 
     /** Ein Tick Kernspaltung (auch im Flug, dort mit der beim Abheben bekannten Größe). */

@@ -218,6 +218,8 @@
   "block.simonspacemod.deepslate_uranium_ore": "Tiefenschiefer-Uranerz",
   "item.simonspacemod.raw_uranium": "Roh-Uran",
   "item.simonspacemod.uranium_ingot": "Uranbarren",
+  "item.simonspacemod.atomic_chicken": "Atom-Hühnchen",
+  "item.simonspacemod.atomic_chicken.tooltip": "Durchgegart. Garantiert. Leuchtet im Dunkeln.",
   "block.simonspacemod.reactor_casing": "Reaktorhülle",
   "block.simonspacemod.reactor_glass": "Reaktorglas",
   "block.simonspacemod.reactor_controller": "Reaktor-Steuerblock",
