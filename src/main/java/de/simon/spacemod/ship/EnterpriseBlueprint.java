@@ -2128,24 +2128,35 @@ public final class EnterpriseBlueprint {
         double f0 = eXf + (refit || excelsior || tng ? 0.15 : 0.12) * (eXr - eXf), f1 = eXf + (refit ? 0.45 : excelsior || tng ? 0.5 : 0.6) * (eXr - eXf);
         int x0 = (int) Math.round((f0 + f1) / 2);
         int yF = (int) Math.round(eY) - 3;
-        if (model != null && !fitsEngineering(x0, yF)) { // Rumpf schmaler als gedacht (z. B. F): Lage suchen, in die der Raum ganz passt
-            search:
-            for (int dx = 0; dx <= 120; dx += 4)
-                for (int sx : dx == 0 ? new int[] {1} : new int[] {1, -1})
-                    for (int dy = 0; dy <= 12; dy++)
-                        for (int sy : dy == 0 ? new int[] {1} : new int[] {1, -1})
-                            if (fitsEngineering(x0 + sx * dx, yF + sy * dy)) { x0 += sx * dx; yF += sy * dy; break search; }
+        if (model != null && engineeringFill(x0, yF) < 1) {
+            // Rumpf schmaler als gedacht (z. B. F mit Lücke zwischen den Halsstreben): Stelle im Sekundärrumpf mit dem
+            // meisten echten Rumpf suchen, damit der Raum nicht in eine Lücke gebaut wird (dort würde sonst Hülle ergänzt)
+            double best = engineeringFill(x0, yF);
+            int bx = x0, by = yF;
+            for (int dx = -120; dx <= 120 && best < 1; dx += 4) {
+                int x = x0 + dx;
+                if (x - 11 < eXf || x + 11 > eXr) continue;
+                for (int dy = -12; dy <= 12; dy++) {
+                    double f = engineeringFill(x, yF + dy);
+                    if (f > best + 1e-9) { best = f; bx = x; by = yF + dy; }
+                }
+            }
+            x0 = bx;
+            yF = by;
         }
         return new int[] {x0 - 10, x0 + 10, yF, yF + 7};
     }
 
-    /** Passt der Maschinenraum (mit einem Block Hülle rundum) bei dieser Höhe ganz in das Modell? */
-    private boolean fitsEngineering(int x0, int yF) {
+    /** Anteil des Maschinenraums (mit einem Block Hülle rundum), der im Modell massiver Rumpf ist (1 = passt ganz). */
+    private double engineeringFill(int x0, int yF) {
+        int in = 0, all = 0;
         for (int x = x0 - 11; x <= x0 + 11; x += 2)
             for (int y = yF - 1; y <= yF + 8; y++)
-                for (int z = -7; z <= 7; z += 2)
-                    if (!ms(x, y, z)) return false;
-        return true;
+                for (int z = -7; z <= 7; z += 2) {
+                    all++;
+                    if (ms(x, y, z)) in++;
+                }
+        return (double) in / all;
     }
 
     /** Bauteil-Zuordnung für die Form aus dem 3D-Modell. */

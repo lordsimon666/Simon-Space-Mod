@@ -40,7 +40,7 @@ Die Decks heißen wie in der Serie mit Buchstaben (A-Deck = Brücke, B-Deck, C-D
 ### NCC-1701-F (Odyssey-Klasse)
 
 Die größte Enterprise: **1061 m** lang, mit lang gestreckter, flacher Untertasse, Sekundärrumpf und zwei
-Gondeln. Rumpf und Farben stammen aus einem 3D-Modell (Quelle unten). Innen ist sie aufgebaut wie die E,
+Gondeln. Der Hals besteht aus **zwei getrennten Streben**, dazwischen ist frei. Rumpf und Farben stammen aus einem 3D-Modell (Quelle unten). Innen ist sie aufgebaut wie die E,
 mit Brücke, Decks, Maschinenraum, Waffenkammer usw. Weil die Untertasse flach ist, liegen die Holodecks
 bei kleineren Bauformen im Sekundärrumpf.
 
@@ -815,7 +815,10 @@ Die Außenhülle aller acht Schiffe stammt aus 3D-Modellen und ist dadurch sehr 
 `tools/voxelize_stl.py` rechnet ein STL-Modell auf die echte Schiffslänge in Blöcken um
 (NX-01: 225, NCC-1701: 289, -A: 305, -B: 467, -C: 526, -D: 643, -E: 685, -F: 1061) und füllt das Innere,
 jedes Teilnetz des Modells für sich (so heben sich überlappende Teile nicht auf). `tools/glb_to_stl.py`
-wandelt ein GLB-Modell dafür in eine STL-Datei um. Die Ergebnisse liegen in
+wandelt ein GLB-Modell dafür in eine STL-Datei um. Für die F (`--vote`) wird jedes Teilnetz aus drei
+Richtungen gefüllt und die Mehrheit entscheidet. Danach bleibt nur der zusammenhängende Schiffskörper
+übrig, und Hohlräume im Rumpf werden geschlossen. So bleibt die Lücke zwischen den beiden Hälsen offen,
+statt durch offene Flächen des Modells zugebaut zu werden. Die Ergebnisse liegen in
 `src/main/resources/ships/`. Beim Bauen vermisst die Mod die Form automatisch (Untertasse, Gondeln,
 Unterrumpf) und erzeugt daraus Decks, Räume, Brücke, Maschinenraum, Farben und Beschriftung.
 Fehlt ein Modell, wird die eingebaute, berechnete Form verwendet.

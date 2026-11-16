@@ -28,7 +28,10 @@ def triangles(path):
                 pos = accessor(j, binc, prim["attributes"]["POSITION"])
                 pos = (np.c_[pos, np.ones(len(pos))] @ m.T)[:, :3]
                 idx = accessor(j, binc, prim["indices"]).astype(np.int64) if "indices" in prim else np.arange(len(pos))
-                out.append(pos[idx.reshape(-1, 3)])
+                tri = pos[idx.reshape(-1, 3)]
+                if np.linalg.det(m[:3, :3]) < 0:  # gespiegelter Knoten: Wicklung umdrehen, damit die Normalen nach außen zeigen
+                    tri = tri[:, [0, 2, 1]]
+                out.append(tri)
                 groups.append(np.full(len(idx) // 3, len(groups), dtype=np.int64))  # Teilnetz-Nummer
         for c in node.get("children", []):
             visit(c, m)
