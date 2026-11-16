@@ -40,6 +40,8 @@ public final class ClientCamera {
         KeyMapping.Category.register(Identifier.fromNamespaceAndPath(SimonSpaceMod.MODID, "weapons"));
     public static final KeyMapping PHOTON = new KeyMapping("key.simonspacemod.photon", GLFW.GLFW_KEY_P, CATEGORY);
     public static final KeyMapping QUANTUM = new KeyMapping("key.simonspacemod.quantum", GLFW.GLFW_KEY_O, CATEGORY);
+    /** F = Full Spread (5 Photonentorpedos auf einmal aus einem Spezialwerfer der C/D). */
+    public static final KeyMapping SPREAD = new KeyMapping("key.simonspacemod.spread", GLFW.GLFW_KEY_F, CATEGORY);
     /** V = Modus des Handphasers (Betäuben / Töten / Abbauen). */
     public static final KeyMapping WEAPON_MODE = new KeyMapping("key.simonspacemod.weapon_mode", GLFW.GLFW_KEY_V, CATEGORY);
 
@@ -47,6 +49,7 @@ public final class ClientCamera {
         RegisterKeyMappingsEvent.BUS.addListener(e -> {
             e.register(PHOTON);
             e.register(QUANTUM);
+            e.register(SPREAD);
             e.register(WEAPON_MODE);
         });
         TickEvent.ClientTickEvent.Pre.BUS.addListener(e -> onTick());
@@ -120,12 +123,17 @@ public final class ClientCamera {
             && (player.getMainHandItem().getItem() instanceof de.simon.spacemod.item.HandWeaponItem
                 || player.getOffhandItem().getItem() instanceof de.simon.spacemod.item.HandWeaponItem))
             TurboliftNetwork.sendToServer(new de.simon.spacemod.item.WeaponModeMessage());
-        boolean photon = false, quantum = false;
+        boolean photon = false, quantum = false, spread = false;
         while (PHOTON.consumeClick()) photon = true;
         while (QUANTUM.consumeClick()) quantum = true;
+        while (SPREAD.consumeClick()) spread = true;
+        // F tauscht sonst die Hände: am Steuer und in der Kamerasicht ist F Full Spread
+        if ((pilot || active) && mc.gui.screen() == null && SPREAD.getKey().equals(mc.options.keySwapOffhand.getKey()))
+            while (mc.options.keySwapOffhand.consumeClick()) {}
         if (pilot && mc.gui.screen() == null) { // Torpedos vom Steuer aus
             if (PHOTON.getKey().equals(mc.options.keySocialInteractions.getKey()))
                 while (mc.options.keySocialInteractions.consumeClick()) {}
+            if (spread) TurboliftNetwork.sendToServer(new CameraAction(CameraAction.SPREAD, 0, player.getYRot(), player.getXRot()));
             if (photon) TurboliftNetwork.sendToServer(new CameraAction(CameraAction.PHOTON, 0, player.getYRot(), player.getXRot()));
             if (quantum) TurboliftNetwork.sendToServer(new CameraAction(CameraAction.QUANTUM, 0, player.getYRot(), player.getXRot()));
             return;
@@ -135,6 +143,7 @@ public final class ClientCamera {
             while (mc.options.keySocialInteractions.consumeClick()) {} // P öffnet in der Kamerasicht nicht die Spielerliste
         if (photon) TurboliftNetwork.sendToServer(new CameraAction(CameraAction.PHOTON, 0, player.getYRot(), player.getXRot()));
         if (quantum) TurboliftNetwork.sendToServer(new CameraAction(CameraAction.QUANTUM, 0, player.getYRot(), player.getXRot()));
+        if (spread) TurboliftNetwork.sendToServer(new CameraAction(CameraAction.SPREAD, 0, player.getYRot(), player.getXRot()));
     }
 
     private static void onMovement(MovementInputUpdateEvent e) {

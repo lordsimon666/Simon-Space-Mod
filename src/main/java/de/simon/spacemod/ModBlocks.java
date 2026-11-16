@@ -278,6 +278,12 @@ public final class ModBlocks {
         p -> new PhaserBlock(p, PhaserBlock.Kind.PHASER_EMITTER), glowing(metal(MapColor.COLOR_RED), 4));
     public static final RegistryObject<Block> QUANTUM_LAUNCHER = block("quantum_launcher",
         p -> new TorpedoLauncherBlock(p, true), glowing(metal(MapColor.COLOR_BLUE), 10));
+    /** Torpedowerfer der C und D: 5 Schuss, Full Spread mit F. */
+    public static final RegistryObject<Block> TORPEDO_LAUNCHER_SPREAD = block("torpedo_launcher_spread",
+        p -> new TorpedoLauncherBlock(p, false, 5, true), glowing(metal(MapColor.COLOR_ORANGE), 10));
+    /** Schnellfeuer-Quantenwerfer der E: 5 Schuss, kein Full Spread. */
+    public static final RegistryObject<Block> QUANTUM_LAUNCHER_RAPID = block("quantum_launcher_rapid",
+        p -> new TorpedoLauncherBlock(p, true, 5, false), glowing(metal(MapColor.COLOR_BLUE), 11));
     public static final RegistryObject<Block> WEAPONS_CONSOLE = block("weapons_console", WeaponsConsoleBlock::new,
         glowing(metal(MapColor.COLOR_RED), 7).noOcclusion());
 

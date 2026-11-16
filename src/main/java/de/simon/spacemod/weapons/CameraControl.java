@@ -202,13 +202,13 @@ public final class CameraControl {
     }
 
     /** Torpedo auf das Fadenkreuz (P = Photonen, O = Quanten). */
-    public static void torpedo(ServerPlayer player, boolean quantum, float yRot, float xRot) {
+    public static void torpedo(ServerPlayer player, boolean quantum, boolean spread, float yRot, float xRot) {
         Session s = SESSIONS.get(player.getUUID());
         if (s == null) return;
         player.setYRot(yRot);
         player.setXRot(xRot);
-        if (s.ship != null) PhaserControl.torpedoFromShip(player, s.ship, quantum);
-        else PhaserControl.torpedo(player.level(), s.console, player, quantum);
+        if (s.ship != null) PhaserControl.torpedoFromShip(player, s.ship, quantum, spread);
+        else PhaserControl.torpedo(player.level(), s.console, player, quantum, spread);
     }
 
     /** Feuern auf das Fadenkreuz (Linksklick in der Kamerasicht). */

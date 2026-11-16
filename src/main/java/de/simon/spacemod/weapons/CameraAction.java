@@ -7,7 +7,7 @@ import net.minecraftforge.event.network.CustomPayloadEvent;
 
 /** Client -> Server in der Kamerasicht: feuern (mit Blickrichtung), Kamera wechseln oder Stärke ändern. */
 public record CameraAction(int action, int delta, float yRot, float xRot) {
-    public static final int NEXT = 0, FIRE = 1, POWER = 2, PHOTON = 3, QUANTUM = 4;
+    public static final int NEXT = 0, FIRE = 1, POWER = 2, PHOTON = 3, QUANTUM = 4, SPREAD = 5;
 
     public static final StreamCodec<RegistryFriendlyByteBuf, CameraAction> STREAM_CODEC = StreamCodec.ofMember(
         (msg, buf) -> {
@@ -27,12 +27,13 @@ public record CameraAction(int action, int delta, float yRot, float xRot) {
                 if (player.getVehicle() instanceof de.simon.spacemod.entity.FlyingShipEntity s && s.isPilot(player)) PhaserControl.pilotPower(player, msg.delta());
                 else CameraControl.power(player, msg.delta());
             }
-            case PHOTON, QUANTUM -> {
+            case PHOTON, QUANTUM, SPREAD -> {
+                boolean quantum = msg.action() == QUANTUM, spread = msg.action() == SPREAD;
                 if (player.getVehicle() instanceof de.simon.spacemod.entity.FlyingShipEntity s && s.isPilot(player)) {
                     player.setYRot(msg.yRot());
                     player.setXRot(msg.xRot());
-                    PhaserControl.torpedoFromShip(player, s, msg.action() == QUANTUM);
-                } else CameraControl.torpedo(player, msg.action() == QUANTUM, msg.yRot(), msg.xRot());
+                    PhaserControl.torpedoFromShip(player, s, quantum, spread);
+                } else CameraControl.torpedo(player, quantum, spread, msg.yRot(), msg.xRot());
             }
             default -> CameraControl.next(player);
         }

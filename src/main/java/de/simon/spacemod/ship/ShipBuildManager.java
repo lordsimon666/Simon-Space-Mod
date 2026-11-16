@@ -102,7 +102,7 @@ public final class ShipBuildManager {
             java.util.Map<Integer, BlockState> cache = new java.util.HashMap<>();
             bp.forEach((x, y, z, code) -> {
                 positions[i[0]] = placement.toWorld(bp, x, y, z).asLong();
-                states[i[0]] = cache.computeIfAbsent(code, c -> ShipPalette.toState(c).rotate(rot));
+                states[i[0]] = cache.computeIfAbsent(code, c -> ShipPalette.forDesign(ShipPalette.toState(c), bp.design).rotate(rot));
                 i[0]++;
             });
             // Schiff mit Umriss und Warpkernen eintragen: Lampen fragen nur, ob noch ein Kern steht

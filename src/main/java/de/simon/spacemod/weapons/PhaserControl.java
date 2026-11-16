@@ -342,37 +342,80 @@ public final class PhaserControl {
         return true;
     }
 
-    /** Pilot: Photonen- bzw. Quantentorpedo aus dem Werfer des fliegenden Schiffs, der dem Ziel am nächsten ist. */
-    public static void torpedoFromShip(ServerPlayer player, de.simon.spacemod.entity.FlyingShipEntity ship, boolean quantum) {
-        if (!(ship.level() instanceof ServerLevel level) || ship.structure() == null) return;
-        String key = "ship#" + ship.getUUID() + (quantum ? "q" : "t");
+    /** Magazine aller Torpedowerfer (je Werfer eigene Schüsse und Nachladezeit). */
+    private static final TorpedoMagazines MAGAZINES = new TorpedoMagazines();
+
+    /** Ein Werfer: Mitte in der Welt, Schlüssel für sein Magazin und Bauart. */
+    private record Launcher(Vec3 center, String key, TorpedoLauncherBlock block) {}
+
+    /**
+     * Torpedo aus dem bereiten Werfer, der dem Ziel am nächsten ist. Jeder Werfer lädt für sich nach – mit
+     * zwei Werfern gehen also zwei Schüsse, bevor nachgeladen werden muss. Full Spread (F): ein
+     * Spezialwerfer (C/D) feuert alle Schüsse seines Magazins auf einmal fächerförmig.
+     * @return false, wenn nichts gefeuert wurde
+     */
+    private static boolean launch(ServerLevel level, ServerPlayer player, List<Launcher> launchers, Aim aim, AABB own,
+                                  boolean quantum, boolean spread, int photonTier) {
         long now = level.getGameTime();
-        Long last = LAST_SHOT.get(key);
-        if (last != null && now - last < (quantum ? 50 : 30)) {
-            player.sendOverlayMessage(Component.translatable("message.simonspacemod.torpedo.loading"));
-            return;
-        }
-        List<BlockPos> launchers = shipBlocks(ship, st -> st.getBlock() instanceof TorpedoLauncherBlock t && t.quantum == quantum);
+        if (spread) launchers.removeIf(l -> !l.block().spread);
         if (launchers.isEmpty()) {
-            player.sendOverlayMessage(Component.translatable(quantum ? "message.simonspacemod.torpedo.no_quantum" : "message.simonspacemod.torpedo.none"));
-            return;
+            player.sendOverlayMessage(Component.translatable(spread ? "message.simonspacemod.torpedo.no_spread"
+                : quantum ? "message.simonspacemod.torpedo.no_quantum" : "message.simonspacemod.torpedo.none"));
+            return false;
         }
-        AABB own = ship.getBoundingBox();
-        Aim aim = aim(level, player, new AABB(0, -100000, 0, 0, -100000, 0), ship);
         Vec3 tgt = aim.point();
-        launchers.sort(Comparator.comparingDouble(p -> worldOf(ship, p).distanceToSqr(tgt)));
-        Vec3 c = worldOf(ship, launchers.get(0));
-        Vec3 start = c.add(tgt.subtract(c).normalize().scale(1.0));
-        LAST_SHOT.put(key, now);
-        TorpedoEntity t = ModBlocks.TORPEDO.get().create(level, EntitySpawnReason.TRIGGERED);
-        if (t == null) return;
-        t.setPos(start.x, start.y, start.z);
-        t.setup(quantum ? TorpedoStyle.QUANTUM : TorpedoStyle.photon(5), tgt, aim.entity(), own, player.getUUID());
-        level.getChunkSource().addTicketWithRadius(TicketType.ENDER_PEARL, ChunkPos.containing(BlockPos.containing(start)), 2);
-        level.addFreshEntity(t);
+        launchers.removeIf(l -> MAGAZINES.ready(l.key(), l.block().magazine, now) <= 0);
+        if (launchers.isEmpty()) {
+            player.sendOverlayMessage(Component.translatable("message.simonspacemod.torpedo.loading"));
+            return false;
+        }
+        launchers.sort(Comparator.comparingDouble(l -> l.center().distanceToSqr(tgt)));
+        Launcher l = launchers.get(0);
+        int shots = spread ? MAGAZINES.ready(l.key(), l.block().magazine, now) : 1;
+        MAGAZINES.use(l.key(), shots, l.block().magazine, now, l.block().reloadTicks());
+        Vec3 c = l.center();
+        Vec3 dir = tgt.subtract(c);
+        double dist = Math.max(1, dir.length());
+        dir = dir.normalize();
+        Vec3 right = dir.cross(new Vec3(0, 1, 0));
+        right = right.lengthSqr() < 1e-4 ? new Vec3(1, 0, 0) : right.normalize();
+        TorpedoStyle style = quantum ? TorpedoStyle.QUANTUM : TorpedoStyle.photon(photonTier);
+        var chunks = level.getChunkSource();
+        for (int i = 0; i < shots; i++) {
+            // Fächer: je Torpedo 7° nebeneinander, mittig aufs Ziel
+            double off = (i - (shots - 1) / 2.0) * dist * Math.tan(Math.toRadians(7));
+            Vec3 aimAt = shots == 1 ? tgt : tgt.add(right.scale(off));
+            Vec3 start = c.add(aimAt.subtract(c).normalize().scale(1.0)).add(right.scale(shots == 1 ? 0 : (i - (shots - 1) / 2.0) * 0.4));
+            TorpedoEntity t = ModBlocks.TORPEDO.get().create(level, EntitySpawnReason.TRIGGERED);
+            if (t == null) continue;
+            t.setPos(start.x, start.y, start.z);
+            t.setup(style, aimAt, aim.entity(), own, player.getUUID());
+            // Der Werfer kann weit von der Kamera weg in einem ruhenden Chunk liegen: vorher aktiv laden,
+            // sonst bewegt sich der Torpedo nicht (er sichert sich danach im Flug selbst weiter)
+            chunks.addTicketWithRadius(TicketType.ENDER_PEARL, ChunkPos.containing(BlockPos.containing(start)), 2);
+            if (i == 0) chunks.addTicketWithRadius(TicketType.ENDER_PEARL,
+                ChunkPos.containing(BlockPos.containing(start.add(aimAt.subtract(start).normalize().scale(64)))), 2);
+            level.addFreshEntity(t);
+        }
         level.playSound(null, BlockPos.containing(c), (quantum ? de.simon.spacemod.ModSounds.TORPEDO_QUANTUM : de.simon.spacemod.ModSounds.TORPEDO_PHOTON).get(),
             SoundSource.BLOCKS, 3.0F, 0.95F + level.getRandom().nextFloat() * 0.1F);
-        player.sendOverlayMessage(Component.translatable(quantum ? "message.simonspacemod.torpedo.quantum" : "message.simonspacemod.torpedo.photon"));
+        int left = MAGAZINES.ready(l.key(), l.block().magazine, now + TorpedoMagazines.GAP);
+        if (spread) player.sendOverlayMessage(Component.translatable("message.simonspacemod.torpedo.spread", shots));
+        else if (l.block().magazine > 1) player.sendOverlayMessage(Component.translatable(
+            quantum ? "message.simonspacemod.torpedo.quantum_left" : "message.simonspacemod.torpedo.photon_left", left, l.block().magazine));
+        else player.sendOverlayMessage(Component.translatable(quantum ? "message.simonspacemod.torpedo.quantum" : "message.simonspacemod.torpedo.photon"));
+        return true;
+    }
+
+    /** Pilot: Photonen- bzw. Quantentorpedo aus dem Werfer des fliegenden Schiffs, der dem Ziel am nächsten ist. */
+    public static void torpedoFromShip(ServerPlayer player, de.simon.spacemod.entity.FlyingShipEntity ship, boolean quantum, boolean spread) {
+        if (!(ship.level() instanceof ServerLevel level) || ship.structure() == null) return;
+        List<Launcher> launchers = new ArrayList<>();
+        for (var e : ship.structure().blocks)
+            if (e.state().getBlock() instanceof TorpedoLauncherBlock t && (spread ? !t.quantum : t.quantum == quantum))
+                launchers.add(new Launcher(worldOf(ship, e.pos()), "ship#" + ship.getUUID() + "@" + e.pos().asLong(), t));
+        Aim aim = aim(level, player, new AABB(0, -100000, 0, 0, -100000, 0), ship);
+        launch(level, player, launchers, aim, ship.getBoundingBox(), quantum, spread, 5);
     }
 
     /** Ziel im Fadenkreuz: Punkt, ggf. Kreatur, und ob überhaupt etwas getroffen wird. */
@@ -434,51 +477,22 @@ public final class PhaserControl {
      * Feuert einen Photonen- (P) bzw. Quantentorpedo (O, nur Enterprise-E) aus dem Werfer, der dem
      * Ziel am nächsten ist.
      */
-    public static void torpedo(ServerLevel level, BlockPos console, ServerPlayer player, boolean quantum) {
-        String key = level.dimension().identifier() + "@" + console.asLong() + (quantum ? "q" : "t");
-        long now = level.getGameTime();
-        Long last = LAST_SHOT.get(key);
-        if (last != null && now - last < (quantum ? 50 : 30)) {
-            player.sendOverlayMessage(Component.translatable("message.simonspacemod.torpedo.loading"));
-            return;
-        }
+    public static void torpedo(ServerLevel level, BlockPos console, ServerPlayer player, boolean quantum, boolean spread) {
         WeaponsData data = WeaponsData.get(level);
         WeaponsData.Battery b = data.battery(console);
         if (b == null) {
             linkPhasers(level, console);
             b = data.battery(console);
         }
-        List<BlockPos> launchers = new ArrayList<>(quantum ? b.quantums() : b.torpedoes());
-        launchers.removeIf(p -> !(level.getBlockState(p).getBlock() instanceof TorpedoLauncherBlock t) || t.quantum != quantum);
-        if (launchers.isEmpty()) {
-            player.sendOverlayMessage(Component.translatable(quantum ? "message.simonspacemod.torpedo.no_quantum" : "message.simonspacemod.torpedo.none"));
-            return;
-        }
-        AABB own = ownShip(b, console, b.phasers().isEmpty() ? launchers : b.phasers());
+        List<BlockPos> found = new ArrayList<>(spread ? b.torpedoes() : quantum ? b.quantums() : b.torpedoes());
+        List<Launcher> launchers = new ArrayList<>();
+        for (BlockPos p : found)
+            if (level.getBlockState(p).getBlock() instanceof TorpedoLauncherBlock t && (spread ? !t.quantum : t.quantum == quantum))
+                launchers.add(new Launcher(Vec3.atCenterOf(p), level.dimension().identifier() + "@" + p.asLong(), t));
+        AABB own = ownShip(b, console, b.phasers().isEmpty() ? found : b.phasers());
         Aim aim = aim(level, player, own);
-        Vec3 tgt = aim.point();
-        launchers.sort(Comparator.comparingDouble(p -> Vec3.atCenterOf(p).distanceToSqr(tgt)));
-        // Torpedos manövrieren und fliegen durch das eigene Schiff hindurch: immer der Werfer, der dem Ziel am nächsten ist
-        BlockPos from = launchers.get(0);
-        LAST_SHOT.put(key, now);
         int tier = b.tier() > 0 ? b.tier() : quantum ? 7 : 3;
-        TorpedoStyle style = quantum ? TorpedoStyle.QUANTUM : TorpedoStyle.photon(tier);
-        Vec3 c = Vec3.atCenterOf(from);
-        Vec3 start = c.add(tgt.subtract(c).normalize().scale(1.0));
-        TorpedoEntity t = ModBlocks.TORPEDO.get().create(level, EntitySpawnReason.TRIGGERED);
-        if (t == null) return;
-        t.setPos(start.x, start.y, start.z);
-        t.setup(style, tgt, aim.entity(), own, player.getUUID());
-        // Der Werfer kann weit von der Kamera weg in einem ruhenden Chunk liegen: vorher aktiv laden,
-        // sonst bewegt sich der Torpedo nicht (er sichert sich danach im Flug selbst weiter)
-        var chunks = level.getChunkSource();
-        chunks.addTicketWithRadius(TicketType.ENDER_PEARL, ChunkPos.containing(BlockPos.containing(start)), 2);
-        chunks.addTicketWithRadius(TicketType.ENDER_PEARL,
-            ChunkPos.containing(BlockPos.containing(start.add(tgt.subtract(start).normalize().scale(64)))), 2);
-        level.addFreshEntity(t);
-        level.playSound(null, from, (quantum ? de.simon.spacemod.ModSounds.TORPEDO_QUANTUM : de.simon.spacemod.ModSounds.TORPEDO_PHOTON).get(),
-            SoundSource.BLOCKS, 3.0F, 0.95F + level.getRandom().nextFloat() * 0.1F);
-        player.sendOverlayMessage(Component.translatable(quantum ? "message.simonspacemod.torpedo.quantum" : "message.simonspacemod.torpedo.photon"));
+        launch(level, player, launchers, aim, own, quantum, spread, tier);
     }
 
     /** Explosionen lassen alles im Bereich des eigenen Schiffs heil. */

@@ -3125,6 +3125,16 @@ def storage_mining_assets(de, en):
         f"tooltip.{M}.stack_upgrade": "In einen Upgrade-Platz der Großkiste: %s× so viel je Platz (bis %s). Mehrere multiplizieren sich.",
         f"tooltip.{M}.tier_upgrade": "Rechtsklick auf eine Großkiste: eine Stufe höher, Inhalt bleibt. Braucht eins je Block der Kiste (3×3×3: 26).",
         f"message.{M}.crate.mixed": "Alle Blöcke einer Großkiste müssen dieselbe Stufe haben.",
+        f"key.{M}.spread": "Full Spread (Photonentorpedos)",
+        f"message.{M}.torpedo.no_spread": "Kein Werfer mit Full Spread (nur NCC-1701-C und -D)",
+        f"message.{M}.torpedo.spread": "Full Spread: %s Photonentorpedos!",
+        f"message.{M}.torpedo.photon_left": "Photonentorpedo abgefeuert (%s / %s im Werfer)",
+        f"message.{M}.torpedo.quantum_left": "Quantentorpedo abgefeuert (%s / %s im Werfer)",
+        f"key.{M}.spread": "Full spread (photon torpedoes)",
+        f"message.{M}.torpedo.no_spread": "No full spread launcher (NCC-1701-C and -D only)",
+        f"message.{M}.torpedo.spread": "Full spread: %s photon torpedoes!",
+        f"message.{M}.torpedo.photon_left": "Photon torpedo away (%s / %s in launcher)",
+        f"message.{M}.torpedo.quantum_left": "Quantum torpedo away (%s / %s in launcher)",
         f"gui.{M}.crate.sort": "Sortieren (gleiche Sachen zu vollen Stapeln zusammenfassen)",
         f"gui.{M}.crate.mode": "Sortieren nach: %s (klicken zum Wechseln)",
         f"gui.{M}.crate.mode.name": "Name", f"gui.{M}.crate.mode.mod": "Mod", f"gui.{M}.crate.mode.count": "Anzahl in der Kiste",
@@ -4039,6 +4049,21 @@ PAD = {
 
 WARP_CORE = {"parent": "minecraft:block/cube_column", "textures": {"end": b("warp_core_top"), "side": b("warp_core")}}
 
+def _with_magazine(base, color):
+    """Werfer mit Magazin: fünf kleine Ladelichter am unteren Rand."""
+    img = base()
+    px = img.load()
+    for k in range(5):
+        x = 3 + k * 2 + (1 if k > 2 else 0)
+        px[x, 13] = color + (255,)
+        px[x, 12] = shade(color + (255,), 50)
+    return img
+
+
+TEXTURES["torpedo_launcher_spread"] = lambda: _with_magazine(tex_torpedo, (255, 140, 40))
+TEXTURES["quantum_launcher_rapid"] = lambda: _with_magazine(tex_quantum_launcher, (90, 170, 255))
+SIMPLE += ["torpedo_launcher_spread", "quantum_launcher_rapid"]
+
 NAMES = {
     "hull_plating": ("Hüllenpanzerung", "Hull Plating"),
     "hull_panel": ("Hüllenplatte", "Hull Panel"),
@@ -4139,6 +4164,8 @@ NAMES = {
     "phaser_emitter": ("Phaser-Emitter (Refit/Excelsior)", "Phaser Emitter (Refit/Excelsior)"),
     "weapons_console": ("Waffenstation", "Weapons Console"),
     "quantum_launcher": ("Quantentorpedo-Werfer", "Quantum Torpedo Launcher"),
+    "torpedo_launcher_spread": ("Photonentorpedo-Werfer (Full Spread)", "Photon Torpedo Launcher (Full Spread)"),
+    "quantum_launcher_rapid": ("Schnellfeuer-Quantentorpedo-Werfer", "Rapid Quantum Torpedo Launcher"),
     "deflector_ring": ("Deflektorring (Kupfer)", "Deflector Ring (Copper)"),
     "deflector_violet": ("Deflektorschüssel (Galaxy, violett)", "Deflector Dish (Galaxy, Violet)"),
     "turbolift_nx": ("Turbolift (NX-01)", "Turbolift (NX-01)"),
