@@ -3005,6 +3005,112 @@ def tex_battery_top():
     return img
 
 
+CRATE_TIERS = [("wood", (120, 86, 48), "Holz", "Wooden"), ("copper", (196, 110, 70), "Kupfer", "Copper"),
+               ("iron", (200, 200, 205), "Eisen", "Iron"), ("gold", (236, 200, 60), "Gold", "Gold"),
+               ("diamond", (90, 220, 215), "Diamant", "Diamond"), ("netherite", (66, 60, 64), "Netherit", "Netherite")]
+
+
+def tex_crate(frame):
+    """Holzkiste: Bretter innen, Rahmen und Ecknieten in der Farbe der Stufe."""
+    img = new((150, 112, 66))
+    px = img.load()
+    for y in range(16):
+        for x in range(16):
+            if y % 4 == 3:
+                px[x, y] = (112, 80, 44, 255)          # Fuge zwischen den Brettern
+    noise(img, 7, 4242)
+    for x in range(2, 14):                              # Querstrebe
+        y = 15 - x
+        for d in (0, 1):
+            if 2 <= y + d <= 13:
+                px[x, y + d] = shade(frame if frame[0] < 140 or frame == (120, 86, 48) else (128, 92, 52), -10)
+    for i in range(16):
+        for t in (0, 1):
+            for (x, y) in ((i, t), (i, 15 - t), (t, i), (15 - t, i)):
+                px[x, y] = shade(frame, -25 if t == 0 else 0)
+    for (x, y) in ((1, 1), (14, 1), (1, 14), (14, 14)):
+        px[x, y] = shade(frame, 45)
+    return img
+
+
+def tex_laser(kind):
+    img = noise(new((96, 100, 108)), 6, 777 + len(kind))
+    px = img.load()
+    for i in range(16):
+        px[i, 0] = px[i, 15] = px[0, i] = px[15, i] = (52, 54, 60, 255)
+    if kind == "side":
+        for x in range(1, 15):                          # Warnstreifen unten
+            for y in (12, 13):
+                px[x, y] = (230, 190, 40, 255) if (x + y) // 2 % 2 == 0 else (30, 30, 30, 255)
+        for x in (4, 11):
+            px[x, 4] = (160, 230, 255, 255)
+    elif kind == "top":
+        for x in range(5, 11):
+            for y in range(5, 11):
+                px[x, y] = (70, 74, 80, 255)
+        for (x, y) in ((2, 2), (13, 2), (2, 13), (13, 13)):
+            px[x, y] = (150, 152, 160, 255)
+    elif kind == "lens":
+        for x in range(16):
+            for y in range(16):
+                d = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** 0.5
+                px[x, y] = (clamp(255 - d * 12), clamp(80 - d * 6), clamp(60 - d * 4), 255)
+    return img
+
+
+def storage_mining_assets(de, en):
+    M = MODID
+    for tid, color, dn, en_name in CRATE_TIERS:
+        n = f"crate_{tid}"
+        save(tex_crate(color), n)
+        write_json(os.path.join(ASSETS, "models", "block", n + ".json"), {"parent": "minecraft:block/cube_all", "textures": {"all": b(n)}})
+        write_json(os.path.join(ASSETS, "blockstates", n + ".json"), {"variants": {"": {"model": b(n)}}})
+        write_json(os.path.join(ASSETS, "items", n + ".json"), item_def(b(n)))
+        write_json(os.path.join(DATA, "loot_table", "blocks", n + ".json"), loot(n))
+        de[f"block.{M}.{n}"] = f"Großkiste ({dn})"
+        en[f"block.{M}.{n}"] = f"{en_name} Crate"
+    write_json(os.path.join(ROOT, "data", "minecraft", "tags", "block", "mineable", "axe.json"), {"values": [f"{M}:crate_wood"]})
+    write_json(os.path.join(ROOT, "data", "minecraft", "tags", "block", "needs_diamond_tool.json"), {"values": [f"{M}:crate_netherite"]})
+    for k in ("side", "top", "lens"):
+        save(tex_laser(k), f"mining_laser_{k}")
+    s, t, l = b("mining_laser_side"), b("mining_laser_top"), b("mining_laser_lens")
+
+    def el(fr, to, tex, down=None):
+        faces = {f: {"texture": "#" + tex} for f in ("north", "south", "east", "west", "up")}
+        faces["down"] = {"texture": "#" + (down or tex)}
+        return {"from": fr, "to": to, "faces": faces}
+    write_json(os.path.join(ASSETS, "models", "block", "mining_laser.json"), {"parent": "minecraft:block/block",
+        "textures": {"particle": s, "side": s, "top": t, "lens": l},
+        "elements": [el([0, 6, 0], [16, 16, 16], "side"), el([3, 2, 3], [13, 6, 13], "top", "lens"), el([6, 0, 6], [10, 2, 10], "lens")]})
+    # oben die Deckplatte statt der Seite
+    m = json.load(open(os.path.join(ASSETS, "models", "block", "mining_laser.json")))
+    m["elements"][0]["faces"]["up"] = {"texture": "#top"}
+    write_json(os.path.join(ASSETS, "models", "block", "mining_laser.json"), m)
+    write_json(os.path.join(ASSETS, "blockstates", "mining_laser.json"), {"variants": {"": {"model": b("mining_laser")}}})
+    write_json(os.path.join(ASSETS, "items", "mining_laser.json"), item_def(b("mining_laser")))
+    write_json(os.path.join(DATA, "loot_table", "blocks", "mining_laser.json"), loot("mining_laser"))
+    de.update({
+        f"block.{M}.mining_laser": "Bergbaulaser",
+        f"gui.{M}.mining.size": "Fläche", f"gui.{M}.mining.depth": "Tiefe",
+        f"gui.{M}.mining.on": "An", f"gui.{M}.mining.off": "Aus",
+        f"gui.{M}.mining.working": "Baut ab: Schicht %s / %s", f"gui.{M}.mining.no_power": "Kein Strom",
+        f"gui.{M}.mining.full": "Lager voll", f"gui.{M}.mining.done": "Nichts mehr abzubauen",
+        f"gui.{M}.mining.stopped": "Ausgeschaltet",
+        f"message.{M}.crate.formed": "Großkiste %s (%s): %s Plätze",
+        f"message.{M}.crate.invalid": "Keine fertige Großkiste – baue einen hohlen Quader (3×3×3 bis 8×8×8, innen Luft).",
+    })
+    en.update({
+        f"block.{M}.mining_laser": "Mining Laser",
+        f"gui.{M}.mining.size": "Area", f"gui.{M}.mining.depth": "Depth",
+        f"gui.{M}.mining.on": "On", f"gui.{M}.mining.off": "Off",
+        f"gui.{M}.mining.working": "Mining: layer %s / %s", f"gui.{M}.mining.no_power": "No power",
+        f"gui.{M}.mining.full": "Storage full", f"gui.{M}.mining.done": "Nothing left to mine",
+        f"gui.{M}.mining.stopped": "Switched off",
+        f"message.{M}.crate.formed": "Crate %s (%s): %s slots",
+        f"message.{M}.crate.invalid": "Not a finished crate – build a hollow box (3×3×3 to 8×8×8, air inside).",
+    })
+
+
 def misc_assets(de, en):
     M = MODID
     save(tex_battery_top(), "battery_top")
@@ -3896,7 +4002,7 @@ def main():
     models_extra += ["ceiling_light", "dual_wall", "dual_floor", "uranium_ore", "deepslate_uranium_ore", "reactor_casing",
                      "reactor_glass", "reactor_controller", "ship_helm", "airlock", "airlock_small", "dilithium_ore",
                      "antimatter_cluster", "deuterium_ice", "ship_part_assembly",
-                     "power_console", "shield_console", "alarm_light", "battery", "hull_glass"] + [f"shield_emitter_{k}" for k in ("tos", "refit", "excelsior", "c", "d", "e")]
+                     "power_console", "shield_console", "alarm_light", "battery", "hull_glass", "mining_laser"] + [f"crate_{t[0]}" for t in CRATE_TIERS if t[0] != "wood"] + [f"shield_emitter_{k}" for k in ("tos", "refit", "excelsior", "c", "d", "e")]
     models_extra += [f"door_{e}_{k}" for e in DOOR_ERAS for k in DOOR_KINDS]
     # Mit der Spitzhacke abbaubar
     write_json(os.path.join(ROOT, "data", "minecraft", "tags", "block", "mineable", "pickaxe.json"),
@@ -4055,6 +4161,7 @@ def main():
     defense_assets(de, en)
     misc_assets(de, en)
     hull_glass_assets(de, en)
+    storage_mining_assets(de, en)
     de.update(armory_de)
     en.update(armory_en)
     de.update({

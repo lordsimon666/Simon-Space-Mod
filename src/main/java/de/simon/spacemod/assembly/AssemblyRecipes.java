@@ -76,7 +76,20 @@ public final class AssemblyRecipes {
 
     static Recipe recipeFor(String p, Item output) {
         B b = new B();
-        if (p.startsWith("warp_core")) {
+        if (p.startsWith("crate_")) {
+            // Großkiste: Holz aus Brettern und einer Truhe, jede weitere Stufe aus der vorigen
+            switch (p) {
+                case "crate_wood" -> b.add(Items.OAK_PLANKS, 4).add(Items.CHEST, 1);
+                case "crate_copper" -> b.add(ModBlocks.CRATES.get(de.simon.spacemod.storage.CrateTier.WOOD).get().asItem(), 1).add(Items.COPPER_INGOT, 4);
+                case "crate_iron" -> b.add(ModBlocks.CRATES.get(de.simon.spacemod.storage.CrateTier.COPPER).get().asItem(), 1).add(Items.IRON_INGOT, 4);
+                case "crate_gold" -> b.add(ModBlocks.CRATES.get(de.simon.spacemod.storage.CrateTier.IRON).get().asItem(), 1).add(Items.GOLD_INGOT, 4);
+                case "crate_diamond" -> b.add(ModBlocks.CRATES.get(de.simon.spacemod.storage.CrateTier.GOLD).get().asItem(), 1).add(Items.DIAMOND, 2);
+                default -> b.add(ModBlocks.CRATES.get(de.simon.spacemod.storage.CrateTier.DIAMOND).get().asItem(), 1).add(Items.NETHERITE_INGOT, 1);
+            }
+        } else if (p.equals("mining_laser")) {
+            b.add(Items.IRON_BLOCK, 2).add(Items.DIAMOND_PICKAXE, 1).add(Items.DIAMOND, 3).add(Items.REDSTONE_BLOCK, 2)
+                .add(Items.GLOWSTONE_DUST, 4).add(ModBlocks.DILITHIUM_CRYSTAL.get(), 2).add(Items.HOPPER, 1);
+        } else if (p.startsWith("warp_core")) {
             boolean late = p.endsWith("_e") || p.endsWith("_tng");
             b.add(Items.IRON_BLOCK, 2).add(ModBlocks.DILITHIUM_CRYSTAL.get(), p.endsWith("_nx") ? 0 : late ? 4 : 2)
                 .add(ModBlocks.ANTIMATTER_POD.get(), late ? 3 : 2).add(ModBlocks.DEUTERIUM.get(), 3)

@@ -525,6 +525,47 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
 * Einfache Bauteile (Hülle, Wände, Böden, Teppich) ergeben 8 Stück, Lichter und Fenster 4, Warpkerne
   2, alles andere 1. Trichter können Zutaten einfüllen und das Ergebnis herausholen.
 
+### Großkiste (Multiblock)
+
+* Sechs Stufen: **Holz, Kupfer, Eisen, Gold, Diamant, Netherit**. Holz kommt aus Brettern und einer
+  Truhe, jede weitere Stufe aus der vorigen plus Kupfer, Eisen, Gold, Diamanten bzw. einem Netheritbarren
+  (Schiffsteil-Fertigung).
+* Aus den Blöcken einen **hohlen Quader** bauen: jede Kante **3 bis 8 Blöcke** (auch ungleich, z. B.
+  3×5×8). Alle sechs Wände sind voll, innen nur Luft. Ist der letzte Block gesetzt, wird daraus eine Kiste.
+  Das zeigt eine Meldung mit Größe und Platzzahl an.
+* **Jeder Block zählt wie eine Kiste der Stufe, auch die Luft im Inneren**:
+
+  | Stufe     | Plätze je Block | 3×3×3  | 8×8×8  |
+  |-----------|-----------------|--------|--------|
+  | Holz      | 27              | 729    | 13 824 |
+  | Kupfer    | 45              | 1 215  | 23 040 |
+  | Eisen     | 54              | 1 458  | 27 648 |
+  | Gold      | 81              | 2 187  | 41 472 |
+  | Diamant   | 108             | 2 916  | 55 296 |
+  | Netherit  | 132             | 3 564  | 67 584 |
+
+  Bei gemischten Stufen zählt die niedrigste verbaute.
+* **Jeder Block** öffnet das Menü und nimmt über Trichter, Rohre usw. Gegenstände an bzw. gibt sie ab.
+  Das Menü zeigt 9 × 6 Plätze mit einer **Bildlaufleiste** (Mausrad, mit Shift seitenweise, oder ziehen).
+  Shift-Klick aus dem eigenen Inventar sortiert in die ganze Kiste ein, nicht nur in den sichtbaren Teil.
+* Wird ein Block der Kiste abgebaut oder gesprengt, fällt der ganze Inhalt heraus, wie bei einer Truhe.
+  Zum Vergrößern also vorher ausräumen. Die Kiste fliegt im Schiff mit, samt Inhalt.
+
+### Bergbaulaser
+
+* Zeigt immer **nach unten**. Auf einem fliegenden Schiff heißt das „unten“ im Schiff: Der Abbaubereich
+  dreht und neigt sich mit dem Schiff.
+* Einstellbar im Menü: **Fläche 1×1 bis 16×16** und **Tiefe 1 bis 32** (Knöpfe −/+, mit Shift in
+  Fünferschritten), dazu an/aus. Er baut Schicht für Schicht von oben ab, etwa 10 Blöcke pro Sekunde.
+* **9 Plätze** für die Ausbeute (Drops wie mit einer Diamantspitzhacke). Angrenzende Inventare bekommen
+  die Ausbeute automatisch, z. B. eine Großkiste direkt daneben oder darüber. Ist alles voll, wartet er.
+* **Strom**: 250 FE je Block, 100 000 FE Speicher. Den Strom liefert das Bordnetz (Warpkern) oder ein
+  angrenzender Erzeuger bzw. eine Batterie.
+* Er lässt Grundgestein, Flüssigkeiten, Blöcke mit Inhalt (Truhen, Maschinen) und alle Blöcke dieser Mod
+  stehen, also auch die eigene Schiffshülle.
+* Rezept (Schiffsteil-Fertigung): Eisenblöcke, Diamantspitzhacke, Diamanten, Redstone-Blöcke,
+  Glowstone, Dilithium und ein Trichter.
+
 ### Luftschleusen
 
 * **Luftschleuse (2 x 2 x 2)**: zwei Doppeltüren hintereinander (vorne und hinten), dazwischen die
@@ -617,7 +658,7 @@ G = Goldbarren, E = Eisenbarren, P = Enderperle, R = Redstone
  E R E
 ```
 
-## Neue Blöcke (149)
+## Neue Blöcke (156)
 
 * **Hülle**: Hüllenpanzerung (+ Stufe), Hüllenplatte, dunkle Hüllenplatte, Hüllenfenster, Hüllenglas,
   Kennungsmarkierung (+ Stufe), roter Zierstreifen, Positionslicht rot/grün, Deflektorschüssel,
@@ -652,7 +693,7 @@ G = Goldbarren, E = Eisenbarren, P = Enderperle, R = Redstone
   Kinofilmen und Next Generation (12 Stück)
 * **Kernreaktor**: Uranerz, Tiefenschiefer-Uranerz, Reaktorhülle, Reaktorglas, Reaktor-Steuerblock
 * **Weltraum**: Luftschleuse (2 x 2 x 2 und 1 x 2 x 2), Dilithium-Erz, Antimaterie-Einschluss, Deuterium-Eis
-* **Werkstatt**: Schiffsteil-Fertigung, Batterie
+* **Werkstatt**: Schiffsteil-Fertigung, Batterie, Bergbaulaser, Großkiste (Holz, Kupfer, Eisen, Gold, Diamant, Netherit)
 * **Verteidigung**: Energieverteilung, Schildsteuerung, Alarmleuchte, 6 Schildemitter (NCC-1701 bis -E)
 * **Allgemein**: Deckboden, Korridorwand, Deckenverkleidung, Deckenleuchte, Maschinenraum-Konsole,
   Warpkern, Plasmaleitung

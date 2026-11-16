@@ -554,6 +554,41 @@ public final class ModBlocks {
         return item;
     }
 
+    // --- Großkiste (Multiblock, Holz bis Netherit) ---
+    public static final java.util.Map<de.simon.spacemod.storage.CrateTier, RegistryObject<Block>> CRATES = crates();
+
+    private static java.util.Map<de.simon.spacemod.storage.CrateTier, RegistryObject<Block>> crates() {
+        var map = new java.util.EnumMap<de.simon.spacemod.storage.CrateTier, RegistryObject<Block>>(de.simon.spacemod.storage.CrateTier.class);
+        for (var t : de.simon.spacemod.storage.CrateTier.values()) {
+            BlockBehaviour.Properties props = switch (t) {
+                case WOOD -> BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.5F).sound(SoundType.WOOD);
+                case COPPER -> metal(MapColor.COLOR_ORANGE);
+                case IRON -> metal(MapColor.METAL);
+                case GOLD -> metal(MapColor.GOLD);
+                case DIAMOND -> metal(MapColor.DIAMOND);
+                case NETHERITE -> BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(25F, 1200F)
+                    .sound(SoundType.NETHERITE_BLOCK).requiresCorrectToolForDrops();
+            };
+            map.put(t, block("crate_" + t.id, p -> new de.simon.spacemod.storage.CrateBlock(p, t), props));
+        }
+        return map;
+    }
+
+    public static final RegistryObject<BlockEntityType<de.simon.spacemod.storage.CrateBlockEntity>> CRATE_BE = BLOCK_ENTITIES.register("crate",
+        () -> new BlockEntityType<>(de.simon.spacemod.storage.CrateBlockEntity::new,
+            CRATES.values().stream().map(RegistryObject::get).collect(java.util.stream.Collectors.toSet())));
+    public static final RegistryObject<MenuType<de.simon.spacemod.storage.CrateMenu>> CRATE_MENU = MENUS.register("crate",
+        () -> IForgeMenuType.create(de.simon.spacemod.storage.CrateMenu::new));
+
+    // --- Bergbaulaser ---
+    public static final RegistryObject<Block> MINING_LASER = block("mining_laser", de.simon.spacemod.mining.MiningLaserBlock::new,
+        metal(MapColor.COLOR_GRAY).noOcclusion().lightLevel(_ -> 4));
+    public static final RegistryObject<BlockEntityType<de.simon.spacemod.mining.MiningLaserBlockEntity>> MINING_LASER_BE =
+        BLOCK_ENTITIES.register("mining_laser", () -> new BlockEntityType<>(de.simon.spacemod.mining.MiningLaserBlockEntity::new,
+            java.util.Set.of(MINING_LASER.get())));
+    public static final RegistryObject<MenuType<de.simon.spacemod.mining.MiningLaserMenu>> MINING_LASER_MENU = MENUS.register("mining_laser",
+        () -> IForgeMenuType.create(de.simon.spacemod.mining.MiningLaserMenu::new));
+
     // --- Schiffsteil-Fertigung: baut alle Blöcke der Mod ---
     public static final RegistryObject<Block> SHIP_PART_ASSEMBLY = block("ship_part_assembly", de.simon.spacemod.assembly.AssemblyBlock::new,
         metal(MapColor.COLOR_LIGHT_BLUE).lightLevel(s -> s.getValue(de.simon.spacemod.assembly.AssemblyBlock.LIT) ? 10 : 3));
