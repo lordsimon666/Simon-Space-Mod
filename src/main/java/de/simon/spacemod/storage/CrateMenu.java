@@ -43,7 +43,7 @@ public class CrateMenu extends AbstractContainerMenu {
                 return switch (i) {
                     case 0 -> master.capacity() & 0x7FFF;
                     case 1 -> master.capacity() >> 15;
-                    case 2 -> master.multiplier();
+                    case 2 -> Integer.numberOfTrailingZeros(master.multiplier()); // Zweierpotenz: nur den Exponenten (Datenfelder sind 16 Bit)
                     default -> master.sortMode().ordinal();
                 };
             }
@@ -89,7 +89,7 @@ public class CrateMenu extends AbstractContainerMenu {
     }
 
     public int multiplier() {
-        return Math.max(1, data.get(2));
+        return 1 << Math.max(0, Math.min(20, data.get(2)));
     }
 
     public CrateSort.Mode sortMode() {

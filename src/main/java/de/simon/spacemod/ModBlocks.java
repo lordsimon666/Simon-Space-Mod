@@ -580,8 +580,9 @@ public final class ModBlocks {
     public static final RegistryObject<MenuType<de.simon.spacemod.storage.CrateMenu>> CRATE_MENU = MENUS.register("crate",
         () -> IForgeMenuType.create(de.simon.spacemod.storage.CrateMenu::new));
 
-    // Stack-Upgrades (2×, 4×, 8×, 16×) und Stufen-Upgrades für die Großkiste
-    public static final List<RegistryObject<Item>> STACK_UPGRADES = List.of(stackUpgrade(1, 2), stackUpgrade(2, 4), stackUpgrade(3, 8), stackUpgrade(4, 16));
+    // Stack-Upgrades (Holz 2×, Eisen 4×, Gold 8×, Diamant 16×, Netherit 32×) und Stufen-Upgrades für die Großkiste
+    public static final List<RegistryObject<Item>> STACK_UPGRADES = List.of(stackUpgrade(1, 2), stackUpgrade(2, 4), stackUpgrade(3, 8),
+        stackUpgrade(4, 16), stackUpgrade(5, 32));
     public static final List<RegistryObject<Item>> TIER_UPGRADES = tierUpgrades();
 
     private static RegistryObject<Item> stackUpgrade(int tier, int mult) {

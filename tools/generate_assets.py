@@ -3076,12 +3076,13 @@ def icon_stack_upgrade(color, n):
     """Stack-Upgrade: übereinander gestapelte Kisten, je Stufe eine mehr."""
     img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
     px = img.load()
+    h = 3 if n < 5 else 2                       # Netherit: sechs flachere Lagen
     for k in range(n + 1):
-        y0 = 13 - k * 3
+        y0 = 13 - k * h
         for x in range(3, 13):
-            for y in range(y0, y0 + 3):
+            for y in range(y0, y0 + h):
                 if 0 <= y < 16:
-                    px[x, y] = shade(color, -45) if y == y0 + 2 or x in (3, 12) else shade(color, 15 - k * 4)
+                    px[x, y] = shade(color, -45) if y == y0 + h - 1 or x in (3, 12) else shade(color, 15 - k * 4)
     return img
 
 def storage_mining_assets(de, en):
@@ -3108,8 +3109,9 @@ def storage_mining_assets(de, en):
                 "ingredients": [f"{M}:crate_upgrade_{frm}_to_{mid}", f"{M}:crate_upgrade_{mid}_to_{to}"], "result": {"id": f"{M}:{n}"}})
         de[f"item.{M}.{n}"] = f"Kisten-Upgrade {tier_names[frm][0]} → {tier_names[to][0]}"
         en[f"item.{M}.{n}"] = f"Crate Upgrade {tier_names[frm][1]} → {tier_names[to][1]}"
-    stack = [(1, 2, (200, 200, 205), "minecraft:iron_block", "minecraft:chest"), (2, 4, (236, 200, 60), "minecraft:gold_block", None),
-             (3, 8, (90, 220, 215), "minecraft:diamond_block", None), (4, 16, (66, 60, 64), "minecraft:netherite_ingot", None)]
+    stack = [(1, 2, (150, 112, 66), "#minecraft:planks", "minecraft:chest"), (2, 4, (200, 200, 205), "minecraft:iron_block", None),
+             (3, 8, (236, 200, 60), "minecraft:gold_block", None), (4, 16, (90, 220, 215), "minecraft:diamond_block", None),
+             (5, 32, (66, 60, 64), "minecraft:netherite_ingot", None)]
     for tier, mult, color, ing, center in stack:
         n = f"stack_upgrade_tier_{tier}"
         save(icon_stack_upgrade(color, tier), "item/" + n)
@@ -3120,7 +3122,7 @@ def storage_mining_assets(de, en):
         de[f"item.{M}.{n}"] = f"Stack-Upgrade Stufe {tier} ({mult}×)"
         en[f"item.{M}.{n}"] = f"Stack Upgrade Tier {tier} ({mult}×)"
     de.update({
-        f"tooltip.{M}.stack_upgrade": "In einen Upgrade-Platz der Großkiste: %s× so viel je Platz (bis %s). Mehrere zählen zusammen.",
+        f"tooltip.{M}.stack_upgrade": "In einen Upgrade-Platz der Großkiste: %s× so viel je Platz (bis %s). Mehrere multiplizieren sich.",
         f"tooltip.{M}.tier_upgrade": "Rechtsklick auf eine Großkiste: eine Stufe höher, Inhalt bleibt. Braucht eins je Block der Kiste (3×3×3: 26).",
         f"message.{M}.crate.mixed": "Alle Blöcke einer Großkiste müssen dieselbe Stufe haben.",
         f"gui.{M}.crate.sort": "Sortieren (gleiche Sachen zu vollen Stapeln zusammenfassen)",
@@ -3131,7 +3133,7 @@ def storage_mining_assets(de, en):
         f"message.{M}.crate.upgraded": "Aufgewertet zu %s (%s Upgrades verbraucht)",
     })
     en.update({
-        f"tooltip.{M}.stack_upgrade": "Put into a crate upgrade slot: %s× as much per slot (up to %s). Several add up.",
+        f"tooltip.{M}.stack_upgrade": "Put into a crate upgrade slot: %s× as much per slot (up to %s). Several multiply.",
         f"tooltip.{M}.tier_upgrade": "Right-click a crate: one tier higher, contents stay. Needs one per crate block (3×3×3: 26).",
         f"message.{M}.crate.mixed": "All blocks of a crate must be the same tier.",
         f"gui.{M}.crate.sort": "Sort (merge equal items into full stacks)",

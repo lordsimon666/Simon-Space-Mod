@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "X": "minecraft:netherite_ingot",
+    "X": "minecraft:diamond_block",
     "C": "simonspacemod:stack_upgrade_tier_3"
   },
   "pattern": [

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "X": "minecraft:netherite_ingot",
+    "C": "simonspacemod:stack_upgrade_tier_4"
+  },
+  "pattern": [
+    " X ",
+    "XCX",
+    " X "
+  ],
+  "result": {
+    "id": "simonspacemod:stack_upgrade_tier_5"
+  }
+}

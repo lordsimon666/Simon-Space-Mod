@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "X": "minecraft:diamond_block",
+    "X": "minecraft:gold_block",
     "C": "simonspacemod:stack_upgrade_tier_2"
   },
   "pattern": [

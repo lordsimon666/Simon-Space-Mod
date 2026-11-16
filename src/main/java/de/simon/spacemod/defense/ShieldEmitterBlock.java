@@ -24,12 +24,13 @@ public class ShieldEmitterBlock extends Block {
     /** Leben je Schildblock. */
     public static float maxHp(int tier) {
         return switch (tier) {
-            case 1 -> 60;
-            case 2 -> 90;
-            case 3 -> 120;
-            case 4 -> 160;
-            case 5 -> 200;
-            default -> tier >= 6 ? 260 : 40;
+            // die schwächste Stufe ist so stark wie früher das Schild der E, die anderen im gleichen Verhältnis
+            case 1 -> 260;
+            case 2 -> 390;
+            case 3 -> 520;
+            case 4 -> 690;
+            case 5 -> 870;
+            default -> tier >= 6 ? 1130 : 170;
         };
     }
 }

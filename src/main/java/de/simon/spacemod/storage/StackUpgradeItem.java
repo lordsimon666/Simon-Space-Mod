@@ -10,7 +10,7 @@ import net.minecraft.world.item.component.TooltipDisplay;
 
 /**
  * Stack-Upgrade (wie bei Sophisticated Storage): in einen der 4 Upgrade-Plätze der Großkiste gesetzt,
- * passen mehr Gegenstände in jeden Platz. Mehrere Upgrades zählen zusammen (2× + 4× = 6×).
+ * passen mehr Gegenstände in jeden Platz. Mehrere Upgrades multiplizieren sich (2× und 4× = 8×).
  */
 public class StackUpgradeItem extends Item {
     public final int multiplier;

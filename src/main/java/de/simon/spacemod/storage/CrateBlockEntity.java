@@ -94,16 +94,16 @@ public class CrateBlockEntity extends BlockEntity {
         return BlockPos.ZERO.equals(toMaster);
     }
 
-    /** Stapelvielfaches aus den eingesetzten Stack-Upgrades (die Faktoren werden addiert, ohne Upgrade 1). */
+    /** Stapelvielfaches aus den eingesetzten Stack-Upgrades (die Faktoren werden multipliziert, ohne Upgrade 1). */
     public int multiplier() {
         return multiplierWithout(-1);
     }
 
     int multiplierWithout(int skipSlot) {
-        int sum = 0;
+        int m = 1;
         for (int i = 0; i < UPGRADE_SLOTS; i++)
-            if (i != skipSlot && upgrades.getItem(i).getItem() instanceof StackUpgradeItem u) sum += u.multiplier;
-        return Math.max(1, sum);
+            if (i != skipSlot && upgrades.getItem(i).getItem() instanceof StackUpgradeItem u) m *= u.multiplier;
+        return m; // höchstens 32⁴ = 1 048 576 (× 64 passt noch in eine int)
     }
 
     /** Höchstmenge je Platz für diese Sorte (nicht stapelbare Sachen bleiben bei 1). */

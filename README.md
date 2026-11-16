@@ -469,7 +469,7 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
 * **Einschalten** an der Schildsteuerung: die Hülle wird vermessen und das Schild etwa **2 Blöcke**
   vor dem Rumpf berechnet. Es ist geglättet: kleine Vertiefungen (z. B. viele 1-Block-Rillen) werden
   überbrückt (dort ist der Abstand größer), einzeln herausstehende Blöcke bekommen nur 1 Block Abstand.
-* Jeder Schildblock hat **Leben**: Stufe 1 60, 2 90, 3 120, 4 160, 5 200, 6 260. Schaden machen nur
+* Jeder Schildblock hat **Leben**: Stufe 1 260, 2 390, 3 520, 4 690, 5 870, 6 1130. Schaden machen nur
   **Explosionen** (je stärker, desto mehr) und **Phaser**: ein Phaserstoß weniger als ein
   **Photonentorpedo**, ein **Quantentorpedo** noch mehr. Solange das Schild an der Stelle Leben hat,
   bleiben Hülle und Besatzung dahinter unversehrt; Strahlen und Torpedos enden am Schild.
@@ -566,12 +566,14 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
 
   | Upgrade | Faktor | Stück je Platz | Rezept (Werkbank) |
   |---------|--------|----------------|-------------------|
-  | Stufe 1 | 2×     | 128            | 4 Eisenblöcke um eine Truhe |
-  | Stufe 2 | 4×     | 256            | 4 Goldblöcke um Stufe 1 |
-  | Stufe 3 | 8×     | 512            | 4 Diamantblöcke um Stufe 2 |
-  | Stufe 4 | 16×    | 1024           | 4 Netheritbarren um Stufe 3 |
+  | Stufe 1 (Holz)     | 2×  | 128  | 4 Bretter um eine Truhe |
+  | Stufe 2 (Eisen)    | 4×  | 256  | 4 Eisenblöcke um Stufe 1 |
+  | Stufe 3 (Gold)     | 8×  | 512  | 4 Goldblöcke um Stufe 2 |
+  | Stufe 4 (Diamant)  | 16× | 1024 | 4 Diamantblöcke um Stufe 3 |
+  | Stufe 5 (Netherit) | 32× | 2048 | 4 Netheritbarren um Stufe 4 |
 
-  Mehrere Stack-Upgrades zählen zusammen (z. B. 2× + 4× = 6×, höchstens 4 × 16× = 64×). Nicht
+  Mehrere Stack-Upgrades **multiplizieren** sich (z. B. 2× und 4× = 8×, vier Netherit-Upgrades =
+  32⁴ ≈ 1 Million × je Platz). Nicht
   stapelbare Sachen (Werkzeuge, Rüstung) bleiben bei 1 je Platz. Ein Upgrade lässt sich nur herausnehmen,
   wenn danach kein Platz überquillt. Große Stapel nimmt man stapelweise heraus (64 auf einmal).
 * **Jeder Block** öffnet das Menü und nimmt über Trichter, Rohre usw. Gegenstände an bzw. gibt sie ab.
