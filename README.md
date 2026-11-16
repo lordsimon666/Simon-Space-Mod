@@ -568,6 +568,23 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
 * Ist er leer, endet der Flug mit ein paar Sekunden **Sanftem Fall**.
 * Rezept: Leder – Glas – Leder / Eisen – Diamant – Eisen / Feder – Redstoneblock – Feder.
 
+### Handbuch der Sternenflotte
+
+* Jeder Spieler bekommt beim **ersten Betreten einer Welt** ein Handbuch; ein neues entsteht an der
+  Werkbank aus einem **Buch und Lapislazuli**. Rechtsklick öffnet es.
+* Aufgebaut wie das Lexica Botania (und das Handbuch aus Simon's Mod), aber im Weltraum-Stil: ein
+  **dunkelblaues Buch mit funkelnden Sternen**, helle Seiten wie eine Sternenkarte, goldene Titel und
+  orange Akzentlinien.
+* **Kategorien**: Erste Schritte, Rohstoffe, Energie, Raumschiffe, Waffen, Schilde, Lager & Bergbau und
+  Die Enterprises. Jedes Kapitel erklärt ein Thema mit Text, großen Items und **Rezepten** – von der
+  Werkbank, aus dem Ofen und aus der **Schiffsteil-Fertigung** (3×3-Raster mit Mengen).
+* **Multiblöcke in 3D**: Kernreaktor und Großkiste lassen sich mit der Maus drehen (links ziehen),
+  verschieben (rechts ziehen) und zoomen (Mausrad), Schicht für Schicht aufbauen und mit
+  **„In der Welt zeigen“** als leuchtender Bauplan dort hinstellen, wo man hinschaut. Gesetzte Blöcke
+  verschwinden aus dem Plan; Schleichen + Rechtsklick mit dem Buch nimmt ihn weg.
+* Mausrad oder Pfeiltasten blättern, Rechtsklick oder Rücktaste gehen zurück. Das Buch öffnet dort, wo
+  man zuletzt gelesen hat.
+
 ### Schiffsteil-Fertigung
 
 * Baut **jeden Block dieser Mod** (außer sich selbst und den Erzen) aus Grundstoffen und **Strom**.

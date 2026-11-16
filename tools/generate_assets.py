@@ -3502,6 +3502,59 @@ def vanilla_style_ores_items():
     save(icon_antimatter((255, 240, 255), (190, 60, 240), (70, 15, 100)), "item/antimatter")
 
 
+
+def guide_book_assets(de, en):
+    """Handbuch der Sternenflotte: dunkelblaues Buch mit goldenen Sternen (eigene Pixelgrafik), Rezept und Texte."""
+    import sys
+    sys.dont_write_bytecode = True
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import guide_texts
+    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    px = img.load()
+    edge, cover, cover_hi, spine = (6, 10, 28, 255), (18, 32, 86, 255), (32, 52, 128, 255), (10, 18, 52, 255)
+    paper, paper_sh = (232, 236, 246, 255), (184, 194, 222, 255)
+    gold, gold_dim, white = (255, 214, 90, 255), (196, 150, 52, 255), (240, 244, 255, 255)
+    # Buch leicht schräg: Seitenblock rechts unten, Einband davor
+    for y in range(2, 15):
+        for x in range(3, 14):
+            px[x, y] = edge
+    for y in range(3, 14):
+        for x in range(4, 13):
+            px[x, y] = cover
+    for y in range(3, 14):
+        px[4, y] = spine
+        px[5, y] = spine
+    for x in range(6, 13):
+        px[x, 3] = cover_hi
+    # Seiten an der Unterkante und rechts
+    for x in range(5, 14):
+        px[x, 14] = paper_sh if x % 2 else paper
+    for y in range(3, 15):
+        px[13, y] = paper if y % 2 else paper_sh
+    # Goldene Beschläge am Rücken
+    for y in (4, 8, 12):
+        px[5, y] = gold_dim
+    # Sterne: ein großer goldener in der Mitte, kleine verstreut
+    for (x, y) in ((9, 6), (8, 7), (9, 7), (10, 7), (9, 8)):
+        px[x, y] = gold
+    px[9, 5] = gold_dim
+    px[9, 9] = gold_dim
+    px[7, 7] = gold_dim
+    px[11, 7] = gold_dim
+    for (x, y) in ((7, 4), (11, 5), (12, 10), (7, 11), (10, 12), (6, 9)):
+        px[x, y] = white
+    save(img, "item/guide_book")
+    write_json(os.path.join(ASSETS, "models", "item", "guide_book.json"),
+               {"parent": "minecraft:item/generated", "textures": {"layer0": f"{MODID}:item/guide_book"}})
+    write_json(os.path.join(ASSETS, "items", "guide_book.json"), item_def(f"{MODID}:item/guide_book"))
+    write_json(os.path.join(DATA, "recipe", "guide_book.json"), {"type": "minecraft:crafting_shapeless", "category": "misc",
+        "ingredients": ["minecraft:book", "minecraft:lapis_lazuli"], "result": {"id": f"{MODID}:guide_book"}})
+    de[f"item.{MODID}.guide_book"] = "Handbuch der Sternenflotte"
+    en[f"item.{MODID}.guide_book"] = "Starfleet Handbook"
+    for lang, texts in ((de, guide_texts.DE), (en, guide_texts.EN)):
+        for k, v in texts.items():
+            lang[f"message.{MODID}.{k[len('message.'):]}" if k.startswith("message.") else f"guide.{MODID}.{k}"] = v
+
 def misc_assets(de, en):
     M = MODID
     save(tex_battery_top(), "battery_top")
@@ -4588,6 +4641,7 @@ def main():
     sound_assets(de, en)
     defense_assets(de, en)
     misc_assets(de, en)
+    guide_book_assets(de, en)
     hull_glass_assets(de, en)
     storage_mining_assets(de, en)
     base_shield_assets(de, en)

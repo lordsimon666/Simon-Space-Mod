@@ -12,7 +12,7 @@ public final class TabOrder {
 
     /** Stufenketten in ihrer Reihenfolge (alles andere bleibt in der Registrierreihenfolge). */
     private static final List<String> TIERED = List.of(
-        "ship_part_assembly", "communicator", "space_suit", "keycard_security", "keycard_command", "keycard_captain",
+        "guide_book", "ship_part_assembly", "communicator", "space_suit", "keycard_security", "keycard_command", "keycard_captain",
         "phaser_nx", "phaser_tos", "phaser_movie", "phaser_tng", "phaser_fc", "rifle_nx", "rifle_tos", "rifle_tng", "rifle_fc",
         "warp_core_nx", "warp_core", "warp_core_tng", "warp_core_e", "warp_core_f",
         "torpedo_launcher", "torpedo_launcher_spread", "torpedo_launcher_rapid",
@@ -21,7 +21,7 @@ public final class TabOrder {
 
     /** Gruppe eines Registernamens (kleiner = weiter vorne). */
     public static int category(String p) {
-        if (p.equals("ship_part_assembly") || p.equals("communicator") || p.equals("space_suit") || p.startsWith("keycard_")
+        if (p.equals("guide_book") || p.equals("ship_part_assembly") || p.equals("communicator") || p.equals("space_suit") || p.startsWith("keycard_")
             || p.matches("(phaser|rifle)_(nx|tos|movie|tng|fc)")) return 0;                                   // Grundausstattung
         if (p.contains("_ore") || p.contains("uranium") || p.startsWith("dilithium") || p.startsWith("antimatter")
             || p.startsWith("deuterium")) return 1;                                                            // Rohstoffe

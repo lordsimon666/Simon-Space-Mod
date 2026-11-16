@@ -319,6 +319,10 @@ public final class ModBlocks {
         BlockBehaviour.Properties.of().mapColor(MapColor.DEEPSLATE).strength(4.5F, 3F).sound(SoundType.DEEPSLATE).requiresCorrectToolForDrops().lightLevel(_ -> 3));
     public static final RegistryObject<Item> RAW_URANIUM = simpleItem("raw_uranium");
     public static final RegistryObject<Item> URANIUM_INGOT = simpleItem("uranium_ingot");
+    /** Handbuch der Sternenflotte (wie das Lexica Botania). */
+    public static final RegistryObject<Item> GUIDE_BOOK = ITEMS.register("guide_book",
+        () -> new de.simon.spacemod.guide.GuideBookItem(new Item.Properties().setId(ITEMS.key("guide_book")).stacksTo(1)));
+    static { TAB_ITEMS.add(GUIDE_BOOK); }
     public static final RegistryObject<Item> ATOMIC_CHICKEN = ITEMS.register("atomic_chicken",
         () -> new de.simon.spacemod.item.AtomicChickenItem(new Item.Properties().setId(ITEMS.key("atomic_chicken"))));
 

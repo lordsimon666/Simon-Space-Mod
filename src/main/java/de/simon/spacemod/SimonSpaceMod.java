@@ -36,6 +36,7 @@ public final class SimonSpaceMod {
         de.simon.spacemod.defense.Shields.init();
         de.simon.spacemod.defense.WarpBreach.init();
         de.simon.spacemod.weapons.CameraControl.init();
+        net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent.BUS.addListener(de.simon.spacemod.guide.GuideBookItem::onPlayerLoggedIn);
         net.minecraftforge.event.AttachCapabilitiesEvent.ItemStacks.BUS.addListener(de.simon.spacemod.item.HandWeaponItem::attachEnergy);
         if (FMLLoader.getDist().isClient()) {
             FMLClientSetupEvent.getBus(modBus).addListener(de.simon.spacemod.client.ClientSetup::onClientSetup);
@@ -43,6 +44,7 @@ public final class SimonSpaceMod {
             de.simon.spacemod.client.ClientCamera.init();
             de.simon.spacemod.client.ShipClient.init();
             de.simon.spacemod.client.ShipView.init();
+            de.simon.spacemod.client.guide.GuideClient.init(); // Handbuch: 3D-Bilder, Bauplan in der Welt
         }
     }
 }
