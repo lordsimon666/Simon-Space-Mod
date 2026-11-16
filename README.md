@@ -624,6 +624,7 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
   stapelbare Sachen (Werkzeuge, Rüstung) bleiben bei 1 je Platz. Ein Upgrade lässt sich nur herausnehmen,
   wenn danach kein Platz überquillt. Große Stapel nimmt man stapelweise heraus (64 auf einmal). Damit die
   Zahlen lesbar bleiben, stehen sie ab 1000 kleiner da und ab 10 000 abgekürzt (10k, 512k, 1.2M …).
+  Fährt man mit der Maus darüber, zeigt der Tooltip die genaue Anzahl (z. B. „Anzahl: 12.345“).
 * **Jeder Block** öffnet das Menü und nimmt über Trichter, Rohre usw. Gegenstände an bzw. gibt sie ab.
   Das Menü zeigt 9 × 9 Plätze mit einer **Bildlaufleiste** (Mausrad, mit Shift seitenweise, oder ziehen).
 * **Sortieren** (Knöpfe oben rechts): Der linke Knopf fasst gleiche Sachen zu möglichst großen Stapeln

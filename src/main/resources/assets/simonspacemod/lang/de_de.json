@@ -338,6 +338,7 @@
   "message.simonspacemod.torpedo.quantum_left": "Quantentorpedo abgefeuert (%s / %s im Werfer)",
   "message.simonspacemod.torpedo.quantum_pair": "Quanten-Doppelsalve! (%s / %s Salven im Werfer)",
   "gui.simonspacemod.crate.sort": "Sortieren (gleiche Sachen zu vollen Stapeln zusammenfassen)",
+  "gui.simonspacemod.crate.count": "Anzahl: %s",
   "gui.simonspacemod.crate.mode": "Sortieren nach: %s (klicken zum Wechseln)",
   "gui.simonspacemod.crate.mode.name": "Name",
   "gui.simonspacemod.crate.mode.mod": "Mod",

@@ -338,6 +338,7 @@
   "message.simonspacemod.torpedo.quantum_left": "Quantum torpedo away (%s / %s in launcher)",
   "message.simonspacemod.torpedo.quantum_pair": "Dual quantum salvo! (%s / %s salvos in launcher)",
   "gui.simonspacemod.crate.sort": "Sort (merge equal items into full stacks)",
+  "gui.simonspacemod.crate.count": "Amount: %s",
   "gui.simonspacemod.crate.mode": "Sort by: %s (click to change)",
   "gui.simonspacemod.crate.mode.name": "Name",
   "gui.simonspacemod.crate.mode.mod": "Mod",

@@ -99,6 +99,19 @@ public class CrateScreen extends AbstractContainerScreen<CrateMenu> {
         pose.popMatrix();
     }
 
+    /** Beim Darüberfahren: genaue Anzahl, wenn sie im Platz verkürzt oder verkleinert dasteht. */
+    @Override
+    protected java.util.List<Component> getTooltipFromContainerItem(net.minecraft.world.item.ItemStack stack) {
+        java.util.List<Component> lines = super.getTooltipFromContainerItem(stack);
+        if (hoveredSlot == null || hoveredSlot.index >= CrateMenu.VISIBLE || stack.getCount() < 1000) return lines;
+        String lang = minecraft == null ? "en_us" : minecraft.getLanguageManager().getSelected();
+        java.util.Locale loc = lang.startsWith("de") ? java.util.Locale.GERMANY : java.util.Locale.US;
+        java.util.List<Component> out = new java.util.ArrayList<>(lines);
+        out.add(1, Component.translatable("gui.simonspacemod.crate.count", String.format(loc, "%,d", stack.getCount()))
+            .withStyle(net.minecraft.ChatFormatting.GOLD));
+        return out;
+    }
+
     private void scrollTo(int row) {
         int o = Math.max(0, Math.min(menu.maxOffset(), row));
         if (o == menu.offset() || minecraft == null || minecraft.player == null || minecraft.gameMode == null) return;
