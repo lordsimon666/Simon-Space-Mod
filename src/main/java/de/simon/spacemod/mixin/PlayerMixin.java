@@ -18,6 +18,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  */
 @Mixin(Player.class)
 public abstract class PlayerMixin {
+    /** Shift im fliegenden Schiff ist Schleichen, kein Aussteigen (raus geht es durch Tür oder Luftschleuse). */
+    @Inject(method = "wantsToStopRiding", at = @At("HEAD"), cancellable = true)
+    private void simonspacemod$stayInShip(CallbackInfoReturnable<Boolean> cir) {
+        if (((Player) (Object) this).getVehicle() instanceof FlyingShipEntity) cir.setReturnValue(false);
+    }
+
     @Inject(method = "isWithinBlockInteractionRange", at = @At("HEAD"), cancellable = true)
     private void simonspacemod$shipRange(BlockPos pos, double buffer, CallbackInfoReturnable<Boolean> cir) {
         Player self = (Player) (Object) this;

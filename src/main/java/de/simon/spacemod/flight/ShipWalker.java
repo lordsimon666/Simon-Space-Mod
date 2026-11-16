@@ -32,6 +32,30 @@ public final class ShipWalker {
     }
 
     public static State step(java.util.Map<BlockPos, VoxelShape> s, State st, float strafe, float forward, float localYaw, boolean jump, boolean sprint) {
+        return step(s, st, strafe, forward, localYaw, jump, sprint, false, false);
+    }
+
+    /** Fliegen (Kreativmodus/Raumanzug): keine Schwerkraft, Springen = hoch, Schleichen = runter. */
+    public static State fly(ShipStructure s, State st, float strafe, float forward, float localYaw, boolean up, boolean down, boolean sprint) {
+        return step(s.collision(), st, strafe, forward, localYaw, up, sprint, true, down);
+    }
+
+    private static State step(java.util.Map<BlockPos, VoxelShape> s, State st, float strafe, float forward, float localYaw, boolean jump,
+                              boolean sprint, boolean flying, boolean descend) {
+        if (flying) {
+            double len = Math.sqrt(strafe * strafe + forward * forward);
+            double sx = strafe, sz = forward;
+            if (len > 1) { sx /= len; sz /= len; }
+            double speed = sprint ? 0.11 : 0.055;
+            float sin = Mth.sin(localYaw * Mth.DEG_TO_RAD), cos = Mth.cos(localYaw * Mth.DEG_TO_RAD);
+            double vx = st.vel().x * 0.91 + (sx * cos - sz * sin) * speed;
+            double vz = st.vel().z * 0.91 + (sz * cos + sx * sin) * speed;
+            double vy = st.vel().y * 0.6 + (jump ? 0.15 : 0) - (descend ? 0.15 : 0);
+            Vec3 want = new Vec3(vx, vy, vz);
+            Vec3 moved = collide(s, box(st.pos()), want);
+            boolean onGround = moved.y != want.y && want.y < 0;
+            return new State(st.pos().add(moved), new Vec3(moved.x == want.x ? vx : 0, moved.y == want.y ? vy : 0, moved.z == want.z ? vz : 0), onGround);
+        }
         // Eingabe -> waagerechte Geschwindigkeit (wie Minecraft: links/vor, nach Blickrichtung gedreht)
         double len = Math.sqrt(strafe * strafe + forward * forward);
         double sx = strafe, sz = forward;

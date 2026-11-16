@@ -19,6 +19,14 @@ class SpaceShipsTest {
     }
 
     @Test
+    void noAsteroidsNearEnterprises() {
+        assertTrue(SpaceShips.nearEnterprise(1L, new net.minecraft.core.BlockPos(1000, 500, 0)), "Mitte des Schiffs");
+        assertTrue(SpaceShips.nearEnterprise(1L, new net.minecraft.core.BlockPos(1000 + 150, 520, 30)), "neben dem Schiff");
+        assertTrue(!SpaceShips.nearEnterprise(1L, new net.minecraft.core.BlockPos(1500, 500, 500)), "zwischen den Feldern frei");
+        assertTrue(!SpaceShips.nearEnterprise(1L, new net.minecraft.core.BlockPos(1000, 900, 0)), "weit darüber");
+    }
+
+    @Test
     void sameCellSameShip() {
         assertEquals(SpaceShips.designFor(7L, 3, -4), SpaceShips.designFor(7L, 3, -4));
     }

@@ -103,9 +103,21 @@ public class FlyingShipEntity extends Entity {
     public @Nullable ShipStructure structure() { return structure; }
 
     public Quaternionf rotation(float partial) {
-        float y = prevYaw + (float) ShipPhysics.wrap(yaw() - prevYaw) * partial;
-        float p = prevPitch + (pitch() - prevPitch) * partial;
+        // Client: Lage nur im Takt der Ticks übernehmen (wie die Position), sonst ruckelt das Schiff
+        float cy = level().isClientSide() ? curYaw : yaw(), cp = level().isClientSide() ? curPitch : pitch();
+        float y = prevYaw + (float) ShipPhysics.wrap(cy - prevYaw) * partial;
+        float p = prevPitch + (cp - prevPitch) * partial;
         return ShipPhysics.rotation(yaw0(), y, p);
+    }
+
+    /** Client: weiche Bewegung – neue Positionen vom Server werden im nächsten Tick übernommen. */
+    private final net.minecraft.world.entity.InterpolationHandler interpolation = new net.minecraft.world.entity.InterpolationHandler(this, 1);
+    private float curYaw, curPitch;
+    private boolean curInit;
+
+    @Override
+    public net.minecraft.world.entity.InterpolationHandler getInterpolation() {
+        return interpolation;
     }
 
     public void setup(ShipStructure structure, float yaw0, @Nullable UUID pilot) {
@@ -454,7 +466,7 @@ public class FlyingShipEntity extends Entity {
      * hereingekommen oder auf dem Schiff gelandet – fliegt ab sofort mit und läuft darin herum.
      */
     private void boardWalkers(ServerLevel level) {
-        for (Player p : level.getEntitiesOfClass(Player.class, getBoundingBox().inflate(1),
+        for (Player p : level.getEntitiesOfClass(Player.class, getBoundingBox().inflate(RANGE + 1),
                 pl -> !pl.isPassenger() && !pl.isSpectator() && !pl.isShiftKeyDown()
                     && !(pl instanceof ServerPlayer sp && de.simon.spacemod.weapons.CameraControl.active(sp)))) {
             Long until = boardCooldown.get(p.getUUID());
@@ -463,31 +475,94 @@ public class FlyingShipEntity extends Entity {
         }
     }
 
-    /** Steht/fällt man über dem Schiff (bis 4 Blöcke darunter ein fester Schiffsblock)? */
+    /** Gehört man noch zum Schiff (höchstens 2 Blöcke von einem festen Schiffsblock entfernt)? */
     public boolean overShip(Vec3 local) {
         if (structure == null) return false;
-        var col = structure.collision();
-        BlockPos feet = BlockPos.containing(local.x + 0.5, local.y + 0.55, local.z + 0.5);
-        for (int k = 0; k <= 4; k++) if (col.containsKey(feet.below(k))) return true;
-        return false;
+        return nearShip(BlockPos.containing(local.x + 0.5, local.y + 0.55, local.z + 0.5));
     }
 
-    /** Füße und Kopf frei, darunter (bis 2 Blöcke) ein fester Schiffsblock. */
+    // ---- Stühle im Flug ----
+
+    private boolean landing;
+
+    public boolean isLanding() {
+        return landing;
+    }
+
+    /** Auf einen Stuhl im fliegenden Schiff setzen: ein unsichtbarer Sitz fährt mit, der Spieler sitzt darauf. */
+    public void sitOnChair(ServerPlayer player, BlockPos local, BlockState chair) {
+        if (!(level() instanceof ServerLevel sl)) return;
+        Vec3 l = new Vec3(local.getX(), local.getY(), local.getZ());
+        for (Entity p : getPassengers())
+            if (p instanceof SeatEntity && seats.getOrDefault(p.getUUID(), Vec3.ZERO).distanceToSqr(l) < 0.25) return; // besetzt
+        Vec3 w = ShipPhysics.rotate(rotation(1F), l.x, l.y, l.z).add(position());
+        float facing = chair.hasProperty(net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING)
+            ? chair.getValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING).toYRot() : 0;
+        float yaw = facing + (yaw() - yaw0());
+        SeatEntity seat = new SeatEntity(de.simon.spacemod.ModBlocks.SEAT.get(), sl);
+        seat.snapTo(w.x, w.y, w.z, yaw, 0);
+        sl.addFreshEntity(seat);
+        seat.startRiding(this, true, false);
+        seats.put(seat.getUUID(), l);
+        player.startRiding(seat, true, false);
+        player.setYRot(yaw);
+        player.setYHeadRot(yaw);
+    }
+
+    /** Aufstehen vom Stuhl im Flug: vor den Stuhl stellen (sonst obendrauf), wieder im Schiff laufen. */
+    public void standUp(ServerPlayer player, SeatEntity seat) {
+        if (landing || structure == null || !isAlive()) return;
+        Vec3 s = seats.getOrDefault(seat.getUUID(), Vec3.ZERO);
+        BlockPos chair = BlockPos.containing(s.x + 0.5, s.y + 0.5, s.z + 0.5);
+        Vec3 stand = new Vec3(s.x, s.y + 0.5, s.z);
+        int i = structure.indexOf(chair);
+        if (i >= 0 && structure.blocks.get(i).state().hasProperty(net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING)) {
+            BlockPos front = chair.relative(structure.blocks.get(i).state().getValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING));
+            var col = structure.collision();
+            if (!col.containsKey(front) && !col.containsKey(front.above())) stand = new Vec3(front.getX(), front.getY() - 0.5, front.getZ());
+        }
+        player.startRiding(this, true, false);
+        seats.put(player.getUUID(), stand);
+        restoreSeats(Map.of(player.getUUID(), stand));
+    }
+
+    /** Reichweite, in der man zum Schiff gehört (einsteigen bzw. nicht herausfallen). */
+    public static final int RANGE = 2;
+
+    /** Füße und Kopf frei und höchstens 2 Blöcke von einem festen Schiffsblock entfernt. */
     public boolean standsInShip(Vec3 local) {
         if (structure == null) return false;
         var col = structure.collision();
         BlockPos feet = BlockPos.containing(local.x + 0.5, local.y + 0.55, local.z + 0.5);
         if (col.containsKey(feet) || col.containsKey(feet.above())) return false;
-        if (structure.indexOf(feet) < 0 && structure.indexOf(feet.below()) < 0 && structure.indexOf(feet.below(2)) < 0) return false;
-        return col.containsKey(feet.below()) || col.containsKey(feet.below(2));
+        return nearShip(feet);
+    }
+
+    /** Ist ein fester Schiffsblock höchstens {@link #RANGE} Blöcke von Füßen oder Kopf entfernt? */
+    private boolean nearShip(BlockPos feet) {
+        var col = structure.collision();
+        for (int x = -RANGE; x <= RANGE; x++)
+            for (int y = -RANGE; y <= RANGE + 1; y++)
+                for (int z = -RANGE; z <= RANGE; z++)
+                    if (col.containsKey(feet.offset(x, y, z))) return true;
+        return false;
     }
 
     // ---- Flug ----
 
     @Override
     public void tick() {
-        prevYaw = yaw();
-        prevPitch = pitch();
+        if (level().isClientSide()) {
+            if (!curInit) { curYaw = yaw(); curPitch = pitch(); curInit = true; }
+            prevYaw = curYaw;
+            prevPitch = curPitch;
+            curYaw = yaw();
+            curPitch = pitch();
+            interpolation.interpolate();
+        } else {
+            prevYaw = yaw();
+            prevPitch = pitch();
+        }
         super.tick();
         if (level().isClientSide()) {
             if (structure == null) {
@@ -631,9 +706,19 @@ public class FlyingShipEntity extends Entity {
         // Passagiere an ihre Plätze im gelandeten Schiff
         Quaternionf q = ShipPhysics.rotation(yaw0(), yaw0() + steps * 90F, 0F);
         Map<Entity, Vec3> riders = new HashMap<>();
-        for (Entity p : getPassengers()) {
+        landing = true;
+        for (Entity p : List.copyOf(getPassengers())) {
             Vec3 seat = seats.getOrDefault(p.getUUID(), Vec3.ZERO);
-            riders.put(p, ShipPhysics.rotate(q, seat.x, seat.y, seat.z).add(Vec3.atCenterOf(pivot)));
+            Vec3 w = ShipPhysics.rotate(q, seat.x, seat.y, seat.z).add(Vec3.atCenterOf(pivot));
+            if (p instanceof SeatEntity chairSeat) { // Sitzende: auf den Stuhl im gelandeten Schiff stellen
+                for (Entity sitter : List.copyOf(chairSeat.getPassengers())) {
+                    riders.put(sitter, w.add(0, 0.5, 0));
+                    sitter.stopRiding();
+                }
+                chairSeat.discard();
+                continue;
+            }
+            riders.put(p, w);
         }
         ejectPassengers();
         int flags = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;

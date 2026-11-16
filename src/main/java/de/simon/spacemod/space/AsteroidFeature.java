@@ -27,6 +27,7 @@ public class AsteroidFeature extends Feature<NoneFeatureConfiguration> {
         WorldGenLevel level = ctx.level();
         RandomSource rnd = ctx.random();
         BlockPos o = ctx.origin();
+        if (SpaceShips.nearEnterprise(level.getSeed(), o)) return false; // 50 Blöcke um die Enterprises frei lassen
         double r = 3 + rnd.nextInt(10);
         boolean ice = rnd.nextInt(6) == 0;
         Block base = ice ? Blocks.PACKED_ICE : switch (rnd.nextInt(5)) {

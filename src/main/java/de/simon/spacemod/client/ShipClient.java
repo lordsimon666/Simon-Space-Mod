@@ -26,12 +26,25 @@ public final class ShipClient {
     private static ShipWalker.State walk;
     private static int walkShip = -1;
     private static int outside;
+    private static boolean flying, lastJump;
+    private static int jumpTimer;
+
+    /** Flugzustand auch dem Server melden (Raumanzug verbraucht dann Ladung). */
+    private static void setFlying(Minecraft mc, boolean value) {
+        if (mc.player == null) return;
+        mc.player.getAbilities().flying = value;
+        mc.player.onUpdateAbilities();
+    }
 
     private ShipClient() {}
 
     /** Platz im Schiff wurde vom Server neu gesetzt (z. B. nach einem Dimensionswechsel). */
     public static void resetWalk() {
         walk = null;
+    }
+
+    public static boolean flyingInShip() {
+        return flying;
     }
 
     public static void init() {
@@ -65,11 +78,28 @@ public final class ShipClient {
         if (walk == null || walkShip != ship.getId()) {
             walk = new ShipWalker.State(ship.seat(mc.player), Vec3.ZERO, false);
             walkShip = ship.getId();
+            flying = mc.player.getAbilities().flying && mc.player.getAbilities().mayfly; // fliegend eingestiegen
         }
         float localYaw = mc.player.getYRot() - (ship.yaw() - ship.yaw0());
         var mv = mc.player.input.getMoveVector();
         Vec3 before = walk.pos();
-        walk = ShipWalker.step(s, walk, mv.x, mv.y, localYaw, in.jump(), in.sprint() || mc.player.isSprinting());
+        // Fliegen im Schiff (Kreativmodus oder geladener Raumanzug): doppelt springen schaltet um
+        boolean mayfly = mc.player.getAbilities().mayfly;
+        if (in.jump() && !lastJump && mayfly) {
+            if (jumpTimer > 0) {
+                flying = !flying;
+                jumpTimer = 0;
+                setFlying(mc, flying);
+            } else jumpTimer = 7;
+        }
+        if (jumpTimer > 0) jumpTimer--;
+        lastJump = in.jump();
+        if (flying && !mayfly) setFlying(mc, flying = false);
+        if (flying) {
+            walk = ShipWalker.fly(s, walk, mv.x, mv.y, localYaw, in.jump(), in.shift(), in.sprint() || mc.player.isSprinting());
+            if (walk.onGround()) setFlying(mc, flying = false); // gelandet
+        } else
+            walk = ShipWalker.step(s, walk, mv.x, mv.y, localYaw, in.jump(), in.sprint() || mc.player.isSprinting());
         ship.setSeat(mc.player, walk.pos());
         if (walk.pos().distanceToSqr(before) > 1e-8)
             TurboliftNetwork.sendToServer(new ShipSeatMessage(mc.player.getId(), (float) walk.pos().x, (float) walk.pos().y, (float) walk.pos().z));

@@ -45,6 +45,10 @@ public record ShipUseMessage(int entityId, BlockPos local, Direction face) {
         }
         BlockPos pos = ship.plotOrigin().offset(msg.local());
         BlockState st = sy.getBlockState(pos);
+        if (de.simon.spacemod.block.ChairBlock.isSeat(st)) { // Stuhl: im fliegenden Schiff hinsetzen
+            ship.sitOnChair(player, msg.local(), st);
+            return;
+        }
         BlockHitResult hit = new BlockHitResult(Vec3.atCenterOf(pos).add(Vec3.atLowerCornerOf(msg.face().getUnitVec3i()).scale(0.5)),
             msg.face(), pos, false);
         InteractionHand hand = InteractionHand.MAIN_HAND;

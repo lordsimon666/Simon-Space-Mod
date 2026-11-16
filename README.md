@@ -371,6 +371,14 @@ klicke sie mit der rechten Maustaste an:
 * **Herumlaufen**: im fliegenden Schiff läuft man wie in Valkyrien Skies – WASD, Springen, Sprinten,
   Stufen bis eine halbe Blockhöhe, Kollision mit Wänden, Böden und Möbeln des Schiffs. Die Schwerkraft
   zeigt immer zum Schiffsboden (auch wenn das Schiff nickt). Wer weit vom Schiff wegfällt, steigt ab.
+* **Im Schiff bleiben**: wer höchstens **2 Blöcke** von einem Block des Schiffs entfernt ist, gehört
+  dazu (steigt ein bzw. fällt nicht heraus). **Shift** ist im Schiff Schleichen und wirft einen nicht
+  hinaus – raus geht es durch eine Tür/Luftschleuse oder über die Kante (weiter als 2 Blöcke weg).
+* **Stühle** funktionieren im Flug: Rechtsklick setzt dich hin, du fliegst sitzend mit; Shift steht
+  wieder auf (vor dem Stuhl, im Schiff).
+* **Fliegen im Schiff**: im Kreativmodus oder mit geladenem Raumanzug schaltet doppeltes Springen den
+  Flug um (Leertaste hoch, Shift runter); landen beendet ihn.
+* Das Schiff wird weich bewegt (wie Boote), es ruckelt im Flug nicht mehr vor und zurück.
 * **Steuer**: **H** übernimmt das Steuer (an der Konsole) bzw. gibt es ab. Am Steuer dreht sich das
   Schiff zum **Fadenkreuz** (Gieren und Nicken), **W** gibt Schub, **S** bremst bzw. fährt rückwärts,
   **L** landet. **Shift** steigt aus, Rechtsklick auf das fliegende Schiff steigt wieder ein.
@@ -535,7 +543,8 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
   Größe – die Schiffe sind also 1000 Blöcke voneinander entfernt. Je neuer, desto seltener:
   NX-01 7/28, NCC-1701 6/28, -A 5/28, -B 4/28, -C 3/28, -D 2/28, -E 1/28. Sie entstehen, sobald ein
   Spieler näher als 700 Blöcke kommt (eins nach dem anderen).
-* **Asteroiden** (3 bis 12 Blöcke Radius, 1 bis 3 je Chunk über die ganze Höhe verteilt) aus Stein, Andesit, Tuff, Tiefenschiefer oder Basalt mit
+* **Asteroiden** (3 bis 12 Blöcke Radius, im Schnitt etwa einer pro Chunk über die ganze Höhe
+  verteilt; rund um die Enterprises bleiben 50 Blöcke frei) aus Stein, Andesit, Tuff, Tiefenschiefer oder Basalt mit
   Kohle, Eisen, Kupfer, Gold, Redstone, Lapis, Diamant, Smaragd, **Uran** und **Dilithium**; im Kern
   manchmal **Antimaterie-Einschlüsse**. Etwa jeder sechste Asteroid ist ein Eisbrocken mit
   **Deuterium-Eis**.

@@ -42,7 +42,17 @@ public class SeatEntity extends Entity {
     public void tick() {
         super.tick();
         if (level().isClientSide()) return;
-        if (getPassengers().isEmpty() || !ChairBlock.isSeat(level().getBlockState(blockPosition()))) discard();
+        boolean onShip = getVehicle() instanceof FlyingShipEntity; // Stuhl im fliegenden Schiff
+        if (getPassengers().isEmpty() || !onShip && !ChairBlock.isSeat(level().getBlockState(blockPosition()))) discard();
+    }
+
+    /** Im fliegenden Schiff aufstehen: wieder im Schiff laufen (statt hinauszufallen). */
+    @Override
+    protected void removePassenger(Entity passenger) {
+        super.removePassenger(passenger);
+        if (!level().isClientSide() && getVehicle() instanceof FlyingShipEntity ship
+            && passenger instanceof net.minecraft.server.level.ServerPlayer sp && sp.isAlive())
+            ship.standUp(sp, this);
     }
 
     /** Aufstehen: vor den Stuhl (in Blickrichtung), sonst oben drauf. */

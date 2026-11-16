@@ -47,6 +47,31 @@ public final class SpaceShips {
         return all[0];
     }
 
+    /** Halbe Länge der Enterprise je Bauart (volle Größe), in Blöcken. */
+    private static int halfLength(de.simon.spacemod.ship.ShipDesign d) {
+        return switch (d) {
+            case NX_01 -> 113;
+            case NCC_1701 -> 145;
+            case NCC_1701_A -> 153;
+            case NCC_1701_B -> 234;
+            case NCC_1701_C -> 263;
+            case NCC_1701_D -> 322;
+            case NCC_1701_E -> 343;
+        };
+    }
+
+    /**
+     * Liegt der Punkt im Schutzbereich der Enterprise seines 1000er-Felds? (Schiffslänge/2 waagerecht in
+     * jede Richtung, da der Bug zufällig zeigt, plus 50 Blöcke Abstand und Asteroidengröße.)
+     */
+    public static boolean nearEnterprise(long seed, BlockPos p) {
+        int cx = Math.round(p.getX() / (float) SPACING), cz = Math.round(p.getZ() / (float) SPACING);
+        int half = halfLength(SpaceShips.designFor(seed, cx, cz));
+        double dx = p.getX() - cx * (double) SPACING, dz = p.getZ() - cz * (double) SPACING;
+        int margin = 50 + 16;
+        return Math.sqrt(dx * dx + dz * dz) < half + margin && Math.abs(p.getY() - CENTER_Y) < half * 0.4 + margin;
+    }
+
     static int hash(long seed, int cx, int cz) {
         long h = seed ^ (cx * 0x9E3779B97F4A7C15L) ^ (cz * 0xC2B2AE3D27D4EB4FL);
         h ^= h >>> 31;
