@@ -245,8 +245,8 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
   2,5 s).
   * **NCC-1701-C und -D**: Photonentorpedo-Werfer mit **Full Spread**. 5 Schuss im Magazin, einzeln mit
     **P** oder alle auf einmal mit **F** (Nachladen 6 s nach dem letzten Schuss). Beim Full Spread
-    fliegen die Torpedos **sternförmig** auseinander, einer geradeaus und die anderen auf Bögen nach
-    oben, rechts, unten und links. Am Ziel laufen sie wieder zusammen.
+    fliegen alle Torpedos auf Bögen **sternförmig** auseinander, gleichmäßig im Kreis verteilt und keiner
+    geradeaus. Am Ziel laufen sie wieder zusammen.
   * **NCC-1701-E**: Schnellfeuer-Photonenwerfer und Schnellfeuer-Quantenwerfer mit je 5 Schuss vor dem
     Nachladen (6 bzw. 7 s), kein Full Spread.
   * F tauscht am Steuer und in der Kamerasicht nicht die Hände. Die Taste ist unter „Simon Space Mod –

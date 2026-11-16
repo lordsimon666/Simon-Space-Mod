@@ -382,13 +382,13 @@ public final class PhaserControl {
         TorpedoStyle style = quantum ? TorpedoStyle.QUANTUM : TorpedoStyle.photon(photonTier);
         var chunks = level.getChunkSource();
         Vec3 up = right.cross(dir).normalize();
-        // Full Spread: einer geradeaus, die anderen sternförmig hinaus (oben, rechts, unten, links …),
-        // alle laufen am Ziel wieder zusammen
+        // Full Spread: alle Torpedos fliegen auf Bögen sternförmig hinaus (gleichmäßig im Kreis verteilt,
+        // keiner geradeaus) und laufen am Ziel wieder zusammen
         double amp = Math.max(4, Math.min(40, dist * 0.25));
         for (int i = 0; i < shots; i++) {
             Vec3 bulge = Vec3.ZERO;
-            if (spread && i > 0) {
-                double a = 2 * Math.PI * (i - 1) / Math.max(1, shots - 1);
+            if (spread) {
+                double a = 2 * Math.PI * i / shots;
                 bulge = up.scale(Math.cos(a) * amp).add(right.scale(Math.sin(a) * amp));
             }
             Vec3 aimAt = tgt;
