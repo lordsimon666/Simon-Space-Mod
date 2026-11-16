@@ -211,4 +211,28 @@ public final class ShieldShape {
 
     /** Freier Rand, den {@link #protectedSpace()} braucht. */
     public static final int MARGIN = 6;
+
+    /** Kuppel (Basisschild): alle Zellen mit Abstand ≤ r über der Grundfläche, Mitte bei (r, 0, r). */
+    public static ShieldShape dome(int r) {
+        ShieldShape s = new ShieldShape(2 * r + 1, r + 1, 2 * r + 1);
+        long r2 = (long) r * r;
+        for (int x = -r; x <= r; x++)
+            for (int z = -r; z <= r; z++) {
+                long d = (long) x * x + (long) z * z;
+                if (d > r2) continue;
+                int h = (int) Math.floor(Math.sqrt(r2 - d));
+                for (int y = 0; y <= h; y++) s.set(x + r, y, z + r);
+            }
+        return s;
+    }
+
+    /** Anzahl der Schildblöcke (gesetzte Zellen an der Oberfläche). */
+    public int shellCells() {
+        int n = 0;
+        for (int y = 0; y < sy; y++)
+            for (int z = 0; z < sz; z++)
+                for (int x = 0; x < sx; x++)
+                    if (get(x, y, z) && surface(x, y, z)) n++;
+        return n;
+    }
 }

@@ -111,6 +111,109 @@ public final class PhaserControl {
         return true;
     }
 
+    /** Reichweite der automatischen Abwehr (Redstone an der Waffenstation). */
+    public static final double AUTO_RANGE = 96;
+
+    /**
+     * Automatische Abwehr: Bekommt die Waffenstation ein Redstone-Signal, feuern ihre Phaser auf Stufe 1
+     * auf alle feindlichen Kreaturen in Reichweite – jeder freie Phaser auf ein anderes Ziel, die nächsten
+     * zuerst. Danach laden sie nach wie beim Feuern von Hand.
+     */
+    public static void autoFire(ServerLevel level, BlockPos console) {
+        String key = level.dimension().identifier() + "@" + console.asLong();
+        long now = level.getGameTime();
+        Long last = LAST_SHOT.get(key);
+        if (last != null && now - last < COOLDOWN_TICKS) return;
+        WeaponsData data = WeaponsData.get(level);
+        List<BlockPos> phasers = data.phasers(console);
+        if (phasers == null) {
+            linkPhasers(level, console);
+            phasers = data.phasers(console);
+        }
+        if (phasers == null) return;
+        phasers.removeIf(p -> !(level.getBlockState(p).getBlock() instanceof PhaserBlock));
+        if (phasers.isEmpty()) return;
+        AABB own = ownShip(data.battery(console), console, phasers);
+        Vec3 c0 = Vec3.atCenterOf(console);
+        List<Entity> mobs = new ArrayList<>(level.getEntities((Entity) null, new AABB(console).inflate(AUTO_RANGE),
+            e -> e instanceof net.minecraft.world.entity.monster.Enemy && e instanceof LivingEntity le && le.isAlive()
+                && e.distanceToSqr(c0) <= AUTO_RANGE * AUTO_RANGE));
+        if (mobs.isEmpty()) return;
+        mobs.sort(Comparator.comparingDouble(e -> e.distanceToSqr(c0)));
+        ShipPower.Grid grid = ShipPower.gridFor(level, phasers.get(0));
+        if (!grid.hasPower(level)) return;
+        WeaponsData.Battery battery = data.battery(console);
+        int tier = battery != null && battery.tier() > 0 ? battery.tier() : tierOf(level, phasers.get(0));
+        float damage = 6 + 2 * tier;
+        List<BlockPos> free = new ArrayList<>(phasers);
+        int shots = 0;
+        for (Entity mob : mobs) {
+            if (free.isEmpty()) break;
+            Vec3 tgt = mob.getBoundingBox().getCenter();
+            free.sort(Comparator.comparingDouble(p -> Vec3.atCenterOf(p).distanceToSqr(tgt)));
+            BlockPos use = null;
+            for (BlockPos p : free) if (clear(level, p, tgt)) { use = p; break; }
+            if (use == null) continue;
+            final BlockPos chosen = use;
+            free.removeIf(p -> p.distSqr(chosen) < 36); // Nachbarn desselben Phaserstreifens nicht doppelt
+            BeamShots.start(new AutoShot(level, fixed(level, chosen), mob, own, grid, damage));
+            shots++;
+        }
+        if (shots > 0) LAST_SHOT.put(key, now + BeamShots.DURATION);
+    }
+
+    /** Ein Strahl der automatischen Abwehr: folgt seinem Ziel 2 s lang (Stufe 1, kein Blockschaden). */
+    private static final class AutoShot extends BeamShots.Shot {
+        private final ServerLevel level;
+        private final Source phaser;
+        private final Entity target;
+        private final AABB own;
+        private final ShipPower.Grid grid;
+        private final float damage;
+        private @Nullable PhaserBeamEntity beam;
+
+        AutoShot(ServerLevel level, Source phaser, Entity target, AABB own, ShipPower.Grid grid, float damage) {
+            this.level = level;
+            this.phaser = phaser;
+            this.target = target;
+            this.own = own;
+            this.grid = grid;
+            this.damage = damage;
+        }
+
+        @Override
+        protected boolean tick() {
+            if (age >= BeamShots.DURATION || !target.isAlive() || target.level() != level) return false;
+            if (ShipPower.draw(level, grid, fePerTick(1), ShipPower.Category.WEAPONS) < fePerTick(1)) return false;
+            Vec3 c = phaser.center();
+            PhaserBlock.Kind kind = phaser.kind();
+            if (c == null || kind == null) return false;
+            Vec3 tgt = target.getBoundingBox().getCenter();
+            Vec3 start = c.add(tgt.subtract(c).normalize().scale(0.7));
+            Vec3 end = tgt;
+            var hit = de.simon.spacemod.defense.Shields.intercept(level, start, tgt, c);
+            if (hit != null) {
+                end = hit.point();
+                if (age % BeamShots.PULSE == 0) hit.damage(damage, 2.5);
+            }
+            if (beam == null) {
+                beam = BeamShots.beam(level, start, end, kind.color, kind.core, 0.18F, kind.pulse);
+                if (beam != null) beam.sound(de.simon.spacemod.ModSounds.index(shipSound(kind)), 1.0F, 3.0F);
+            } else beam.aim(start, end);
+            if (hit == null && age % BeamShots.PULSE == 0) {
+                target.hurtServer(level, level.damageSources().magic(), damage * 0.45F);
+                target.igniteForSeconds(4);
+            }
+            age++;
+            return true;
+        }
+
+        @Override
+        protected void end() {
+            if (beam != null) beam.discard();
+        }
+    }
+
     /** Strahlsound je Phaserart (NX-01 Pulse, Originalserie, Kinofilme, Next Generation). */
     private static net.minecraftforge.registries.RegistryObject<net.minecraft.sounds.SoundEvent> shipSound(PhaserBlock.Kind kind) {
         return switch (kind) {

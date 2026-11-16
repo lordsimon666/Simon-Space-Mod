@@ -28,6 +28,7 @@ public final class ClientSetup {
             MenuScreens.register(ModBlocks.REACTOR_MENU.get(), ReactorScreen::new);
             MenuScreens.register(ModBlocks.ASSEMBLY_MENU.get(), AssemblyScreen::new);
             MenuScreens.register(ModBlocks.CRATE_MENU.get(), CrateScreen::new);
+            MenuScreens.register(ModBlocks.BASE_SHIELD_MENU.get(), BaseShieldScreen::new);
             MenuScreens.register(ModBlocks.MINING_LASER_MENU.get(), MiningLaserScreen::new);
             MenuScreens.register(ModBlocks.POWER_CONSOLE_MENU.get(), PowerConsoleScreen::new);
             MenuScreens.register(ModBlocks.SHIELD_CONSOLE_MENU.get(), ShieldConsoleScreen::new);

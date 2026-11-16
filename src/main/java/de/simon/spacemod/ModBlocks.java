@@ -617,6 +617,15 @@ public final class ModBlocks {
         return List.copyOf(list);
     }
 
+    // --- Basisschild (Kuppel, Radius 16 bis 128) ---
+    public static final RegistryObject<Block> BASE_SHIELD = block("base_shield", de.simon.spacemod.defense.BaseShieldBlock::new,
+        metal(MapColor.COLOR_LIGHT_BLUE).lightLevel(_ -> 8));
+    public static final RegistryObject<BlockEntityType<de.simon.spacemod.defense.BaseShieldBlockEntity>> BASE_SHIELD_BE =
+        BLOCK_ENTITIES.register("base_shield", () -> new BlockEntityType<>(de.simon.spacemod.defense.BaseShieldBlockEntity::new,
+            java.util.Set.of(BASE_SHIELD.get())));
+    public static final RegistryObject<MenuType<de.simon.spacemod.defense.BaseShieldMenu>> BASE_SHIELD_MENU = MENUS.register("base_shield",
+        () -> IForgeMenuType.create(de.simon.spacemod.defense.BaseShieldMenu::new));
+
     // --- Bergbaulaser ---
     public static final RegistryObject<Block> MINING_LASER = block("mining_laser", de.simon.spacemod.mining.MiningLaserBlock::new,
         metal(MapColor.COLOR_GRAY).noOcclusion().lightLevel(_ -> 4));

@@ -3085,6 +3085,50 @@ def icon_stack_upgrade(color, n):
                     px[x, y] = shade(color, -45) if y == y0 + h - 1 or x in (3, 12) else shade(color, 15 - k * 4)
     return img
 
+def base_shield_assets(de, en):
+    M = MODID
+    top = noise(new((60, 70, 86)), 4, 951)
+    tp = top.load()
+    for x in range(16):
+        for y in range(16):
+            d = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** 0.5
+            if d < 6.5:
+                k = 1 - d / 6.5
+                tp[x, y] = (clamp(70 + 120 * k), clamp(150 + 100 * k), 255, 255)
+            if 6.5 <= d < 7.3:
+                tp[x, y] = (30, 36, 46, 255)
+    side = noise(new((70, 78, 92)), 4, 952)
+    sp = side.load()
+    for i in range(16):
+        sp[i, 0] = sp[i, 15] = sp[0, i] = sp[15, i] = (36, 40, 50, 255)
+    for x in range(3, 13):                           # Sechseck-Gitter angedeutet
+        for y in range(3, 13):
+            if (x + 2 * y) % 5 == 0 or (x - 2 * y) % 5 == 0:
+                sp[x, y] = (90, 180, 255, 255)
+    save(top, "base_shield_top")
+    save(side, "base_shield_side")
+    write_json(os.path.join(ASSETS, "models", "block", "base_shield.json"), {"parent": "minecraft:block/cube_column",
+        "textures": {"end": b("base_shield_top"), "side": b("base_shield_side")}})
+    write_json(os.path.join(ASSETS, "blockstates", "base_shield.json"), {"variants": {"": {"model": b("base_shield")}}})
+    write_json(os.path.join(ASSETS, "items", "base_shield.json"), item_def(b("base_shield")))
+    write_json(os.path.join(DATA, "loot_table", "blocks", "base_shield.json"), loot("base_shield"))
+    de.update({
+        f"block.{M}.base_shield": "Basisschild",
+        f"gui.{M}.base_shield.radius": "Radius: %s",
+        f"gui.{M}.base_shield.up": "Aktiv: %s %%, %s Schildblöcke, %s FE/t",
+        f"gui.{M}.base_shield.no_power": "Zu wenig Strom (braucht %s FE/t)",
+        f"gui.{M}.base_shield.off": "Aus",
+        f"gui.{M}.base_shield.energy": "Speicher: %s kFE",
+    })
+    en.update({
+        f"block.{M}.base_shield": "Base Shield",
+        f"gui.{M}.base_shield.radius": "Radius: %s",
+        f"gui.{M}.base_shield.up": "Active: %s %%, %s shield blocks, %s FE/t",
+        f"gui.{M}.base_shield.no_power": "Not enough power (needs %s FE/t)",
+        f"gui.{M}.base_shield.off": "Off",
+        f"gui.{M}.base_shield.energy": "Storage: %s kFE",
+    })
+
 def storage_mining_assets(de, en):
     M = MODID
     tier_colors = {t[0]: t[1] for t in CRATE_TIERS}
@@ -4320,7 +4364,7 @@ def main():
     models_extra += ["ceiling_light", "dual_wall", "dual_floor", "uranium_ore", "deepslate_uranium_ore", "reactor_casing",
                      "reactor_glass", "reactor_controller", "ship_helm", "airlock", "airlock_small", "dilithium_ore",
                      "antimatter_cluster", "deuterium_ice", "ship_part_assembly",
-                     "power_console", "shield_console", "alarm_light", "battery", "hull_glass", "mining_laser", "laser_focus", "mining_laser_control"] + [f"crate_{t[0]}" for t in CRATE_TIERS if t[0] != "wood"] + [f"shield_emitter_{k}" for k in ("tos", "refit", "excelsior", "c", "d", "e")]
+                     "power_console", "shield_console", "alarm_light", "battery", "hull_glass", "mining_laser", "laser_focus", "mining_laser_control", "base_shield"] + [f"crate_{t[0]}" for t in CRATE_TIERS if t[0] != "wood"] + [f"shield_emitter_{k}" for k in ("tos", "refit", "excelsior", "c", "d", "e")]
     models_extra += [f"door_{e}_{k}" for e in DOOR_ERAS for k in DOOR_KINDS]
     # Mit der Spitzhacke abbaubar
     write_json(os.path.join(ROOT, "data", "minecraft", "tags", "block", "mineable", "pickaxe.json"),
@@ -4480,6 +4524,7 @@ def main():
     misc_assets(de, en)
     hull_glass_assets(de, en)
     storage_mining_assets(de, en)
+    base_shield_assets(de, en)
     vanilla_style_ores_items()
     de.update(armory_de)
     en.update(armory_en)

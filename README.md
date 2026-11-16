@@ -502,6 +502,25 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
   wirken auf sie. Ohne Schild (oder wo es durchbrochen ist) gehen dabei echte Blöcke des Schiffs
   kaputt; beim Landen fehlen sie dann auch.
 
+### Basisschild
+
+* **Basisschild** (Schiffsteil-Fertigung): erzeugt eine **Schildkuppel** um sich, Radius einstellbar von
+  **16 bis 128 Blöcken** (Menü: −/+, mit Shift in Achterschritten; an/aus).
+* Wirkt wie die Schiffsschilde: hält Torpedos, Phaser und Explosionen von außen ab, hat Leben je
+  Schildblock (390, wie Schildstufe 2) und regeneriert sich. Wer drinnen ist, kann hinausschießen.
+* Braucht keine Emitter, nur **Strom**. Der Generator speichert 2 Mio. FE und wird vom Bordnetz, von
+  Batterien oder von Generatoren anderer Mods geladen. Das Halten kostet je nach Größe 200 FE/t (Radius 16)
+  bis rund 6000 FE/t (Radius 128), dazu Strom für die Regeneration.
+* Beim Ändern des Radius wird die Kuppel neu aufgebaut.
+
+### Automatische Abwehr (Waffenstation + Redstone)
+
+* Bekommt eine **Waffenstation ein Redstone-Signal**, feuern ihre Phaser auf **Stufe 1** auf alle
+  **feindlichen Kreaturen** im Umkreis von 96 Blöcken. Jeder freie Phaser nimmt ein anderes Ziel, die
+  nächsten zuerst. Danach laden sie nach und feuern erneut, solange das Signal anliegt.
+* Stufe 1 macht keinen Blockschaden. Die Phaser brauchen Strom aus dem Bordnetz wie beim Feuern von Hand.
+* Gilt für fest stehende Stationen (Basis, gelandetes Schiff).
+
 ### Batterie und Shuttle-Wracks (Start ohne andere Mods)
 
 * **Batterie**: speichert **400 000 FE** (bis 4 000 FE/t rein und raus). Gibt Strom ans Bordnetz und
@@ -731,7 +750,7 @@ G = Goldbarren, E = Eisenbarren, P = Enderperle, R = Redstone
  E R E
 ```
 
-## Neue Blöcke (161)
+## Neue Blöcke (162)
 
 * **Hülle**: Hüllenpanzerung (+ Stufe), Hüllenplatte, dunkle Hüllenplatte, Hüllenfenster, Hüllenglas,
   Kennungsmarkierung (+ Stufe), roter Zierstreifen, Positionslicht rot/grün, Deflektorschüssel,
@@ -767,7 +786,7 @@ G = Goldbarren, E = Eisenbarren, P = Enderperle, R = Redstone
 * **Kernreaktor**: Uranerz, Tiefenschiefer-Uranerz, Reaktorhülle, Reaktorglas, Reaktor-Steuerblock
 * **Weltraum**: Luftschleuse (2 x 2 x 2 und 1 x 2 x 2), Dilithium-Erz, Antimaterie-Einschluss, Deuterium-Eis
 * **Werkstatt**: Schiffsteil-Fertigung, Batterie, Bergbaulaser, Laserfokus, Laser-Steuerkonsole, Großkiste (Holz, Kupfer, Eisen, Gold, Diamant, Netherit)
-* **Verteidigung**: Energieverteilung, Schildsteuerung, Alarmleuchte, 6 Schildemitter (NCC-1701 bis -E)
+* **Verteidigung**: Energieverteilung, Schildsteuerung, Basisschild, Alarmleuchte, 6 Schildemitter (NCC-1701 bis -E)
 * **Allgemein**: Deckboden, Korridorwand, Deckenverkleidung, Deckenleuchte, Maschinenraum-Konsole,
   Warpkern, Plasmaleitung
 

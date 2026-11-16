@@ -48,4 +48,18 @@ class ShieldShapeTest {
         assertTrue(p.get(20, 23, 16), "Antenne geschützt");
         assertFalse(p.get(20, 26, 16), "über der Antennenspitze nicht 2+ Blöcke");
     }
+
+    @org.junit.jupiter.api.Test
+    void baseShieldDome() {
+        for (int r : new int[] {16, 64, 128}) {
+            ShieldShape d = ShieldShape.dome(r);
+            org.junit.jupiter.api.Assertions.assertTrue(d.get(r, r, r), "Spitze");
+            org.junit.jupiter.api.Assertions.assertTrue(d.get(0, 0, r) && d.get(2 * r, 0, r), "Rand am Boden");
+            org.junit.jupiter.api.Assertions.assertFalse(d.get(0, r / 2 + 1, 0), "außerhalb der Kuppel");
+            org.junit.jupiter.api.Assertions.assertTrue(d.surface(r, r, r) && !d.surface(r, r / 2, r), "nur die Hülle ist Schild");
+            int cells = d.shellCells();
+            double expect = 3 * Math.PI * r * r; // Halbkugel 2πr² + Boden πr²
+            org.junit.jupiter.api.Assertions.assertTrue(Math.abs(cells - expect) < expect * 0.35, "Schildblöcke " + cells + " bei r=" + r);
+        }
+    }
 }

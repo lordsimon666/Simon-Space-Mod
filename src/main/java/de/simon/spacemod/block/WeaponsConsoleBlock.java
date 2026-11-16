@@ -30,6 +30,21 @@ public class WeaponsConsoleBlock extends VariantFacingBlock {
         return simpleCodec(WeaponsConsoleBlock::new);
     }
 
+    /** Redstone-Signal: automatische Abwehr (Phaser Stufe 1 auf feindliche Kreaturen), solange es anliegt. */
+    @Override
+    protected void neighborChanged(BlockState state, Level level, BlockPos pos, net.minecraft.world.level.block.Block block,
+                                   net.minecraft.world.level.redstone.@org.jspecify.annotations.Nullable Orientation orientation, boolean movedByPiston) {
+        super.neighborChanged(state, level, pos, block, orientation, movedByPiston);
+        if (!level.isClientSide() && level.hasNeighborSignal(pos)) level.scheduleTick(pos, this, 1);
+    }
+
+    @Override
+    protected void tick(BlockState state, ServerLevel level, BlockPos pos, net.minecraft.util.RandomSource random) {
+        if (!level.hasNeighborSignal(pos)) return;
+        de.simon.spacemod.weapons.PhaserControl.autoFire(level, pos);
+        level.scheduleTick(pos, this, 10);
+    }
+
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (level instanceof ServerLevel server && player instanceof ServerPlayer sp) CameraControl.enter(server, pos, sp);
