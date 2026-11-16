@@ -112,6 +112,32 @@ public class FlyingShipEntity extends Entity {
         return ShipPhysics.rotation(yaw0(), y, p);
     }
 
+    /**
+     * Nur die Neigung des Schiffs (Nicken um die Querachse) als Drehung in Weltkoordinaten – damit
+     * kippen Blick und Spielermodell der Leute an Bord mit, als stünden sie auf dem Schiffsboden.
+     */
+    public Quaternionf tilt(float partial) {
+        float cy = level().isClientSide() ? curYaw : yaw(), cp = level().isClientSide() ? curPitch : pitch();
+        float y = prevYaw + (float) ShipPhysics.wrap(cy - prevYaw) * partial;
+        float p = prevPitch + (cp - prevPitch) * partial;
+        return new Quaternionf().rotateY((float) Math.toRadians(-y)).rotateX((float) Math.toRadians(p)).rotateY((float) Math.toRadians(y));
+    }
+
+    /** Client: Drehung des Schiffs um die Hochachse in diesem Tick (Grad). */
+    public float yawStep() {
+        return (float) ShipPhysics.wrap(curYaw - prevYaw);
+    }
+
+    /**
+     * Schiff, mit dem sich Blick und Modell dieses Wesens mitdrehen: an Bord (laufend oder auf einem
+     * Stuhl), aber nicht am Steuer – dort steuert der Blick das Schiff.
+     */
+    public static @Nullable FlyingShipEntity frameOf(Entity e) {
+        Entity v = e.getVehicle();
+        if (v instanceof SeatEntity) v = v.getVehicle();
+        return v instanceof FlyingShipEntity s && !s.isPilotEntity(e) ? s : null;
+    }
+
     /** Client: weiche Bewegung – neue Positionen vom Server werden im nächsten Tick übernommen. */
     private final net.minecraft.world.entity.InterpolationHandler interpolation = new net.minecraft.world.entity.InterpolationHandler(this, 1);
     private float curYaw, curPitch;

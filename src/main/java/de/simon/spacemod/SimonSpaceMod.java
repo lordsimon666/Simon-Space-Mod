@@ -35,6 +35,7 @@ public final class SimonSpaceMod {
             net.minecraftforge.client.event.EntityRenderersEvent.RegisterRenderers.BUS.addListener(de.simon.spacemod.client.ClientSetup::onRegisterRenderers);
             de.simon.spacemod.client.ClientCamera.init();
             de.simon.spacemod.client.ShipClient.init();
+            de.simon.spacemod.client.ShipView.init();
         }
     }
 }

@@ -4,9 +4,13 @@
   "package": "de.simon.spacemod.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "PlayerMixin"
+    "PlayerMixin",
+    "EntityMixin"
   ],
   "injectors": {
     "defaultRequire": 1
-  }
+  },
+  "client": [
+    "CameraMixin"
+  ]
 }

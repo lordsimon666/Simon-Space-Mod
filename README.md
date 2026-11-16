@@ -371,6 +371,10 @@ klicke sie mit der rechten Maustaste an:
 * **Herumlaufen**: im fliegenden Schiff läuft man wie in Valkyrien Skies – WASD, Springen, Sprinten,
   Stufen bis eine halbe Blockhöhe, Kollision mit Wänden, Böden und Möbeln des Schiffs. Die Schwerkraft
   zeigt immer zum Schiffsboden (auch wenn das Schiff nickt). Wer weit vom Schiff wegfällt, steigt ab.
+* **Mitdrehende Sicht**: an Bord (laufend oder auf einem Stuhl, nicht am Steuer) dreht sich die Ansicht
+  mit dem Schiff – wendet es, dreht sich der Blick mit; nickt es, kippt die Kamera mit dem Schiffsboden.
+  Spielermodelle stehen immer senkrecht auf dem Schiffsboden. Zielen, Handphaser und Blöcke benutzen
+  richten sich nach dieser gekippten Sicht.
 * **Im Schiff bleiben**: wer höchstens **2 Blöcke** von einem Block des Schiffs entfernt ist, gehört
   dazu (steigt ein bzw. fällt nicht heraus). **Shift** ist im Schiff Schleichen und wirft einen nicht
   hinaus – raus geht es durch eine Tür/Luftschleuse oder über die Kante (weiter als 2 Blöcke weg).

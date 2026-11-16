@@ -58,6 +58,7 @@ public final class ShipClient {
 
     private static void tick() {
         Minecraft mc = Minecraft.getInstance();
+        ShipView.followYaw(mc);
         if (mc.player == null || !(mc.player.getVehicle() instanceof FlyingShipEntity ship)) {
             walk = null;
             return;
