@@ -44,6 +44,9 @@ public final class EnterpriseBlueprint {
     private final boolean aztecHull;
     /** Radius des Brückenmoduls (Originalgröße). */
     private final int bR;
+    /** Mitte der Brücke (Kuppel des Modells; ohne Modell = Untertassenmitte) und höchster Punkt der Kuppel. */
+    private double bCx;
+    private int domeTop = -1;
     /**
      * Ovale Untertasse: Streckfaktoren (je ≤ 1) für die Längs- und Querachse. Alle Radien der
      * Untertasse (sR, Ringe, Räume) sind "normiert": r = hypot(dx * kx, z * kz).
@@ -144,8 +147,11 @@ public final class EnterpriseBlueprint {
         colors = model != null ? ShipColors.load(design) : null;
         if (model != null) {
             fitToModel();
-            bridgeFloor = (int) Math.floor(topProf[Math.min(topProf.length - 1, (int) Math.round((bR + 1) * Math.min(1, s / 0.75)))]);
+            int rr = (int) Math.round((bR + 1) * Math.min(1, s / 0.75));
+            // Boden auf der Oberfläche rund um die Brücke; liegt sie nicht in der Mitte, dort gemessen
+            bridgeFloor = bCx == sCx ? (int) Math.floor(topProf[Math.min(topProf.length - 1, rr)]) : ringTop(rr);
         } else {
+            bCx = sCx;
             bridgeFloor = (int) Math.floor(saucerTop(0));
         }
         floorBase = Math.floorMod(bridgeFloor, DECK_HEIGHT);
@@ -1659,6 +1665,16 @@ public final class EnterpriseBlueprint {
         return null;
     }
 
+    /** Oberkante des Modells im Abstand r rings um die Brückenmitte (Median aus vier Richtungen). */
+    private int ringTop(int r) {
+        java.util.List<Double> v = new java.util.ArrayList<>();
+        int[][] pts = {{(int) Math.round(bCx) + r, 0}, {(int) Math.round(bCx) - r, 0}, {(int) Math.round(bCx), r}, {(int) Math.round(bCx), -r}};
+        for (int[] p : pts)
+            for (int y = model.sy - 1; y >= 0; y--)
+                if (ms(p[0], y, p[1])) { v.add((double) y); break; }
+        return v.isEmpty() ? domeTop - 4 : (int) Math.round(median(v));
+    }
+
     private static double median(java.util.List<Double> v) {
         if (v.isEmpty()) return Double.NaN;
         java.util.Collections.sort(v);
@@ -1729,6 +1745,26 @@ public final class EnterpriseBlueprint {
             if (Double.isNaN(topProf[r])) topProf[r] = topProf[r - 1];
             if (Double.isNaN(botProf[r])) botProf[r] = botProf[r - 1];
         }
+        // Brücke: höchste Stelle der Untertasse auf der Mittellinie (die Brückenkuppel des Modells) –
+        // bei runden Untertassen die Mitte, bei D, E und besonders der F nicht
+        int xEnd = (int) Math.min(gx - 1, Math.round(front + 2 * (sCx - front)));
+        int[] topC = new int[gx];
+        int topMax = -1;
+        for (int x = Math.max(0, front); x <= xEnd; x++) {
+            topC[x] = -1;
+            for (int z = -2; z <= 2; z++)
+                for (int y = gy - 1; y > topC[x]; y--)
+                    if (ms(x, y, z)) { topC[x] = y; break; }
+            topMax = Math.max(topMax, topC[x]);
+        }
+        int bx0 = -1, bx1 = -1;
+        for (int x = Math.max(0, front); x <= xEnd; x++)
+            if (topC[x] >= topMax - 1) { if (bx0 < 0) bx0 = x; bx1 = x; }
+        bCx = bx0 < 0 ? sCx : (bx0 + bx1) / 2.0;
+        // Liegt die Kuppel innerhalb eines Brückenradius um die Untertassenmitte (runde Untertassen, D), bleibt die
+        // Brücke in der Mitte – sonst (E, F) wandert sie an die Kuppel
+        if (Math.abs(bCx - sCx) <= bR) bCx = sCx;
+        domeTop = topMax;
         // Gondeln: Querschnitte im hinteren Drittel; gültig ist ein Schnitt, in dem die äußerste
         // Gruppe (Steuerbord) frei vom Rumpf steht. Unter den dicken Schnitten wird der kompakteste
         // genommen (am wenigsten Pylon im Querschnitt).
@@ -2162,7 +2198,7 @@ public final class EnterpriseBlueprint {
     /** Bauteil-Zuordnung für die Form aus dem 3D-Modell. */
     private byte classifyModel(int x, int y, int z) {
         double dx = x - sCx;
-        double rb = Math.sqrt(dx * dx + (double) z * z); // echter Abstand (Brückenmodul)
+        double rb = Math.hypot(x - bCx, z); // echter Abstand zur Brücke (Brückenmodul)
         double r = rad(x, z);
         double az = Math.abs(z);
         if (rb <= bR) {
@@ -2498,7 +2534,7 @@ public final class EnterpriseBlueprint {
             // Refit: Kennung ein zweites Mal klein hinter der Brücke
             int px = big ? 2 : 1;
             int rw = textWidth(reg, FONT3x5) * px;
-            int xTop = (int) Math.round(sCx) + bR + 3 + 5 * px;
+            int xTop = (int) Math.round(bCx) + bR + 3 + 5 * px;
             int col = 0;
             for (char ch : reg.toCharArray()) {
                 String[] g = FONT3x5.get(ch);
@@ -2676,7 +2712,7 @@ public final class EnterpriseBlueprint {
      */
     private void nxMarkings() {
         // Platte symmetrisch um die Brücke: vorne/hinten je eine Zellbreite vor bzw. hinter der Kuppel
-        int fx = (int) Math.round(sCx) - bR - 2, rx = (int) Math.round(sCx) + bR + 2;
+        int fx = (int) Math.round(bCx) - bR - 2, rx = (int) Math.round(bCx) + bR + 2;
         int px0 = (int) Math.round(sCx - 0.45 * sR), px1 = rx + (fx - px0);
         int pz = (int) Math.round(0.45 * sR);
         // Höhe der Platte: Median der Oberseite neben der Brücke
@@ -2703,9 +2739,9 @@ public final class EnterpriseBlueprint {
         java.util.Collections.sort(hs);
         int plate = hs.get(hs.size() / 2);
         // Bronzene Brückenkuppel: alles deutlich über der Platte rund um die Brücke
-        for (int x = (int) sCx - bR - 3; x <= sCx + bR + 3; x++)
+        for (int x = (int) bCx - bR - 3; x <= bCx + bR + 3; x++)
             for (int z = -bR - 3; z <= bR + 3; z++) {
-                if (Math.hypot(x - sCx, z) > bR + 2) continue;
+                if (Math.hypot(x - bCx, z) > bR + 2) continue;
                 int y = topHullY(x, z);
                 if (y >= plate + 5) set(x, y, z, ShipPart.DEFLECTOR_RING);
             }
@@ -3063,7 +3099,7 @@ public final class EnterpriseBlueprint {
             buildBridgeNx();
             return;
         }
-        int cx = (int) Math.round(sCx);
+        int cx = (int) Math.round(bCx);
         int yb = bridgeFloor;
         ShipPart air = ShipPart.AIR;
         ShipPart carpet = excelsior ? ShipPart.DECK_PLATE : ShipPart.BRIDGE_DECK; // Excelsior: Riffelblech
@@ -3142,7 +3178,7 @@ public final class EnterpriseBlueprint {
      * roter Teppich am Turbolift, dunkle Decke mit Spots.
      */
     private void buildBridgeExcelsior() {
-        int cx = (int) Math.round(sCx);
+        int cx = (int) Math.round(bCx);
         int yb = bridgeFloor;
         for (int dx = -10; dx <= 10; dx++)
             for (int dz = -10; dz <= 10; dz++) {
@@ -3223,7 +3259,7 @@ public final class EnterpriseBlueprint {
      * Technikstationen an der Rückwand, zwei Turbolifte hinten. Die C hat dunkle Wände.
      */
     private void buildBridgeTng() {
-        int cx = (int) Math.round(sCx);
+        int cx = (int) Math.round(bCx);
         int yb = bridgeFloor;
         double rr = bR - 2.5;
         ShipPart wallPart = design == ShipDesign.NCC_1701_C ? ShipPart.BRIDGE_WALL_DARK : ShipPart.TNG_WALL;
@@ -3294,7 +3330,7 @@ public final class EnterpriseBlueprint {
      * Turbolift hinten in der Mitte.
      */
     private void buildBridgeNx() {
-        int cx = (int) Math.round(sCx);
+        int cx = (int) Math.round(bCx);
         int yb = bridgeFloor;
         for (int dx = -10; dx <= 10; dx++)
             for (int dz = -10; dz <= 10; dz++) {
@@ -3339,9 +3375,9 @@ public final class EnterpriseBlueprint {
     }
 
     private BlockPos bridgeTurbolift() {
-        if (tng) return new BlockPos((int) Math.round(sCx) + 9, bridgeFloor + 2, 5);
-        if (nx) return new BlockPos((int) Math.round(sCx) + 7, bridgeFloor + 1, 0);
-        return new BlockPos((int) Math.round(sCx) + 8, bridgeFloor + 2, 2);
+        if (tng) return new BlockPos((int) Math.round(bCx) + 9, bridgeFloor + 2, 5);
+        if (nx) return new BlockPos((int) Math.round(bCx) + 7, bridgeFloor + 1, 0);
+        return new BlockPos((int) Math.round(bCx) + 8, bridgeFloor + 2, 2);
     }
 
     /** Hohler Raum mit Wänden, Boden und Decke; die Außenhülle bleibt erhalten. */
@@ -3939,12 +3975,18 @@ public final class EnterpriseBlueprint {
         int cx = (int) Math.round(sCx);
         double[] rings = ringRadii();
         int rx = (int) Math.ceil(sR / kx), rz = (int) Math.ceil(sR / kz);
+        int skipped = 0;      // oberste Decks ohne Platz in der Mitte (flache Untertasse, Brücke nicht mittig)
+        boolean first = true;
         for (int f = bridgeFloor - DECK_HEIGHT; f > 0; f -= DECK_HEIGHT) {
             boolean ok = true;
             for (int y = f + 1; y <= f + 3; y++) ok &= deckCell(cx, y, 0) && deckCell(cx + 6, y, 0);
-            if (!ok) continue;
+            if (!ok) {
+                if (first) skipped++;
+                continue;
+            }
+            first = false;
             int deck = deckNumber(f);
-            int index = deck - 2; // 0 = erstes Deck unter der Brücke
+            int index = deck - 2 - skipped; // 0 = erstes Deck mit Räumen unter der Brücke
             // Ten Forward liegt auf dem Deck, das vorne bis an den Rand der Untertasse reicht
             boolean rim = sMid >= f + 1 && sMid < f + 1 + DECK_HEIGHT;
             List<Band> bands = deckBands(index, rings, rim);

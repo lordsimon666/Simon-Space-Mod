@@ -40,7 +40,8 @@ Die Decks heißen wie in der Serie mit Buchstaben (A-Deck = Brücke, B-Deck, C-D
 ### NCC-1701-F (Odyssey-Klasse)
 
 Die größte Enterprise: **1061 m** lang, mit lang gestreckter, flacher Untertasse, Sekundärrumpf und zwei
-Gondeln. Der Hals besteht aus **zwei getrennten Streben**, dazwischen ist frei. Rumpf und Farben stammen aus einem 3D-Modell (Quelle unten). Innen ist sie aufgebaut wie die E,
+Gondeln. Der Hals besteht aus **zwei getrennten Streben**, dazwischen ist frei. Die Brücke sitzt auf der Brückenkuppel
+des Modells, weit vorne auf der lang gestreckten Untertasse (nicht in deren Mitte). Rumpf und Farben stammen aus einem 3D-Modell (Quelle unten). Innen ist sie aufgebaut wie die E,
 mit Brücke, Decks, Maschinenraum, Waffenkammer usw. Weil die Untertasse flach ist, liegen die Holodecks
 bei kleineren Bauformen im Sekundärrumpf.
 
@@ -822,7 +823,9 @@ Richtungen gefüllt und die Mehrheit entscheidet. Danach bleibt nur der zusammen
 übrig, und Hohlräume im Rumpf werden geschlossen. So bleibt die Lücke zwischen den beiden Hälsen offen,
 statt durch offene Flächen des Modells zugebaut zu werden. Die Ergebnisse liegen in
 `src/main/resources/ships/`. Beim Bauen vermisst die Mod die Form automatisch (Untertasse, Gondeln,
-Unterrumpf) und erzeugt daraus Decks, Räume, Brücke, Maschinenraum, Farben und Beschriftung.
+Unterrumpf) und erzeugt daraus Decks, Räume, Brücke, Maschinenraum, Farben und Beschriftung. Die Brücke
+kommt auf die Brückenkuppel des Modells (die höchste Stelle der Untertasse auf der Mittellinie). Bei runden
+Untertassen und der D ist das die Mitte, bei der E etwas weiter vorne und bei der F weit vorne.
 Fehlt ein Modell, wird die eingebaute, berechnete Form verwendet.
 
 **Modell-Quelle (NX-01 bis -E):** „Star Trek USS Enterprise Ultimate Collection“ von **Alexei Bruton (Solid_Alexei)**,
