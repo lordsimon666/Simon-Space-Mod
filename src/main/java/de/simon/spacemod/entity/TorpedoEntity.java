@@ -34,6 +34,10 @@ public class TorpedoEntity extends Entity {
     private AABB own = new AABB(0, 0, 0, 0, 0, 0);
     private @Nullable UUID shooter;
     private int age;
+    /** Full Spread: seitliche Ausbuchtung der Flugbahn (Stern), am Start und am Ziel null. */
+    private Vec3 bulge = Vec3.ZERO;
+    /** Fortschritt auf der gebogenen Bahn (0 = Start, 1 = Ziel). */
+    private double progress;
 
     public TorpedoEntity(EntityType<?> type, Level level) {
         super(type, level);
@@ -46,6 +50,12 @@ public class TorpedoEntity extends Entity {
         this.targetEntity = targetEntity;
         this.own = own;
         this.shooter = shooter;
+        this.launch = position();
+    }
+
+    /** Gebogene Bahn: fliegt erst um {@code bulge} zur Seite hinaus und kommt am Ziel wieder zusammen. */
+    public void curve(Vec3 bulge) {
+        this.bulge = bulge;
     }
 
     @Override
@@ -72,15 +82,25 @@ public class TorpedoEntity extends Entity {
         }
         if (targetEntity != null && targetEntity.isAlive()) target = targetEntity.getBoundingBox().getCenter();
         Vec3 pos = position();
-        Vec3 to = target.subtract(pos);
-        double dist = to.length();
+        if (launch == null) launch = pos;
         double speed = style.speed;
+        // Wegpunkt: gerade aufs Ziel, oder auf der gebogenen Bahn (Full Spread: Stern, der am Ziel zusammenläuft)
+        Vec3 goal = target;
+        boolean last = true;
+        if (bulge.lengthSqr() > 1e-6) {
+            double len = Math.max(1, launch.distanceTo(target));
+            progress = Math.min(1, progress + speed / (len * 1.15));
+            goal = launch.add(target.subtract(launch).scale(progress)).add(bulge.scale(Math.sin(Math.PI * progress)));
+            last = progress >= 1;
+        }
+        Vec3 to = goal.subtract(pos);
+        double dist = to.length();
+        if (!last) speed = Math.max(speed, dist); // auf der Bahn bleiben
         Vec3 dir = dist < 1e-4 ? Vec3.ZERO : to.scale(1 / dist);
         double step = Math.min(speed, dist);
         keepLoaded(level, pos, dir);
         // Schild eines anderen Schiffs auf dem Weg? Torpedos treffen härter als ein Phaserstoß,
         // Quantentorpedos noch härter
-        if (launch == null) launch = pos;
         var shieldHit = de.simon.spacemod.defense.Shields.intercept(level, pos, pos.add(dir.scale(step)), launch);
         if (shieldHit != null) {
             float amount = style.radius * de.simon.spacemod.defense.Shields.PHOTON_PER_RADIUS
@@ -123,7 +143,7 @@ public class TorpedoEntity extends Entity {
         }
         trail(level, pos, next);
         setPos(next.x, next.y, next.z);
-        if (dist <= speed) detonate(level, next);
+        if (last && dist <= speed) detonate(level, next);
     }
 
     /**

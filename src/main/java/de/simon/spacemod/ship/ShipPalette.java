@@ -19,10 +19,12 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 public final class ShipPalette {
     private ShipPalette() {}
 
-    /** Bauart-eigene Blöcke: Full-Spread-Werfer der C und D, Schnellfeuer-Quantenwerfer der E. */
+    /** Bauart-eigene Blöcke: Full-Spread-Werfer der C und D, Schnellfeuer-Photonen- und -Quantenwerfer der E. */
     public static BlockState forDesign(BlockState st, ShipDesign design) {
         if ((design == ShipDesign.NCC_1701_C || design == ShipDesign.NCC_1701_D) && st.is(ModBlocks.TORPEDO_LAUNCHER.get()))
             return ModBlocks.TORPEDO_LAUNCHER_SPREAD.get().defaultBlockState();
+        if (design == ShipDesign.NCC_1701_E && st.is(ModBlocks.TORPEDO_LAUNCHER.get()))
+            return ModBlocks.TORPEDO_LAUNCHER_RAPID.get().defaultBlockState();
         if (design == ShipDesign.NCC_1701_E && st.is(ModBlocks.QUANTUM_LAUNCHER.get()))
             return ModBlocks.QUANTUM_LAUNCHER_RAPID.get().defaultBlockState();
         return st;

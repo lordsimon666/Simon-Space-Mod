@@ -4062,7 +4062,8 @@ def _with_magazine(base, color):
 
 TEXTURES["torpedo_launcher_spread"] = lambda: _with_magazine(tex_torpedo, (255, 140, 40))
 TEXTURES["quantum_launcher_rapid"] = lambda: _with_magazine(tex_quantum_launcher, (90, 170, 255))
-SIMPLE += ["torpedo_launcher_spread", "quantum_launcher_rapid"]
+TEXTURES["torpedo_launcher_rapid"] = lambda: _with_magazine(tex_torpedo, (255, 225, 90))
+SIMPLE += ["torpedo_launcher_spread", "quantum_launcher_rapid", "torpedo_launcher_rapid"]
 
 NAMES = {
     "hull_plating": ("Hüllenpanzerung", "Hull Plating"),
@@ -4166,6 +4167,7 @@ NAMES = {
     "quantum_launcher": ("Quantentorpedo-Werfer", "Quantum Torpedo Launcher"),
     "torpedo_launcher_spread": ("Photonentorpedo-Werfer (Full Spread)", "Photon Torpedo Launcher (Full Spread)"),
     "quantum_launcher_rapid": ("Schnellfeuer-Quantentorpedo-Werfer", "Rapid Quantum Torpedo Launcher"),
+    "torpedo_launcher_rapid": ("Schnellfeuer-Photonentorpedo-Werfer", "Rapid Photon Torpedo Launcher"),
     "deflector_ring": ("Deflektorring (Kupfer)", "Deflector Ring (Copper)"),
     "deflector_violet": ("Deflektorschüssel (Galaxy, violett)", "Deflector Dish (Galaxy, Violet)"),
     "turbolift_nx": ("Turbolift (NX-01)", "Turbolift (NX-01)"),

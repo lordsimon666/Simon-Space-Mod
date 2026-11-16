@@ -100,6 +100,7 @@
   "block.simonspacemod.quantum_launcher": "Quantentorpedo-Werfer",
   "block.simonspacemod.torpedo_launcher_spread": "Photonentorpedo-Werfer (Full Spread)",
   "block.simonspacemod.quantum_launcher_rapid": "Schnellfeuer-Quantentorpedo-Werfer",
+  "block.simonspacemod.torpedo_launcher_rapid": "Schnellfeuer-Photonentorpedo-Werfer",
   "block.simonspacemod.deflector_ring": "Deflektorring (Kupfer)",
   "block.simonspacemod.deflector_violet": "Deflektorschüssel (Galaxy, violett)",
   "block.simonspacemod.turbolift_nx": "Turbolift (NX-01)",

@@ -100,6 +100,7 @@
   "block.simonspacemod.quantum_launcher": "Quantum Torpedo Launcher",
   "block.simonspacemod.torpedo_launcher_spread": "Photon Torpedo Launcher (Full Spread)",
   "block.simonspacemod.quantum_launcher_rapid": "Rapid Quantum Torpedo Launcher",
+  "block.simonspacemod.torpedo_launcher_rapid": "Rapid Photon Torpedo Launcher",
   "block.simonspacemod.deflector_ring": "Deflector Ring (Copper)",
   "block.simonspacemod.deflector_violet": "Deflector Dish (Galaxy, Violet)",
   "block.simonspacemod.turbolift_nx": "Turbolift (NX-01)",

@@ -281,6 +281,9 @@ public final class ModBlocks {
     /** Torpedowerfer der C und D: 5 Schuss, Full Spread mit F. */
     public static final RegistryObject<Block> TORPEDO_LAUNCHER_SPREAD = block("torpedo_launcher_spread",
         p -> new TorpedoLauncherBlock(p, false, 5, true), glowing(metal(MapColor.COLOR_ORANGE), 10));
+    /** Schnellfeuer-Photonenwerfer der E: 5 Schuss, kein Full Spread. */
+    public static final RegistryObject<Block> TORPEDO_LAUNCHER_RAPID = block("torpedo_launcher_rapid",
+        p -> new TorpedoLauncherBlock(p, false, 5, false), glowing(metal(MapColor.COLOR_ORANGE), 10));
     /** Schnellfeuer-Quantenwerfer der E: 5 Schuss, kein Full Spread. */
     public static final RegistryObject<Block> QUANTUM_LAUNCHER_RAPID = block("quantum_launcher_rapid",
         p -> new TorpedoLauncherBlock(p, true, 5, false), glowing(metal(MapColor.COLOR_BLUE), 11));

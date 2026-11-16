@@ -381,15 +381,23 @@ public final class PhaserControl {
         right = right.lengthSqr() < 1e-4 ? new Vec3(1, 0, 0) : right.normalize();
         TorpedoStyle style = quantum ? TorpedoStyle.QUANTUM : TorpedoStyle.photon(photonTier);
         var chunks = level.getChunkSource();
+        Vec3 up = right.cross(dir).normalize();
+        // Full Spread: einer geradeaus, die anderen sternförmig hinaus (oben, rechts, unten, links …),
+        // alle laufen am Ziel wieder zusammen
+        double amp = Math.max(4, Math.min(40, dist * 0.25));
         for (int i = 0; i < shots; i++) {
-            // Fächer: je Torpedo 7° nebeneinander, mittig aufs Ziel
-            double off = (i - (shots - 1) / 2.0) * dist * Math.tan(Math.toRadians(7));
-            Vec3 aimAt = shots == 1 ? tgt : tgt.add(right.scale(off));
-            Vec3 start = c.add(aimAt.subtract(c).normalize().scale(1.0)).add(right.scale(shots == 1 ? 0 : (i - (shots - 1) / 2.0) * 0.4));
+            Vec3 bulge = Vec3.ZERO;
+            if (spread && i > 0) {
+                double a = 2 * Math.PI * (i - 1) / Math.max(1, shots - 1);
+                bulge = up.scale(Math.cos(a) * amp).add(right.scale(Math.sin(a) * amp));
+            }
+            Vec3 aimAt = tgt;
+            Vec3 start = c.add(dir.scale(1.0)).add(bulge.lengthSqr() > 0 ? bulge.normalize().scale(0.4) : Vec3.ZERO);
             TorpedoEntity t = ModBlocks.TORPEDO.get().create(level, EntitySpawnReason.TRIGGERED);
             if (t == null) continue;
             t.setPos(start.x, start.y, start.z);
             t.setup(style, aimAt, aim.entity(), own, player.getUUID());
+            if (bulge.lengthSqr() > 0) t.curve(bulge);
             // Der Werfer kann weit von der Kamera weg in einem ruhenden Chunk liegen: vorher aktiv laden,
             // sonst bewegt sich der Torpedo nicht (er sichert sich danach im Flug selbst weiter)
             chunks.addTicketWithRadius(TicketType.ENDER_PEARL, ChunkPos.containing(BlockPos.containing(start)), 2);

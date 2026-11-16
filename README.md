@@ -244,9 +244,11 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
   bereite Werfer, der dem Ziel am nächsten ist. Normale Werfer haben 1 Schuss (Nachladen 1,5 s, Quanten
   2,5 s).
   * **NCC-1701-C und -D**: Photonentorpedo-Werfer mit **Full Spread**. 5 Schuss im Magazin, einzeln mit
-    **P** oder alle auf einmal fächerförmig mit **F** (Nachladen 6 s nach dem letzten Schuss).
-  * **NCC-1701-E**: Schnellfeuer-Quantenwerfer, 5 Quantentorpedos vor dem Nachladen (7 s), kein Full
-    Spread.
+    **P** oder alle auf einmal mit **F** (Nachladen 6 s nach dem letzten Schuss). Beim Full Spread
+    fliegen die Torpedos **sternförmig** auseinander, einer geradeaus und die anderen auf Bögen nach
+    oben, rechts, unten und links. Am Ziel laufen sie wieder zusammen.
+  * **NCC-1701-E**: Schnellfeuer-Photonenwerfer und Schnellfeuer-Quantenwerfer mit je 5 Schuss vor dem
+    Nachladen (6 bzw. 7 s), kein Full Spread.
   * F tauscht am Steuer und in der Kamerasicht nicht die Hände. Die Taste ist unter „Simon Space Mod –
     Waffen“ einstellbar.
   Torpedos halten die Gegend, durch die sie fliegen, geladen (wie eine Enderperle) und fliegen so
@@ -729,7 +731,7 @@ G = Goldbarren, E = Eisenbarren, P = Enderperle, R = Redstone
  E R E
 ```
 
-## Neue Blöcke (160)
+## Neue Blöcke (161)
 
 * **Hülle**: Hüllenpanzerung (+ Stufe), Hüllenplatte, dunkle Hüllenplatte, Hüllenfenster, Hüllenglas,
   Kennungsmarkierung (+ Stufe), roter Zierstreifen, Positionslicht rot/grün, Deflektorschüssel,
@@ -755,7 +757,7 @@ G = Goldbarren, E = Eisenbarren, P = Enderperle, R = Redstone
 * **NX-01**: Metallwand, Konsole, Sitz, Kommandantensessel, Dekontaminations-Leuchte
 * **Turbolifte**: Turbolift und Turbolift-Tür im Stil von NX-01, Refit, Excelsior und Next Generation
 * **Waffen**: Phasenkanone (NX-01), Phaserbank (Originalserie), Phaser-Emitter (Refit/Excelsior),
-  Phaserstreifen (Next Generation), Photonentorpedo-Werfer, Full-Spread-Werfer (C/D), Quantentorpedo-Werfer, Schnellfeuer-Quantenwerfer (E), Waffenstation
+  Phaserstreifen (Next Generation), Photonentorpedo-Werfer, Full-Spread-Werfer (C/D), Quantentorpedo-Werfer, Schnellfeuer-Photonen- und -Quantenwerfer (E), Waffenstation
   (4 Varianten je Epoche)
 * **Waffenkammer und Strom**: Gewehrständer, Phaser-Wandhalter, Ladestation, Warpkern der NX-01
   und der Enterprise-E
