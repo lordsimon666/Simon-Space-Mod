@@ -735,12 +735,6 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
   einem Erzeuger verbunden ist. Kabel braucht man im Schiff nicht. Speicher, die selbst Strom
   abgeben (Batterien), zählen dabei als Erzeuger.
 * Rechtsklick auf den Steuerblock zeigt Größe, Leistung, Brennstand und Energie.
-* **Easter Egg – Atom-Hühnchen**: Legt man rohes oder gebratenes Hühnchen in einen **laufenden** Reaktor
-  (der gerade Uran verbrennt), wird daraus ein grün schimmerndes **Atom-Hühnchen**. Ein lebendes Huhn oder
-  ein hingeworfenes Hühnchen direkt am Steuerblock landet ebenfalls als Atom-Hühnchen im Reaktor, aber nur,
-  wenn ein Eingabeplatz frei ist. Es ist immer durchgegart (sättigt wie gebratenes Hühnchen), gibt aber beim
-  Essen **eine Minute lang alle schädlichen Effekte** (Vergiftung, Wither, Übelkeit, Blindheit, Langsamkeit …).
-  Milch hilft.
 
 Reaktorhülle (8×), Reaktorglas (4×) und Steuerblock baut die **Schiffsteil-Fertigung** (Eisen,
 Kupfer, Glas, Uran, Diamanten, Redstone).
