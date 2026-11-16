@@ -29,7 +29,7 @@ public final class ShipView {
             if (!(e.getState() instanceof AvatarRenderState a)) return false;
             var mc = Minecraft.getInstance();
             if (mc.level == null || !(mc.level.getEntity(a.id) instanceof net.minecraft.world.entity.Entity ent)) return false;
-            FlyingShipEntity ship = FlyingShipEntity.frameOf(ent);
+            FlyingShipEntity ship = FlyingShipEntity.bodyFrameOf(ent); // auch der Pilot steht auf dem Schiffsboden
             if (ship == null) return false;
             e.getPoseStack().pushPose();
             e.getPoseStack().mulPose(ship.tilt(mc.getDeltaTracker().getGameTimeDeltaPartialTick(false)));

@@ -34,13 +34,18 @@ public abstract class CameraMixin {
         ShipView.tilted = false;
         Entity e = entity;
         if (e == null || e.getVehicle() == null) return;
-        FlyingShipEntity ship = FlyingShipEntity.frameOf(e);
+        FlyingShipEntity ship = FlyingShipEntity.bodyFrameOf(e);
         if (ship == null) return;
+        boolean view = FlyingShipEntity.frameOf(e) != null; // am Steuer bleibt der Blick waagerecht (er lenkt das Schiff)
         Quaternionf t = ship.tilt(partial);
         Vec3 feet = new Vec3(Mth.lerp(partial, e.xo, e.getX()), Mth.lerp(partial, e.yo, e.getY()), Mth.lerp(partial, e.zo, e.getZ()));
         double h = Mth.lerp(partial, eyeHeightOld, eyeHeight);
         Vec3 pivotOld = feet.add(0, h, 0), pivot = feet.add(ShipPhysics.rotate(t, 0, h, 0));
         Vec3 off = position.subtract(pivotOld); // 0 in der Ich-Sicht, sonst der Abstand der Kamera hinter/vor dem Kopf
+        if (!view) { // nur die Lage korrigieren: Augen über den Füßen am geneigten Schiffsboden
+            setPosition(pivot.add(off));
+            return;
+        }
         Quaternionf q = new Quaternionf(t).mul(rotation);
         Vector3f eul = q.getEulerAnglesYXZ(new Vector3f());
         float roll = (float) Math.toDegrees(eul.z);

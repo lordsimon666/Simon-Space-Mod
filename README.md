@@ -376,7 +376,9 @@ klicke sie mit der rechten Maustaste an:
   nicht mehr vor und zurück, wenn Netzwerkpakete unregelmäßig ankommen.
 * **Mitdrehende Sicht**: an Bord (laufend oder auf einem Stuhl, nicht am Steuer) dreht sich die Ansicht
   mit dem Schiff – wendet es, dreht sich der Blick mit; nickt es, kippt die Kamera mit dem Schiffsboden.
-  Spielermodelle stehen immer senkrecht auf dem Schiffsboden. Zielen, Handphaser und Blöcke benutzen
+  Spielermodelle stehen immer senkrecht auf dem Schiffsboden, **auch der Pilot**. Am Steuer kippen Figur
+  und Kameraposition mit dem Boden, man lehnt sich also beim Nicken nicht relativ zum Schiff vor und
+  zurück. Der Blick bleibt dort waagerecht, weil er das Schiff lenkt. Zielen, Handphaser und Blöcke benutzen
   richten sich nach dieser gekippten Sicht.
 * **Im Schiff bleiben**: wer höchstens **2 Blöcke** von einem Block des Schiffs entfernt ist, gehört
   dazu (steigt ein bzw. fällt nicht heraus). **Shift** ist im Schiff Schleichen und wirft einen nicht

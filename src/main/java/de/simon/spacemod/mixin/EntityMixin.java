@@ -50,8 +50,11 @@ public abstract class EntityMixin {
     }
 
     private void simonspacemod$eyeTilt(float partial, CallbackInfoReturnable<Vec3> cir) {
-        Quaternionf q = simonspacemod$tilt(partial);
-        if (q == null) return;
+        Entity self = (Entity) (Object) this;
+        if (self.getVehicle() == null) return;
+        FlyingShipEntity ship = FlyingShipEntity.bodyFrameOf(self); // auch am Steuer: Augen sitzen über den Füßen am Schiffsboden
+        if (ship == null) return;
+        Quaternionf q = ship.tilt(partial);
         double h = ((Entity) (Object) this).getEyeHeight();
         cir.setReturnValue(cir.getReturnValue().add(0, -h, 0).add(ShipPhysics.rotate(q, 0, h, 0)));
     }

@@ -142,9 +142,18 @@ public class FlyingShipEntity extends Entity {
      * Stuhl), aber nicht am Steuer – dort steuert der Blick das Schiff.
      */
     public static @Nullable FlyingShipEntity frameOf(Entity e) {
+        FlyingShipEntity s = bodyFrameOf(e);
+        return s != null && !s.isPilotEntity(e) ? s : null;
+    }
+
+    /**
+     * Schiff, auf dessen Boden dieses Wesen steht – auch am Steuer. Figur und Augenhöhe kippen mit dem
+     * Schiffsboden, damit man sich beim Nicken nicht relativ zum Schiff vor- und zurücklehnt.
+     */
+    public static @Nullable FlyingShipEntity bodyFrameOf(Entity e) {
         Entity v = e.getVehicle();
         if (v instanceof SeatEntity) v = v.getVehicle();
-        return v instanceof FlyingShipEntity s && !s.isPilotEntity(e) ? s : null;
+        return v instanceof FlyingShipEntity s ? s : null;
     }
 
     /** Client: weiche Bewegung – neue Positionen vom Server werden im nächsten Tick übernommen. */
