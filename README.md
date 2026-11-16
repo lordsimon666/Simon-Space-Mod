@@ -531,7 +531,8 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
   Truhe, jede weitere Stufe aus der vorigen plus Kupfer, Eisen, Gold, Diamanten bzw. einem Netheritbarren
   (Schiffsteil-Fertigung).
 * Aus den Blöcken einen **hohlen Quader** bauen: jede Kante **3 bis 8 Blöcke** (auch ungleich, z. B.
-  3×5×8). Alle sechs Wände sind voll, innen nur Luft. Ist der letzte Block gesetzt, wird daraus eine Kiste.
+  3×5×8). Alle sechs Wände sind voll, innen nur Luft. Solange die Kiste noch nicht fertig ist, setzt man
+  Blöcke einfach auf die Kistenblöcke, ohne Shift. Erst die fertige Kiste öffnet sich beim Rechtsklick. Ist der letzte Block gesetzt, wird daraus eine Kiste.
   Das zeigt eine Meldung mit Größe und Platzzahl an.
 * **Jeder Block zählt wie eine Kiste der Stufe, auch die Luft im Inneren**:
 

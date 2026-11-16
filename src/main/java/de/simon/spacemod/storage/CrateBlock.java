@@ -94,6 +94,18 @@ public class CrateBlock extends BaseEntityBlock {
         return old.getBlock() instanceof CrateBlock; // Stufen-Upgrade: Inhalt bleibt erhalten
     }
 
+    /**
+     * Mit einem Block in der Hand: solange die Kiste noch nicht fertig ist, wird der Block einfach gesetzt
+     * (kein Shift nötig, um Kistenblöcke aufeinanderzustapeln). Eine fertige Kiste öffnet sich wie eine Truhe.
+     */
+    @Override
+    protected InteractionResult useItemOn(net.minecraft.world.item.ItemStack stack, BlockState state, Level level, BlockPos pos, Player player,
+                                          net.minecraft.world.InteractionHand hand, BlockHitResult hit) {
+        if (stack.getItem() instanceof net.minecraft.world.item.BlockItem && level.getBlockEntity(pos) instanceof CrateBlockEntity be && !be.formed())
+            return InteractionResult.PASS;
+        return InteractionResult.TRY_WITH_EMPTY_HAND;
+    }
+
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (level.isClientSide() || !(player instanceof ServerPlayer sp)) return InteractionResult.SUCCESS;

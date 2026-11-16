@@ -180,18 +180,39 @@ public class CrateBlockEntity extends BlockEntity {
         sx = box.sx(); sy = box.sy(); sz = box.sz();
         items = NonNullList.withSize(box.volume() * tier.slotsPerBlock, ItemStack.EMPTY);
         toMaster = BlockPos.ZERO;
-        setChanged();
+        changedAndSync();
     }
 
     void join(BlockPos master) {
         toMaster = master.subtract(worldPosition);
-        setChanged();
+        changedAndSync();
     }
 
     void leave() {
         toMaster = null;
         items = NonNullList.withSize(0, ItemStack.EMPTY);
+        changedAndSync();
+    }
+
+    /** Der Client muss wissen, ob der Block zu einer fertigen Kiste gehört (Blöcke daraufsetzen ohne Shift). */
+    private void changedAndSync() {
         setChanged();
+        if (level != null && !level.isClientSide())
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+    }
+
+    @Override
+    public net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    /** An den Client nur: gehört zu einer Kiste ja/nein (kein Inhalt). */
+    @Override
+    public net.minecraft.nbt.CompoundTag getUpdateTag(net.minecraft.core.HolderLookup.Provider registries) {
+        net.minecraft.nbt.CompoundTag tag = new net.minecraft.nbt.CompoundTag();
+        tag.putBoolean("formed", toMaster != null);
+        if (toMaster != null) { tag.putInt("mx", toMaster.getX()); tag.putInt("my", toMaster.getY()); tag.putInt("mz", toMaster.getZ()); }
+        return tag;
     }
 
     /** Kiste kaputt: Inhalt fällt bei {@code at} heraus, alle Blöcke sind wieder einzeln. */
@@ -263,7 +284,7 @@ public class CrateBlockEntity extends BlockEntity {
             tier = CrateTier.values()[Math.max(0, Math.min(CrateTier.values().length - 1, input.getIntOr("tier", 0)))];
             sx = input.getIntOr("sx", 3); sy = input.getIntOr("sy", 3); sz = input.getIntOr("sz", 3);
             sortMode = CrateSort.Mode.values()[Math.max(0, Math.min(CrateSort.Mode.values().length - 1, input.getIntOr("sort", 0)))];
-            items = NonNullList.withSize(input.getIntOr("size", sx * sy * sz * tier.slotsPerBlock), ItemStack.EMPTY);
+            items = NonNullList.withSize(Math.max(0, input.getIntOr("size", 0)), ItemStack.EMPTY); // Client: ohne Inhalt
             for (SlotStack s : input.listOrEmpty("Items", SlotStack.CODEC))
                 if (s.slot() >= 0 && s.slot() < items.size()) items.set(s.slot(), s.full());
             upgrades.clearContent();
