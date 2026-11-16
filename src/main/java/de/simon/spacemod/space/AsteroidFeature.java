@@ -22,12 +22,27 @@ public class AsteroidFeature extends Feature<NoneFeatureConfiguration> {
         super(codec);
     }
 
+    /** Einmal je Chunk: alle Asteroiden des Rasters, deren Mittelpunkt in diesem Chunk liegt. */
     @Override
     public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> ctx) {
         WorldGenLevel level = ctx.level();
-        RandomSource rnd = ctx.random();
-        BlockPos o = ctx.origin();
-        if (SpaceShips.nearEnterprise(level.getSeed(), o)) return false; // 50 Blöcke um die Enterprises frei lassen
+        int x0 = ctx.origin().getX() & ~15, z0 = ctx.origin().getZ() & ~15;
+        long seed = level.getSeed();
+        boolean any = false;
+        int i0 = Math.floorDiv(x0 - AsteroidGrid.JITTER - AsteroidGrid.CELL, AsteroidGrid.CELL), i1 = Math.floorDiv(x0 + 16 + AsteroidGrid.JITTER, AsteroidGrid.CELL) + 1;
+        int k0 = Math.floorDiv(z0 - AsteroidGrid.JITTER - AsteroidGrid.CELL, AsteroidGrid.CELL), k1 = Math.floorDiv(z0 + 16 + AsteroidGrid.JITTER, AsteroidGrid.CELL) + 1;
+        for (int i = i0; i <= i1; i++)
+            for (int k = k0; k <= k1; k++)
+                for (int j = 0; AsteroidGrid.BOTTOM + j * AsteroidGrid.CELL <= 960; j++) {
+                    BlockPos c = AsteroidGrid.center(seed, i, j, k);
+                    if (c == null || c.getX() < x0 || c.getX() > x0 + 15 || c.getZ() < z0 || c.getZ() > z0 + 15) continue;
+                    if (level.isOutsideBuildHeight(c) || SpaceShips.nearEnterprise(seed, c)) continue; // 50 Blöcke um die Enterprises frei
+                    any |= placeOne(level, RandomSource.create(AsteroidGrid.cellHash(seed, i, j, k)), c);
+                }
+        return any;
+    }
+
+    private boolean placeOne(WorldGenLevel level, RandomSource rnd, BlockPos o) {
         double r = 3 + rnd.nextInt(10);
         boolean ice = rnd.nextInt(6) == 0;
         Block base = ice ? Blocks.PACKED_ICE : switch (rnd.nextInt(5)) {

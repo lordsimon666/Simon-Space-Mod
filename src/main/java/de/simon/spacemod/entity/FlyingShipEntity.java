@@ -58,6 +58,8 @@ public class FlyingShipEntity extends Entity {
     private int throttle; // -1, 0, 1
     private int controlAge = 100;
     private double lastPower = 1;
+    /** Letzte Flugrichtung (für den Rückstoß bei Kollisionen). */
+    private Vec3 lastDir = Vec3.ZERO;
     /** Sitzplätze der Passagiere (lokal, relativ zum Drehpunkt). */
     private final Map<UUID, Vec3> seats = new HashMap<>();
     /** Ursprung des Bauplatzes in der Werft (Block p des Schiffs steht bei Ursprung + p). */
@@ -630,11 +632,31 @@ public class FlyingShipEntity extends Entity {
         // Kollision: Außenblöcke an der neuen Lage dürfen nicht in Welt-Blöcken stecken
         Vec3 newPos = position().add(v);
         Quaternionf q = ShipPhysics.rotation(yaw0(), newYaw, newPitch);
-        if (collides(level, newPos, q)) {
-            // erst nur die Drehung versuchen, sonst ganz stehen bleiben
-            if (!collides(level, position(), q)) newPos = position();
-            else { newPos = position(); newYaw = yaw(); newPitch = pitch(); ry[1] = 0; rp[1] = 0; }
-            v = Vec3.ZERO;
+        Quaternionf cur = ShipPhysics.rotation(yaw0(), yaw(), pitch());
+        Vec3 back = lastDir.lengthSqr() > 1e-6 ? lastDir.scale(-1) : new Vec3(0, 1, 0);
+        if (collides(level, position(), cur)) {
+            // steckt schon fest (z. B. ein Block wurde ins Schiff gesetzt): in Gegenrichtung herausschieben
+            Vec3 free = null;
+            for (double d = 0.5; d <= 4 && free == null; d += 0.5)
+                for (Vec3 dir : new Vec3[] {back, new Vec3(0, 1, 0), back.add(0, 1, 0).normalize()}) {
+                    Vec3 p = position().add(dir.scale(d));
+                    if (!collides(level, p, cur)) { free = p; break; }
+                }
+            newPos = free != null ? free : position().add(back.scale(0.5)); // notfalls Stück für Stück hinaus
+            newYaw = yaw(); newPitch = pitch(); ry[1] = 0; rp[1] = 0;
+            v = back.scale(0.05);
+        } else if (collides(level, newPos, q)) {
+            // Aufprall: ein Stück zurück in die Richtung, aus der das Schiff kam (Rückstoß)
+            Vec3 dir = v.lengthSqr() > 1e-6 ? v.normalize() : lastDir;
+            newPos = position();
+            if (collides(level, newPos, q)) { q = cur; newYaw = yaw(); newPitch = pitch(); ry[1] = 0; rp[1] = 0; }
+            Vec3 bounce = dir.scale(-Math.max(0.2, v.length() * 0.5));
+            if (!collides(level, newPos.add(bounce), q)) newPos = newPos.add(bounce);
+            v = bounce.scale(0.5);
+            level.playSound(null, BlockPos.containing(newPos), net.minecraft.sounds.SoundEvents.ANVIL_LAND,
+                net.minecraft.sounds.SoundSource.BLOCKS, 0.6F, 0.6F);
+        } else if (v.lengthSqr() > 1e-6) {
+            lastDir = v.normalize();
         }
         velocity = v;
         yawRate = ry[1];

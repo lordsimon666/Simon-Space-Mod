@@ -27,6 +27,24 @@ class SpaceShipsTest {
     }
 
     @Test
+    void asteroidsKeepTheirDistance() {
+        java.util.List<net.minecraft.core.BlockPos> c = new java.util.ArrayList<>();
+        int cells = 0;
+        for (int i = -3; i < 3; i++)
+            for (int j = 0; j < 6; j++)
+                for (int k = -3; k < 3; k++) {
+                    cells++;
+                    var p = AsteroidGrid.center(42L, i, j, k);
+                    if (p != null) c.add(p);
+                }
+        double min = Double.MAX_VALUE;
+        for (int a = 0; a < c.size(); a++)
+            for (int b = a + 1; b < c.size(); b++) min = Math.min(min, Math.sqrt(c.get(a).distSqr(c.get(b))));
+        assertTrue(min >= 80, "Mindestabstand der Mittelpunkte: " + min);
+        assertTrue(c.size() > cells / 2 && c.size() < cells * 0.9, "Anteil belegter Zellen: " + c.size() + "/" + cells);
+    }
+
+    @Test
     void sameCellSameShip() {
         assertEquals(SpaceShips.designFor(7L, 3, -4), SpaceShips.designFor(7L, 3, -4));
     }

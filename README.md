@@ -422,7 +422,9 @@ klicke sie mit der rechten Maustaste an:
   und Waffenoffizier teilen sich die Phaser (gemeinsames Nachladen). Das eigene Schiff und die eigene
   Besatzung werden nicht anvisiert. Fliegt das Schiff dabei in den Weltraum oder zurück, bleibt
   die Kamerasicht erhalten; Shift bringt den Waffenoffizier zurück auf seinen Platz im Schiff.
-* **Kollision**: stößt das Schiff an Blöcke der Welt, bleibt es stehen.
+* **Kollision**: stößt das Schiff an Blöcke der Welt, prallt es mit einem dumpfen Schlag ein Stück in die
+  Richtung zurück, aus der es kam. Steckt es doch einmal fest (z. B. weil ein Block hineingesetzt wurde),
+  schiebt es sich selbst gegen die letzte Flugrichtung bzw. nach oben wieder frei.
 * **Landen** (L, am Steuer): nur langsam und annähernd waagerecht; das Schiff wird wieder zu Blöcken,
   die Drehung rastet auf 90° ein, Truhen & Co. behalten ihren Inhalt. Am Zielort muss Platz sein.
 
@@ -543,8 +545,9 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
   Größe – die Schiffe sind also 1000 Blöcke voneinander entfernt. Je neuer, desto seltener:
   NX-01 7/28, NCC-1701 6/28, -A 5/28, -B 4/28, -C 3/28, -D 2/28, -E 1/28. Sie entstehen, sobald ein
   Spieler näher als 700 Blöcke kommt (eins nach dem anderen).
-* **Asteroiden** (3 bis 12 Blöcke Radius, im Schnitt etwa einer pro Chunk über die ganze Höhe
-  verteilt; rund um die Enterprises bleiben 50 Blöcke frei) aus Stein, Andesit, Tuff, Tiefenschiefer oder Basalt mit
+* **Asteroiden** (3 bis 12 Blöcke Radius) liegen in einem lockeren Raster aus 110-Block-Zellen
+  (etwa 70 % belegt, leicht versetzt): zwischen zwei Asteroiden sind immer mindestens rund 50 bis 100
+  Blöcke freier Raum, sodass man gut hindurchfliegen kann; rund um die Enterprises bleiben 50 Blöcke frei. Sie bestehen aus Stein, Andesit, Tuff, Tiefenschiefer oder Basalt mit
   Kohle, Eisen, Kupfer, Gold, Redstone, Lapis, Diamant, Smaragd, **Uran** und **Dilithium**; im Kern
   manchmal **Antimaterie-Einschlüsse**. Etwa jeder sechste Asteroid ist ein Eisbrocken mit
   **Deuterium-Eis**.
