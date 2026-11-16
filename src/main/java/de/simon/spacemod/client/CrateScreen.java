@@ -75,6 +75,30 @@ public class CrateScreen extends AbstractContainerScreen<CrateMenu> {
         g.text(font, mult, CrateMenu.UP_X + 9 - font.width(mult) / 2, CrateMenu.UP_Y + 4 * 18 + 2, 0xFF404040, false);
     }
 
+    /**
+     * Große Stapel (Stack-Upgrades) lesbar halten: ab 1000 kleiner geschrieben, ab 10 000 abgekürzt
+     * (10k, 512k, 1.2M …).
+     */
+    @Override
+    protected void extractSlot(GuiGraphicsExtractor g, Slot slot, int mouseX, int mouseY) {
+        net.minecraft.world.item.ItemStack st = slot.getItem();
+        if (slot.index >= CrateMenu.VISIBLE || st.getCount() < 1000) {
+            super.extractSlot(g, slot, mouseX, mouseY);
+            return;
+        }
+        g.item(st, slot.x, slot.y, slot.x + slot.y * imageWidth);
+        g.itemDecorations(font, st, slot.x, slot.y, ""); // Haltbarkeit usw., aber ohne die Zahl
+        String text = de.simon.spacemod.storage.CountFormat.shortCount(st.getCount());
+        float scale = text.length() <= 3 ? 1F : text.length() == 4 ? 0.75F : 0.6F;
+        int w = font.width(text);
+        var pose = g.pose();
+        pose.pushMatrix();
+        pose.translate(slot.x + 17, slot.y + 17);
+        pose.scale(scale, scale);
+        g.text(font, text, -w, -8, 0xFFFFFFFF, true);
+        pose.popMatrix();
+    }
+
     private void scrollTo(int row) {
         int o = Math.max(0, Math.min(menu.maxOffset(), row));
         if (o == menu.offset() || minecraft == null || minecraft.player == null || minecraft.gameMode == null) return;

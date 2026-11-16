@@ -51,4 +51,15 @@ class CrateSortTest {
     void stackUpgradesMakeBiggerStacks() {
         assertEquals("cobblestone136,diamond1,diamond1,dirt50,raw5", show(CrateSort.arrange(CRATE, CrateSort.Mode.NAME, kind(4))));
     }
+
+    @Test
+    void shortCounts() {
+        assertEquals("999", CountFormat.shortCount(999));
+        assertEquals("4096", CountFormat.shortCount(4096));
+        assertEquals("10k", CountFormat.shortCount(10_000));
+        assertEquals("512k", CountFormat.shortCount(512_999));
+        assertEquals("1.0M", CountFormat.shortCount(1_000_000));
+        assertEquals("1.2M", CountFormat.shortCount(1_299_999));
+        assertEquals("67M", CountFormat.shortCount(67_108_864));
+    }
 }
