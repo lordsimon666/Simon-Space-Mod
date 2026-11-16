@@ -668,7 +668,13 @@ public final class ModBlocks {
         .withTabsBefore(CreativeModeTabs.SPAWN_EGGS)
         .title(Component.translatable("itemGroup.simonspacemod.space"))
         .icon(() -> CAPTAINS_CHAIR.get().asItem().getDefaultInstance())
-        .displayItems((_, output) -> TAB_ITEMS.forEach(item -> output.accept(item.get())))
+        .withSearchBar()
+        .displayItems((_, output) -> {
+            // nach Gruppen sortiert (TabOrder), innerhalb einer Gruppe in Stufen- bzw. Registrierreihenfolge
+            List<RegistryObject<? extends Item>> sorted = new ArrayList<>(TAB_ITEMS);
+            sorted.sort(java.util.Comparator.comparingInt(ro -> TabOrder.key(ro.getId().getPath(), TAB_ITEMS.indexOf(ro))));
+            sorted.forEach(item -> output.accept(item.get()));
+        })
         .build());
 
     public static void register(BusGroup modBus) {

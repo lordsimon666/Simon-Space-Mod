@@ -6,6 +6,7 @@ import de.simon.spacemod.assembly.AssemblyRecipes;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -22,16 +23,55 @@ import net.minecraft.world.item.ItemStack;
  * was hinein muss – mit Menge, denn ein Platz kann mehrere Stück derselben Sorte brauchen.
  */
 public class AssemblyScreen extends AbstractContainerScreen<AssemblyMenu> {
-    private static final int COLS = 5, ROWS = 8, LIST_X = 184, LIST_Y = 8;
+    private static final int COLS = 5, ROWS = 7, LIST_X = 184, LIST_Y = 24;
     private int scroll;
+    /** Suchfeld über der Tabelle: filtert nach Name (Sprache des Spiels) und Registername. */
+    private EditBox search;
+    private String query = "";
+    /** Indizes (in {@link AssemblyRecipes#all()}) der Rezepte, die zur Suche passen. */
+    private List<Integer> visible = new ArrayList<>();
 
     public AssemblyScreen(AssemblyMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title, 280, 166);
         this.inventoryLabelY = this.imageHeight - 94;
     }
 
+    @Override
+    protected void init() {
+        super.init();
+        search = new EditBox(font, leftPos + LIST_X + 1, topPos + 9, COLS * 18 - 2, 12, Component.translatable("gui.simonspacemod.assembly.search"));
+        search.setMaxLength(50);
+        search.setHint(Component.translatable("gui.simonspacemod.assembly.search").withColor(0xFF808080));
+        search.setValue(query);
+        search.setResponder(v -> { query = v; filter(); });
+        addRenderableWidget(search);
+        filter();
+    }
+
+    private void filter() {
+        String q = query.trim().toLowerCase(java.util.Locale.ROOT);
+        List<AssemblyRecipes.Recipe> all = AssemblyRecipes.all();
+        visible = new ArrayList<>();
+        for (int i = 0; i < all.size(); i++) {
+            if (q.isEmpty()) { visible.add(i); continue; }
+            ItemStack st = new ItemStack(all.get(i).output());
+            String name = st.getHoverName().getString().toLowerCase(java.util.Locale.ROOT);
+            String id = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(st.getItem()).getPath();
+            if (name.contains(q) || id.contains(q.replace(' ', '_'))) visible.add(i);
+        }
+        scroll = 0;
+    }
+
+    @Override
+    public boolean keyPressed(net.minecraft.client.input.KeyEvent event) {
+        // beim Tippen ins Suchfeld weder Inventar schließen (E) noch Schnelltasten auslösen; Esc schließt weiter
+        if (search != null && search.isFocused() && event.key() != org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE)
+            return search.keyPressed(event) || search.canConsumeInput() || super.keyPressed(event);
+        return super.keyPressed(event);
+    }
+
     private int maxScroll() {
-        int rows = (AssemblyRecipes.all().size() + COLS - 1) / COLS;
+        int rows = (visible.size() + COLS - 1) / COLS;
         return Math.max(0, rows - ROWS);
     }
 
@@ -86,23 +126,25 @@ public class AssemblyScreen extends AbstractContainerScreen<AssemblyMenu> {
                 g.fill(x, y, x + 16, y + 16, 0xA08B8B8B);
             }
         }
-        // Tabelle der Blöcke
+        // Tabelle der Blöcke (gefiltert durch die Suche)
         List<AssemblyRecipes.Recipe> all = AssemblyRecipes.all();
         scroll = Math.max(0, Math.min(scroll, maxScroll()));
         for (int k = 0; k < COLS * ROWS; k++) {
-            int idx = scroll * COLS + k;
-            if (idx >= all.size()) break;
+            int v = scroll * COLS + k;
+            if (v >= visible.size()) break;
+            int idx = visible.get(v);
             int x = xo + LIST_X + (k % COLS) * 18, y = yo + LIST_Y + (k / COLS) * 18;
             slotBox(g, x, y);
             if (idx == menu.selected()) g.fill(x + 1, y + 1, x + 17, y + 17, 0xFF4F9F4F);
             g.item(new ItemStack(all.get(idx).output()), x + 1, y + 1);
         }
+        if (visible.isEmpty()) g.text(font, Component.translatable("gui.simonspacemod.assembly.no_match"), xo + LIST_X + 2, yo + LIST_Y + 4, 0xFF404040, false);
         // Bildlaufleiste
-        int ms = maxScroll();
-        g.fill(xo + 275, yo + 8, xo + 277, yo + 152, 0xFF555555);
-        int bar = ms == 0 ? 144 : Math.max(10, 144 * ROWS / (ROWS + ms));
-        int by = ms == 0 ? 0 : (144 - bar) * scroll / ms;
-        g.fill(xo + 275, yo + 8 + by, xo + 277, yo + 8 + by + bar, 0xFFEEEEEE);
+        int ms = maxScroll(), h0 = ROWS * 18;
+        g.fill(xo + 275, yo + LIST_Y, xo + 277, yo + LIST_Y + h0, 0xFF555555);
+        int bar = ms == 0 ? h0 : Math.max(10, h0 * ROWS / (ROWS + ms));
+        int by = ms == 0 ? 0 : (h0 - bar) * scroll / ms;
+        g.fill(xo + 275, yo + LIST_Y + by, xo + 277, yo + LIST_Y + by + bar, 0xFFEEEEEE);
     }
 
     @Override
@@ -130,8 +172,8 @@ public class AssemblyScreen extends AbstractContainerScreen<AssemblyMenu> {
     private int hovered(double mx, double my) {
         int lx = (int) Math.floor(mx) - leftPos - LIST_X, ly = (int) Math.floor(my) - topPos - LIST_Y;
         if (lx < 0 || ly < 0 || lx >= COLS * 18 || ly >= ROWS * 18) return -1;
-        int idx = (scroll + ly / 18) * COLS + lx / 18;
-        return idx < AssemblyRecipes.all().size() ? idx : -1;
+        int v = (scroll + ly / 18) * COLS + lx / 18;
+        return v < visible.size() ? visible.get(v) : -1;
     }
 
     @Override

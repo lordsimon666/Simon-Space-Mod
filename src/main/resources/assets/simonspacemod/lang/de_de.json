@@ -244,6 +244,8 @@
   "message.simonspacemod.suit.empty": "Raumanzug leer – an der Ladestation aufladen!",
   "block.simonspacemod.ship_part_assembly": "Schiffsteil-Fertigung",
   "gui.simonspacemod.assembly.choose": "Rechts einen Block wählen",
+  "gui.simonspacemod.assembly.search": "Suchen …",
+  "gui.simonspacemod.assembly.no_match": "Nichts gefunden",
   "gui.simonspacemod.assembly.no_power": "Kein Strom",
   "gui.simonspacemod.assembly.cost": "%s s, %s FE/t",
   "subtitles.simonspacemod.phaser_hand_nx": "Phasenpistole feuert",

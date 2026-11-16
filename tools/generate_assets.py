@@ -2780,6 +2780,7 @@ def suit_assembly_assets(de, en):
         f"message.{M}.suit.empty": "Raumanzug leer – an der Ladestation aufladen!",
         f"block.{M}.ship_part_assembly": "Schiffsteil-Fertigung",
         f"gui.{M}.assembly.choose": "Rechts einen Block wählen",
+        f"gui.{M}.assembly.search": "Suchen …", f"gui.{M}.assembly.no_match": "Nichts gefunden",
         f"gui.{M}.assembly.no_power": "Kein Strom",
         f"gui.{M}.assembly.cost": "%s s, %s FE/t",
     })
@@ -2789,6 +2790,7 @@ def suit_assembly_assets(de, en):
         f"message.{M}.suit.empty": "Space suit empty – recharge it at a charging station!",
         f"block.{M}.ship_part_assembly": "Ship Part Assembly",
         f"gui.{M}.assembly.choose": "Pick a block on the right",
+        f"gui.{M}.assembly.search": "Search …", f"gui.{M}.assembly.no_match": "Nothing found",
         f"gui.{M}.assembly.no_power": "No power",
         f"gui.{M}.assembly.cost": "%s s, %s FE/t",
     })

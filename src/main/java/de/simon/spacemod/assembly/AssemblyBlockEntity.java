@@ -138,6 +138,14 @@ public class AssemblyBlockEntity extends BlockEntity {
     protected void loadAdditional(ValueInput input) {
         super.loadAdditional(input);
         selected = input.getIntOr("selected", -1);
+        // gewählter Block über den Namen (die Nummer ändert sich, wenn sich die Reihenfolge der Rezepte ändert)
+        String name = input.getStringOr("selectedItem", "");
+        if (!name.isEmpty()) {
+            selected = -1;
+            java.util.List<AssemblyRecipes.Recipe> all = AssemblyRecipes.all();
+            for (int i = 0; i < all.size(); i++)
+                if (net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(all.get(i).output()).toString().equals(name)) selected = i;
+        }
         progress = input.getIntOr("progress", 0);
         energy = input.getIntOr("energy", 0);
         NonNullList<ItemStack> items = NonNullList.withSize(10, ItemStack.EMPTY);
@@ -149,6 +157,8 @@ public class AssemblyBlockEntity extends BlockEntity {
     protected void saveAdditional(ValueOutput output) {
         super.saveAdditional(output);
         output.putInt("selected", selected);
+        AssemblyRecipes.Recipe sel = AssemblyRecipes.get(selected);
+        if (sel != null) output.putString("selectedItem", net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(sel.output()).toString());
         output.putInt("progress", progress);
         output.putInt("energy", energy);
         NonNullList<ItemStack> items = NonNullList.withSize(10, ItemStack.EMPTY);

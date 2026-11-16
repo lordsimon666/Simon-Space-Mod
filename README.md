@@ -573,7 +573,9 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
 * Baut **jeden Block dieser Mod** (außer sich selbst und den Erzen) aus Grundstoffen und **Strom**.
   Rezept an der Werkbank: Eisen – Glas – Eisen / Diamant – Glas – Diamant / Eisen – Eisen – Eisen.
 * **Rechts** eine Tabelle mit den Bildern aller baubaren Blöcke (Mausrad blättert, Maus darüber zeigt
-  Zutaten, Dauer und Strombedarf). Klick wählt einen Block aus.
+  Zutaten, Dauer und Strombedarf). Klick wählt einen Block aus. Darüber ein **Suchfeld**: filtert nach dem
+  Namen (in der Spielsprache) oder dem Registernamen, z. B. „warp“, „Schild“ oder „Tür“.
+* Die Blöcke stehen in derselben **Reihenfolge wie im Kreativ-Tab** (siehe unten).
 * **Links** 3 x 3 Zutatenplätze und ein Ergebnisplatz. Nach der Auswahl zeigen die leeren Plätze
   **ausgegraut**, was hinein muss – mit Menge: braucht ein Block z. B. 3 Eisen, kommen alle 3 in
   **einen** Platz. So kann ein Rezept mehr als 9 Gegenstände brauchen. Falsche oder zu wenige Zutaten
@@ -822,6 +824,13 @@ G = Goldbarren, E = Eisenbarren, P = Enderperle, R = Redstone
 
 Dazu der Raumanzug, das Item Kommunikator, Rohuran, Uranbarren, Dilithiumkristall, Antimaterie, Antimaterie-Kapsel, Deuterium-Kanister, 3 Schlüsselkarten (Sicherheit, Kommando, Captain), 5 Handphaser, 4 Phasergewehre, 15 Uniformen, 2 Uniformhosen und
 Sternenflotten-Stiefel. Alles ist im Kreativ-Tab „Simon Space Mod“ zu finden.
+
+**Kreativ-Tab**: mit Suchfeld und nach Gruppen sortiert – Grundausstattung (Fertigung, Kommunikator,
+Raumanzug, Schlüsselkarten, Handphaser und Gewehre), Rohstoffe, Energie und Maschinen (Warpkerne, Reaktor,
+Batterie, Bergbaulaser), Schilde, Waffen, Lagerung (Großkisten und Upgrades), Steuerung und Brücke,
+Turbolifte, Transporter, Türen und Luftschleusen, Einrichtung, Licht, Brückenausbau, Innenausbau,
+Außenhülle und Antrieb, zuletzt Kleidung. Gestufte Teile (Warpkerne, Werfer, Schilde, Phaser, Kisten)
+stehen in der Reihenfolge ihrer Stufen.
 
 ## Außenform aus echten 3D-Modellen
 

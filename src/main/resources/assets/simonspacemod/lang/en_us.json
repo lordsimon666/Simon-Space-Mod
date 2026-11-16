@@ -244,6 +244,8 @@
   "message.simonspacemod.suit.empty": "Space suit empty – recharge it at a charging station!",
   "block.simonspacemod.ship_part_assembly": "Ship Part Assembly",
   "gui.simonspacemod.assembly.choose": "Pick a block on the right",
+  "gui.simonspacemod.assembly.search": "Search …",
+  "gui.simonspacemod.assembly.no_match": "Nothing found",
   "gui.simonspacemod.assembly.no_power": "No power",
   "gui.simonspacemod.assembly.cost": "%s s, %s FE/t",
   "subtitles.simonspacemod.phaser_hand_nx": "Phase pistol fires",

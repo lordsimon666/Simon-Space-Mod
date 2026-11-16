@@ -69,14 +69,17 @@ public final class AssemblyRecipes {
 
     public static synchronized List<Recipe> all() {
         if (all == null) {
-            List<Recipe> list = new ArrayList<>();
+            // gleiche Reihenfolge wie im Kreativ-Tab (auf Server und Client identisch, die Auswahl geht über den Index)
+            List<RegistryObject<Block>> blocks = new ArrayList<>();
             for (RegistryObject<Block> ro : ModBlocks.BLOCKS.getEntries()) {
                 String path = ro.getId().getPath();
-                if (EXCLUDED.contains(path) || !ro.isPresent()) continue;
-                Item item = ro.get().asItem();
-                if (item == Items.AIR) continue;
-                list.add(recipeFor(path, item));
+                if (EXCLUDED.contains(path) || !ro.isPresent() || ro.get().asItem() == Items.AIR) continue;
+                blocks.add(ro);
             }
+            List<RegistryObject<Block>> reg = List.copyOf(blocks);
+            blocks.sort(java.util.Comparator.comparingInt(ro -> de.simon.spacemod.TabOrder.key(ro.getId().getPath(), reg.indexOf(ro))));
+            List<Recipe> list = new ArrayList<>();
+            for (RegistryObject<Block> ro : blocks) list.add(recipeFor(ro.getId().getPath(), ro.get().asItem()));
             all = List.copyOf(list);
         }
         return all;
