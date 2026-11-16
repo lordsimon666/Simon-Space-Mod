@@ -19,7 +19,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
- * Stufen-Upgrade (wie bei Sophisticated Storage): Rechtsklick auf eine Großkiste hebt sie eine Stufe an,
+ * Stufen-Upgrade (wie bei Sophisticated Storage): Rechtsklick auf eine Großkiste hebt sie auf die Zielstufe
+ * (auch mehrere Stufen auf einmal, z. B. Holz -> Netherit),
  * Inhalt und Upgrades bleiben. Man braucht ein Upgrade je Block der Kiste – bei 3×3×3 also 26.
  * Auf einen einzelnen Kistenblock angewandt kostet es eins.
  */

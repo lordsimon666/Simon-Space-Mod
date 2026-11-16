@@ -3096,16 +3096,21 @@ def storage_mining_assets(de, en):
     order = [t[0] for t in CRATE_TIERS]
     cost = {"copper": ("minecraft:copper_ingot", 4), "iron": ("minecraft:iron_ingot", 4), "gold": ("minecraft:gold_ingot", 4),
             "diamond": ("minecraft:diamond", 2), "netherite": ("minecraft:netherite_ingot", 1)}
-    for i in range(len(order) - 1):
-        frm, to = order[i], order[i + 1]
+    for i, j in [(i, j) for i in range(len(order)) for j in range(i + 1, len(order))]:
+        frm, to = order[i], order[j]
         n = f"crate_upgrade_{frm}_to_{to}"
         save(icon_tier_upgrade(tier_colors[frm], tier_colors[to]), "item/" + n)
         write_json(os.path.join(ASSETS, "models", "item", n + ".json"), {"parent": "minecraft:item/generated", "textures": {"layer0": f"{M}:item/{n}"}})
         write_json(os.path.join(ASSETS, "items", n + ".json"), item_def(f"{M}:item/{n}"))
-        ing, k = cost[to]
-        pattern = {4: [" X ", "XRX", " X "], 2: ["X", "R", "X"], 1: ["XR"]}[k]
-        write_json(os.path.join(DATA, "recipe", n + ".json"), {"type": "minecraft:crafting_shaped", "category": "misc",
-            "key": {"X": ing, "R": "minecraft:redstone"}, "pattern": pattern, "result": {"id": f"{M}:{n}"}})
+        if j == i + 1:
+            ing, k = cost[to]
+            pattern = {4: [" X ", "XRX", " X "], 2: ["X", "R", "X"], 1: ["XR"]}[k]
+            write_json(os.path.join(DATA, "recipe", n + ".json"), {"type": "minecraft:crafting_shaped", "category": "misc",
+                "key": {"X": ing, "R": "minecraft:redstone"}, "pattern": pattern, "result": {"id": f"{M}:{n}"}})
+        else:  # Direkt-Upgrade: die beiden Teilschritte zusammenlegen (kostet dasselbe)
+            mid = order[j - 1]
+            write_json(os.path.join(DATA, "recipe", n + ".json"), {"type": "minecraft:crafting_shapeless", "category": "misc",
+                "ingredients": [f"{M}:crate_upgrade_{frm}_to_{mid}", f"{M}:crate_upgrade_{mid}_to_{to}"], "result": {"id": f"{M}:{n}"}})
         de[f"item.{M}.{n}"] = f"Kisten-Upgrade {tier_names[frm][0]} → {tier_names[to][0]}"
         en[f"item.{M}.{n}"] = f"Crate Upgrade {tier_names[frm][1]} → {tier_names[to][1]}"
     stack = [(1, 2, (200, 200, 205), "minecraft:iron_block", "minecraft:chest"), (2, 4, (236, 200, 60), "minecraft:gold_block", None),
@@ -3184,6 +3189,148 @@ def storage_mining_assets(de, en):
         f"message.{M}.crate.formed": "Crate %s (%s): %s slots",
         f"message.{M}.crate.invalid": "Not a finished crate – build a hollow box (3×3×3 to 8×8×8, air inside).",
     })
+
+
+# --- Erze und Barren im Vanilla-Stil (eigene Pixelkunst; Untergrund der Erze = Vanilla-Textur zur Laufzeit) ---
+
+def _outline(img, color):
+    """Dunkle Kontur um alle deckenden Pixel (wie bei Vanilla-Items)."""
+    px = img.load()
+    solid = {(x, y) for x in range(16) for y in range(16) if px[x, y][3] > 0}
+    for x, y in [(x, y) for x in range(16) for y in range(16)]:
+        if (x, y) in solid:
+            continue
+        if any((x + dx, y + dy) in solid for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))):
+            px[x, y] = color + (255,)
+    return img
+
+
+def ore_overlay(light, mid, dark, seed, clusters=6):
+    """Erzbrocken wie bei Vanilla: kleine Gruppen aus 3 bis 6 Pixeln mit heller Kante oben links."""
+    shapes = [[(1, 0, "h"), (2, 0, "m"), (0, 1, "h"), (1, 1, "m"), (2, 1, "m"), (3, 1, "d"), (1, 2, "m"), (2, 2, "d")],
+              [(0, 0, "h"), (1, 0, "h"), (0, 1, "m"), (1, 1, "m"), (2, 1, "d"), (1, 2, "d")],
+              [(1, 0, "h"), (0, 1, "h"), (1, 1, "m"), (2, 1, "m"), (1, 2, "m"), (2, 2, "d"), (3, 2, "d")],
+              [(0, 0, "h"), (1, 0, "m"), (2, 0, "m"), (0, 1, "m"), (1, 1, "d"), (2, 1, "d")],
+              [(1, 0, "h"), (0, 1, "h"), (1, 1, "m"), (2, 1, "d"), (0, 2, "m"), (1, 2, "d")]]
+    rnd = random.Random(seed)
+    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    px = img.load()
+    used = set()
+    tries = 0
+    placed = 0
+    while placed < clusters and tries < 400:
+        tries += 1
+        sh = rnd.choice(shapes)
+        ox, oy = rnd.randint(0, 12), rnd.randint(0, 13)
+        cells = [(ox + dx, oy + dy, t) for dx, dy, t in sh]
+        if any((x + a, y + b) in used for x, y, _ in cells for a in (-1, 0, 1) for b in (-1, 0, 1)):
+            continue
+        for x, y, t in cells:
+            px[x, y] = {"h": light, "m": mid, "d": dark}[t] + (255,)
+            used.add((x, y))
+        placed += 1
+    return img
+
+
+def icon_ingot(light, mid, dark, outline):
+    """Barren: schräg liegender Block mit heller Oberseite und dunklerer Seite."""
+    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    px = img.load()
+    for x in range(16):
+        for y in range(16):
+            # schräge Achse von links unten nach rechts oben
+            u = (x - 1.5) * 0.83 - (y - 12.5) * 0.55
+            v = (x - 1.5) * 0.55 + (y - 12.5) * 0.83
+            if 0 <= u <= 12.4 and -4.6 <= v <= 2.2:
+                if v < -1.2:
+                    c = shade(light, 18) if v < -3.6 else light      # Oberseite, hinten heller
+                else:
+                    c = dark if u > 11.2 or v > 1.2 else mid          # Seite, Kanten dunkler
+                px[x, y] = c[:3] + (255,)
+    _outline(img, outline)
+    return img
+
+
+def icon_raw(light, mid, dark, outline, seed):
+    """Rohes Erz: unregelmäßiger Klumpen, Licht von oben links."""
+    rnd = random.Random(seed)
+    blobs = [(4.8, 9.2, 3.6), (10.4, 9.6, 3.4), (7.6, 6.4, 3.9), (8.2, 10.6, 3.2)] + \
+        [(7.5 + rnd.uniform(-3, 3), 8 + rnd.uniform(-2.5, 2.5), rnd.uniform(2.2, 3.0)) for _ in range(3)]
+    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    px = img.load()
+    for x in range(1, 15):
+        for y in range(1, 15):
+            if any((x - cx) ** 2 + (y - cy) ** 2 <= r * r for cx, cy, r in blobs):
+                d = (x - 7.5) + (y - 8)                              # oben links hell, unten rechts dunkel
+                c = light if d < -3 else dark if d > 3 else mid
+                if rnd.random() < 0.12:
+                    c = shade(c, -18)
+                px[x, y] = c[:3] + (255,)
+    _outline(img, outline)
+    return img
+
+
+def icon_gem(light, mid, dark, outline):
+    """Edelstein (Dilithium): Raute mit Facetten wie Diamant/Smaragd."""
+    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    px = img.load()
+    for x in range(16):
+        for y in range(16):
+            dx, dy = x - 7.5, y - 7.5
+            if abs(dx) / 6.5 + abs(dy) / 7 <= 1:
+                if dy < -2.5:
+                    c = light if dx < 0 else shade(light, -20)       # Krone
+                elif dx < -1:
+                    c = mid
+                elif dx > 1:
+                    c = dark
+                else:
+                    c = shade(mid, 15)
+                px[x, y] = c[:3] + (255,)
+    px[5, 4] = px[6, 3] = (255, 255, 255, 255)                         # Glanzpunkt
+    _outline(img, outline)
+    return img
+
+
+def icon_antimatter(core, rim, outline):
+    """Antimaterie: leuchtende Kugel mit Ring, im Stil der Vanilla-Sterne/Perlen."""
+    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    px = img.load()
+    for x in range(16):
+        for y in range(16):
+            d = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** 0.5
+            if d <= 5.6:
+                t = d / 5.6
+                px[x, y] = tuple(clamp(core[i] * (1 - t) + rim[i] * t) for i in range(3)) + (255,)
+    for x, y in ((5, 5), (6, 5), (5, 6)):
+        px[x, y] = (255, 255, 255, 255)
+    _outline(img, outline)
+    return img
+
+
+VANILLA_ORES = {
+    # Name: (Vanilla-Untergrund, Farben hell/mittel/dunkel, Saat)
+    "uranium_ore": ("minecraft:block/stone", (150, 240, 120), (90, 200, 70), (40, 120, 40), 701),
+    "deepslate_uranium_ore": ("minecraft:block/deepslate", (150, 240, 120), (90, 200, 70), (40, 120, 40), 702),
+    "dilithium_ore": ("minecraft:block/deepslate", (255, 190, 235), (235, 110, 200), (150, 50, 130), 703),
+    "antimatter_cluster": ("minecraft:block/obsidian", (255, 200, 255), (220, 80, 255), (120, 20, 170), 704),
+    "deuterium_ice": ("minecraft:block/packed_ice", (240, 255, 255), (150, 230, 255), (60, 140, 210), 705),
+}
+
+
+def vanilla_style_ores_items():
+    for name, (base, hi, mid, dk, seed) in VANILLA_ORES.items():
+        save(ore_overlay(hi, mid, dk, seed, clusters=5 if name == "deuterium_ice" else 6), name)
+        cube = lambda tex: {"from": [0, 0, 0], "to": [16, 16, 16], "faces": {f: {"texture": tex, "cullface": f}
+                            for f in ("down", "up", "north", "south", "west", "east")}}
+        write_json(os.path.join(ASSETS, "models", "block", name + ".json"), {
+            "parent": "minecraft:block/block", "render_type": "minecraft:cutout",
+            "textures": {"particle": base, "base": base, "ore": b(name)},
+            "elements": [cube("#base"), cube("#ore")]})
+    save(icon_ingot((235, 255, 215), (120, 200, 90), (70, 140, 55), (35, 70, 30)), "item/uranium_ingot")
+    save(icon_raw((150, 215, 120), (95, 160, 80), (60, 110, 55), (30, 55, 30), 711), "item/raw_uranium")
+    save(icon_gem((255, 210, 240), (235, 120, 205), (170, 60, 150), (90, 25, 80)), "item/dilithium_crystal")
+    save(icon_antimatter((255, 240, 255), (190, 60, 240), (70, 15, 100)), "item/antimatter")
 
 
 def misc_assets(de, en):
@@ -4237,6 +4384,7 @@ def main():
     misc_assets(de, en)
     hull_glass_assets(de, en)
     storage_mining_assets(de, en)
+    vanilla_style_ores_items()
     de.update(armory_de)
     en.update(armory_en)
     de.update({

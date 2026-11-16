@@ -595,9 +595,9 @@ public final class ModBlocks {
     private static List<RegistryObject<Item>> tierUpgrades() {
         List<RegistryObject<Item>> list = new ArrayList<>();
         var tiers = de.simon.spacemod.storage.CrateTier.values();
-        for (int i = 0; i + 1 < tiers.length; i++) {
+        for (int i = 0; i < tiers.length; i++) for (int j = i + 1; j < tiers.length; j++) { // auch direkt, z. B. Holz -> Netherit
             var from = tiers[i];
-            var to = tiers[i + 1];
+            var to = tiers[j];
             String name = "crate_upgrade_" + from.id + "_to_" + to.id;
             RegistryObject<Item> item = ITEMS.register(name, () -> new de.simon.spacemod.storage.TierUpgradeItem(
                 new Item.Properties().setId(ITEMS.key(name)), from, to));

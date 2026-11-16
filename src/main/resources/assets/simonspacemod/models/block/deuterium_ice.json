@@ -1,6 +1,87 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:cutout",
   "textures": {
-    "all": "simonspacemod:block/deuterium_ice"
-  }
+    "particle": "minecraft:block/packed_ice",
+    "base": "minecraft:block/packed_ice",
+    "ore": "simonspacemod:block/deuterium_ice"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "down": {
+          "texture": "#base",
+          "cullface": "down"
+        },
+        "up": {
+          "texture": "#base",
+          "cullface": "up"
+        },
+        "north": {
+          "texture": "#base",
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#base",
+          "cullface": "south"
+        },
+        "west": {
+          "texture": "#base",
+          "cullface": "west"
+        },
+        "east": {
+          "texture": "#base",
+          "cullface": "east"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "down": {
+          "texture": "#ore",
+          "cullface": "down"
+        },
+        "up": {
+          "texture": "#ore",
+          "cullface": "up"
+        },
+        "north": {
+          "texture": "#ore",
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#ore",
+          "cullface": "south"
+        },
+        "west": {
+          "texture": "#ore",
+          "cullface": "west"
+        },
+        "east": {
+          "texture": "#ore",
+          "cullface": "east"
+        }
+      }
+    }
+  ]
 }

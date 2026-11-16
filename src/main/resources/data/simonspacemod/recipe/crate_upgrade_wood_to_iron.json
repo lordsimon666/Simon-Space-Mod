@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "simonspacemod:crate_upgrade_wood_to_copper",
+    "simonspacemod:crate_upgrade_copper_to_iron"
+  ],
+  "result": {
+    "id": "simonspacemod:crate_upgrade_wood_to_iron"
+  }
+}

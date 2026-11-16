@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "simonspacemod:item/crate_upgrade_wood_to_netherite"
+  }
+}

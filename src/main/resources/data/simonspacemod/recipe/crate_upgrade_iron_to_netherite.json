@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "simonspacemod:crate_upgrade_iron_to_diamond",
+    "simonspacemod:crate_upgrade_diamond_to_netherite"
+  ],
+  "result": {
+    "id": "simonspacemod:crate_upgrade_iron_to_netherite"
+  }
+}

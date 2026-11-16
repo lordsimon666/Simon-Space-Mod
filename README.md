@@ -545,11 +545,14 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
   | Netherit  | 132             | 3 564  | 67 584 |
 
   **Alle Blöcke einer Kiste müssen dieselbe Stufe haben**, gemischte Stufen ergeben keine Kiste.
-* **Stufen-Upgrades** (wie bei Sophisticated Storage): Holz → Kupfer, Kupfer → Eisen, Eisen → Gold,
-  Gold → Diamant, Diamant → Netherit. Mit Rechtsklick auf die fertige Kiste wird sie eine Stufe höher.
+* **Stufen-Upgrades** (wie bei Sophisticated Storage): für jeden Weg nach oben eins, also auch **direkt**,
+  z. B. Holz → Netherit oder Kupfer → Diamant (15 Stück). Mit Rechtsklick auf die fertige Kiste bekommt sie
+  die Zielstufe.
   Inhalt und Upgrades bleiben erhalten. Man braucht **ein Upgrade je Block der Kiste**: bei 3×3×3 also 26,
-  bei 8×8×8 296. Auf einen einzelnen Kistenblock angewandt kostet es eins. Rezept an der Werkbank:
-  4 Kupfer-, Eisen- oder Goldbarren (bzw. 2 Diamanten oder 1 Netheritbarren) und Redstone.
+  bei 8×8×8 296. Auf einen einzelnen Kistenblock angewandt kostet es eins. Rezept an der Werkbank für
+  einen Schritt: 4 Kupfer-, Eisen- oder Goldbarren (bzw. 2 Diamanten oder 1 Netheritbarren) und Redstone.
+  Direkt-Upgrades entstehen formlos aus zwei aneinander anschließenden Upgrades (z. B. Holz → Gold aus
+  Holz → Eisen und Eisen → Gold). Sie kosten also genauso viel wie die Einzelschritte.
 * **4 Upgrade-Plätze** rechts im Menü für **Stack-Upgrades** (wie bei Sophisticated Storage):
 
   | Upgrade | Faktor | Stück je Platz | Rezept (Werkbank) |
@@ -645,6 +648,14 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
 
 Reaktorhülle (8×), Reaktorglas (4×) und Steuerblock baut die **Schiffsteil-Fertigung** (Eisen,
 Kupfer, Glas, Uran, Diamanten, Redstone).
+
+### Texturen der Erze und Rohstoffe
+
+Uranerz, Tiefenschiefer-Uranerz, Dilithium-Erz, Antimaterie-Einschluss und Deuterium-Eis sehen aus wie
+Vanilla-Erze. Der Untergrund ist die echte Textur aus dem Spiel (Stein, Tiefenschiefer, Obsidian bzw.
+Packeis), darüber liegt eine eigene Erzschicht. So passen sie auch zu Texturpaketen. Uranbarren, Rohuran,
+Dilithiumkristall und Antimaterie sind im Vanilla-Pixelstil gezeichnet, mit dunkler Kontur, Licht von oben
+links und Facetten. Es sind keine Mojang-Texturen in der Mod enthalten.
 
 ### Waffensounds
 
