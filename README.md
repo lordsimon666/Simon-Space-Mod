@@ -27,7 +27,7 @@ Befehl in die Welt setzt – wahlweise die **NX-01** („Star Trek: Enterprise�
 schrägen Pylonen darüber, blaue Warpgitter, rote Impulstriebwerke, Kennung „NX-01“ und „ENTERPRISE“.
 Die Decks heißen wie in der Serie mit Buchstaben (A-Deck = Brücke, B-Deck, C-Deck …).
 
-* **Brücke** (ebener Boden, graues Metall): Hauptbildschirm, Steuerkonsole mit Sitz davor,
+* **Brücke** (Ø 11 m, ebener Boden, graues Metall): Hauptbildschirm, Steuerkonsole mit Sitz davor,
   Kommandantensessel in der Mitte, Stationen rundum (Kommunikation Backbord, Wissenschaft
   Steuerbord, Taktik hinten), Turbolift hinten.
 * B-Deck: Situationsraum, Bereitschaftsraum des Captains, Captain's Mess
@@ -62,7 +62,7 @@ Untertasse und seitlich am Unterrumpf.
 
 Innen nach Deckplänen und Bildern aus der Serie bzw. den Filmen:
 
-* **Brücke** (Ø 21 m) im Stil der Galaxy-Klasse: großer Hauptbildschirm (11 x 4), Ops- und
+* **Brücke** im Stil der Galaxy-Klasse (D Ø 13 m wie Deck 1, C und E Ø 12 m, F Ø 14 m): großer Hauptbildschirm (9 bzw. 7 x 3), Ops- und
   Conn-Konsole davor, Kommandantensessel mit den Sitzen von Erstem Offizier (rechts) und Counselor
   (links), dahinter das hufeisenförmige Holzgeländer mit der Taktikstation auf der erhöhten Ebene,
   Wissenschafts- und Technikstationen mit LCARS-Anzeigen an der Rückwand, zwei Turbolifte hinten.
@@ -141,10 +141,10 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
   „NCC-1701“ im Bogen entlang des vorderen Rands, darüber klein „USS ENTERPRISE“, „NCC-1701“ und rote Zierstreifen an Gondeln und
   Sekundärhülle, orange glühende Bussard-Kollektoren, Positionslichter (Backbord rot,
   Steuerbord grün), Fensterreihen, Deflektorschüssel, Shuttlehangar.
-* **Brücke** (Ø 15 m) nach dem Vorbild der Originalserie: graue Wände mit Monitoren und rotem
+* **Brücke** (Ø 11 m) nach dem Vorbild der Originalserie: graue Wände mit Monitoren und rotem
   Abschlussstreifen, Stationen mit schrägem Pult und farbig leuchtender Front, rotes Geländer
   um die Kommandomulde, Kommandantensessel auf weißem Sockel, rot-schwarze Steuerkonsole mit
-  zwei Stühlen, Hauptbildschirm (7 x 3), ein Turbolift hinten Steuerbord mit roter Tür und
+  zwei Stühlen, Hauptbildschirm (5 x 3), ein Turbolift hinten Steuerbord mit roter Tür und
   leuchtendem Rahmen.
 * **Maschinenraum** (19 x 11 m, zwei Ebenen): Warpkern vom Boden bis durch die Decke,
   Plasmaleitungen im Boden, Konsolen, Galerie mit Leitern, Turbolift.
@@ -826,6 +826,13 @@ statt durch offene Flächen des Modells zugebaut zu werden. Die Ergebnisse liege
 Unterrumpf) und erzeugt daraus Decks, Räume, Brücke, Maschinenraum, Farben und Beschriftung. Die Brücke
 kommt auf die Brückenkuppel des Modells (die höchste Stelle der Untertasse auf der Mittellinie). Bei runden
 Untertassen und der D ist das die Mitte, bei der E etwas weiter vorne und bei der F weit vorne.
+
+**Brückenmaße** nach Set- und Deckplänen (1 Block = 1 m): Alle Brücken haben 4 Blöcke lichte Höhe
+(die Sets waren 3,5–4 m hoch; auf erhöhten Ebenen bleiben 3 Blöcke Kopffreiheit). Durchmesser innen:
+NX-01, Originalserie, Refit und Excelsior ca. 11 m, Ambassador (C) und Sovereign (E) 12 m, Galaxy (D)
+13 m wie Deck 1, Odyssey (F) 14 m. Ist neben der Brücke auf dem Brückendeck noch Platz in der Hülle,
+kommt dort ein Raum mit Turbolift hin: Beobachtungslounge (Next Generation), Besprechungsraum (Original
+bis Excelsior) bzw. Situationsraum (NX-01).
 Fehlt ein Modell, wird die eingebaute, berechnete Form verwendet.
 
 **Modell-Quelle (NX-01 bis -E):** „Star Trek USS Enterprise Ultimate Collection“ von **Alexei Bruton (Solid_Alexei)**,

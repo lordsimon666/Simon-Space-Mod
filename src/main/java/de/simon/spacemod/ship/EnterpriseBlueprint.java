@@ -44,6 +44,14 @@ public final class EnterpriseBlueprint {
     private final boolean aztecHull;
     /** Radius des Brückenmoduls (Originalgröße). */
     private final int bR;
+    /**
+     * Innenradius der Brücke (Boden bis zu den Wandkonsolen) nach den Originalmaßen der Sets, 1 Block = 1 m:
+     * NX-01 / Originalserie / Refit / Excelsior Ø ≈ 11 m, Ambassador und Sovereign Ø ≈ 12 m, Galaxy Ø ≈ 13 m
+     * (so breit wie Deck 1), Odyssey Ø ≈ 14 m.
+     */
+    private final double bIn;
+    /** Lichte Höhe der Brücke (Luft über dem Boden); die Decke liegt darüber. Die Sets waren 3,5–4 m hoch. */
+    private static final int BRIDGE_H = 4;
     /** Mitte der Brücke (Kuppel des Modells; ohne Modell = Untertassenmitte) und höchster Punkt der Kuppel. */
     private double bCx;
     private int domeTop = -1;
@@ -120,7 +128,8 @@ public final class EnterpriseBlueprint {
         this.tng = design.tng;
         this.nx = design.nx;
         this.aztecHull = refit || excelsior || tng || nx;
-        this.bR = tng ? 13 : 10;
+        this.bIn = design == ShipDesign.NCC_1701_F ? 7 : design == ShipDesign.NCC_1701_D ? 6.5 : tng ? 6 : 5.5;
+        this.bR = (int) Math.ceil(bIn) + 2;
         this.s = scale;
         this.k = Math.max(scale, 9.5 / 15.0);
 
@@ -188,6 +197,7 @@ public final class EnterpriseBlueprint {
             layoutSecondaryDecks();
         }
         buildBridge();
+        bridgeDeckRoom();
         BlockPos eng = buildEngineering();
         BlockPos transporter = buildTransporterRoom(fullDecks);
         linkTurbolifts(eng, transporter);
@@ -1763,7 +1773,7 @@ public final class EnterpriseBlueprint {
         bCx = bx0 < 0 ? sCx : (bx0 + bx1) / 2.0;
         // Liegt die Kuppel innerhalb eines Brückenradius um die Untertassenmitte (runde Untertassen, D), bleibt die
         // Brücke in der Mitte – sonst (E, F) wandert sie an die Kuppel
-        if (Math.abs(bCx - sCx) <= bR) bCx = sCx;
+        if (Math.abs(bCx - sCx) <= (tng ? 13 : 10)) bCx = sCx;
         domeTop = topMax;
         // Gondeln: Querschnitte im hinteren Drittel; gültig ist ein Schnitt, in dem die äußerste
         // Gruppe (Steuerbord) frei vom Rumpf steht. Unter den dicken Schnitten wird der kompakteste
@@ -2203,9 +2213,9 @@ public final class EnterpriseBlueprint {
         double az = Math.abs(z);
         if (rb <= bR) {
             int rel = y - bridgeFloor;
-            if (rel >= -1 && rel <= 6) return BRIDGE;
-            if (rel == 7 && rb <= bR - 1.5) return BRIDGE;
-            if (rel == 8 && rb <= bR - 4.5) return BRIDGE;
+            if (rel >= -1 && rel <= BRIDGE_H + 1) return BRIDGE;
+            if (rel == BRIDGE_H + 2 && rb <= bR - 1.5) return BRIDGE;
+            if (rel == BRIDGE_H + 3 && rb <= bR - 3.5) return BRIDGE;
         }
         if (inEngineeringBox(x, y, z) && !ms(x, y, z) && s < 0.75) return SECONDARY; // Platz für den Maschinenraum
         if (!ms(x, y, z)) return NONE;
@@ -2355,7 +2365,7 @@ public final class EnterpriseBlueprint {
                                         st = ShipPart.IMPULSE_ENGINE;
                                 }
                             }
-                            case BRIDGE -> st = y >= bridgeFloor + 6 ? panel : plating;
+                            case BRIDGE -> st = y >= bridgeFloor + BRIDGE_H + 1 ? panel : plating;
                             case NECK, PYLON -> st = aztecHull && aztecXY(x, y + z) ? ShipPart.HULL_AZTEC
                                 : Math.floorMod(x, 6) == 0 ? panel : plating;
                             case SECONDARY -> {
@@ -3086,6 +3096,97 @@ public final class EnterpriseBlueprint {
      * Steuerkonsole, rotes Geländer, erhöhter Außenring mit Stationen und Wandmonitoren,
      * roter Abschlussstreifen, Hauptbildschirm vorne, zwei Turbolift-Türen hinten.
      */
+    /**
+     * Brückendeck: leerer Raum im Rumpf auf Brückenhöhe neben der Brücke (z. B. der hintere Teil des
+     * Brückenaufbaus der D, der Rücken der E, die Plattform der NX-01) wird ein Raum der Epoche –
+     * Beobachtungslounge (C–F), Besprechungsraum (Originalserie, Kinofilme) bzw. Situationsraum (NX-01) –
+     * mit Boden, Tisch, Stühlen, Licht und eigenem Turbolift-Halt.
+     */
+    private void bridgeDeckRoom() {
+        int cx = (int) Math.round(bCx), yb = bridgeFloor, y = yb + 1;
+        java.util.function.BiPredicate<Integer, Integer> open = (x, z) -> {
+            if (Math.hypot(x - cx, z) <= bR + 0.5) return false;
+            for (int dy = 0; dy <= 2; dy++)
+                if (get(x, y + dy, z) != ShipPart.AIR || !isInterior(x, y + dy, z)) return false;
+            return true;
+        };
+        // größter zusammenhängender freier Bereich auf Brückenhöhe
+        java.util.Set<Long> seen = new java.util.HashSet<>();
+        List<int[]> best = List.of();
+        int r = (int) Math.ceil(sR / Math.min(kx, kz)) + bR + 4;
+        for (int x0 = cx - r; x0 <= cx + r; x0++)
+            for (int z0 = -Math.min(r, zOffset); z0 <= Math.min(r, zOffset); z0++) {
+                if (seen.contains(BlockPos.asLong(x0, 0, z0)) || !open.test(x0, z0)) continue;
+                List<int[]> region = new ArrayList<>();
+                java.util.ArrayDeque<int[]> q = new java.util.ArrayDeque<>();
+                q.add(new int[] {x0, z0});
+                seen.add(BlockPos.asLong(x0, 0, z0));
+                while (!q.isEmpty() && region.size() < 4000) {
+                    int[] c = q.poll();
+                    region.add(c);
+                    for (int[] d : DIRS) {
+                        int nx = c[0] + d[0], nz = c[1] + d[1];
+                        if (seen.add(BlockPos.asLong(nx, 0, nz)) && open.test(nx, nz)) q.add(new int[] {nx, nz});
+                    }
+                }
+                if (region.size() > best.size()) best = region;
+            }
+        if (best.size() < 40) return;
+        ShipPart floor = tng ? ShipPart.TNG_CARPET : ShipPart.DECK_FLOOR;
+        ShipPart chair = tng ? ShipPart.TNG_CHAIR : nx ? ShipPart.ENT_CHAIR : ShipPart.STATION_CHAIR;
+        double gx = 0, gz = 0;
+        for (int[] c : best) {
+            if (get(c[0], yb, c[1]) == ShipPart.AIR) set(c[0], yb, c[1], floor);
+            gx += c[0];
+            gz += c[1];
+            // Licht unter der Decke im Raster
+            if (Math.floorMod(c[0], 4) == 0 && Math.floorMod(c[1], 4) == 0) {
+                int top = y + 2;
+                while (get(c[0], top + 1, c[1]) == ShipPart.AIR && isInterior(c[0], top + 1, c[1]) && top < y + 8) top++;
+                set(c[0], top, c[1], ShipPart.CEILING_LIGHT);
+            }
+        }
+        java.util.Set<Long> cells = new java.util.HashSet<>();
+        for (int[] c : best) cells.add(BlockPos.asLong(c[0], 0, c[1]));
+        java.util.function.BiPredicate<Integer, Integer> in = (x, z) -> cells.contains(BlockPos.asLong(x, 0, z));
+        // Tisch in der Mitte: NX-01 Situationstisch, sonst langer Konferenztisch mit Stühlen
+        int tx = (int) Math.round(gx / best.size()), tz = (int) Math.round(gz / best.size());
+        int[] center = nearest(best, tx, tz);
+        if (center != null) {
+            tx = center[0];
+            tz = center[1];
+            if (nx) {
+                for (int dx = -1; dx <= 1; dx++) for (int dz = -1; dz <= 1; dz++)
+                    if (in.test(tx + dx, tz + dz) && free(tx + dx, y, tz + dz)) set(tx + dx, y, tz + dz, ShipPart.SITUATION_TABLE);
+            } else {
+                for (int dx = -3; dx <= 3; dx++) for (int dz = 0; dz <= 1; dz++)
+                    if (in.test(tx + dx, tz + dz) && free(tx + dx, y, tz + dz)) set(tx + dx, y, tz + dz, ShipPart.CONFERENCE_TABLE);
+                for (int dx = -3; dx <= 3; dx += 2) {
+                    if (in.test(tx + dx, tz - 1) && free(tx + dx, y, tz - 1)) set(tx + dx, y, tz - 1, chair, Direction.EAST);
+                    if (in.test(tx + dx, tz + 2) && free(tx + dx, y, tz + 2)) set(tx + dx, y, tz + 2, chair, Direction.WEST);
+                }
+            }
+        }
+        // eigener Turbolift-Halt: an einer Wand, möglichst nah an der Brücke, mit freiem Feld davor
+        int[] lift = null;
+        double bd = Double.MAX_VALUE;
+        for (int[] c : best)
+            for (int i = 0; i < 4; i++) {
+                int[] d = DIRS[i];
+                int fx = c[0] + d[0], fz = c[1] + d[1];
+                if (!in.test(fx, fz) || !free(c[0], y, c[1]) || !free(fx, y, fz)) continue;
+                if (!wallLike(get(c[0] - d[0], y, c[1] - d[1])) || !wallLike(get(c[0] - d[0], y + 1, c[1] - d[1]))) continue;
+                double dist = Math.hypot(c[0] - cx, c[1]);
+                if (dist < bd) { bd = dist; lift = new int[] {c[0], c[1], i}; }
+            }
+        if (lift == null) return;
+        Direction face = switch (lift[2]) { case 0 -> Direction.SOUTH; case 1 -> Direction.NORTH; case 2 -> Direction.EAST; default -> Direction.WEST; };
+        set(lift[0], y, lift[1], ShipPart.TURBOLIFT, face);
+        set(lift[0], y + 1, lift[1], ShipPart.TURBOLIFT_DOOR, face);
+        String name = nx ? "Situationsraum" : tng ? "Beobachtungslounge" : "Besprechungsraum";
+        liftStops.add(new LiftStop(new BlockPos(lift[0], y, lift[1]), deckLabel(1) + " – " + name));
+    }
+
     private void buildBridge() {
         if (excelsior) {
             buildBridgeExcelsior();
@@ -3100,43 +3201,44 @@ public final class EnterpriseBlueprint {
             return;
         }
         int cx = (int) Math.round(bCx);
-        int yb = bridgeFloor;
+        int yb = bridgeFloor, top = yb + BRIDGE_H;
         ShipPart air = ShipPart.AIR;
-        ShipPart carpet = excelsior ? ShipPart.DECK_PLATE : ShipPart.BRIDGE_DECK; // Excelsior: Riffelblech
+        ShipPart carpet = ShipPart.BRIDGE_DECK;
         ShipPart light = ShipPart.CEILING_LIGHT;
-
-        for (int dx = -10; dx <= 10; dx++)
-            for (int dz = -10; dz <= 10; dz++) {
+        double well = bIn - 2.8, step = bIn - 1.8; // vertiefte Mitte, Stufe, erhöhter Ring mit den Stationen
+        int vs = (int) Math.ceil(bIn);           // Hauptbildschirm in der vorderen Wand
+        for (int dx = -bR; dx <= bR; dx++)
+            for (int dz = -bR; dz <= bR; dz++) {
                 double r = Math.sqrt(dx * dx + dz * dz);
                 int x = cx + dx;
-                boolean front = dx < 0 && Math.abs(dz) <= 3;
-                boolean aft = dx > 0 && dz >= 0 && dz <= 4; // Turbolift hinten Steuerbord
-                if (r <= 7.5) {
-                    set(x, yb, dz, excelsior && r <= 4.2 ? ShipPart.BRIDGE_CARPET_TEAL : carpet);
-                    for (int y = yb + 1; y <= yb + 5; y++) set(x, y, dz, air);
-                    set(x, yb + 6, dz, r < 1.5 || Math.abs(r - 3.5) < 0.5 ? light : ShipPart.CEILING_PANEL);
+                boolean front = dx < 0 && Math.abs(dz) <= 2;
+                boolean aft = dx > 0 && dz >= 0 && dz <= 3; // Turbolift hinten Steuerbord
+                if (r <= bIn) {
+                    set(x, yb, dz, carpet);
+                    for (int y = yb + 1; y <= top; y++) set(x, y, dz, air);
+                    set(x, top + 1, dz, r < 1.5 || Math.abs(r - 3) < 0.5 ? light : ShipPart.CEILING_PANEL);
                     boolean gap = dx < 0 ? Math.abs(dz) <= 1 : (dz >= 0 && dz <= 2); // Durchgänge zur Konsole und zum Turbolift
-                    if (r > 5.2) {
+                    if (r > step) {
                         set(x, yb + 1, dz, carpet); // erhöhter Außenring
-                    } else if (r > 4.2) {
+                    } else if (r > well) {
                         if (gap) {
                             set(x, yb + 1, dz, ShipPart.STEP_SLAB, Direction.NORTH, 0); // Stufe
                         } else {
                             set(x, yb + 1, dz, ShipPart.HULL_MARKING); // schwarze Stufenkante
-                            set(x, yb + 2, dz, excelsior ? ShipPart.BRIDGE_RAILING_WOOD : refit ? ShipPart.BRIDGE_RAILING_GRAY : ShipPart.BRIDGE_RAILING);
+                            set(x, yb + 2, dz, refit ? ShipPart.BRIDGE_RAILING_GRAY : ShipPart.BRIDGE_RAILING);
                         }
                     }
                     // Stationen am Außenrand des Rings
-                    if (r > 6.5 && !front && !aft) {
+                    if (r > bIn - 1 && !front && !aft) {
                         int variant = Math.floorMod((int) Math.round(Math.atan2(dz, dx) * 3), 4);
                         set(x, yb + 2, dz, ShipPart.BRIDGE_STATION, inwardFacing(dx, dz), variant);
                     }
-                } else if (r <= 10) {
+                } else if (r <= bR) {
                     // Wand (die Außenhülle bleibt erhalten)
                     if (!isInterior(x, yb + 2, dz)) continue;
-                    for (int y = yb; y <= yb + 5; y++) if (isInterior(x, y, dz)) set(x, y, dz, excelsior ? ShipPart.BRIDGE_WALL_DARK : ShipPart.BRIDGE_WALL);
-                    if (r <= 8.5) {
-                        set(x, yb + 5, dz, excelsior ? ShipPart.BRIDGE_TRIM_CREAM : refit ? ShipPart.BRIDGE_TRIM_BLUE : ShipPart.BRIDGE_TRIM);
+                    for (int y = yb; y <= top; y++) if (isInterior(x, y, dz)) set(x, y, dz, ShipPart.BRIDGE_WALL);
+                    if (r <= bIn + 1) {
+                        set(x, top, dz, refit ? ShipPart.BRIDGE_TRIM_BLUE : ShipPart.BRIDGE_TRIM);
                         if (!front && !aft) {
                             int variant = Math.floorMod((int) Math.round(Math.atan2(dz, dx) * 5), 4);
                             set(x, yb + 3, dz, ShipPart.BRIDGE_MONITOR, inwardFacing(dx, dz), variant);
@@ -3144,22 +3246,22 @@ public final class EnterpriseBlueprint {
                     }
                 }
             }
-        // Hauptbildschirm vorne (7 x 3) mit Rahmen
-        for (int dz = -3; dz <= 3; dz++)
+        // Hauptbildschirm vorne (5 x 3)
+        for (int dz = -2; dz <= 2; dz++)
             for (int y = yb + 2; y <= yb + 4; y++)
-                set(cx - 8, y, dz, ShipPart.VIEWSCREEN, Direction.SOUTH);
+                set(cx - vs, y, dz, ShipPart.VIEWSCREEN, Direction.SOUTH);
         // Steuer-/Navigationskonsole mit zwei Stühlen
-        for (int dz = -1; dz <= 1; dz++) set(cx - 3, yb + 1, dz, ShipPart.HELM_CONSOLE, Direction.SOUTH);
+        for (int dz = -1; dz <= 1; dz++) set(cx - 2, yb + 1, dz, ShipPart.HELM_CONSOLE, Direction.SOUTH);
         // Steuermann (Backbord) bedient wie bei Sulu auch die Phaser
-        set(cx - 3, yb + 1, -1, ShipPart.WEAPONS_CONSOLE, Direction.SOUTH, 0);
-        set(cx - 3, yb + 1, 1, ShipPart.SHIELD_CONSOLE, Direction.SOUTH); // Deflektoren (Steuerbord)
-        set(cx - 2, yb + 1, -1, ShipPart.STATION_CHAIR, Direction.NORTH);
-        set(cx - 2, yb + 1, 1, ShipPart.STATION_CHAIR, Direction.NORTH);
-        // Kommandantensessel
+        set(cx - 2, yb + 1, -1, ShipPart.WEAPONS_CONSOLE, Direction.SOUTH, 0);
+        set(cx - 2, yb + 1, 1, ShipPart.SHIELD_CONSOLE, Direction.SOUTH); // Deflektoren (Steuerbord)
+        set(cx - 1, yb + 1, -1, ShipPart.STATION_CHAIR, Direction.NORTH);
+        set(cx - 1, yb + 1, 1, ShipPart.STATION_CHAIR, Direction.NORTH);
+        // Kommandantensessel in der Mitte
         set(cx + 1, yb + 1, 0, ShipPart.CAPTAINS_CHAIR, Direction.NORTH);
         // Stühle an Wissenschafts- und Kommunikationsstation
-        set(cx + 4, yb + 2, 5, ShipPart.STATION_CHAIR, Direction.EAST);
-        set(cx + 4, yb + 2, -5, ShipPart.STATION_CHAIR, Direction.WEST);
+        set(cx + 2, yb + 2, 4, ShipPart.STATION_CHAIR, Direction.EAST);
+        set(cx + 2, yb + 2, -4, ShipPart.STATION_CHAIR, Direction.WEST);
         // Turbolift-Tür (hinten, etwas Steuerbord) mit leuchtendem Rahmen
         BlockPos lift = bridgeTurbolift();
         set(lift.getX(), yb + 3, lift.getZ(), ShipPart.TURBOLIFT_DOOR, Direction.NORTH);
@@ -3179,23 +3281,25 @@ public final class EnterpriseBlueprint {
      */
     private void buildBridgeExcelsior() {
         int cx = (int) Math.round(bCx);
-        int yb = bridgeFloor;
-        for (int dx = -10; dx <= 10; dx++)
-            for (int dz = -10; dz <= 10; dz++) {
+        int yb = bridgeFloor, top = yb + BRIDGE_H;
+        double well = bIn - 2.8, step = bIn - 1.8;
+        int vs = (int) Math.ceil(bIn);
+        for (int dx = -bR; dx <= bR; dx++)
+            for (int dz = -bR; dz <= bR; dz++) {
                 double r = Math.sqrt(dx * dx + dz * dz);
                 int x = cx + dx;
                 boolean front = dx < 0 && Math.abs(dz) <= 3;
-                boolean aft = dx > 0 && dz >= 0 && dz <= 4;
+                boolean aft = dx > 0 && dz >= 0 && dz <= 3;
                 int sector = Math.floorMod((int) Math.round(Math.atan2(dz, dx) / (Math.PI / 12)), 24);
-                if (r <= 7.5) {
-                    set(x, yb, dz, ShipPart.DECK_PLATE);
-                    for (int y = yb + 1; y <= yb + 5; y++) set(x, y, dz, ShipPart.AIR);
+                if (r <= bIn) {
+                    set(x, yb, dz, r <= well ? ShipPart.BRIDGE_CARPET_TEAL : ShipPart.DECK_PLATE);
+                    for (int y = yb + 1; y <= top; y++) set(x, y, dz, ShipPart.AIR);
                     boolean spot = Math.floorMod(dx, 3) == 0 && Math.floorMod(dz, 3) == 0;
-                    set(x, yb + 6, dz, spot ? ShipPart.CEILING_LIGHT : ShipPart.BRIDGE_WALL_DARK);
+                    set(x, top + 1, dz, spot ? ShipPart.CEILING_LIGHT : ShipPart.BRIDGE_WALL_DARK);
                     boolean gap = dx < 0 ? Math.abs(dz) <= 1 : (dz >= 0 && dz <= 2);
-                    if (r > 5.2) {
+                    if (r > step) {
                         set(x, yb + 1, dz, aft ? ShipPart.TRANSPORTER_PLATFORM : ShipPart.DECK_PLATE); // Ring, hinten roter Teppich
-                    } else if (r > 4.2) {
+                    } else if (r > well) {
                         if (gap) {
                             set(x, yb + 1, dz, ShipPart.STEP_SLAB, Direction.NORTH, 0);
                         } else {
@@ -3203,14 +3307,14 @@ public final class EnterpriseBlueprint {
                             set(x, yb + 2, dz, ShipPart.BRIDGE_RAILING_WOOD);
                         }
                     }
-                    if (r > 6.5 && !front && !aft)
+                    if (r > bIn - 1 && !front && !aft)
                         set(x, yb + 2, dz, ShipPart.EXCELSIOR_CONSOLE, inwardFacing(dx, dz), Math.floorMod(sector, 4));
-                } else if (r <= 10) {
+                } else if (r <= bR) {
                     if (!isInterior(x, yb + 2, dz)) continue;
-                    for (int y = yb; y <= yb + 5; y++) if (isInterior(x, y, dz)) set(x, y, dz, ShipPart.BRIDGE_WALL_DARK);
-                    if (r <= 8.5 && !front) {
+                    for (int y = yb; y <= top; y++) if (isInterior(x, y, dz)) set(x, y, dz, ShipPart.BRIDGE_WALL_DARK);
+                    if (r <= bIn + 1 && !front) {
                         boolean pillar = sector % 3 == 0;
-                        for (int y = yb + 2; y <= yb + 5; y++)
+                        for (int y = yb + 2; y <= top; y++)
                             if (pillar) set(x, y, dz, ShipPart.LIGHT_PILLAR);
                         if (!pillar && !aft) {
                             set(x, yb + 3, dz, ShipPart.EXCELSIOR_DISPLAY, inwardFacing(dx, dz), Math.floorMod(sector, 4));
@@ -3219,40 +3323,40 @@ public final class EnterpriseBlueprint {
                     }
                 }
             }
-        // Hauptbildschirm vorne (7 x 3), Lichtsäulen daneben
-        for (int dz = -3; dz <= 3; dz++)
-            for (int y = yb + 2; y <= yb + 4; y++) set(cx - 8, y, dz, ShipPart.VIEWSCREEN, Direction.SOUTH);
-        for (int y = yb + 2; y <= yb + 5; y++) {
-            set(cx - 8, y, -4, ShipPart.LIGHT_PILLAR);
-            set(cx - 8, y, 4, ShipPart.LIGHT_PILLAR);
+        // Hauptbildschirm vorne (5 x 3), Lichtsäulen daneben
+        for (int dz = -2; dz <= 2; dz++)
+            for (int y = yb + 2; y <= yb + 4; y++) set(cx - vs, y, dz, ShipPart.VIEWSCREEN, Direction.SOUTH);
+        for (int y = yb + 2; y <= top; y++) {
+            set(cx - vs, y, -3, ShipPart.LIGHT_PILLAR);
+            set(cx - vs, y, 3, ShipPart.LIGHT_PILLAR);
         }
         // lange graue Steuerkonsole mit zwei Stühlen
-        for (int dz = -1; dz <= 1; dz++) set(cx - 3, yb + 1, dz, ShipPart.HELM_CONSOLE_GRAY, Direction.SOUTH);
-        set(cx - 3, yb + 1, -1, ShipPart.WEAPONS_CONSOLE, Direction.SOUTH, 1); // Waffen am Steuer (Backbord)
-        set(cx - 3, yb + 1, 1, ShipPart.SHIELD_CONSOLE, Direction.SOUTH); // Schilde (Steuerbord)
-        set(cx - 2, yb + 1, -1, ShipPart.STATION_CHAIR_TEAL, Direction.NORTH);
-        set(cx - 2, yb + 1, 1, ShipPart.STATION_CHAIR_TEAL, Direction.NORTH);
+        for (int dz = -1; dz <= 1; dz++) set(cx - 2, yb + 1, dz, ShipPart.HELM_CONSOLE_GRAY, Direction.SOUTH);
+        set(cx - 2, yb + 1, -1, ShipPart.WEAPONS_CONSOLE, Direction.SOUTH, 1); // Waffen am Steuer (Backbord)
+        set(cx - 2, yb + 1, 1, ShipPart.SHIELD_CONSOLE, Direction.SOUTH); // Schilde (Steuerbord)
+        set(cx - 1, yb + 1, -1, ShipPart.STATION_CHAIR_TEAL, Direction.NORTH);
+        set(cx - 1, yb + 1, 1, ShipPart.STATION_CHAIR_TEAL, Direction.NORTH);
         // erhöhtes Podest mit dem Kommandantensessel
         for (int ddx = 0; ddx <= 2; ddx++)
             for (int dz = -1; dz <= 1; dz++)
-                if (Math.abs(ddx - 1) + Math.abs(dz) <= 2) set(cx + ddx, yb + 1, dz, ShipPart.BRIDGE_CARPET_TEAL);
+                if (Math.abs(ddx - 1) + Math.abs(dz) <= 1) set(cx + ddx, yb + 1, dz, ShipPart.BRIDGE_CARPET_TEAL);
         set(cx + 1, yb + 2, 0, ShipPart.CAPTAINS_CHAIR_TEAL, Direction.NORTH);
         // Stationsstühle an Wissenschaft und Kommunikation
-        set(cx + 4, yb + 2, 5, ShipPart.STATION_CHAIR_TEAL, Direction.EAST);
-        set(cx + 4, yb + 2, -5, ShipPart.STATION_CHAIR_TEAL, Direction.WEST);
+        set(cx + 2, yb + 2, 4, ShipPart.STATION_CHAIR_TEAL, Direction.EAST);
+        set(cx + 2, yb + 2, -4, ShipPart.STATION_CHAIR_TEAL, Direction.WEST);
         // Master Systems Display an der Rückwand (wie auf der Brücke der B in "Treffen der Generationen")
-        for (int dz = -4; dz <= -2; dz++)
-            for (int y = yb + 3; y <= yb + 4; y++) set(cx + 8, y, dz, ShipPart.MSD_DISPLAY, Direction.NORTH, dz + 5);
+        for (int dz = -3; dz <= -1; dz++)
+            for (int y = yb + 3; y <= yb + 4; y++) set(cx + vs, y, dz, ShipPart.MSD_DISPLAY, Direction.NORTH, dz + 4);
         // Turbolift mit dunkler Tür, Lichtsäulen als Rahmen
         BlockPos lift = bridgeTurbolift();
         set(lift.getX(), yb + 3, lift.getZ(), ShipPart.TURBOLIFT_DOOR_TEAL, Direction.NORTH);
         for (int dz : new int[] {-1, 1})
             for (int y = yb + 2; y <= yb + 4; y++) set(lift.getX(), y, lift.getZ() + dz, ShipPart.LIGHT_PILLAR);
-        bridgeSpawn = new BlockPos(cx + 3, yb + 1, 0);
+        bridgeSpawn = new BlockPos(cx - 1, yb + 1, 0);
     }
 
     /**
-     * Brücke der Next-Generation-Schiffe nach dem Vorbild der Galaxy-Klasse (Ø 21 m): großer
+     * Brücke der Next-Generation-Schiffe nach dem Vorbild der Galaxy-Klasse (Ø 13 m wie Deck 1): großer
      * Hauptbildschirm, Ops- und Conn-Konsole davor, in der Mitte Kommandantensessel mit den Sitzen
      * des Ersten Offiziers (Steuerbord) und der Counselor (Backbord), dahinter das hufeisenförmige
      * Holzgeländer mit der Taktikstation auf der erhöhten Ebene, Wissenschafts- und
@@ -3260,57 +3364,59 @@ public final class EnterpriseBlueprint {
      */
     private void buildBridgeTng() {
         int cx = (int) Math.round(bCx);
-        int yb = bridgeFloor;
-        double rr = bR - 2.5;
+        int yb = bridgeFloor, top = yb + BRIDGE_H;
+        double rr = bIn;
+        int vs = (int) Math.ceil(rr);
         ShipPart wallPart = design == ShipDesign.NCC_1701_C ? ShipPart.BRIDGE_WALL_DARK : ShipPart.TNG_WALL;
         ShipPart carpet = ShipPart.TNG_CARPET;
         BlockPos lift = bridgeTurbolift();
         for (int dx = -bR; dx <= bR; dx++)
             for (int dz = -bR; dz <= bR; dz++) {
                 double r = Math.sqrt(dx * dx + dz * dz);
-                double rh = Math.hypot(dx, dz);                // Abstand vom Kommandobereich (Mitte)
                 int x = cx + dx;
-                boolean nearLift = dx >= 7 && Math.abs(Math.abs(dz) - Math.abs(lift.getZ())) <= 1.5;
+                boolean nearLift = dx >= lift.getX() - cx - 2 && Math.abs(Math.abs(dz) - Math.abs(lift.getZ())) <= 1.5;
                 if (r <= rr) {
-                    boolean raised = dx >= 0 && rh > 4.5;        // erhöhte hintere Ebene
+                    boolean raised = dx >= 0 && r > 3.0;        // erhöhte hintere Ebene hinter dem Hufeisen
                     set(x, yb, dz, carpet);
-                    for (int y = yb + 1; y <= yb + 5; y++) set(x, y, dz, ShipPart.AIR);
-                    set(x, yb + 6, dz, r < 3.2 || Math.abs(r - 7) < 0.5 ? ShipPart.CEILING_LIGHT : ShipPart.CEILING_PANEL);
+                    for (int y = yb + 1; y <= top; y++) set(x, y, dz, ShipPart.AIR);
+                    set(x, top + 1, dz, r < 2 || Math.abs(r - (rr - 1.5)) < 0.5 ? ShipPart.CEILING_LIGHT : ShipPart.CEILING_PANEL);
                     if (raised) set(x, yb + 1, dz, carpet);
                     // Rampen an beiden Enden des Hufeisens
-                    if (!raised && dx == -1 && Math.abs(dz) >= 5) set(x, yb + 1, dz, ShipPart.STEP_SLAB, Direction.NORTH, 0);
-                    // Hufeisen-Geländer aus Holz, oben in der Mitte die Taktikstation
-                    if (dx >= 2 && rh > 4.0 && rh <= 5.0) {
+                    if (!raised && dx == -1 && Math.abs(dz) >= 4) set(x, yb + 1, dz, ShipPart.STEP_SLAB, Direction.NORTH, 0);
+                    // Hufeisen-Geländer aus Holz auf der Kante der erhöhten Ebene, oben in der Mitte die Taktikstation
+                    if (dx >= 1 && r > 3.0 && r <= 4.0) {
                         if (Math.abs(dz) <= 1) set(x, yb + 2, dz, ShipPart.TNG_CONSOLE, Direction.SOUTH);
                         else set(x, yb + 2, dz, ShipPart.BRIDGE_RAILING_WOOD);
                     }
                     // Wissenschafts- und Technikstationen an der Rückwand
-                    if (r > rr - 1 && dx >= 3 && !nearLift)
+                    if (r > rr - 1 && dx >= 2 && !nearLift)
                         set(x, yb + 2, dz, ShipPart.TNG_CONSOLE, inwardFacing(dx, dz));
                 } else if (r <= bR) {
                     if (!isInterior(x, yb + 2, dz)) continue;
-                    for (int y = yb; y <= yb + 5; y++) if (isInterior(x, y, dz)) set(x, y, dz, wallPart);
+                    for (int y = yb; y <= top; y++) if (isInterior(x, y, dz)) set(x, y, dz, wallPart);
                     // LCARS-Anzeigen über den Stationen und an den Seitenwänden
-                    if (r <= rr + 1 && dx > -8 && !nearLift && Math.floorMod(dx + dz, 2) == 0)
+                    if (r <= rr + 1 && dx > -(vs - 1) && !nearLift && Math.floorMod(dx + dz, 2) == 0)
                         set(x, yb + 3, dz, ShipPart.LCARS_PANEL, inwardFacing(dx, dz));
                 }
             }
-        // Hauptbildschirm vorne (11 x 4)
-        for (int dz = -5; dz <= 5; dz++)
-            for (int y = yb + 1; y <= yb + 4; y++) set(cx - (int) Math.ceil(rr), y, dz, ShipPart.VIEWSCREEN, Direction.SOUTH);
+        // Hauptbildschirm vorne (7 x 3, bei der Galaxy und der Odyssey 9 x 3)
+        int hw = rr >= 6.5 ? 4 : 3;
+        for (int dz = -hw; dz <= hw; dz++)
+            for (int y = yb + 1; y <= yb + 3; y++) set(cx - vs, y, dz, ShipPart.VIEWSCREEN, Direction.SOUTH);
         // Taktikstation in der Mitte des Hufeisens (hinter dem Captain)
-        set(cx + 5, yb + 2, 0, ShipPart.WEAPONS_CONSOLE, Direction.SOUTH, 2);
+        set(cx + 4, yb + 2, 0, ShipPart.WEAPONS_CONSOLE, Direction.SOUTH, 2);
         set(cx + 4, yb + 2, 1, ShipPart.SHIELD_CONSOLE, Direction.SOUTH); // Schilde neben der Taktik
         // Ops (Backbord) und Conn (Steuerbord)
+        int ox = -(vs - 3);
         for (int side : new int[] {-1, 1}) {
-            set(cx - 6, yb + 1, 2 * side, ShipPart.TNG_CONSOLE, Direction.SOUTH);
-            set(cx - 6, yb + 1, 3 * side, ShipPart.TNG_CONSOLE, Direction.SOUTH);
-            set(cx - 5, yb + 1, 2 * side, ShipPart.TNG_CHAIR, Direction.NORTH);
+            set(cx + ox, yb + 1, 2 * side, ShipPart.TNG_CONSOLE, Direction.SOUTH);
+            set(cx + ox, yb + 1, 3 * side, ShipPart.TNG_CONSOLE, Direction.SOUTH);
+            set(cx + ox + 1, yb + 1, 2 * side, ShipPart.TNG_CHAIR, Direction.NORTH);
         }
         // Kommandobereich: Captain, Erster Offizier (Steuerbord), Counselor (Backbord)
-        set(cx - 1, yb + 1, 0, ShipPart.CAPTAINS_CHAIR_TNG, Direction.NORTH);
-        set(cx - 1, yb + 1, 2, ShipPart.TNG_CHAIR, Direction.NORTH);
-        set(cx - 1, yb + 1, -2, ShipPart.TNG_CHAIR, Direction.NORTH);
+        set(cx, yb + 1, 0, ShipPart.CAPTAINS_CHAIR_TNG, Direction.NORTH);
+        set(cx, yb + 1, 2, ShipPart.TNG_CHAIR, Direction.NORTH);
+        set(cx, yb + 1, -2, ShipPart.TNG_CHAIR, Direction.NORTH);
         // Turbolifte hinten: Steuerbord in Betrieb, Backbord als zweite Tür
         for (int side : new int[] {1, -1}) {
             int lz = lift.getZ() * side;
@@ -3320,47 +3426,48 @@ public final class EnterpriseBlueprint {
                 for (int y = yb + 2; y <= yb + 3; y++) set(lift.getX(), y, lz + dz, ShipPart.TURBOLIFT_FRAME);
             set(lift.getX(), yb + 4, lz, ShipPart.TURBOLIFT_FRAME);
         }
-        bridgeSpawn = new BlockPos(cx - 3, yb + 1, 0);
+        bridgeSpawn = new BlockPos(cx - 1, yb + 1, 0);
     }
 
     /**
-     * Brücke der NX-01 (Ø 15 m, ebener Boden): grauer Metallboden und Wände, Hauptbildschirm vorne,
+     * Brücke der NX-01 (Ø 11 m, ebener Boden): grauer Metallboden und Wände, Hauptbildschirm vorne,
      * Steuerkonsole mit Sitz davor (Mayweather), Kommandantensessel in der Mitte, Stationen rundum:
      * Kommunikation Backbord (Hoshi), Wissenschaft Steuerbord (T'Pol), Taktik hinten Steuerbord (Reed),
      * Turbolift hinten in der Mitte.
      */
     private void buildBridgeNx() {
         int cx = (int) Math.round(bCx);
-        int yb = bridgeFloor;
-        for (int dx = -10; dx <= 10; dx++)
-            for (int dz = -10; dz <= 10; dz++) {
+        int yb = bridgeFloor, top = yb + BRIDGE_H;
+        int vs = (int) Math.ceil(bIn);
+        for (int dx = -bR; dx <= bR; dx++)
+            for (int dz = -bR; dz <= bR; dz++) {
                 double r = Math.sqrt(dx * dx + dz * dz);
                 int x = cx + dx;
-                boolean front = dx < 0 && Math.abs(dz) <= 3;
-                boolean aft = dx > 4 && Math.abs(dz) <= 2;
-                if (r <= 7.5) {
+                boolean front = dx < 0 && Math.abs(dz) <= 2;
+                boolean aft = dx > 3 && Math.abs(dz) <= 1;
+                if (r <= bIn) {
                     set(x, yb, dz, ShipPart.DECK_PLATE);
-                    for (int y = yb + 1; y <= yb + 5; y++) set(x, y, dz, ShipPart.AIR);
-                    set(x, yb + 6, dz, r < 2.5 || Math.abs(r - 5) < 0.5 ? ShipPart.CEILING_LIGHT : ShipPart.ENT_WALL);
-                    if (r > 6.5 && !front && !aft) set(x, yb + 1, dz, ShipPart.ENT_CONSOLE, inwardFacing(dx, dz));
-                } else if (r <= 10) {
+                    for (int y = yb + 1; y <= top; y++) set(x, y, dz, ShipPart.AIR);
+                    set(x, top + 1, dz, r < 1.5 || Math.abs(r - 3.5) < 0.5 ? ShipPart.CEILING_LIGHT : ShipPart.ENT_WALL);
+                    if (r > bIn - 1 && !front && !aft) set(x, yb + 1, dz, ShipPart.ENT_CONSOLE, inwardFacing(dx, dz));
+                } else if (r <= bR) {
                     if (!isInterior(x, yb + 2, dz)) continue;
-                    for (int y = yb; y <= yb + 5; y++) if (isInterior(x, y, dz)) set(x, y, dz, ShipPart.ENT_WALL);
-                    if (r <= 8.5 && !front && !aft && Math.floorMod(dx + dz, 2) == 0)
+                    for (int y = yb; y <= top; y++) if (isInterior(x, y, dz)) set(x, y, dz, ShipPart.ENT_WALL);
+                    if (r <= bIn + 1 && !front && !aft && Math.floorMod(dx + dz, 2) == 0)
                         set(x, yb + 2, dz, ShipPart.ENT_CONSOLE, inwardFacing(dx, dz));
                 }
             }
-        for (int dz = -3; dz <= 3; dz++)
-            for (int y = yb + 2; y <= yb + 4; y++) set(cx - 8, y, dz, ShipPart.VIEWSCREEN, Direction.SOUTH);
+        for (int dz = -2; dz <= 2; dz++)
+            for (int y = yb + 2; y <= yb + 4; y++) set(cx - vs, y, dz, ShipPart.VIEWSCREEN, Direction.SOUTH);
         // Steuerkonsole mit Sitz
-        for (int dz = -1; dz <= 1; dz++) set(cx - 5, yb + 1, dz, ShipPart.ENT_CONSOLE, Direction.SOUTH);
-        set(cx - 4, yb + 1, 0, ShipPart.ENT_CHAIR, Direction.NORTH);
+        for (int dz = -1; dz <= 1; dz++) set(cx - 3, yb + 1, dz, ShipPart.ENT_CONSOLE, Direction.SOUTH);
+        set(cx - 2, yb + 1, 0, ShipPart.ENT_CHAIR, Direction.NORTH);
         set(cx, yb + 1, 0, ShipPart.CAPTAINS_CHAIR_NX, Direction.NORTH);
         // Taktik hinten Steuerbord (Reed)
-        set(cx + 5, yb + 1, 5, ShipPart.WEAPONS_CONSOLE, inwardFacing(5, 5), 3);
+        set(cx + 3, yb + 1, 4, ShipPart.WEAPONS_CONSOLE, inwardFacing(3, 4), 3);
         // Sitze an Kommunikation (Backbord) und Wissenschaft (Steuerbord)
-        set(cx, yb + 1, -6, ShipPart.ENT_CHAIR, Direction.WEST);
-        set(cx, yb + 1, 6, ShipPart.ENT_CHAIR, Direction.EAST);
+        set(cx, yb + 1, -4, ShipPart.ENT_CHAIR, Direction.WEST);
+        set(cx, yb + 1, 4, ShipPart.ENT_CHAIR, Direction.EAST);
         BlockPos lift = bridgeTurbolift();
         set(lift.getX(), yb + 2, 0, ShipPart.TURBOLIFT_DOOR, Direction.NORTH);
         for (int dz : new int[] {-1, 1})
@@ -3374,10 +3481,12 @@ public final class EnterpriseBlueprint {
         return dz < 0 ? Direction.EAST : Direction.WEST;
     }
 
+    /** Turbolift-Tür in der hinteren Wand der Brücke (erste Wandzelle hinter dem Innenradius). */
     private BlockPos bridgeTurbolift() {
-        if (tng) return new BlockPos((int) Math.round(bCx) + 9, bridgeFloor + 2, 5);
-        if (nx) return new BlockPos((int) Math.round(bCx) + 7, bridgeFloor + 1, 0);
-        return new BlockPos((int) Math.round(bCx) + 8, bridgeFloor + 2, 2);
+        int cx = (int) Math.round(bCx);
+        int lz = tng ? 3 : nx ? 0 : 2;
+        int lx = (int) Math.floor(Math.sqrt(Math.pow(bIn + 0.9, 2) - lz * lz));
+        return new BlockPos(cx + lx, bridgeFloor + (nx ? 1 : 2), lz);
     }
 
     /** Hohler Raum mit Wänden, Boden und Decke; die Außenhülle bleibt erhalten. */
@@ -3978,15 +4087,24 @@ public final class EnterpriseBlueprint {
         int skipped = 0;      // oberste Decks ohne Platz in der Mitte (flache Untertasse, Brücke nicht mittig)
         boolean first = true;
         for (int f = bridgeFloor - DECK_HEIGHT; f > 0; f -= DECK_HEIGHT) {
-            boolean ok = true;
-            for (int y = f + 1; y <= f + 3; y++) ok &= deckCell(cx, y, 0) && deckCell(cx + 6, y, 0);
-            if (!ok) {
+            // Lift in der Mitte; ist dort auf dieser Höhe kein Platz (flache Untertasse), die nächste freie
+            // Stelle auf der Mittellinie
+            int lx = Integer.MIN_VALUE;
+            for (int d = 0; d <= rx && lx == Integer.MIN_VALUE; d++)
+                for (int sgn : d == 0 ? new int[] {1} : new int[] {-1, 1}) {
+                    int x = cx + sgn * d;
+                    boolean ok = true;
+                    for (int y = f + 1; y <= f + 3; y++) ok &= deckCell(x, y, 0) && deckCell(x + 6, y, 0);
+                    if (ok) { lx = x; break; }
+                }
+            if (lx == Integer.MIN_VALUE || lx != cx && first) {
+                // oberste Decks ohne Platz in der Mitte: zählen nicht für die Reihenfolge der Deckarten
+                // (Besprechungsraum usw. kommen auf das erste Deck mit Platz in der Mitte)
                 if (first) skipped++;
-                continue;
-            }
-            first = false;
+                if (lx == Integer.MIN_VALUE) continue;
+            } else first = false;
             int deck = deckNumber(f);
-            int index = deck - 2 - skipped; // 0 = erstes Deck mit Räumen unter der Brücke
+            int index = lx != cx && skipped > 0 && first ? -1 : deck - 2 - skipped; // -1 = Deck vor dem ersten mit Mitte: Quartiere/Lager
             // Ten Forward liegt auf dem Deck, das vorne bis an den Rand der Untertasse reicht
             boolean rim = sMid >= f + 1 && sMid < f + 1 + DECK_HEIGHT;
             List<Band> bands = deckBands(index, rings, rim);
@@ -4007,17 +4125,17 @@ public final class EnterpriseBlueprint {
                     if (Math.floorMod(x, 5) == 0 && Math.floorMod(z, 5) == 0 && get(x, f + 3, z) == ShipPart.AIR
                         && deckCell(x, f + 3, z) && compAt(x, f + 4, z) != NONE) set(x, f + 3, z, ShipPart.CEILING_LIGHT);
                 }
-            // Vorraum mit Turbolift in der Mitte
-            set(cx, f + 1, 0, ShipPart.TURBOLIFT, Direction.SOUTH);
-            set(cx, f + 2, 0, ShipPart.TURBOLIFT_DOOR, Direction.SOUTH);
-            set(cx, f + 3, 0, ShipPart.TURBOLIFT_FRAME);
-            set(cx, f + 1, -1, ShipPart.TURBOLIFT_FRAME);
-            set(cx, f + 2, -1, ShipPart.TURBOLIFT_FRAME);
-            set(cx, f + 1, 1, ShipPart.TURBOLIFT_FRAME);
-            set(cx, f + 2, 1, ShipPart.TURBOLIFT_FRAME);
-            for (int y = f + 1; y <= f + 3; y++) set(cx - 1, y, 0, ShipPart.TURBOLIFT_FRAME); // Rückseite des Schachts
-            if (get(cx, f, 0) == ShipPart.AIR) set(cx, f, 0, ShipPart.DECK_FLOOR); // Halt nie über Luft (gebogene Hülle)
-            liftStops.add(new LiftStop(new BlockPos(cx, f + 1, 0), deckLabel(deck) + " – " + deckName));
+            // Vorraum mit Turbolift (in der Mitte bzw. an der nächsten freien Stelle der Mittellinie)
+            set(lx, f + 1, 0, ShipPart.TURBOLIFT, Direction.SOUTH);
+            set(lx, f + 2, 0, ShipPart.TURBOLIFT_DOOR, Direction.SOUTH);
+            set(lx, f + 3, 0, ShipPart.TURBOLIFT_FRAME);
+            set(lx, f + 1, -1, ShipPart.TURBOLIFT_FRAME);
+            set(lx, f + 2, -1, ShipPart.TURBOLIFT_FRAME);
+            set(lx, f + 1, 1, ShipPart.TURBOLIFT_FRAME);
+            set(lx, f + 2, 1, ShipPart.TURBOLIFT_FRAME);
+            for (int y = f + 1; y <= f + 3; y++) set(lx - 1, y, 0, ShipPart.TURBOLIFT_FRAME); // Rückseite des Schachts
+            if (get(lx, f, 0) == ShipPart.AIR) set(lx, f, 0, ShipPart.DECK_FLOOR); // Halt nie über Luft (gebogene Hülle)
+            liftStops.add(new LiftStop(new BlockPos(lx, f + 1, 0), deckLabel(deck) + " – " + deckName));
 
             for (Band band : bands)
                 for (Room room : band.rooms()) furnish(room, f);
