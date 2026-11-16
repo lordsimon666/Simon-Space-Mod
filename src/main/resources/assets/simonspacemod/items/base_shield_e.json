@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "simonspacemod:block/base_shield"
+    "model": "simonspacemod:block/base_shield_e"
   }
 }

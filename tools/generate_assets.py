@@ -3106,14 +3106,29 @@ def base_shield_assets(de, en):
             if (x + 2 * y) % 5 == 0 or (x - 2 * y) % 5 == 0:
                 sp[x, y] = (90, 180, 255, 255)
     save(top, "base_shield_top")
-    save(side, "base_shield_side")
-    write_json(os.path.join(ASSETS, "models", "block", "base_shield.json"), {"parent": "minecraft:block/cube_column",
-        "textures": {"end": b("base_shield_top"), "side": b("base_shield_side")}})
-    write_json(os.path.join(ASSETS, "blockstates", "base_shield.json"), {"variants": {"": {"model": b("base_shield")}}})
-    write_json(os.path.join(ASSETS, "items", "base_shield.json"), item_def(b("base_shield")))
-    write_json(os.path.join(DATA, "loot_table", "blocks", "base_shield.json"), loot("base_shield"))
+    ships = [("tos", "NCC-1701"), ("refit", "NCC-1701-A"), ("excelsior", "NCC-1701-B"), ("c", "NCC-1701-C"), ("d", "NCC-1701-D"), ("e", "NCC-1701-E")]
+    for i, (k, ship) in enumerate(ships):
+        tier = i + 1
+        n = f"base_shield_{k}"
+        st = side.copy()
+        spx = st.load()
+        for j in range(tier):                    # Stufenlichter unten
+            x = 2 + j * 2 + (1 if j >= 3 else 0)
+            spx[x, 13] = (255, 220, 90, 255)
+        save(st, f"base_shield_side_{k}")
+        write_json(os.path.join(ASSETS, "models", "block", n + ".json"), {"parent": "minecraft:block/cube_column",
+            "textures": {"end": b("base_shield_top"), "side": b(f"base_shield_side_{k}")}})
+        write_json(os.path.join(ASSETS, "blockstates", n + ".json"), {"variants": {"": {"model": b(n)}}})
+        write_json(os.path.join(ASSETS, "items", n + ".json"), item_def(b(n)))
+        write_json(os.path.join(DATA, "loot_table", "blocks", n + ".json"), loot(n))
+        de[f"block.{M}.{n}"] = f"Basisschild ({ship}, Stufe {tier})"
+        en[f"block.{M}.{n}"] = f"Base Shield ({ship}, tier {tier})"
+    for old in ("models/block/base_shield.json", "blockstates/base_shield.json", "items/base_shield.json", "textures/block/base_shield_side.png"):
+        if os.path.exists(os.path.join(ASSETS, old)):
+            os.remove(os.path.join(ASSETS, old))
+    if os.path.exists(os.path.join(DATA, "loot_table", "blocks", "base_shield.json")):
+        os.remove(os.path.join(DATA, "loot_table", "blocks", "base_shield.json"))
     de.update({
-        f"block.{M}.base_shield": "Basisschild",
         f"gui.{M}.base_shield.radius": "Radius: %s",
         f"gui.{M}.base_shield.up": "Aktiv: %s %%, %s Schildblöcke, %s FE/t",
         f"gui.{M}.base_shield.no_power": "Zu wenig Strom (braucht %s FE/t)",
@@ -3121,7 +3136,6 @@ def base_shield_assets(de, en):
         f"gui.{M}.base_shield.energy": "Speicher: %s kFE",
     })
     en.update({
-        f"block.{M}.base_shield": "Base Shield",
         f"gui.{M}.base_shield.radius": "Radius: %s",
         f"gui.{M}.base_shield.up": "Active: %s %%, %s shield blocks, %s FE/t",
         f"gui.{M}.base_shield.no_power": "Not enough power (needs %s FE/t)",
@@ -4364,7 +4378,7 @@ def main():
     models_extra += ["ceiling_light", "dual_wall", "dual_floor", "uranium_ore", "deepslate_uranium_ore", "reactor_casing",
                      "reactor_glass", "reactor_controller", "ship_helm", "airlock", "airlock_small", "dilithium_ore",
                      "antimatter_cluster", "deuterium_ice", "ship_part_assembly",
-                     "power_console", "shield_console", "alarm_light", "battery", "hull_glass", "mining_laser", "laser_focus", "mining_laser_control", "base_shield"] + [f"crate_{t[0]}" for t in CRATE_TIERS if t[0] != "wood"] + [f"shield_emitter_{k}" for k in ("tos", "refit", "excelsior", "c", "d", "e")]
+                     "power_console", "shield_console", "alarm_light", "battery", "hull_glass", "mining_laser", "laser_focus", "mining_laser_control"] + [f"base_shield_{k}" for k in ("tos", "refit", "excelsior", "c", "d", "e")] + [f"crate_{t[0]}" for t in CRATE_TIERS if t[0] != "wood"] + [f"shield_emitter_{k}" for k in ("tos", "refit", "excelsior", "c", "d", "e")]
     models_extra += [f"door_{e}_{k}" for e in DOOR_ERAS for k in DOOR_KINDS]
     # Mit der Spitzhacke abbaubar
     write_json(os.path.join(ROOT, "data", "minecraft", "tags", "block", "mineable", "pickaxe.json"),

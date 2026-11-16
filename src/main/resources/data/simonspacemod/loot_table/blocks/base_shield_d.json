@@ -6,7 +6,7 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "simonspacemod:base_shield"
+          "name": "simonspacemod:base_shield_d"
         }
       ],
       "conditions": [
@@ -16,5 +16,5 @@
       ]
     }
   ],
-  "random_sequence": "simonspacemod:blocks/base_shield"
+  "random_sequence": "simonspacemod:blocks/base_shield_d"
 }

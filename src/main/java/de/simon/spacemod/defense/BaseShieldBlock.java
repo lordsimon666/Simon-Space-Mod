@@ -17,17 +17,19 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
-/** Basisschild-Generator: erzeugt eine Schildkuppel (Radius 16 bis 128). */
+/** Basisschild-Generator: erzeugt eine Schildkuppel (Radius 16 bis 128), Stufe 1 bis 6 wie die Schiffsschilde. */
 public class BaseShieldBlock extends BaseEntityBlock {
-    public static final MapCodec<BaseShieldBlock> CODEC = simpleCodec(BaseShieldBlock::new);
+    /** Schildstufe 1 (NCC-1701) bis 6 (NCC-1701-E), wie bei den Schildemittern. */
+    public final int tier;
 
-    public BaseShieldBlock(BlockBehaviour.Properties properties) {
+    public BaseShieldBlock(BlockBehaviour.Properties properties, int tier) {
         super(properties);
+        this.tier = tier;
     }
 
     @Override
     protected MapCodec<? extends BaseEntityBlock> codec() {
-        return CODEC;
+        return simpleCodec(p -> new BaseShieldBlock(p, tier));
     }
 
     @Override

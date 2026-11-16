@@ -89,9 +89,13 @@ public final class AssemblyRecipes {
         } else if (p.equals("mining_laser")) {
             b.add(Items.IRON_BLOCK, 2).add(Items.DIAMOND_PICKAXE, 1).add(Items.DIAMOND, 3).add(Items.REDSTONE_BLOCK, 2)
                 .add(Items.GLOWSTONE_DUST, 4).add(ModBlocks.DILITHIUM_CRYSTAL.get(), 2).add(Items.HOPPER, 1);
-        } else if (p.equals("base_shield")) {
-            b.add(Items.IRON_BLOCK, 4).add(Items.DIAMOND, 6).add(Items.REDSTONE_BLOCK, 4).add(Items.LAPIS_BLOCK, 4)
-                .add(ModBlocks.DILITHIUM_CRYSTAL.get(), 6).add(Items.GLOWSTONE, 4).add(Items.BEACON, 1);
+        } else if (p.startsWith("base_shield")) {
+            // je höher die Stufe, desto aufwendiger (wie die Schildemitter)
+            int tier = 1 + java.util.List.of("tos", "refit", "excelsior", "c", "d", "e").indexOf(p.substring("base_shield_".length()));
+            b.add(Items.IRON_BLOCK, 3 + tier).add(Items.DIAMOND, 2 + 2 * tier).add(Items.REDSTONE_BLOCK, 4).add(Items.LAPIS_BLOCK, 4)
+                .add(Items.GLOWSTONE, 4).add(Items.BEACON, 1);
+            if (tier >= 3) b.add(ModBlocks.DILITHIUM_CRYSTAL.get(), 2 * tier);
+            if (tier >= 6) b.add(ModBlocks.ANTIMATTER_POD.get(), 2);
         } else if (p.equals("laser_focus")) {
             b.add(Items.IRON_INGOT, 4).add(Items.GLASS, 2).add(Items.DIAMOND, 1).add(Items.REDSTONE, 2);
         } else if (p.equals("mining_laser_control")) {

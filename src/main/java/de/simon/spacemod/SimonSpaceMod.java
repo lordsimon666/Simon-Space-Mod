@@ -25,6 +25,13 @@ public final class SimonSpaceMod {
         de.simon.spacemod.item.SpaceSuitItem.init();
         de.simon.spacemod.assembly.AssemblyRecipes.init();
         de.simon.spacemod.weapons.BeamShots.init();
+        // ältere Welten: der einstufige „base_shield“ ist jetzt das Basisschild der Stufe 2 (gleiche Stärke wie vorher)
+        net.minecraftforge.registries.MissingMappingsEvent.BUS.addListener(e -> {
+            for (var m : e.getMappings(net.minecraft.core.registries.Registries.BLOCK, MODID))
+                if (m.getKey().getPath().equals("base_shield")) m.remap(ModBlocks.BASE_SHIELDS.get(1).get());
+            for (var m : e.getMappings(net.minecraft.core.registries.Registries.ITEM, MODID))
+                if (m.getKey().getPath().equals("base_shield")) m.remap(ModBlocks.BASE_SHIELDS.get(1).get().asItem());
+        });
         de.simon.spacemod.weapons.Triggers.init();
         de.simon.spacemod.defense.Shields.init();
         de.simon.spacemod.defense.WarpBreach.init();

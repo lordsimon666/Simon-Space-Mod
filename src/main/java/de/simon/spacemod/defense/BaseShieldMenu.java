@@ -18,7 +18,7 @@ public class BaseShieldMenu extends AbstractContainerMenu {
     private final Predicate<Player> stillValid;
 
     public BaseShieldMenu(int id, Inventory inv, FriendlyByteBuf buf) {
-        this(id, inv, new SimpleContainerData(7), b -> { }, p -> true);
+        this(id, inv, new SimpleContainerData(8), b -> { }, p -> true);
     }
 
     public BaseShieldMenu(int id, Inventory inv, ContainerData data, IntConsumer press, Predicate<Player> stillValid) {

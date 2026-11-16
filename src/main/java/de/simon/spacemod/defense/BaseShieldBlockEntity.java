@@ -29,8 +29,6 @@ import org.jspecify.annotations.Nullable;
  */
 public class BaseShieldBlockEntity extends BlockEntity {
     public static final int MIN_RADIUS = 16, MAX_RADIUS = 128;
-    /** Stärke wie die Schildstufe 2 (390 Leben je Schildblock). */
-    public static final int TIER = 2;
     public static final int CAPACITY = 2_000_000, MAX_IN = 50_000;
     public static final int OFF = 0, UP = 2, NO_POWER = 4;
     /** Strom je Lebenspunkt bei der Regeneration und höchstens so viel Strom je halbe Sekunde dafür. */
@@ -66,15 +64,21 @@ public class BaseShieldBlockEntity extends BlockEntity {
                 case 3 -> shield == null ? 0 : Math.round(shield.average() * 100);
                 case 4 -> energy / 1000;
                 case 5 -> shield == null ? 0 : Math.min(32767, shield.cells / 100);
-                default -> shield == null ? 0 : Math.min(32767, shield.upkeep());
+                case 6 -> shield == null ? 0 : Math.min(32767, shield.upkeep());
+                default -> tier();
             };
         }
         @Override public void set(int i, int v) {}
-        @Override public int getCount() { return 7; }
+        @Override public int getCount() { return 8; }
     };
 
     public BaseShieldBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlocks.BASE_SHIELD_BE.get(), pos, state);
+    }
+
+    /** Schildstufe aus dem Block (1 = NCC-1701 … 6 = NCC-1701-E). */
+    public int tier() {
+        return getBlockState().getBlock() instanceof BaseShieldBlock b ? b.tier : 1;
     }
 
     /** Knöpfe: 0/1 Radius −/+ 1, 10/11 Radius −/+ 8, 4 an/aus. */
@@ -101,7 +105,7 @@ public class BaseShieldBlockEntity extends BlockEntity {
     public void openMenu(ServerPlayer player) {
         player.openMenu(new SimpleMenuProvider((id, inv, p) -> new BaseShieldMenu(id, inv, data, b -> press(b, player),
             pl -> de.simon.spacemod.flight.Shipyard.distanceSqr(pl, level, worldPosition) < 64 && level.getBlockEntity(worldPosition) == this),
-            Component.translatable("block.simonspacemod.base_shield")));
+            getBlockState().getBlock().getName()));
     }
 
     private void shutdown() {
@@ -122,7 +126,7 @@ public class BaseShieldBlockEntity extends BlockEntity {
         }
         if (be.shield == null) {
             ShieldShape shape = ShieldShape.dome(be.radius);
-            be.shield = new Shield(sl, pos, pos.offset(-be.radius, 0, -be.radius), shape, TIER, java.util.List.of(pos), shape.shellCells());
+            be.shield = new Shield(sl, pos, pos.offset(-be.radius, 0, -be.radius), shape, be.tier(), java.util.List.of(pos), shape.shellCells());
             Shields.register(be.shield);
         }
         if (level.getGameTime() % 10 != 0) return;

@@ -506,11 +506,12 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
 
 * **Basisschild** (Schiffsteil-Fertigung): erzeugt eine **Schildkuppel** um sich, Radius einstellbar von
   **16 bis 128 Blöcken** (Menü: −/+, mit Shift in Achterschritten; an/aus).
-* Wirkt wie die Schiffsschilde: hält Torpedos, Phaser und Explosionen von außen ab, hat Leben je
-  Schildblock (390, wie Schildstufe 2) und regeneriert sich. Wer drinnen ist, kann hinausschießen.
+* **Sechs Stufen wie die Schiffsschilde**: Basisschild NCC-1701 (Stufe 1, 260 Leben je Schildblock),
+  -A (390), -B (520), -C (690), -D (870), -E (1130). Höhere Stufen sind teurer in der Fertigung und
+  brauchen mehr Strom zum Halten (wie die Schiffsschilde: Schildblöcke × Stufe × 0,02 FE/t, mindestens 200).
+* Wirkt wie die Schiffsschilde: hält Torpedos, Phaser und Explosionen von außen ab und regeneriert sich. Wer drinnen ist, kann hinausschießen.
 * Braucht keine Emitter, nur **Strom**. Der Generator speichert 2 Mio. FE und wird vom Bordnetz, von
-  Batterien oder von Generatoren anderer Mods geladen. Das Halten kostet je nach Größe 200 FE/t (Radius 16)
-  bis rund 6000 FE/t (Radius 128), dazu Strom für die Regeneration.
+  Batterien oder von Generatoren anderer Mods geladen. Dazu kommt Strom für die Regeneration.
 * Beim Ändern des Radius wird die Kuppel neu aufgebaut.
 
 ### Automatische Abwehr (Waffenstation + Redstone)
@@ -750,7 +751,7 @@ G = Goldbarren, E = Eisenbarren, P = Enderperle, R = Redstone
  E R E
 ```
 
-## Neue Blöcke (162)
+## Neue Blöcke (167)
 
 * **Hülle**: Hüllenpanzerung (+ Stufe), Hüllenplatte, dunkle Hüllenplatte, Hüllenfenster, Hüllenglas,
   Kennungsmarkierung (+ Stufe), roter Zierstreifen, Positionslicht rot/grün, Deflektorschüssel,
@@ -786,7 +787,7 @@ G = Goldbarren, E = Eisenbarren, P = Enderperle, R = Redstone
 * **Kernreaktor**: Uranerz, Tiefenschiefer-Uranerz, Reaktorhülle, Reaktorglas, Reaktor-Steuerblock
 * **Weltraum**: Luftschleuse (2 x 2 x 2 und 1 x 2 x 2), Dilithium-Erz, Antimaterie-Einschluss, Deuterium-Eis
 * **Werkstatt**: Schiffsteil-Fertigung, Batterie, Bergbaulaser, Laserfokus, Laser-Steuerkonsole, Großkiste (Holz, Kupfer, Eisen, Gold, Diamant, Netherit)
-* **Verteidigung**: Energieverteilung, Schildsteuerung, Basisschild, Alarmleuchte, 6 Schildemitter (NCC-1701 bis -E)
+* **Verteidigung**: Energieverteilung, Schildsteuerung, 6 Basisschilde (NCC-1701 bis -E), Alarmleuchte, 6 Schildemitter (NCC-1701 bis -E)
 * **Allgemein**: Deckboden, Korridorwand, Deckenverkleidung, Deckenleuchte, Maschinenraum-Konsole,
   Warpkern, Plasmaleitung
 

@@ -618,11 +618,18 @@ public final class ModBlocks {
     }
 
     // --- Basisschild (Kuppel, Radius 16 bis 128) ---
-    public static final RegistryObject<Block> BASE_SHIELD = block("base_shield", de.simon.spacemod.defense.BaseShieldBlock::new,
-        metal(MapColor.COLOR_LIGHT_BLUE).lightLevel(_ -> 8));
+    /** Basisschilde in denselben Stufen wie die Schiffsschilde (NCC-1701 = Stufe 1 … NCC-1701-E = Stufe 6). */
+    public static final java.util.List<RegistryObject<Block>> BASE_SHIELDS = new java.util.ArrayList<>();
+    static {
+        for (int i = 0; i < SHIELD_EMITTERS.length; i++) {
+            int tier = i + 1;
+            BASE_SHIELDS.add(block("base_shield_" + SHIELD_EMITTERS[i], p -> new de.simon.spacemod.defense.BaseShieldBlock(p, tier),
+                metal(MapColor.COLOR_LIGHT_BLUE).lightLevel(_ -> 6 + tier)));
+        }
+    }
     public static final RegistryObject<BlockEntityType<de.simon.spacemod.defense.BaseShieldBlockEntity>> BASE_SHIELD_BE =
         BLOCK_ENTITIES.register("base_shield", () -> new BlockEntityType<>(de.simon.spacemod.defense.BaseShieldBlockEntity::new,
-            java.util.Set.of(BASE_SHIELD.get())));
+            BASE_SHIELDS.stream().map(RegistryObject::get).collect(java.util.stream.Collectors.toSet())));
     public static final RegistryObject<MenuType<de.simon.spacemod.defense.BaseShieldMenu>> BASE_SHIELD_MENU = MENUS.register("base_shield",
         () -> IForgeMenuType.create(de.simon.spacemod.defense.BaseShieldMenu::new));
 
