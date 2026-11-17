@@ -21,6 +21,41 @@ class ShipPhysicsTest {
     }
 
     @Test
+    void strafeUpAndDownIsWorldVertical() {
+        Vec3 fwd = ShipPhysics.forward(0, 20); // Bug leicht nach unten geneigt
+        Vec3 up = ShipPhysics.velocity(Vec3.ZERO, fwd, 0, 1, 0.1, 0.05);
+        assertEquals(0.1, up.y, 1e-9);
+        assertEquals(0, up.x, 1e-9);
+        assertEquals(0, up.z, 1e-9);
+        assertEquals(-0.1, ShipPhysics.velocity(Vec3.ZERO, fwd, 0, -1, 0.1, 0.05).y, 1e-9);
+        // beim senkrechten Schieben wird die Steiggeschwindigkeit nicht weggedämpft, die waagerechte schon
+        Vec3 v = ShipPhysics.velocity(new Vec3(1, 0.5, 0), new Vec3(0, 0, 1), 0, 1, 0.1, 0.2);
+        assertEquals(0.6, v.y, 1e-9);
+        assertEquals(0.8, v.x, 1e-9);
+    }
+
+    @Test
+    void dampersStrongerAndAdjustable() {
+        // Standard (10 %) bremst deutlich stärker als die alten 1 % je Tick
+        assertTrue(ShipPhysics.damperDecay(ShipPhysics.DEFAULT_DAMPER) > 0.03);
+        assertTrue(ShipPhysics.damperDecay(10) > ShipPhysics.damperDecay(5));
+        assertEquals(0, ShipPhysics.damperDecay(0), 1e-9);
+        // Kosten: bis 10 % kostenlos, 100 % = 1000 FE/t
+        assertEquals(0, ShipPhysics.damperCost(0));
+        assertEquals(0, ShipPhysics.damperCost(ShipPhysics.DEFAULT_DAMPER));
+        assertEquals(1000, ShipPhysics.damperCost(10));
+        assertTrue(ShipPhysics.damperCost(5) > 0 && ShipPhysics.damperCost(5) < 1000);
+        // bei 100 % steht ein Schiff mit Höchstgeschwindigkeit nach höchstens etwa 2 Sekunden fast still
+        Vec3 v = new Vec3(ShipPhysics.MAX_SPEED, 0, 0);
+        for (int t = 0; t < 40; t++) v = ShipPhysics.velocity(v, new Vec3(0, 0, 1), 0, 0, 0, ShipPhysics.damperDecay(10));
+        assertTrue(v.length() < 0.01, "steht nicht: " + v.length());
+        // mit Schub nach vorn wird seitliches Rutschen gedämpft, die Vorwärtsfahrt nicht
+        Vec3 w = ShipPhysics.velocity(new Vec3(1, 0, 1), new Vec3(0, 0, 1), 1, 0, 0.1, 0.5);
+        assertEquals(1.1, w.z, 1e-9);
+        assertEquals(0.5, w.x, 1e-9);
+    }
+
+    @Test
     void inertiaGrowsWithSpread() {
         List<BlockPos> compact = new ArrayList<>(), wide = new ArrayList<>();
         for (int i = 0; i < 10; i++) { compact.add(new BlockPos(i % 3, 0, i / 3)); wide.add(new BlockPos(i * 3, 0, 0)); }

@@ -19,8 +19,40 @@ public final class ShipPhysics {
     public static final double MAX_SPEED = 3.0, MAX_TURN_RATE = 6.0;
     /** Strombedarf je Antrieb bei vollem Schub (RF / Tick). */
     public static final int RF_PER_ENGINE = 2000;
-    /** Trägheitsdämpfer ohne Schub (Faktor je Tick). */
-    public static final double DAMPING = 0.99;
+    /** Trägheitsdämpfer ohne Steuerung: 10 % (Stufe 1 von 10), kostenlos. */
+    public static final int DEFAULT_DAMPER = 1;
+    /** Strom der Trägheitsdämpfer bei 100 % (FE / Tick). */
+    public static final int DAMPER_FE_MAX = 1000;
+
+    /**
+     * Anteil der Geschwindigkeit, den die Trägheitsdämpfer je Tick wegnehmen (in jeder Richtung ohne Schub):
+     * 0 % gar nichts, 10 % (Standard) 3,4 % je Tick, 100 % ein Viertel je Tick (das Schiff steht in etwa 1 s).
+     */
+    public static double damperDecay(int level) {
+        return level <= 0 ? 0 : 0.01 + 0.024 * level;
+    }
+
+    /** Strom der Trägheitsdämpfer (FE / Tick): bis 10 % kostenlos, dann linear bis 1000 FE/t bei 100 %. */
+    public static int damperCost(int level) {
+        return level <= DEFAULT_DAMPER ? 0 : (int) Math.round((level - DEFAULT_DAMPER) * DAMPER_FE_MAX / (10.0 - DEFAULT_DAMPER));
+    }
+
+    /**
+     * Ein Tick Geschwindigkeit: Schub entlang des Bugs (throttle) und senkrecht nach oben/unten (vertical),
+     * dazu bremsen die Trägheitsdämpfer jede Richtung, in der gerade kein Schub gegeben wird – ohne Schub ganz,
+     * mit Schub nach vorn auch das seitliche Rutschen.
+     */
+    public static Vec3 velocity(Vec3 v, Vec3 forward, int throttle, int vertical, double accel, double decay) {
+        double k = 1 - decay;
+        double along = v.dot(forward);
+        Vec3 rest = v.subtract(forward.scale(along));
+        if (throttle == 0) along *= k;
+        rest = new Vec3(rest.x * k, vertical != 0 ? rest.y : rest.y * k, rest.z * k);
+        Vec3 out = forward.scale(along).add(rest);
+        if (throttle != 0) out = out.add(forward.scale(throttle * accel));
+        if (vertical != 0) out = out.add(0, vertical * accel, 0);
+        return out;
+    }
 
     private ShipPhysics() {}
 

@@ -656,6 +656,9 @@ public final class ModBlocks {
         metal(MapColor.COLOR_LIGHT_GRAY).lightLevel(_ -> 3));
     public static final RegistryObject<Block> MINING_LASER_CONTROL = block("mining_laser_control",
         de.simon.spacemod.mining.MiningLaserControlBlock::new, metal(MapColor.COLOR_GRAY).lightLevel(_ -> 5));
+    /** Trägheitsdämpfer-Steuerung: Stärke der Bremsung fliegender Schiffe (0–100 %). */
+    public static final RegistryObject<Block> INERTIAL_DAMPER = block("inertial_damper",
+        de.simon.spacemod.flight.InertialDamperBlock::new, metal(MapColor.COLOR_BLUE).lightLevel(_ -> 5));
     public static final RegistryObject<MenuType<de.simon.spacemod.mining.MiningLaserMenu>> MINING_LASER_MENU = MENUS.register("mining_laser",
         () -> IForgeMenuType.create(de.simon.spacemod.mining.MiningLaserMenu::new));
 

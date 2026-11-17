@@ -7,18 +7,23 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.network.CustomPayloadEvent;
 
 /**
- * Client -> Server: Steuerung. action 0 = fliegen (Blickrichtung, Schub -1/0/1), 1 = landen,
+ * Client -> Server: Steuerung. action 0 = fliegen (Blickrichtung, Schub -1/0/1, senkrecht -1/0/1), 1 = landen,
  * 2 = Steuer übernehmen/abgeben, 3 = vom Schiff gefallen (absteigen).
  */
-public record ShipControlMessage(int action, float yaw, float pitch, int throttle) {
+public record ShipControlMessage(int action, float yaw, float pitch, int throttle, int vertical) {
+    public ShipControlMessage(int action, float yaw, float pitch, int throttle) {
+        this(action, yaw, pitch, throttle, 0);
+    }
+
     public static final StreamCodec<RegistryFriendlyByteBuf, ShipControlMessage> STREAM_CODEC = StreamCodec.ofMember(
         (msg, buf) -> {
             buf.writeByte(msg.action());
             buf.writeFloat(msg.yaw());
             buf.writeFloat(msg.pitch());
             buf.writeByte(msg.throttle());
+            buf.writeByte(msg.vertical());
         },
-        buf -> new ShipControlMessage(buf.readByte(), buf.readFloat(), buf.readFloat(), buf.readByte()));
+        buf -> new ShipControlMessage(buf.readByte(), buf.readFloat(), buf.readFloat(), buf.readByte(), buf.readByte()));
 
     public static void handle(ShipControlMessage msg, CustomPayloadEvent.Context ctx) {
         ServerPlayer player = ctx.getSender();
@@ -27,7 +32,7 @@ public record ShipControlMessage(int action, float yaw, float pitch, int throttl
             case 1 -> ship.land(player);
             case 2 -> ship.toggleHelm(player);
             case 3 -> player.stopRiding();
-            default -> ship.control(player, msg.yaw(), msg.pitch(), msg.throttle());
+            default -> ship.control(player, msg.yaw(), msg.pitch(), msg.throttle(), msg.vertical());
         }
     }
 }

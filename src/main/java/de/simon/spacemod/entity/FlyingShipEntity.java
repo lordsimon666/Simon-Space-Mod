@@ -60,6 +60,10 @@ public class FlyingShipEntity extends Entity {
     // letzte Steuerbefehle des Piloten
     private float targetYaw, targetPitch;
     private int throttle; // -1, 0, 1
+    private int vertical; // -1, 0, 1 (senkrecht schieben)
+    /** Trägheitsdämpfer: eingestellte und tatsächlich laufende Stufe (0..10), Lage der Steuerungen im Schiff. */
+    private int damperLevel = de.simon.spacemod.flight.ShipPhysics.DEFAULT_DAMPER;
+    private java.util.List<BlockPos> damperBlocks;
     private int controlAge = 100;
     private double lastPower = 1;
     /** Letzte Flugrichtung (für den Rückstoß bei Kollisionen). */
@@ -421,11 +425,12 @@ public class FlyingShipEntity extends Entity {
     }
 
     /** Steuerbefehle des Piloten (Fadenkreuz-Richtung, Schub vor/zurück). */
-    public void control(Player player, float yaw, float pitch, int throttle) {
+    public void control(Player player, float yaw, float pitch, int throttle, int vertical) {
         if (!isPilot(player)) return;
         targetYaw = yaw;
         targetPitch = Math.max(-80, Math.min(80, pitch));
         this.throttle = Integer.signum(throttle);
+        this.vertical = Integer.signum(vertical);
         controlAge = 0;
     }
 
@@ -704,11 +709,11 @@ public class FlyingShipEntity extends Entity {
         }
         ServerLevel level = (ServerLevel) level();
         if (structure == null) { discard(); return; }
-        if (++controlAge > 10 || pilot == null) throttle = 0;
+        if (++controlAge > 10 || pilot == null) { throttle = 0; vertical = 0; }
 
         // Strom: Antriebe brauchen Energie, wenn sie schieben oder drehen
         double turnDemand = pilot == null ? 0 : Math.min(1, (Math.abs(ShipPhysics.wrap(targetYaw - yaw())) + Math.abs(targetPitch - pitch())) / 30);
-        double demand = structure.engines * ShipPhysics.RF_PER_ENGINE * Math.max(Math.abs(throttle), turnDemand);
+        double demand = structure.engines * ShipPhysics.RF_PER_ENGINE * Math.max(Math.max(Math.abs(throttle), Math.abs(vertical)), turnDemand);
         ServerLevel sy = shipyard();
         if (plot < 0 && sy != null) moveToShipyard(); // Schiff aus einer älteren Version
         if (plot >= 0 && sy != null) {
@@ -724,6 +729,7 @@ public class FlyingShipEntity extends Entity {
             } else if (tickCount % 10 == 0) {
                 lastPower = grid.hasPower(sy) ? 1 : 0;
             }
+            damperLevel = damper(sy, grid);
             syncBlocks(sy);
             if (tickCount % 10 == 0) {
                 var changed = blockEntityData(false);
@@ -754,11 +760,10 @@ public class FlyingShipEntity extends Entity {
         double[] rp = ShipPhysics.turn(pitch(), pitchRate, tp, alpha);
         float newYaw = (float) ry[0], newPitch = (float) Math.max(-80, Math.min(80, rp[0]));
 
-        // Schub entlang des Bugs, sonst Trägheitsdämpfer
+        // Schub entlang des Bugs und senkrecht, in allen übrigen Richtungen bremsen die Trägheitsdämpfer
         double accel = ShipPhysics.acceleration(structure.engines, structure.mass(), lastPower);
-        Vec3 v = velocity;
-        if (throttle != 0) v = v.add(ShipPhysics.forward(newYaw, newPitch).scale(throttle * accel));
-        else v = v.scale(ShipPhysics.DAMPING);
+        Vec3 v = ShipPhysics.velocity(velocity, ShipPhysics.forward(newYaw, newPitch), throttle, vertical, accel,
+            ShipPhysics.damperDecay(damperLevel));
         if (v.length() > ShipPhysics.MAX_SPEED) v = v.normalize().scale(ShipPhysics.MAX_SPEED);
         if (v.lengthSqr() < 1e-6) v = Vec3.ZERO;
 
@@ -807,8 +812,33 @@ public class FlyingShipEntity extends Entity {
 
         if (tickCount % 10 == 0 && pilot != null && level.getPlayerByUUID(pilot) instanceof ServerPlayer p)
             p.sendOverlayMessage(Component.translatable("message.simonspacemod.ship.hud",
-                String.format("%.1f", velocity.length() * 20), throttle > 0 ? ">" : throttle < 0 ? "<" : "–",
-                (int) Math.round(lastPower * 100), structure.engines, structure.blocks.size()));
+                String.format("%.1f", velocity.length() * 20),
+                (throttle > 0 ? ">" : throttle < 0 ? "<" : "–") + (vertical > 0 ? "↑" : vertical < 0 ? "↓" : ""),
+                (int) Math.round(lastPower * 100), structure.engines, structure.blocks.size(), damperLevel * 10));
+    }
+
+    /**
+     * Stufe der Trägheitsdämpfer: die höchste eingestellte Steuerung im Schiff (ohne Steuerung 10 %). Über 10 %
+     * kostet Strom aus dem Bordnetz (Gruppe Antrieb), aber nur, solange das Schiff sich bewegt; reicht er nicht,
+     * arbeiten die Dämpfer mit 10 %.
+     */
+    private int damper(ServerLevel sy, de.simon.spacemod.power.ShipPower.Grid grid) {
+        if (damperBlocks == null) {
+            damperBlocks = new java.util.ArrayList<>();
+            for (ShipStructure.Entry e : structure.blocks)
+                if (e.state().getBlock() instanceof de.simon.spacemod.flight.InertialDamperBlock) damperBlocks.add(e.pos());
+        }
+        int level = -1;
+        for (BlockPos p : damperBlocks) {
+            BlockState st = sy.getBlockState(plotOrigin().offset(p));
+            if (st.getBlock() instanceof de.simon.spacemod.flight.InertialDamperBlock)
+                level = Math.max(level, st.getValue(de.simon.spacemod.flight.InertialDamperBlock.LEVEL));
+        }
+        if (level < 0) return ShipPhysics.DEFAULT_DAMPER;
+        int cost = ShipPhysics.damperCost(level);
+        if (cost == 0 || velocity.lengthSqr() < 1e-6) return level;
+        int got = de.simon.spacemod.power.ShipPower.draw(sy, grid, cost, de.simon.spacemod.power.ShipPower.Category.ENGINES);
+        return got >= cost ? level : Math.min(level, ShipPhysics.DEFAULT_DAMPER);
     }
 
     private void updateBox() {

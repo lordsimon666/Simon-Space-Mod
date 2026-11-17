@@ -101,6 +101,9 @@ DE = {
     "entry.flying": "Fliegen",
     "flying.1": "H übernimmt das Steuer. Das Schiff dreht sich zum Fadenkreuz, W gibt Schub, S bremst, L landet, Shift gibt das Steuer ab. "
                 "Jeder Impulsantrieb gibt Schub und braucht 2000 FE/t aus dem Bordnetz. Mehr Antriebe beschleunigen schneller, große Schiffe sind träger.",
+    "flying.3": "Leertaste schiebt das Schiff senkrecht nach oben, Strg nach unten. Die Trägheitsdämpfer bremsen jede Richtung, in der gerade kein Schub läuft. "
+                "Ohne Steuerung arbeiten sie mit 10 % und kosten nichts. Mit der Trägheitsdämpfer-Steuerung stellst du sie auf 0 bis 100 % "
+                "(Rechtsklick +10 %, Schleichen + Rechtsklick −10 %); 100 % bremsen das Schiff in etwa einer Sekunde und kosten 1000 FE/t.",
     "flying.2": "Das Schiff behält seinen Schwung, wie im echten All. Landen geht nur langsam und fast waagerecht. Dann wird es wieder zu Blöcken, alle Kisten behalten ihren Inhalt.",
     "entry.aboard": "An Bord",
     "aboard.1": "Im fliegenden Schiff läufst du ganz normal herum. Die Schwerkraft zeigt immer zum Schiffsboden, und die Sicht dreht sich mit dem Schiff. "
@@ -282,6 +285,9 @@ EN = {
     "entry.flying": "Flying",
     "flying.1": "H takes the helm. The ship turns towards the crosshair, W gives thrust, S brakes, L lands, Shift leaves the helm. "
                 "Each impulse engine gives thrust and needs 2000 FE/t from the grid. More engines accelerate faster, big ships are more sluggish.",
+    "flying.3": "Space pushes the ship straight up, Ctrl straight down. The inertial dampers brake every direction without thrust. "
+                "Without a control they run at 10% for free. The inertial damper control sets them from 0 to 100% "
+                "(right-click +10%, sneak + right-click −10%); 100% stops the ship in about a second and costs 1000 FE/t.",
     "flying.2": "The ship keeps its momentum, like in real space. Landing only works slowly and nearly level. Then it turns back into blocks and all chests keep their contents.",
     "entry.aboard": "On Board",
     "aboard.1": "You walk around a flying ship as usual. Gravity always points to the ship's floor, and your view turns with the ship. "

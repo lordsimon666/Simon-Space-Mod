@@ -33,7 +33,7 @@ public final class TabOrder {
             || p.equals("rifle_rack") || p.equals("phaser_holder")) return 4;                                  // Waffen
         if (p.startsWith("crate") || p.startsWith("stack_upgrade")) return 5;                                  // Lagerung
         if (p.startsWith("transporter")) return 7;                                                             // Transporter (auch Konsole)
-        if (p.equals("ship_helm") || p.contains("helm") || p.contains("captains_chair") || p.startsWith("station_chair")
+        if (p.equals("ship_helm") || p.contains("helm") || p.equals("inertial_damper") || p.contains("captains_chair") || p.startsWith("station_chair")
             || p.contains("console") || p.equals("viewscreen") || p.equals("msd_display") || p.equals("lcars_panel")
             || p.equals("bridge_station") || p.equals("bridge_monitor") || p.equals("excelsior_display") || p.equals("star_map")
             || p.equals("situation_table") || p.equals("alarm_light")) return 6;                               // Steuerung & Brücke

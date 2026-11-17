@@ -80,7 +80,8 @@ public final class GuideBook {
             entry("battery", "battery", text("battery.1"), crafting("assembly:battery"), crafting("assembly:charging_station")))),
         new Category("ships", "ship_helm", List.of(
             entry("own_ship", "ship_helm", text("own_ship.1"), text("own_ship.2"), crafting("assembly:ship_helm")),
-            entry("flying", "impulse_engine", text("flying.1"), text("flying.2"), crafting("assembly:impulse_engine")),
+            entry("flying", "impulse_engine", text("flying.1"), text("flying.2"), crafting("assembly:impulse_engine"), text("flying.3"),
+                crafting("assembly:inertial_damper")),
             entry("aboard", "station_chair", text("aboard.1"), text("aboard.2")),
             entry("airlock", "airlock", text("airlock.1"), crafting("assembly:airlock"), crafting("assembly:airlock_small")),
             entry("space", "space_suit", text("space.1"), text("space.2")),

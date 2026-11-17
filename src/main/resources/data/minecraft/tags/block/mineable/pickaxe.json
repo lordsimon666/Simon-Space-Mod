@@ -141,6 +141,7 @@
     "simonspacemod:mining_laser",
     "simonspacemod:laser_focus",
     "simonspacemod:mining_laser_control",
+    "simonspacemod:inertial_damper",
     "simonspacemod:base_shield_tos",
     "simonspacemod:base_shield_refit",
     "simonspacemod:base_shield_excelsior",

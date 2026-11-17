@@ -423,13 +423,22 @@ klicke sie mit der rechten Maustaste an:
   Flug um (Leertaste hoch, Shift runter); landen beendet ihn.
 * Das Schiff wird weich bewegt (wie Boote), es ruckelt im Flug nicht mehr vor und zurück.
 * **Steuer**: **H** übernimmt das Steuer (an der Konsole) bzw. gibt es ab; auch **Shift** gibt das Steuer ab (man bleibt im Schiff stehen, Shift wirft einen nie aus dem Schiff). Am Steuer dreht sich das
-  Schiff zum **Fadenkreuz** (Gieren und Nicken), **W** gibt Schub, **S** bremst bzw. fährt rückwärts,
+  Schiff zum **Fadenkreuz** (Gieren und Nicken), **W** gibt Schub, **S** bremst bzw. fährt rückwärts, **Leertaste/Strg** schieben hoch/runter,
   **L** landet. **Shift** steigt aus, Rechtsklick auf das fliegende Schiff steigt wieder ein.
 * **Antrieb**: jeder **Impulsantrieb**-Block im Schiff gibt Schub, ohne Impulsantrieb hebt es nicht
   ab. Beschleunigung = Schub / Masse (1 je Block) – mehr Antriebe, schneller; größere Schiffe,
   träger. Höchstgeschwindigkeit 60 m/s.
+* **Senkrecht schieben** (am Steuer): **Leertaste** schiebt das Schiff gerade nach oben, **Strg** gerade
+  nach unten – unabhängig davon, wohin der Bug zeigt. Braucht Strom wie der Schub nach vorn.
+* **Trägheitsdämpfer**: bremsen jede Richtung, in der gerade kein Schub läuft (auch das seitliche Rutschen
+  beim Kurvenflug). Ohne Steuerung arbeiten sie mit **10 %** und kosten nichts (das Schiff bremst gut dreimal
+  so stark wie früher). Die **Trägheitsdämpfer-Steuerung** (Schiffsteil-Fertigung) stellt sie auf **0 bis
+  100 %**: Rechtsklick +10 %, Schleichen + Rechtsklick −10 %. Über 10 % kosten sie Strom aus dem Bordnetz
+  (Gruppe Antrieb), linear bis **1000 FE/t bei 100 %** – aber nur, solange das Schiff sich bewegt. Bei 100 %
+  steht das Schiff aus voller Fahrt in etwa einer Sekunde. Reicht der Strom nicht, arbeiten sie mit 10 %.
+  Sind mehrere Steuerungen im Schiff, gilt die höchste Einstellung. Die Anzeige über der Hotbar zeigt die Stufe.
 * **Massenträgheit**: das Schiff behält seinen Schwung; ohne Schub bremsen nur die
-  Trägheitsdämpfer langsam ab. Drehen hängt vom Trägheitsmoment ab (wie weit die Blöcke vom
+  Trägheitsdämpfer ab. Drehen hängt vom Trägheitsmoment ab (wie weit die Blöcke vom
   Schwerpunkt entfernt sind) – lange Schiffe drehen langsamer an und bremsen die Drehung vor dem Ziel
   rechtzeitig ab.
 * **Strom**: Schub und Drehen brauchen 2000 RF/t je Antrieb aus dem Bordnetz – **Warpkerne**,

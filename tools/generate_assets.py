@@ -3315,6 +3315,31 @@ def storage_mining_assets(de, en):
         f"facing={d}": dict({"model": b("mining_laser_control")}, **({"y": r} if r else {})) for d, r in rot.items()}})
     write_json(os.path.join(ASSETS, "items", "mining_laser_control.json"), item_def(b("mining_laser_control")))
     write_json(os.path.join(DATA, "loot_table", "blocks", "mining_laser_control.json"), loot("mining_laser_control"))
+    # Trägheitsdämpfer-Steuerung: Front mit Skala (blaue Balken) und Drehregler
+    front = noise(new((62, 68, 84)), 4, 977)
+    fp = front.load()
+    for i in range(16):
+        fp[i, 0] = fp[i, 15] = fp[0, i] = fp[15, i] = (36, 40, 50, 255)
+    for x in range(2, 14):
+        for y in range(2, 8):
+            fp[x, y] = (14, 20, 34, 255)
+    for i, x in enumerate(range(3, 13)):                               # Skala 10 % ... 100 %
+        h = 1 + i // 2
+        for y in range(7 - h, 7):
+            fp[x, y] = (80, 170, 255, 255) if i < 7 else (255, 170, 60, 255)
+    for x in range(5, 11):                                              # Drehregler
+        for y in range(9, 14):
+            if (x - 7.5) ** 2 + (y - 11) ** 2 <= 6.5:
+                fp[x, y] = (150, 156, 170, 255)
+    fp[7, 10] = fp[8, 10] = fp[8, 9] = (40, 44, 54, 255)
+    save(front, "inertial_damper_front")
+    write_json(os.path.join(ASSETS, "models", "block", "inertial_damper.json"), {"parent": "minecraft:block/orientable",
+        "textures": {"front": b("inertial_damper_front"), "side": b("mining_laser_side"), "top": b("mining_laser_top")}})
+    write_json(os.path.join(ASSETS, "blockstates", "inertial_damper.json"), {"variants": {
+        f"facing={d},level={l}": dict({"model": b("inertial_damper")}, **({"y": r} if r else {}))
+        for d, r in rot.items() for l in range(11)}})
+    write_json(os.path.join(ASSETS, "items", "inertial_damper.json"), item_def(b("inertial_damper")))
+    write_json(os.path.join(DATA, "loot_table", "blocks", "inertial_damper.json"), loot("inertial_damper"))
     write_json(os.path.join(ASSETS, "items", "mining_laser.json"), item_def(b("mining_laser")))
     write_json(os.path.join(DATA, "loot_table", "blocks", "mining_laser.json"), loot("mining_laser"))
     de.update({
@@ -3326,6 +3351,8 @@ def storage_mining_assets(de, en):
         f"gui.{M}.mining.stopped": "Ausgeschaltet",
         f"gui.{M}.mining.blocked": "Schiffsblock im Weg (Laserfokus nutzen)",
         f"block.{M}.laser_focus": "Laserfokus", f"block.{M}.mining_laser_control": "Laser-Steuerkonsole",
+        f"block.{M}.inertial_damper": "Trägheitsdämpfer-Steuerung",
+        f"message.{M}.damper.level": "Trägheitsdämpfer: %s %% (%s FE/t)",
         f"message.{M}.laser_control.on": "%s Bergbaulaser eingeschaltet",
         f"message.{M}.laser_control.off": "%s Bergbaulaser ausgeschaltet",
         f"message.{M}.laser_control.none": "Keine Bergbaulaser mit dieser Konsole verbunden",
@@ -3341,6 +3368,8 @@ def storage_mining_assets(de, en):
         f"gui.{M}.mining.stopped": "Switched off",
         f"gui.{M}.mining.blocked": "Ship block in the way (use a laser focus)",
         f"block.{M}.laser_focus": "Laser Focus", f"block.{M}.mining_laser_control": "Laser Control Console",
+        f"block.{M}.inertial_damper": "Inertial Damper Control",
+        f"message.{M}.damper.level": "Inertial dampers: %s%% (%s FE/t)",
         f"message.{M}.laser_control.on": "%s mining lasers switched on",
         f"message.{M}.laser_control.off": "%s mining lasers switched off",
         f"message.{M}.laser_control.none": "No mining lasers connected to this console",
@@ -4483,7 +4512,7 @@ def main():
     models_extra += ["ceiling_light", "dual_wall", "dual_floor", "uranium_ore", "deepslate_uranium_ore", "reactor_casing",
                      "reactor_glass", "reactor_controller", "ship_helm", "airlock", "airlock_small", "dilithium_ore",
                      "antimatter_cluster", "deuterium_ice", "ship_part_assembly",
-                     "power_console", "shield_console", "alarm_light", "battery", "hull_glass", "mining_laser", "laser_focus", "mining_laser_control"] + [f"base_shield_{k}" for k in ("tos", "refit", "excelsior", "c", "d", "e", "f")] + [f"crate_{t[0]}" for t in CRATE_TIERS if t[0] != "wood"] + [f"shield_emitter_{k}" for k in ("tos", "refit", "excelsior", "c", "d", "e", "f")]
+                     "power_console", "shield_console", "alarm_light", "battery", "hull_glass", "mining_laser", "laser_focus", "mining_laser_control", "inertial_damper"] + [f"base_shield_{k}" for k in ("tos", "refit", "excelsior", "c", "d", "e", "f")] + [f"crate_{t[0]}" for t in CRATE_TIERS if t[0] != "wood"] + [f"shield_emitter_{k}" for k in ("tos", "refit", "excelsior", "c", "d", "e", "f")]
     models_extra += [f"door_{e}_{k}" for e in DOOR_ERAS for k in DOOR_KINDS]
     # Mit der Spitzhacke abbaubar
     write_json(os.path.join(ROOT, "data", "minecraft", "tags", "block", "mineable", "pickaxe.json"),
@@ -4604,7 +4633,7 @@ def main():
         f"message.{MODID}.ship.helm_taken": "Jemand anderes steuert gerade.",
         f"message.{MODID}.ship.helm_far": "Dafür musst du an der Steuerkonsole stehen.",
         f"message.{MODID}.ship.helm_needed": "Landen kann nur, wer am Steuer steht (H).",
-        f"message.{MODID}.ship.hud": "%s m/s  Schub %s  Energie %s%%  Antriebe %s  Masse %s",
+        f"message.{MODID}.ship.hud": "%s m/s  Schub %s  Energie %s%%  Antriebe %s  Masse %s  Dämpfer %s%%",
         f"message.{MODID}.ship.too_big": "Zu groß: %s Blöcke, erlaubt sind %s – %s Blöcke zu viel. (Spielregel simonspacemod:max_ship_blocks)",
         f"message.{MODID}.ship.no_engine": "Kein Impulsantrieb in der Struktur – das Schiff kann sich nicht bewegen.",
         f"message.{MODID}.ship.too_fast": "Zu schnell zum Landen – erst abbremsen (S).",
@@ -4624,7 +4653,7 @@ def main():
         f"message.{MODID}.ship.helm_taken": "Someone else is at the helm.",
         f"message.{MODID}.ship.helm_far": "You need to stand at the helm console.",
         f"message.{MODID}.ship.helm_needed": "Only the person at the helm can land (H).",
-        f"message.{MODID}.ship.hud": "%s m/s  thrust %s  power %s%%  engines %s  mass %s",
+        f"message.{MODID}.ship.hud": "%s m/s  thrust %s  power %s%%  engines %s  mass %s  dampers %s%%",
         f"message.{MODID}.ship.too_big": "Too large: %s blocks, %s allowed – %s blocks too many. (game rule simonspacemod:max_ship_blocks)",
         f"message.{MODID}.ship.no_engine": "No impulse engine in the structure – the ship cannot move.",
         f"message.{MODID}.ship.too_fast": "Too fast to land – brake first (S).",
