@@ -746,6 +746,26 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
   Schiffsteil-Fertigung mit Deuterium, Dilithium und Eisenblöcken, Gold oder Diamanten die Warpkerne (NX-01, Originalserie, Next
   Generation, Enterprise-E – je neuer, desto aufwendiger, aber stärker).
 
+### Kameras und Bildschirme
+
+* **Kamera** (Schiffsteil-Fertigung): schaut von der Seite weg, an die man sie setzt (an der Wand nach vorn,
+  unter der Decke nach unten). **Bildschirm**: zeigt das Live-Bild einer Kamera derselben Struktur (über
+  Blöcke der Mod verbunden – im Schiff also alle Kameras an Bord).
+* **Große Bildflächen**: Bildschirme, die nebeneinander/übereinander in einer Ebene sitzen und in dieselbe
+  Richtung zeigen, werden zu **einer** Bildfläche, wenn sie ein volles Rechteck von **1×1 bis 16×16** bilden
+  (sonst zeigt jeder Block für sich).
+* **Rechtsklick auf einen Bildschirm** öffnet die **Liste aller Kameras** der Struktur (mit Entfernung und
+  Blickrichtung); ein Klick wählt eine, „Kein Bild“ schaltet ab. Dort lässt sich der Bildschirm auch zum
+  **Hauptbildschirm** machen (einer je Struktur).
+* **Am Steuer**: **Rechtsklick** schaltet den Hauptbildschirm zur nächsten Kamera; **V** wechselt zwischen
+  **Ich-Sicht** und **Rückansicht** des Schiffs (5 Blöcke schräg hinter und über dem Schiff, Blick über das
+  Schiff nach vorn).
+* **Live-Bild**: der Client tastet die Welt von der Kamera aus mit Strahlen ab und malt Blockfarben mit Licht,
+  Schattierung und Entfernungsnebel, dazu Spieler und Kreaturen als Farbflächen sowie Himmel bzw. Sterne
+  (Reichweite 96 Blöcke, Blickwinkel 70°). Es ist also ein vereinfachtes, eher grobes Bild (bis 128 Bildpunkte
+  auf der langen Seite, 8–32 je Block) – kein zweites vollständiges Minecraft-Bild. Es wird mehrmals pro
+  Sekunde erneuert und funktioniert auch im fliegenden Schiff (andere fliegende Schiffe sieht die Kamera nicht).
+
 ### Warpantrieb
 
 * **Warp-Menü**: am Steuer eines eigenen fliegenden Schiffs **J** drücken. Dort gibt man **Zielkoordinaten**

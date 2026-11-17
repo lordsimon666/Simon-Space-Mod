@@ -119,6 +119,12 @@ public final class ClientCamera {
         triggerDown = want;
         boolean mode = false;
         while (WEAPON_MODE.consumeClick()) mode = true;
+        boolean atHelm = player != null && player.getVehicle() instanceof de.simon.spacemod.entity.FlyingShipEntity ps && ps.isPilotEntity(player);
+        if (!atHelm) ShipView.rearView = false;
+        if (mode && atHelm && mc.gui.screen() == null) { // am Steuer: V wechselt Ich-Sicht / Rückansicht des Schiffs
+            ShipView.rearView = !ShipView.rearView;
+            mode = false;
+        }
         if (mode && player != null && mc.gui.screen() == null
             && (player.getMainHandItem().getItem() instanceof de.simon.spacemod.item.HandWeaponItem
                 || player.getOffhandItem().getItem() instanceof de.simon.spacemod.item.HandWeaponItem))

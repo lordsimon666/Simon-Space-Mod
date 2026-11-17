@@ -3340,6 +3340,49 @@ def storage_mining_assets(de, en):
         for d, r in rot.items() for l in range(11)}})
     write_json(os.path.join(ASSETS, "items", "inertial_damper.json"), item_def(b("inertial_damper")))
     write_json(os.path.join(DATA, "loot_table", "blocks", "inertial_damper.json"), loot("inertial_damper"))
+    # Kamera: graues Gehäuse, vorne Objektiv
+    side = noise(new((150, 154, 160)), 4, 1201)
+    sp_ = side.load()
+    for i in range(16):
+        sp_[i, 0] = sp_[i, 15] = sp_[0, i] = sp_[15, i] = (90, 94, 102, 255)
+    save(side, "camera_side")
+    lens = side.copy()
+    lp = lens.load()
+    for x in range(16):
+        for y in range(16):
+            d = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** 0.5
+            if d <= 5.5:
+                lp[x, y] = (30, 34, 44, 255)
+            if d <= 3.6:
+                lp[x, y] = (40, 70, 130, 255)
+            if d <= 1.6:
+                lp[x, y] = (150, 200, 255, 255)
+    lp[11, 3] = lp[12, 3] = (230, 40, 40, 255)                          # Aufnahme-Lämpchen
+    save(lens, "camera_lens")
+    write_json(os.path.join(ASSETS, "models", "block", "camera.json"), {"parent": "minecraft:block/orientable",
+        "textures": {"front": b("camera_lens"), "side": b("camera_side"), "top": b("camera_side")}})
+    write_json(os.path.join(ASSETS, "models", "block", "camera_vertical.json"), {"parent": "minecraft:block/orientable_vertical",
+        "textures": {"front": b("camera_lens"), "side": b("camera_side")}})
+    cam_var = {f"facing={d}": dict({"model": b("camera")}, **({"y": r} if r else {})) for d, r in rot.items()}
+    cam_var["facing=up"] = {"model": b("camera_vertical")}
+    cam_var["facing=down"] = {"model": b("camera_vertical"), "x": 180}
+    write_json(os.path.join(ASSETS, "blockstates", "camera.json"), {"variants": cam_var})
+    write_json(os.path.join(ASSETS, "items", "camera.json"), item_def(b("camera")))
+    write_json(os.path.join(DATA, "loot_table", "blocks", "camera.json"), loot("camera"))
+    # Bildschirm: schmaler dunkler Rahmen, vorne schwarzes Glas (das Live-Bild liegt darüber)
+    bez = noise(new((44, 46, 52)), 3, 1301)
+    save(bez, "display_side")
+    front = new((10, 12, 16))
+    fp = front.load()
+    for i in range(16):
+        fp[i, 0] = fp[i, 15] = fp[0, i] = fp[15, i] = (44, 46, 52, 255)
+    save(front, "display_front")
+    write_json(os.path.join(ASSETS, "models", "block", "display.json"), {"parent": "minecraft:block/orientable",
+        "textures": {"front": b("display_front"), "side": b("display_side"), "top": b("display_side")}})
+    write_json(os.path.join(ASSETS, "blockstates", "display.json"), {"variants": {
+        f"facing={d}": dict({"model": b("display")}, **({"y": r} if r else {})) for d, r in rot.items()}})
+    write_json(os.path.join(ASSETS, "items", "display.json"), item_def(b("display")))
+    write_json(os.path.join(DATA, "loot_table", "blocks", "display.json"), loot("display"))
     write_json(os.path.join(ASSETS, "items", "mining_laser.json"), item_def(b("mining_laser")))
     write_json(os.path.join(DATA, "loot_table", "blocks", "mining_laser.json"), loot("mining_laser"))
     de.update({
@@ -3352,6 +3395,18 @@ def storage_mining_assets(de, en):
         f"gui.{M}.mining.blocked": "Schiffsblock im Weg (Laserfokus nutzen)",
         f"block.{M}.laser_focus": "Laserfokus", f"block.{M}.mining_laser_control": "Laser-Steuerkonsole",
         f"block.{M}.inertial_damper": "Trägheitsdämpfer-Steuerung",
+        f"block.{M}.camera": "Kamera", f"block.{M}.display": "Bildschirm",
+        f"gui.{M}.display.title": "Bildschirm", f"gui.{M}.display.title_size": "Bildschirm %s × %s – %s Kameras",
+        f"gui.{M}.display.camera": "Kamera %s – %s Blöcke entfernt, schaut %s",
+        f"gui.{M}.display.off": "Kein Bild (aus)", f"gui.{M}.display.none": "Keine Kamera an dieser Struktur",
+        f"gui.{M}.display.main_on": "Hauptbildschirm: an (Rechtsklick am Steuer schaltet um)",
+        f"gui.{M}.display.main_off": "Hauptbildschirm: aus",
+        f"gui.{M}.display.dir.north": "nach Norden", f"gui.{M}.display.dir.south": "nach Süden",
+        f"gui.{M}.display.dir.east": "nach Osten", f"gui.{M}.display.dir.west": "nach Westen",
+        f"gui.{M}.display.dir.up": "nach oben", f"gui.{M}.display.dir.down": "nach unten",
+        f"message.{M}.display.no_main": "Kein Hauptbildschirm im Schiff (Bildschirm-Menü: „Hauptbildschirm“)",
+        f"message.{M}.display.no_cameras": "Keine Kameras im Schiff",
+        f"message.{M}.display.camera": "Hauptbildschirm: Kamera %s von %s",
         f"gui.{M}.damper.level": "Trägheitsdämpfer: %s %%",
         f"gui.{M}.damper.free": "Kosten: keine (bis 10 % kostenlos)",
         f"gui.{M}.damper.cost": "Kosten: %s FE/t (nur in Bewegung)",
@@ -3375,6 +3430,18 @@ def storage_mining_assets(de, en):
         f"gui.{M}.mining.blocked": "Ship block in the way (use a laser focus)",
         f"block.{M}.laser_focus": "Laser Focus", f"block.{M}.mining_laser_control": "Laser Control Console",
         f"block.{M}.inertial_damper": "Inertial Damper Control",
+        f"block.{M}.camera": "Camera", f"block.{M}.display": "Display",
+        f"gui.{M}.display.title": "Display", f"gui.{M}.display.title_size": "Display %s × %s – %s cameras",
+        f"gui.{M}.display.camera": "Camera %s – %s blocks away, looking %s",
+        f"gui.{M}.display.off": "No picture (off)", f"gui.{M}.display.none": "No camera on this structure",
+        f"gui.{M}.display.main_on": "Main display: on (right-click at the helm switches)",
+        f"gui.{M}.display.main_off": "Main display: off",
+        f"gui.{M}.display.dir.north": "north", f"gui.{M}.display.dir.south": "south",
+        f"gui.{M}.display.dir.east": "east", f"gui.{M}.display.dir.west": "west",
+        f"gui.{M}.display.dir.up": "up", f"gui.{M}.display.dir.down": "down",
+        f"message.{M}.display.no_main": "No main display on the ship (display menu: \"Main display\")",
+        f"message.{M}.display.no_cameras": "No cameras on the ship",
+        f"message.{M}.display.camera": "Main display: camera %s of %s",
         f"gui.{M}.damper.level": "Inertial dampers: %s%%",
         f"gui.{M}.damper.free": "Cost: none (free up to 10%)",
         f"gui.{M}.damper.cost": "Cost: %s FE/t (only while moving)",
@@ -4524,7 +4591,7 @@ def main():
     models_extra += ["ceiling_light", "dual_wall", "dual_floor", "uranium_ore", "deepslate_uranium_ore", "reactor_casing",
                      "reactor_glass", "reactor_controller", "ship_helm", "airlock", "airlock_small", "dilithium_ore",
                      "antimatter_cluster", "deuterium_ice", "ship_part_assembly",
-                     "power_console", "shield_console", "alarm_light", "battery", "hull_glass", "mining_laser", "laser_focus", "mining_laser_control", "inertial_damper"] + [f"base_shield_{k}" for k in ("tos", "refit", "excelsior", "c", "d", "e", "f")] + [f"crate_{t[0]}" for t in CRATE_TIERS if t[0] != "wood"] + [f"shield_emitter_{k}" for k in ("tos", "refit", "excelsior", "c", "d", "e", "f")]
+                     "power_console", "shield_console", "alarm_light", "battery", "hull_glass", "mining_laser", "laser_focus", "mining_laser_control", "inertial_damper", "camera", "display"] + [f"base_shield_{k}" for k in ("tos", "refit", "excelsior", "c", "d", "e", "f")] + [f"crate_{t[0]}" for t in CRATE_TIERS if t[0] != "wood"] + [f"shield_emitter_{k}" for k in ("tos", "refit", "excelsior", "c", "d", "e", "f")]
     models_extra += [f"door_{e}_{k}" for e in DOOR_ERAS for k in DOOR_KINDS]
     # Mit der Spitzhacke abbaubar
     write_json(os.path.join(ROOT, "data", "minecraft", "tags", "block", "mineable", "pickaxe.json"),

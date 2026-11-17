@@ -132,6 +132,11 @@ public final class AssemblyRecipes {
             }
         } else if (p.equals("laser_focus")) {
             b.add(Items.IRON_INGOT, 4).add(Items.GLASS, 2).add(Items.DIAMOND, 1).add(Items.REDSTONE, 2);
+        } else if (p.equals("camera")) {
+            b.add(Items.IRON_INGOT, 2).add(Items.GLASS_PANE, 1).add(Items.REDSTONE, 2).add(Items.GOLD_INGOT, 1).add(Items.ENDER_EYE, 1);
+        } else if (p.equals("display")) {
+            b.add(Items.IRON_INGOT, 1).add(Items.GLASS_PANE, 2).add(Items.REDSTONE, 1).add(Items.GLOWSTONE_DUST, 1);
+            b.count = 2;
         } else if (p.equals("inertial_damper")) {
             b.add(Items.IRON_INGOT, 4).add(Items.REDSTONE, 4).add(Items.GOLD_INGOT, 2).add(Items.DIAMOND, 1)
                 .add(Items.GLOWSTONE_DUST, 2).add(ModBlocks.DILITHIUM_CRYSTAL.get(), 1);

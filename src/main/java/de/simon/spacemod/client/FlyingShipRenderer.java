@@ -83,6 +83,8 @@ public class FlyingShipRenderer extends EntityRenderer<FlyingShipEntity, FlyingS
         var mc = net.minecraft.client.Minecraft.getInstance();
         var disp = mc.getBlockEntityRenderDispatcher();
         Vec3 cam = mc.gameRenderer.mainCamera().position();
+        DisplayRenderer.ship = entity; // Bildschirme im Schiff: Kameralage aus dem Schiff
+        try {
         for (ShipStructure.Entry e : s.surface) {
             if (!e.state().hasBlockEntity()) continue;
             try {
@@ -100,6 +102,9 @@ public class FlyingShipRenderer extends EntityRenderer<FlyingShipEntity, FlyingS
             } catch (RuntimeException ex) {
                 // ein fehlerhafter Renderer soll das Schiff nicht unsichtbar machen
             }
+        }
+        } finally {
+            DisplayRenderer.ship = null;
         }
     }
 

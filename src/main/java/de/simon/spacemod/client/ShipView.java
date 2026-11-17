@@ -17,6 +17,8 @@ public final class ShipView {
     /** Rollwinkel der Kamera in diesem Bild (Forge setzt die Kamera danach noch einmal neu). */
     public static float roll;
     public static boolean tilted;
+    /** Am Steuer: Rückansicht des Schiffs statt Ich-Sicht (Taste V). */
+    public static boolean rearView;
     private static final Set<Object> PUSHED = Collections.newSetFromMap(new IdentityHashMap<>());
 
     private ShipView() {}

@@ -64,6 +64,10 @@ public final class TurboliftNetwork {
                         de.simon.spacemod.weapons.Triggers.Message::handle)
                     .addMain(de.simon.spacemod.space.WarpMessage.Command.class, de.simon.spacemod.space.WarpMessage.Command.STREAM_CODEC,
                         de.simon.spacemod.space.WarpMessage.Command::handle)
+                    .addMain(de.simon.spacemod.display.DisplayMessage.Choose.class, de.simon.spacemod.display.DisplayMessage.Choose.STREAM_CODEC,
+                        de.simon.spacemod.display.DisplayMessage.Choose::handle)
+                    .addMain(de.simon.spacemod.display.DisplayMessage.Cycle.class, de.simon.spacemod.display.DisplayMessage.Cycle.STREAM_CODEC,
+                        de.simon.spacemod.display.DisplayMessage.Cycle::handle)
                 .clientbound()
                     .addMain(de.simon.spacemod.weapons.CameraState.class, de.simon.spacemod.weapons.CameraState.STREAM_CODEC,
                         de.simon.spacemod.weapons.CameraState::handle)
@@ -81,6 +85,8 @@ public final class TurboliftNetwork {
                         de.simon.spacemod.defense.ShieldFlashMessage::handle)
                     .addMain(de.simon.spacemod.space.WarpMessage.Info.class, de.simon.spacemod.space.WarpMessage.Info.STREAM_CODEC,
                         de.simon.spacemod.space.WarpMessage.Info::handle)
+                    .addMain(de.simon.spacemod.display.DisplayMessage.Menu.class, de.simon.spacemod.display.DisplayMessage.Menu.STREAM_CODEC,
+                        de.simon.spacemod.display.DisplayMessage.Menu::handle)
         .build();
 
     public static void init() {

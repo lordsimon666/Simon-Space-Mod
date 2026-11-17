@@ -125,6 +125,11 @@ DE = {
     "warp.3": "Warp kostet viel Energie: 2375 × Warp² FE/t, Warp 2 schafft ein 8×8×8-Reaktor gerade so. Der Warp hat Vorrang: "
               "Andere Verbraucher werden abgeschaltet, die Trägheitsdämpfer zuletzt gedrosselt. Reicht die Erzeugung nicht, "
               "geht es gar nicht erst los oder das Schiff fällt sofort aus dem Warp. Im Warp lassen sich keine Waffen benutzen.",
+    "entry.cameras": "Kameras & Bildschirme",
+    "cameras.1": "Kameras zeigen ihr Live-Bild auf Bildschirmen derselben Struktur (über Blöcke der Mod verbunden). Eine Kamera schaut von der Seite weg, an die du sie setzt. "
+                 "Nebeneinander gesetzte Bildschirme mit gleicher Blickrichtung werden zu einer großen Bildfläche, als Rechteck von 1×1 bis 16×16.",
+    "cameras.2": "Rechtsklick auf einen Bildschirm zeigt alle Kameras der Struktur; ein Klick wählt eine aus. Dort machst du einen Bildschirm auch zum Hauptbildschirm: "
+                 "Am Steuer eines fliegenden Schiffs schaltet Rechtsklick ihn zur nächsten Kamera. V wechselt am Steuer zwischen Ich-Sicht und Rückansicht des Schiffs.",
     "entry.space_suit": "Raumanzug",
     "space_suit.1": "Mit dem Raumanzug fliegst du wie im Kreativmodus: doppelt springen schaltet den Flug ein. Fliegen kostet 20 FE pro Tick, "
                     "eine volle Ladung reicht für 10 Minuten. Geladen wird er in der Ladestation.",
@@ -318,6 +323,11 @@ EN = {
     "warp.3": "Warp costs a lot of power: 2375 × warp² FE/t, an 8×8×8 reactor just manages warp 2. Warp comes first: "
               "other consumers are switched off, the inertial dampers are throttled last. If production is not enough, "
               "the jump fails right away or the ship drops out of warp at once. Weapons cannot be used at warp.",
+    "entry.cameras": "Cameras & Displays",
+    "cameras.1": "Cameras show their live picture on displays of the same structure (connected through blocks of the mod). A camera looks away from the side you place it on. "
+                 "Displays placed next to each other facing the same way become one big screen, as a rectangle from 1×1 to 16×16.",
+    "cameras.2": "Right-click a display to see all cameras of the structure; one click picks one. There you can also make a display the main display: "
+                 "at the helm of a flying ship, right-click switches it to the next camera. V at the helm switches between first person and the rear view of the ship.",
     "entry.space_suit": "Space Suit",
     "space_suit.1": "The space suit lets you fly like in creative mode: double-jump switches flight on. Flying costs 20 FE per tick, "
                     "a full charge lasts 10 minutes. Charge it in the charging station.",

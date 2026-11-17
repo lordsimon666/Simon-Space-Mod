@@ -9,6 +9,7 @@ public final class GuideClient {
 
     /** Nur auf dem Client: 3D-Bilder der Multiblöcke und der Bauplan in der Welt. */
     public static void init() {
+        de.simon.spacemod.client.CameraFeeds.init();
         net.minecraftforge.client.event.RegisterPictureInPictureRendererEvent.BUS.addListener(e -> e.register(new StructurePictureRenderer()));
         net.minecraftforge.event.TickEvent.ClientTickEvent.Post.BUS.addListener(e -> StructurePreview.tick());
     }

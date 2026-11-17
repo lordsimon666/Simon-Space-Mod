@@ -34,6 +34,19 @@ public abstract class CameraMixin {
         ShipView.tilted = false;
         Entity e = entity;
         if (e == null || e.getVehicle() == null) return;
+        if (ShipView.rearView && e.getVehicle() instanceof FlyingShipEntity rs && rs.isPilotEntity(e)) {
+            // Rückansicht am Steuer: 5 Blöcke schräg hinter und über dem Schiff, Blick über das Schiff nach vorn
+            Quaternionf q = rs.rotation(partial);
+            Vec3 c = rs.getPosition(partial);
+            double r = rs.structure() != null ? rs.structure().radius : 4;
+            Vec3 fw = ShipPhysics.forward(rs.renderYaw(), 0), upv = ShipPhysics.rotate(q, 0, 1, 0);
+            Vec3 cam = c.subtract(fw.scale(r + 5 * 0.7071)).add(upv.scale(r * 0.5 + 5 * 0.7071));
+            Vec3 look = c.add(fw.scale(r)).subtract(cam).normalize();
+            float yaw = (float) Math.toDegrees(Math.atan2(-look.x, look.z)), pitch = (float) Math.toDegrees(-Math.asin(look.y));
+            setRotation(yaw, pitch, 0);
+            setPosition(cam);
+            return;
+        }
         FlyingShipEntity ship = FlyingShipEntity.bodyFrameOf(e);
         if (ship == null) return;
         boolean view = FlyingShipEntity.frameOf(e) != null; // am Steuer bleibt der Blick waagerecht (er lenkt das Schiff)

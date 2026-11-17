@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/orientable_vertical",
+  "textures": {
+    "front": "simonspacemod:block/camera_lens",
+    "side": "simonspacemod:block/camera_side"
+  }
+}

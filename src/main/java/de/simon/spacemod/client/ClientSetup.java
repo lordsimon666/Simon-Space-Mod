@@ -20,6 +20,7 @@ public final class ClientSetup {
         event.registerBlockEntityRenderer(ModBlocks.RIFLE_RACK_BE.get(), WeaponHolderRenderer::new);
         event.registerBlockEntityRenderer(ModBlocks.PHASER_HOLDER_BE.get(), WeaponHolderRenderer::new);
         event.registerBlockEntityRenderer(ModBlocks.CHARGING_STATION_BE.get(), WeaponHolderRenderer::new);
+        event.registerBlockEntityRenderer(ModBlocks.DISPLAY_BE.get(), DisplayRenderer::new);
     }
 
     public static void onClientSetup(FMLClientSetupEvent event) {

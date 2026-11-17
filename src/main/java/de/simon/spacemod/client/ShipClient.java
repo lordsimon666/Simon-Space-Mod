@@ -157,6 +157,12 @@ public final class ShipClient {
         if (!e.isUseItem()) return false;
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || !(mc.player.getVehicle() instanceof FlyingShipEntity ship) || ship.structure() == null) return false;
+        if (ship.isPilotEntity(mc.player)) {
+            // am Steuer: Rechtsklick schaltet den Hauptbildschirm zur nächsten Kamera
+            TurboliftNetwork.sendToServer(new de.simon.spacemod.display.DisplayMessage.Cycle());
+            e.setSwingHand(false);
+            return true;
+        }
         var q = ship.rotation(1F);
         Vec3 eye = ShipPhysics.inverse(q, mc.player.getEyePosition().subtract(ship.position()));
         Vec3 look = ShipPhysics.inverse(q, mc.player.getViewVector(1F));

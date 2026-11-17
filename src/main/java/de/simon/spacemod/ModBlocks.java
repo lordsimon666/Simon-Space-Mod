@@ -656,6 +656,14 @@ public final class ModBlocks {
         metal(MapColor.COLOR_LIGHT_GRAY).lightLevel(_ -> 3));
     public static final RegistryObject<Block> MINING_LASER_CONTROL = block("mining_laser_control",
         de.simon.spacemod.mining.MiningLaserControlBlock::new, metal(MapColor.COLOR_GRAY).lightLevel(_ -> 5));
+    /** Kamera und Bildschirm (Multiblock bis 16×16): Live-Bild der Kameras einer Struktur. */
+    public static final RegistryObject<Block> CAMERA = block("camera", de.simon.spacemod.display.CameraBlock::new,
+        metal(MapColor.COLOR_GRAY).noOcclusion());
+    public static final RegistryObject<Block> DISPLAY = block("display", de.simon.spacemod.display.DisplayBlock::new,
+        metal(MapColor.COLOR_BLACK).lightLevel(_ -> 6));
+    public static final RegistryObject<BlockEntityType<de.simon.spacemod.display.DisplayBlockEntity>> DISPLAY_BE =
+        BLOCK_ENTITIES.register("display", () -> new BlockEntityType<>(de.simon.spacemod.display.DisplayBlockEntity::new,
+            java.util.Set.of(DISPLAY.get())));
     /** Trägheitsdämpfer-Steuerung: Stärke der Bremsung fliegender Schiffe (0–100 %). */
     public static final RegistryObject<Block> INERTIAL_DAMPER = block("inertial_damper",
         de.simon.spacemod.flight.InertialDamperBlock::new, metal(MapColor.COLOR_BLUE).lightLevel(_ -> 5));

@@ -86,6 +86,7 @@ public final class GuideBook {
             entry("airlock", "airlock", text("airlock.1"), crafting("assembly:airlock"), crafting("assembly:airlock_small")),
             entry("space", "space_suit", text("space.1"), text("space.2")),
             entry("space_suit", "space_suit", text("space_suit.1"), crafting("space_suit")),
+            entry("cameras", "camera", text("cameras.1"), crafting("assembly:camera"), crafting("assembly:display"), text("cameras.2")),
             entry("warp", "nacelle_grille", text("warp.1"), text("warp.2"), crafting("assembly:bussard_collector"),
                 crafting("assembly:nacelle_grille"), text("warp.3")))),
         new Category("weapons", "quantum_launcher_dual", List.of(
