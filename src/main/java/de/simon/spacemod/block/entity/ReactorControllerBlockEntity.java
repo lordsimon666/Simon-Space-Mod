@@ -100,6 +100,13 @@ public class ReactorControllerBlockEntity extends BlockEntity {
     public int currentOutput() { return currentOutput; }
     public int energy() { return energy; }
 
+    /** Leistung, die der Reaktor liefern kann, solange er Uran hat (auch wenn er gerade pausiert, weil der Speicher voll ist). */
+    public int potentialOutput() {
+        boolean fuel = burnLeft > 0;
+        for (int i = 0; i < slots() && !fuel; i++) fuel = inventory.getItem(i).is(ModBlocks.URANIUM_INGOT.get());
+        return fuel ? ReactorMath.output(size) : 0;
+    }
+
     /** Strom entnehmen (Bordnetz, Antriebe, andere Mods). */
     public int extract(int max, boolean simulate) {
         int got = Math.min(max, energy);

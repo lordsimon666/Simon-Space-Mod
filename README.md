@@ -746,6 +746,32 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
   Schiffsteil-Fertigung mit Deuterium, Dilithium und Eisenblöcken, Gold oder Diamanten die Warpkerne (NX-01, Originalserie, Next
   Generation, Enterprise-E – je neuer, desto aufwendiger, aber stärker).
 
+### Warpantrieb
+
+* **Warp-Menü**: am Steuer eines eigenen fliegenden Schiffs **J** drücken. Dort gibt man **Zielkoordinaten**
+  (X, Y, Z), die **Warpstufe** (Schieberegler 1.0 bis 9.9) und das Ziel (**Planet** = Oberwelt oder
+  **Weltraum**) ein. Das Menü zeigt, bis zu welcher Stufe die Gondeln reichen, den Energiebedarf neben der
+  Stromerzeugung des Schiffs und die Reisezeit.
+* **Autopilot**: das Schiff springt in die **Warp-Dimension** (dunkelblau, Lichtstreifen ziehen vorbei),
+  fliegt selbst in Richtung Ziel und verlässt den Warp an den Koordinaten. Steht dort etwas im Weg, kommt
+  es so weit darüber heraus, bis es frei ist.
+* **Manuell**: das Schiff springt in den Warp und man fliegt selbst; volle Impulsfahrt entspricht der
+  Warpgeschwindigkeit. **Pfeil hoch/runter** schalten die Stufe (Warp 1, 2 … 9, 9.9), unter Warp 1 – oder mit
+  „Warp verlassen“ im Menü – fällt man an der erreichten Stelle zurück in die Ausgangsdimension.
+* **Geschwindigkeit**: 5 × Warp^(10/3) Blöcke je Tick – Warp 1 = 100 Blöcke/s, Warp 2 ≈ 1000, Warp 5 ≈ 4300,
+  Warp 9.9 ≈ 208 000 Blöcke/s.
+* **Energie**: 2375 × Warp² FE/t (Warp 1 = 2375, Warp 2 = 9500, Warp 5 = 59 375, Warp 9.9 ≈ 233 000).
+  **Warp 2 schafft ein 8×8×8-Kernreaktor gerade so.** Gezählt wird die Erzeugung (Warpkerne mit Overdrive,
+  Reaktoren mit Uran, Generatoren anderer Mods), keine Speicher. Reicht sie nicht, gibt es **sofort einen
+  Fehler** – bzw. im Warp fällt das Schiff sofort heraus. Der Warp hat **Vorrang**: andere Verbraucher
+  (Waffen, Schilde, Licht, Maschinen) bekommen nur, was übrig bleibt; die **Trägheitsdämpfer werden als
+  Letztes gedrosselt**. Die Impulsantriebe kosten im Warp nichts extra.
+* **Warpgondeln**: eine Gondel besteht aus mindestens **1 Bussard-Kollektor und 2 Gondelgittern** (die blauen
+  Gondelblöcke), höchstens 3 Blöcke voneinander entfernt. **Eine Gondel: bis Warp 5. Zwei Gondeln: bis
+  Warp 9.9** – aber nur, wenn ihre Mitten **mindestens 10 Blöcke** auseinanderliegen. Schneller als 9.9 geht
+  es nicht.
+* Wer im Warp vom Schiff fällt, landet mit Sanftem Fall in der Oberwelt.
+
 ### Kernreaktor (Multiblock) und Uran
 
 * **Uranerz** (und Tiefenschiefer-Uranerz) kommt in der Oberwelt auf der Höhe von Lapislazuli vor

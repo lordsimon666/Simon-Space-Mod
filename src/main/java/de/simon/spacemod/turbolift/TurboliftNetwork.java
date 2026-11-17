@@ -62,6 +62,8 @@ public final class TurboliftNetwork {
                         de.simon.spacemod.transporter.TransporterChoiceMessage::handle)
                     .addMain(de.simon.spacemod.weapons.Triggers.Message.class, de.simon.spacemod.weapons.Triggers.Message.STREAM_CODEC,
                         de.simon.spacemod.weapons.Triggers.Message::handle)
+                    .addMain(de.simon.spacemod.space.WarpMessage.Command.class, de.simon.spacemod.space.WarpMessage.Command.STREAM_CODEC,
+                        de.simon.spacemod.space.WarpMessage.Command::handle)
                 .clientbound()
                     .addMain(de.simon.spacemod.weapons.CameraState.class, de.simon.spacemod.weapons.CameraState.STREAM_CODEC,
                         de.simon.spacemod.weapons.CameraState::handle)
@@ -77,6 +79,8 @@ public final class TurboliftNetwork {
                         de.simon.spacemod.transporter.TransporterMenuMessage::handle)
                     .addMain(de.simon.spacemod.defense.ShieldFlashMessage.class, de.simon.spacemod.defense.ShieldFlashMessage.STREAM_CODEC,
                         de.simon.spacemod.defense.ShieldFlashMessage::handle)
+                    .addMain(de.simon.spacemod.space.WarpMessage.Info.class, de.simon.spacemod.space.WarpMessage.Info.STREAM_CODEC,
+                        de.simon.spacemod.space.WarpMessage.Info::handle)
         .build();
 
     public static void init() {

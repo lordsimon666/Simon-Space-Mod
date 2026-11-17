@@ -22,6 +22,9 @@ import org.lwjgl.glfw.GLFW;
 public final class ShipClient {
     public static final KeyMapping LAND = new KeyMapping("key.simonspacemod.ship_land", GLFW.GLFW_KEY_L, ClientCamera.CATEGORY);
     public static final KeyMapping HELM = new KeyMapping("key.simonspacemod.ship_helm", GLFW.GLFW_KEY_H, ClientCamera.CATEGORY);
+    public static final KeyMapping WARP_MENU = new KeyMapping("key.simonspacemod.warp_menu", GLFW.GLFW_KEY_J, ClientCamera.CATEGORY);
+    public static final KeyMapping WARP_UP = new KeyMapping("key.simonspacemod.warp_up", GLFW.GLFW_KEY_UP, ClientCamera.CATEGORY);
+    public static final KeyMapping WARP_DOWN = new KeyMapping("key.simonspacemod.warp_down", GLFW.GLFW_KEY_DOWN, ClientCamera.CATEGORY);
 
     private static ShipWalker.State walk;
     private static int walkShip = -1;
@@ -51,6 +54,9 @@ public final class ShipClient {
         RegisterKeyMappingsEvent.BUS.addListener(e -> {
             e.register(LAND);
             e.register(HELM);
+            e.register(WARP_MENU);
+            e.register(WARP_UP);
+            e.register(WARP_DOWN);
         });
         TickEvent.ClientTickEvent.Post.BUS.addListener(e -> tick());
         net.minecraftforge.client.event.InputEvent.InteractionKeyMappingTriggered.BUS.addListener(ShipClient::onUse);
@@ -59,6 +65,7 @@ public final class ShipClient {
     private static void tick() {
         Minecraft mc = Minecraft.getInstance();
         ShipView.followYaw(mc);
+        warpStreaks(mc);
         if (mc.player == null || !(mc.player.getVehicle() instanceof FlyingShipEntity ship)) {
             walk = null;
             return;
@@ -73,6 +80,10 @@ public final class ShipClient {
                 TurboliftNetwork.sendToServer(new ShipControlMessage(2, 0, 0, 0));
                 return;
             }
+            // Warp: J öffnet das Menü, Pfeil hoch/runter schalten die Stufe
+            while (WARP_MENU.consumeClick()) TurboliftNetwork.sendToServer(new de.simon.spacemod.space.WarpMessage.Command(0, 0, 0, 0, 0, false));
+            while (WARP_UP.consumeClick()) TurboliftNetwork.sendToServer(new de.simon.spacemod.space.WarpMessage.Command(4, 0, 0, 0, 0, false));
+            while (WARP_DOWN.consumeClick()) TurboliftNetwork.sendToServer(new de.simon.spacemod.space.WarpMessage.Command(5, 0, 0, 0, 0, false));
             int throttle = (in.forward() ? 1 : 0) - (in.backward() ? 1 : 0);
             // seitlich schieben (A/D) und hoch/runter (Leertaste/Strg), relativ zum Schiff
             int strafe = (in.right() ? 1 : 0) - (in.left() ? 1 : 0);
@@ -124,6 +135,21 @@ public final class ShipClient {
             return;
         }
 
+    }
+
+    /** Im Warp ziehen Lichtstreifen am Schiff vorbei (entgegen der Flugrichtung). */
+    private static void warpStreaks(Minecraft mc) {
+        if (mc.player == null || mc.level == null || mc.level.dimension() != de.simon.spacemod.space.WarpDrive.WARP || mc.isPaused()) return;
+        Vec3 dir = new Vec3(0, 0, 1);
+        if (mc.player.getVehicle() instanceof FlyingShipEntity ship) dir = de.simon.spacemod.flight.ShipPhysics.forward(ship.renderYaw(), 0);
+        var rnd = mc.level.getRandom();
+        Vec3 c = mc.player.position();
+        for (int i = 0; i < 12; i++) {
+            Vec3 side = new Vec3((rnd.nextDouble() - 0.5) * 80, (rnd.nextDouble() - 0.5) * 50, (rnd.nextDouble() - 0.5) * 80);
+            Vec3 p = c.add(dir.scale(60 + rnd.nextDouble() * 20)).add(side.subtract(dir.scale(side.dot(dir))));
+            Vec3 v = dir.scale(-(4 + rnd.nextDouble() * 3));
+            mc.level.addParticle(net.minecraft.core.particles.ParticleTypes.END_ROD, p.x, p.y, p.z, v.x, v.y, v.z);
+        }
     }
 
     /** Rechtsklick im fliegenden Schiff: angeklickten Schiffsblock (Kiste, Reaktor …) benutzen. */

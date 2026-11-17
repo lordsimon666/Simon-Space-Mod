@@ -24,6 +24,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import de.simon.spacemod.space.SpaceTravel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -65,6 +66,14 @@ public class FlyingShipEntity extends Entity {
     /** Trägheitsdämpfer: eingestellte und tatsächlich laufende Stufe (0..10), Lage der Steuerungen im Schiff. */
     private int damperLevel = de.simon.spacemod.flight.ShipPhysics.DEFAULT_DAMPER;
     private java.util.List<BlockPos> damperBlocks;
+    /**
+     * Warp: Stufe (0 = nicht im Warp), echte Lage in der Herkunftsdimension, Autopilot-Ziel und -Dimension,
+     * aktuelle Kosten (FE/t).
+     */
+    private double warp, rx, ry, rz, tx, ty, tz;
+    private boolean autopilot;
+    private String warpOrigin = "", warpDest = "";
+    private int warpCost;
     private int controlAge = 100;
     private double lastPower = 1;
     /** Letzte Flugrichtung (für den Rückstoß bei Kollisionen). */
@@ -211,6 +220,13 @@ public class FlyingShipEntity extends Entity {
         velocity = new Vec3(input.getDoubleOr("vx", 0), input.getDoubleOr("vy", 0), input.getDoubleOr("vz", 0));
         targetYaw = yaw();
         targetPitch = pitch();
+        warp = input.getDoubleOr("warp", 0);
+        rx = input.getDoubleOr("wrx", 0); ry = input.getDoubleOr("wry", 0); rz = input.getDoubleOr("wrz", 0);
+        tx = input.getDoubleOr("wtx", 0); ty = input.getDoubleOr("wty", 0); tz = input.getDoubleOr("wtz", 0);
+        autopilot = input.getBooleanOr("wauto", false);
+        warpOrigin = input.getStringOr("worigin", "");
+        warpDest = input.getStringOr("wdest", "");
+        warpCost = de.simon.spacemod.space.WarpDrive.cost(warp);
     }
 
     @Override
@@ -223,6 +239,14 @@ public class FlyingShipEntity extends Entity {
         output.putDouble("vx", velocity.x);
         output.putDouble("vy", velocity.y);
         output.putDouble("vz", velocity.z);
+        if (warp > 0) {
+            output.putDouble("warp", warp);
+            output.putDouble("wrx", rx); output.putDouble("wry", ry); output.putDouble("wrz", rz);
+            output.putDouble("wtx", tx); output.putDouble("wty", ty); output.putDouble("wtz", tz);
+            output.putBoolean("wauto", autopilot);
+            output.putString("worigin", warpOrigin);
+            output.putString("wdest", warpDest);
+        }
     }
 
     @Override
@@ -712,10 +736,17 @@ public class FlyingShipEntity extends Entity {
         ServerLevel level = (ServerLevel) level();
         if (structure == null) { discard(); return; }
         if (++controlAge > 10 || pilot == null) { throttle = 0; strafe = 0; vertical = 0; }
+        if (inWarp() && autopilot) {
+            // Autopilot: das Schiff fliegt im Warp sichtbar geradeaus in Richtung Ziel
+            throttle = 1; strafe = 0; vertical = 0;
+            targetYaw = (float) Math.toDegrees(Math.atan2(-(tx - rx), tz - rz));
+            targetPitch = 0;
+        }
 
         // Strom: Antriebe brauchen Energie, wenn sie schieben oder drehen
         double turnDemand = pilot == null ? 0 : Math.min(1, (Math.abs(ShipPhysics.wrap(targetYaw - yaw())) + Math.abs(targetPitch - pitch())) / 30);
         double demand = structure.engines * ShipPhysics.RF_PER_ENGINE * Math.max(Math.max(Math.abs(throttle), Math.max(Math.abs(strafe), Math.abs(vertical))), turnDemand);
+        if (inWarp()) demand = 0; // im Warp bewegt der Warpantrieb das Schiff, die Impulsantriebe laufen ohne eigenen Strom
         ServerLevel sy = shipyard();
         if (plot < 0 && sy != null) moveToShipyard(); // Schiff aus einer älteren Version
         if (plot >= 0 && sy != null) {
@@ -724,10 +755,13 @@ public class FlyingShipEntity extends Entity {
             BlockPos helm = helmLocal();
             BlockPos src = plotOrigin().offset(helm != null ? helm : structure.blocks.get(0).pos());
             de.simon.spacemod.power.ShipPower.Grid grid = de.simon.spacemod.power.ShipPower.grid(sy, src);
+            if (inWarp() && !warpPower(sy, grid)) return;
             if (demand > 0) {
                 int got = de.simon.spacemod.power.ShipPower.draw(sy, grid, (int) Math.min(Integer.MAX_VALUE, Math.ceil(demand)),
                     de.simon.spacemod.power.ShipPower.Category.ENGINES);
                 lastPower = Math.min(1, got / demand);
+            } else if (inWarp()) {
+                lastPower = 1;
             } else if (tickCount % 10 == 0) {
                 lastPower = grid.hasPower(sy) ? 1 : 0;
             }
@@ -809,6 +843,11 @@ public class FlyingShipEntity extends Entity {
         setPos(newPos);
         updateBox();
         keepLoaded(level);
+        if (inWarp()) {
+            if (warpAdvance()) return;
+            if (tickCount % 10 == 0 && pilot != null && level.getPlayerByUUID(pilot) instanceof ServerPlayer p) p.sendOverlayMessage(warpHud());
+            return;
+        }
         // hoch genug: in den Weltraum (bzw. ganz unten im Weltraum zurück in die Oberwelt)
         if (tickCount % 5 == 0 && de.simon.spacemod.space.SpaceTravel.check(this, structure.radius, pilot) != this) return;
 
@@ -839,8 +878,187 @@ public class FlyingShipEntity extends Entity {
         if (level < 0) return ShipPhysics.DEFAULT_DAMPER;
         int cost = ShipPhysics.damperCost(level);
         if (cost == 0 || velocity.lengthSqr() < 1e-6) return level;
-        int got = de.simon.spacemod.power.ShipPower.draw(sy, grid, cost, de.simon.spacemod.power.ShipPower.Category.ENGINES);
-        return got >= cost ? level : Math.min(level, ShipPhysics.DEFAULT_DAMPER);
+        // im Warp kommen die Dämpfer gleich nach dem Warpantrieb – sie werden als Letztes gedrosselt
+        int got = inWarp() ? de.simon.spacemod.power.ShipPower.drawPriority(sy, grid, cost)
+            : de.simon.spacemod.power.ShipPower.draw(sy, grid, cost, de.simon.spacemod.power.ShipPower.Category.ENGINES);
+        if (got >= cost) return level;
+        // nicht genug: so viele Stufen, wie der Strom hergibt
+        int l = level;
+        while (l > ShipPhysics.DEFAULT_DAMPER && ShipPhysics.damperCost(l) > got) l--;
+        return l;
+    }
+
+    // ---- Warpantrieb ----
+
+    public boolean inWarp() {
+        return warp > 0;
+    }
+
+    /** Stromnetz des Schiffs (in der Werft) oder null. */
+    public de.simon.spacemod.power.ShipPower.@Nullable Grid powerGrid() {
+        ServerLevel sy = shipyard();
+        if (sy == null || plot < 0 || structure == null) return null;
+        BlockPos helm = helmLocal();
+        return de.simon.spacemod.power.ShipPower.grid(sy, plotOrigin().offset(helm != null ? helm : structure.blocks.get(0).pos()));
+    }
+
+    /** Stromerzeugung des Schiffs (FE/t, ohne Speicher). */
+    public long warpProduction() {
+        ServerLevel sy = shipyard();
+        var grid = powerGrid();
+        return sy == null || grid == null ? 0 : de.simon.spacemod.power.ShipPower.production(sy, grid);
+    }
+
+    /** Höchste Warpstufe nach den Gondeln des Schiffs. */
+    public double warpMaxNacelles() {
+        return structure == null ? 0 : de.simon.spacemod.space.WarpDrive.maxForNacelles(
+            de.simon.spacemod.space.WarpDrive.nacelleCount(de.simon.spacemod.space.WarpDrive.nacelles(structure)));
+    }
+
+    /** Für das Warp-Menü: {Warp, rx, ry, rz, tx, ty, tz, Autopilot, Ziel Weltraum}. */
+    public double[] warpState() {
+        boolean inW = inWarp();
+        return new double[] {warp, inW ? rx : getX(), inW ? ry : getY(), inW ? rz : getZ(), tx, ty, tz, autopilot ? 1 : 0,
+            warpDest.equals(SpaceTravel.SPACE.identifier().toString()) ? 1 : 0};
+    }
+
+    private static String fmt(double w) {
+        return String.format(java.util.Locale.ROOT, "%.1f", w);
+    }
+
+    /** Prüft Gondeln und Strom für Warp {@code w}; meldet den Grund und gibt false zurück, wenn es nicht geht. */
+    private boolean warpPossible(ServerPlayer p, double w) {
+        double maxN = warpMaxNacelles();
+        if (maxN <= 0) {
+            p.sendSystemMessage(Component.translatable("message.simonspacemod.warp.no_nacelles").withStyle(net.minecraft.ChatFormatting.RED));
+            return false;
+        }
+        if (w > maxN + 1e-9) {
+            p.sendSystemMessage(Component.translatable("message.simonspacemod.warp.too_fast", fmt(maxN)).withStyle(net.minecraft.ChatFormatting.RED));
+            return false;
+        }
+        long prod = warpProduction();
+        int cost = de.simon.spacemod.space.WarpDrive.cost(w);
+        if (prod < cost) {
+            p.sendSystemMessage(Component.translatable("message.simonspacemod.warp.no_power", cost, prod,
+                fmt(de.simon.spacemod.space.WarpDrive.maxForPower(prod))).withStyle(net.minecraft.ChatFormatting.RED));
+            return false;
+        }
+        return true;
+    }
+
+    /** Warp starten (oder im Warp Stufe und Ziel ändern): mit Autopilot zu (x, y, z) oder manuell. */
+    public void engageWarp(ServerPlayer p, boolean auto, double x, double y, double z, double w, boolean destSpace) {
+        if (!isPilot(p) || structure == null || !(level() instanceof ServerLevel level)) return;
+        w = de.simon.spacemod.space.WarpDrive.clamp(w);
+        if (!warpPossible(p, w)) return;
+        warp = w;
+        warpCost = de.simon.spacemod.space.WarpDrive.cost(w);
+        autopilot = auto;
+        tx = x; ty = y; tz = z;
+        warpDest = (destSpace ? SpaceTravel.SPACE : Level.OVERWORLD).identifier().toString();
+        if (level.dimension() == de.simon.spacemod.space.WarpDrive.WARP) {
+            p.sendOverlayMessage(Component.translatable(auto ? "message.simonspacemod.warp.course" : "message.simonspacemod.warp.level", fmt(w)));
+            return;
+        }
+        ServerLevel target = level.getServer().getLevel(de.simon.spacemod.space.WarpDrive.WARP);
+        if (target == null) return;
+        warpOrigin = level.dimension().identifier().toString();
+        rx = getX(); ry = getY(); rz = getZ();
+        velocity = Vec3.ZERO;
+        Vec3 pos = new Vec3((plot >= 0 ? plot : getId()) * 4096.0 + 0.5, de.simon.spacemod.space.WarpDrive.WARP_Y, 0.5);
+        SpaceTravel.transfer(this, target, pos, pilot, "message.simonspacemod.warp.enter", fmt(w));
+    }
+
+    /** Warpstufe mit den Tasten ändern: hoch in ganzen Stufen bis 9.9, runter unter Warp 1 = Warp verlassen. */
+    public void stepWarp(ServerPlayer p, int dir) {
+        if (!isPilot(p)) return;
+        if (!inWarp()) {
+            p.sendOverlayMessage(Component.translatable("message.simonspacemod.warp.use_menu"));
+            return;
+        }
+        double w;
+        if (dir > 0) w = warp >= 9 ? de.simon.spacemod.space.WarpDrive.MAX_WARP : Math.floor(warp + 1e-9) + 1;
+        else if (warp <= 1 + 1e-9) {
+            leaveWarp("message.simonspacemod.warp.exit");
+            return;
+        } else w = warp > 9 ? 9 : Math.ceil(warp - 1e-9) - 1;
+        w = Math.min(w, de.simon.spacemod.space.WarpDrive.MAX_WARP);
+        if (!warpPossible(p, w)) return;
+        warp = w;
+        warpCost = de.simon.spacemod.space.WarpDrive.cost(w);
+        p.sendOverlayMessage(Component.translatable("message.simonspacemod.warp.level", fmt(w)));
+    }
+
+    /** Warpstrom mit Vorrang ziehen; reicht er nicht, fällt das Schiff sofort aus dem Warp. */
+    private boolean warpPower(ServerLevel sy, de.simon.spacemod.power.ShipPower.Grid grid) {
+        int damperCost = ShipPhysics.damperCost(damperLevel);
+        de.simon.spacemod.power.ShipPower.reserve(sy, grid, (long) warpCost + damperCost);
+        long prod = tickCount % 20 == 0 ? de.simon.spacemod.power.ShipPower.production(sy, grid) : Long.MAX_VALUE;
+        int got = de.simon.spacemod.power.ShipPower.drawPriority(sy, grid, warpCost);
+        if (got >= warpCost && prod >= warpCost) return true;
+        long have = Math.min(prod, got);
+        leaveWarp("message.simonspacemod.warp.dropout", warpCost, have);
+        return false;
+    }
+
+    /** Ein Tick im Warp: echte Lage weiterrechnen, Ziel erreicht -> Warp verlassen. @return true, wenn das Schiff gewechselt hat */
+    private boolean warpAdvance() {
+        double step = de.simon.spacemod.space.WarpDrive.speed(warp);
+        if (autopilot) {
+            double dx = tx - rx, dz = tz - rz, d = Math.sqrt(dx * dx + dz * dz);
+            if (d <= step) {
+                rx = tx; rz = tz; ry = ty;
+                leaveWarp("message.simonspacemod.warp.arrived");
+                return true;
+            }
+            rx += dx / d * step;
+            rz += dz / d * step;
+        } else {
+            double k = step / ShipPhysics.MAX_SPEED; // volle Impulsfahrt = Warpgeschwindigkeit
+            rx += velocity.x * k;
+            rz += velocity.z * k;
+            ry += velocity.y;
+        }
+        rx = Math.max(-29_000_000, Math.min(29_000_000, rx));
+        rz = Math.max(-29_000_000, Math.min(29_000_000, rz));
+        return false;
+    }
+
+    private Component warpHud() {
+        String where = (int) rx + " " + (int) ry + " " + (int) rz;
+        if (autopilot) {
+            double d = Math.hypot(tx - rx, tz - rz), sec = d / Math.max(1e-9, de.simon.spacemod.space.WarpDrive.speed(warp)) / 20;
+            return Component.translatable("message.simonspacemod.warp.hud_auto", fmt(warp), warpCost, where, (int) d, String.format("%.0f", Math.ceil(sec)), damperLevel * 10);
+        }
+        return Component.translatable("message.simonspacemod.warp.hud", fmt(warp), warpCost, where, damperLevel * 10);
+    }
+
+    /**
+     * Warp verlassen: zurück in die Herkunftsdimension (Autopilot: in die Zieldimension) an die echte Lage.
+     * Steht dort etwas im Weg, kommt das Schiff so weit darüber heraus, bis es frei ist.
+     */
+    public FlyingShipEntity leaveWarp(String message, Object... args) {
+        if (!(level() instanceof ServerLevel level)) return this;
+        String dim = autopilot && !warpDest.isEmpty() ? warpDest : warpOrigin;
+        ServerLevel target = null;
+        for (ServerLevel l : level.getServer().getAllLevels())
+            if (l.dimension().identifier().toString().equals(dim)) target = l;
+        if (target == null) target = level.getServer().overworld();
+        double r = structure == null ? 4 : structure.radius;
+        double y = Math.max(target.getMinY() + r + 2, Math.min(target.getMaxY() - r - 2, ry));
+        Quaternionf q = ShipPhysics.rotation(yaw0(), yaw(), pitch());
+        int cr = (int) Math.ceil((r + 2) / 16);
+        for (int cx = ((int) Math.floor(rx) >> 4) - cr; cx <= ((int) Math.floor(rx) >> 4) + cr; cx++)
+            for (int cz = ((int) Math.floor(rz) >> 4) - cr; cz <= ((int) Math.floor(rz) >> 4) + cr; cz++) target.getChunk(cx, cz);
+        Vec3 pos = new Vec3(rx, y, rz);
+        while (structure != null && collides(target, pos, q) && pos.y < target.getMaxY() - r - 2) pos = pos.add(0, 2, 0);
+        warp = 0;
+        warpCost = 0;
+        autopilot = false;
+        velocity = Vec3.ZERO;
+        if (level.dimension() != de.simon.spacemod.space.WarpDrive.WARP) return this;
+        return SpaceTravel.transfer(this, target, pos, pilot, message, args);
     }
 
     private void updateBox() {

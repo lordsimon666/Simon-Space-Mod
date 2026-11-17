@@ -162,6 +162,58 @@ public final class ShipPower {
         return got;
     }
 
+    /** Für den Warpantrieb vorgemerkte Leistung je Netz: {Tick, Menge}; Vorrang-Entnahme in diesem Tick: {Tick}. */
+    private static final Map<String, long[]> RESERVE = new HashMap<>();
+    private static final Map<String, long[]> PRIORITY_DRAWN = new HashMap<>();
+
+    /**
+     * Merkt Leistung für den Warpantrieb (und die Trägheitsdämpfer) vor: andere Verbraucher bekommen nur, was
+     * darüber hinaus erzeugt wird, und keine Energie aus Reaktoren und Speichern, bis der Warp seinen Teil
+     * genommen hat. Gilt zwei Ticks und wird jeden Tick erneuert.
+     */
+    public static void reserve(ServerLevel level, Grid grid, long amount) {
+        RESERVE.put(level.dimension().identifier() + "#" + grid.key(), new long[] {level.getGameTime(), amount});
+    }
+
+    /** Vorrang-Entnahme (Warp, danach Trägheitsdämpfer): ohne Rücksicht auf die Energieverteilung. */
+    public static int drawPriority(ServerLevel level, Grid grid, int want) {
+        String key = level.dimension().identifier() + "#" + grid.key();
+        long now = level.getGameTime();
+        long[] b = BUDGET.computeIfAbsent(key, k -> new long[] {-1, 0});
+        if (b[0] != now) {
+            b[0] = now;
+            b[1] = effectiveOutput(level, grid);
+        }
+        int got = (int) Math.max(0, Math.min(want, b[1]));
+        b[1] -= got;
+        for (BlockPos p : grid.sources()) {
+            if (got >= want) break;
+            if (level.getBlockEntity(p) instanceof BatteryBlockEntity) continue; // Speicher erst ganz zum Schluss
+            got += extractFrom(level, p, want - got, false);
+        }
+        for (BlockPos p : grid.sources()) {
+            if (got >= want) break;
+            got += extractFrom(level, p, want - got, false);
+        }
+        PRIORITY_DRAWN.put(key, new long[] {now});
+        return got;
+    }
+
+    /**
+     * Stromerzeugung des Netzes je Tick (ohne Speicher): Warpkerne (mit Overdrive), Kernreaktoren mit Uran in
+     * voller Leistung und Generatoren anderer Mods mit dem, was sie in einem Tick abgeben können.
+     */
+    public static long production(ServerLevel level, Grid grid) {
+        long sum = effectiveOutput(level, grid);
+        for (BlockPos p : grid.sources()) {
+            var be = level.getBlockEntity(p);
+            if (be instanceof BatteryBlockEntity) continue;
+            if (be instanceof de.simon.spacemod.block.entity.ReactorControllerBlockEntity r) sum += r.potentialOutput();
+            else sum += extractFrom(level, p, Integer.MAX_VALUE, true);
+        }
+        return sum;
+    }
+
     /** Holt bis zu {@code want} RF aus dem Netz (in diesem Tick) für allgemeine Maschinen. */
     public static int draw(ServerLevel level, Grid grid, int want) {
         return draw(level, grid, want, Category.MACHINES);
@@ -188,11 +240,17 @@ public final class ShipPower {
             if (out > 0) want = (int) Math.max(0, Math.min(want, out * share / 100 - used[cat.ordinal() + 1]));
             else want = want * share / 100;
         }
+        // Warp hat Vorrang: solange er in diesem Tick noch nicht genommen hat, bleibt seine Leistung frei
+        long[] r = RESERVE.get(key);
+        long[] pd = PRIORITY_DRAWN.get(key);
+        boolean reserved = r != null && now - r[0] <= 2 && (pd == null || pd[0] != now);
+        if (reserved) want = (int) Math.max(0, Math.min(want, b[1] - r[1]));
         if (want <= 0) return 0;
         int got = (int) Math.min(want, b[1]);
         b[1] -= got;
-        // Rest aus Reaktoren und anderen Stromerzeugern
+        // Rest aus Reaktoren und anderen Stromerzeugern (nicht, solange der Warp sie noch braucht)
         for (BlockPos p : grid.sources()) {
+            if (reserved) break;
             if (got >= want) break;
             got += extractFrom(level, p, want - got, false);
         }

@@ -116,6 +116,15 @@ DE = {
     "space.1": "Steig mit deinem Schiff in der Oberwelt hoch genug, über die Bauhöhe hinaus. Dann kommt es mit allen Mitfahrern im Weltraum an. "
                "Der Weltraum ist schwarz mit Sternen, voller Asteroiden und reicht bis Y 1007.",
     "space.2": "Sinkt dein Schiff unter Y 12, kehrt es in die Oberwelt zurück. Wer ohne Schiff aus dem All fällt, schwebt mit Sanftem Fall zur Erde.",
+    "entry.warp": "Warpantrieb",
+    "warp.1": "Am Steuer öffnet J das Warp-Menü: Zielkoordinaten, Warpstufe (Schieberegler) und Ziel (Planet oder Weltraum). "
+              "Mit dem Autopiloten fliegt das Schiff durch die Warp-Dimension zu den Koordinaten und verlässt dort den Warp. "
+              "Manuell fliegst du im Warp selbst; Pfeil hoch und runter schalten die Stufe, unter Warp 1 verlässt du den Warp.",
+    "warp.2": "Für Warp braucht das Schiff Warpgondeln: je mindestens einen Bussard-Kollektor und zwei Gondelgitter nah beieinander. "
+              "Eine Gondel erlaubt höchstens Warp 5, zwei Gondeln mit mindestens 10 Blöcken Abstand bis Warp 9.9.",
+    "warp.3": "Warp kostet viel Energie: 2375 × Warp² FE/t, Warp 2 schafft ein 8×8×8-Reaktor gerade so. Der Warp hat Vorrang: "
+              "Andere Verbraucher werden abgeschaltet, die Trägheitsdämpfer zuletzt gedrosselt. Reicht die Erzeugung nicht, "
+              "geht es gar nicht erst los oder das Schiff fällt sofort aus dem Warp.",
     "entry.space_suit": "Raumanzug",
     "space_suit.1": "Mit dem Raumanzug fliegst du wie im Kreativmodus: doppelt springen schaltet den Flug ein. Fliegen kostet 20 FE pro Tick, "
                     "eine volle Ladung reicht für 10 Minuten. Geladen wird er in der Ladestation.",
@@ -300,6 +309,15 @@ EN = {
     "space.1": "Climb high enough with your ship in the Overworld, above the build height. Then it arrives in space with everyone on board. "
                "Space is black with stars, full of asteroids and reaches up to Y 1007.",
     "space.2": "If your ship sinks below Y 12, it returns to the Overworld. Anyone falling out of space without a ship floats down with Slow Falling.",
+    "entry.warp": "Warp Drive",
+    "warp.1": "At the helm, J opens the warp menu: destination coordinates, warp factor (slider) and destination (planet or space). "
+              "With the autopilot the ship flies through the warp dimension to the coordinates and drops out of warp there. "
+              "In manual mode you fly yourself; arrow up and down change the factor, below warp 1 you drop out.",
+    "warp.2": "Warp needs warp nacelles: each at least one Bussard collector and two nacelle grilles close together. "
+              "One nacelle allows up to warp 5, two nacelles at least 10 blocks apart up to warp 9.9.",
+    "warp.3": "Warp costs a lot of power: 2375 × warp² FE/t, an 8×8×8 reactor just manages warp 2. Warp comes first: "
+              "other consumers are switched off, the inertial dampers are throttled last. If production is not enough, "
+              "the jump fails right away or the ship drops out of warp at once.",
     "entry.space_suit": "Space Suit",
     "space_suit.1": "The space suit lets you fly like in creative mode: double-jump switches flight on. Flying costs 20 FE per tick, "
                     "a full charge lasts 10 minutes. Charge it in the charging station.",

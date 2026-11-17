@@ -1,0 +1,18 @@
+{
+  "type": "simonspacemod:warp",
+  "generator": {
+    "type": "minecraft:flat",
+    "settings": {
+      "biome": "simonspacemod:space",
+      "features": false,
+      "lakes": false,
+      "layers": [
+        {
+          "block": "minecraft:structure_void",
+          "height": 1
+        }
+      ],
+      "structure_overrides": []
+    }
+  }
+}

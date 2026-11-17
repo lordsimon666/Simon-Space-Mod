@@ -61,14 +61,22 @@ public final class SpaceTravel {
             pos = new Vec3(ship.getX(), target.getMaxY() + radius + CLIMB - 24, ship.getZ());
         } else return ship;
         if (target == null) return ship;
+        return transfer(ship, target, pos, pilot, isSpace(target) ? "message.simonspacemod.space.enter" : "message.simonspacemod.space.leave");
+    }
+
+    /**
+     * Bringt ein fliegendes Schiff mit allen Mitfahrern (auf denselben Plätzen) in eine andere Dimension.
+     * @param message Meldung an alle Mitfahrer oder null
+     */
+    public static FlyingShipEntity transfer(FlyingShipEntity ship, ServerLevel target, Vec3 pos, @org.jspecify.annotations.Nullable UUID pilot,
+                                            @org.jspecify.annotations.Nullable String message, Object... args) {
         java.util.Map<UUID, Vec3> seats = ship.seatsCopy();
         Entity moved = ship.teleport(new TeleportTransition(target, pos, Vec3.ZERO, ship.getYRot(), ship.getXRot(), TeleportTransition.DO_NOTHING));
         if (!(moved instanceof FlyingShipEntity ns)) return ship;
         ns.restoreSeats(seats); // genau dieselben Plätze im Schiff (sonst rutscht man etwas nach hinten)
         for (Entity p : ns.getPassengers()) {
             if (pilot != null && p.getUUID().equals(pilot) && p instanceof Player pl) ns.setPilot(pl);
-            if (p instanceof ServerPlayer sp)
-                sp.sendOverlayMessage(Component.translatable(isSpace(target) ? "message.simonspacemod.space.enter" : "message.simonspacemod.space.leave"));
+            if (p instanceof ServerPlayer sp && message != null) sp.sendOverlayMessage(Component.translatable(message, args));
         }
         return ns;
     }

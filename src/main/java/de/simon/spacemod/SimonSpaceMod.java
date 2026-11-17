@@ -22,6 +22,7 @@ public final class SimonSpaceMod {
         ShipBuildManager.init();
         de.simon.spacemod.power.PowerNetwork.init();
         de.simon.spacemod.space.SpaceTravel.init();
+        de.simon.spacemod.space.WarpDrive.init();
         de.simon.spacemod.item.SpaceSuitItem.init();
         de.simon.spacemod.assembly.AssemblyRecipes.init();
         de.simon.spacemod.weapons.BeamShots.init();
