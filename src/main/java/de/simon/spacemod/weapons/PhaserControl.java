@@ -54,6 +54,7 @@ public final class PhaserControl {
 
     /** @param quiet Nachladen ohne Meldung (automatisches Weiterfeuern bei gehaltenem Abzug) */
     public static boolean fire(ServerLevel level, BlockPos console, ServerPlayer player, int power, boolean quiet) {
+        if (de.simon.spacemod.space.WarpDrive.weaponsLocked(player, level, console)) return false; // im Warp keine Waffen
         String key = level.dimension().identifier() + "@" + console.asLong();
         long now = level.getGameTime();
         Long last = LAST_SHOT.get(key);
@@ -120,6 +121,7 @@ public final class PhaserControl {
      * zuerst. Danach laden sie nach wie beim Feuern von Hand.
      */
     public static void autoFire(ServerLevel level, BlockPos console) {
+        if (de.simon.spacemod.space.WarpDrive.weaponsLocked(null, level, console)) return; // im Warp keine Waffen
         String key = level.dimension().identifier() + "@" + console.asLong();
         long now = level.getGameTime();
         Long last = LAST_SHOT.get(key);
@@ -383,6 +385,7 @@ public final class PhaserControl {
 
     /** Pilot: Phaser des fliegenden Schiffs feuern 2 s lang auf das Fadenkreuz (Strom aus dem Bordnetz). */
     public static boolean fireFromShip(ServerPlayer player, de.simon.spacemod.entity.FlyingShipEntity ship, int power, boolean quiet) {
+        if (de.simon.spacemod.space.WarpDrive.weaponsLocked(player, null, null) || ship.inWarp()) return false; // im Warp keine Waffen
         if (!(ship.level() instanceof ServerLevel level) || ship.structure() == null || ship.plot() < 0) return false;
         ServerLevel sy = de.simon.spacemod.flight.Shipyard.level(level.getServer());
         if (sy == null) return false;
@@ -525,6 +528,7 @@ public final class PhaserControl {
 
     /** Pilot: Photonen- bzw. Quantentorpedo aus dem Werfer des fliegenden Schiffs, der dem Ziel am nächsten ist. */
     public static void torpedoFromShip(ServerPlayer player, de.simon.spacemod.entity.FlyingShipEntity ship, boolean quantum, boolean spread) {
+        if (de.simon.spacemod.space.WarpDrive.weaponsLocked(player, null, null) || ship.inWarp()) return; // im Warp keine Waffen
         if (!(ship.level() instanceof ServerLevel level) || ship.structure() == null) return;
         List<Launcher> launchers = new ArrayList<>();
         for (var e : ship.structure().blocks)
@@ -594,6 +598,7 @@ public final class PhaserControl {
      * Ziel am nächsten ist.
      */
     public static void torpedo(ServerLevel level, BlockPos console, ServerPlayer player, boolean quantum, boolean spread) {
+        if (de.simon.spacemod.space.WarpDrive.weaponsLocked(player, level, console)) return; // im Warp keine Waffen
         WeaponsData data = WeaponsData.get(level);
         WeaponsData.Battery b = data.battery(console);
         if (b == null) {

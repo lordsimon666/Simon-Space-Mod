@@ -770,6 +770,8 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
   Gondelblöcke), höchstens 3 Blöcke voneinander entfernt. **Eine Gondel: bis Warp 5. Zwei Gondeln: bis
   Warp 9.9** – aber nur, wenn ihre Mitten **mindestens 10 Blöcke** auseinanderliegen. Schneller als 9.9 geht
   es nicht.
+* **Keine Waffen im Warp**: Schiffsphaser, Torpedos, die Waffenstation (auch die automatische Abwehr eines
+  Schiffs im Warp) sowie Handphaser und Gewehre lassen sich nicht benutzen – es erscheint eine Meldung.
 * Wer im Warp vom Schiff fällt, landet mit Sanftem Fall in der Oberwelt.
 
 ### Kernreaktor (Multiblock) und Uran

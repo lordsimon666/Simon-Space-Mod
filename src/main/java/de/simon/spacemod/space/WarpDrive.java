@@ -50,6 +50,23 @@ public final class WarpDrive {
         });
     }
 
+    /**
+     * Im Warp sind alle Waffen gesperrt: Spieler in der Warp-Dimension (an Bord eines Schiffs im Warp) und
+     * Waffenstationen in der Werft, deren Schiff gerade im Warp ist. Meldet es dem Spieler.
+     */
+    public static boolean weaponsLocked(net.minecraft.world.entity.player.@org.jspecify.annotations.Nullable Player player,
+                                        @org.jspecify.annotations.Nullable Level level, @org.jspecify.annotations.Nullable BlockPos pos) {
+        boolean locked = player != null && player.level().dimension() == WARP;
+        if (!locked && level != null && pos != null && de.simon.spacemod.flight.Shipyard.is(level)) {
+            var ship = de.simon.spacemod.flight.Shipyard.shipAt(pos);
+            locked = ship != null && ship.inWarp();
+        }
+        if (locked && player instanceof net.minecraft.server.level.ServerPlayer sp)
+            sp.sendOverlayMessage(net.minecraft.network.chat.Component.translatable("message.simonspacemod.warp.no_weapons")
+                .withStyle(net.minecraft.ChatFormatting.RED));
+        return locked;
+    }
+
     /** Energie bei Warp {@code w} (FE/t). */
     public static int cost(double w) {
         return w <= 0 ? 0 : (int) Math.round(FE_FACTOR * w * w);

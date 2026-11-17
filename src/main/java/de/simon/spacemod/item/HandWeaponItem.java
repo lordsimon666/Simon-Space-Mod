@@ -186,6 +186,7 @@ public class HandWeaponItem extends Item {
     public InteractionResult fire(ServerLevel server, ServerPlayer sp, ItemStack stack) {
         Player player = sp;
         Level level = server;
+        if (de.simon.spacemod.space.WarpDrive.weaponsLocked(sp, null, null)) return InteractionResult.FAIL; // im Warp keine Waffen
         if (player.getCooldowns().isOnCooldown(stack)) return InteractionResult.FAIL;
         Mode m = mode(stack);
         int cost = cost(m);

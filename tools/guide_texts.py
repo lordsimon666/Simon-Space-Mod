@@ -124,7 +124,7 @@ DE = {
               "Eine Gondel erlaubt höchstens Warp 5, zwei Gondeln mit mindestens 10 Blöcken Abstand bis Warp 9.9.",
     "warp.3": "Warp kostet viel Energie: 2375 × Warp² FE/t, Warp 2 schafft ein 8×8×8-Reaktor gerade so. Der Warp hat Vorrang: "
               "Andere Verbraucher werden abgeschaltet, die Trägheitsdämpfer zuletzt gedrosselt. Reicht die Erzeugung nicht, "
-              "geht es gar nicht erst los oder das Schiff fällt sofort aus dem Warp.",
+              "geht es gar nicht erst los oder das Schiff fällt sofort aus dem Warp. Im Warp lassen sich keine Waffen benutzen.",
     "entry.space_suit": "Raumanzug",
     "space_suit.1": "Mit dem Raumanzug fliegst du wie im Kreativmodus: doppelt springen schaltet den Flug ein. Fliegen kostet 20 FE pro Tick, "
                     "eine volle Ladung reicht für 10 Minuten. Geladen wird er in der Ladestation.",
@@ -317,7 +317,7 @@ EN = {
               "One nacelle allows up to warp 5, two nacelles at least 10 blocks apart up to warp 9.9.",
     "warp.3": "Warp costs a lot of power: 2375 × warp² FE/t, an 8×8×8 reactor just manages warp 2. Warp comes first: "
               "other consumers are switched off, the inertial dampers are throttled last. If production is not enough, "
-              "the jump fails right away or the ship drops out of warp at once.",
+              "the jump fails right away or the ship drops out of warp at once. Weapons cannot be used at warp.",
     "entry.space_suit": "Space Suit",
     "space_suit.1": "The space suit lets you fly like in creative mode: double-jump switches flight on. Flying costs 20 FE per tick, "
                     "a full charge lasts 10 minutes. Charge it in the charging station.",
