@@ -37,6 +37,8 @@ public class DisplayRenderer implements BlockEntityRenderer<DisplayBlockEntity, 
         Identifier tex;
         int w = 1, h = 1;
         Direction facing = Direction.NORTH, right = Direction.WEST;
+        float u0, u1 = 1, v0, v1 = 1;
+        boolean flipV;
     }
 
     public DisplayRenderer(BlockEntityRendererProvider.Context context) {}
@@ -93,7 +95,23 @@ public class DisplayRenderer implements BlockEntityRenderer<DisplayBlockEntity, 
             }
         }
         String key = (s != null ? "s" + s.getId() : "w" + be.getLevel().dimension().identifier()) + "@" + g.anchor().asLong();
-        state.tex = pose == null ? CameraFeeds.noSignal() : CameraFeeds.feed(key, g.width(), g.height(), pose);
+        state.u0 = 0; state.u1 = 1; state.v0 = 0; state.v1 = 1;
+        if (pose == null) {
+            state.tex = CameraFeeds.noSignal();
+            return;
+        }
+        // echtes Bild (falls möglich), auf das Seitenverhältnis der Bildfläche zugeschnitten
+        Identifier real = RealFeeds.texture(key, pose);
+        if (real != null) {
+            state.tex = real;
+            float a = RealFeeds.aspect(key), q = g.width() / (float) g.height();
+            if (q < a) { float k = q / a; state.u0 = (1 - k) / 2; state.u1 = 1 - state.u0; }
+            else { float k = a / q; state.v0 = (1 - k) / 2; state.v1 = 1 - state.v0; }
+            state.flipV = true; // Bilder aus dem Renderziel stehen in OpenGL auf dem Kopf
+        } else {
+            state.tex = CameraFeeds.feed(key, g.width(), g.height(), pose);
+            state.flipV = false;
+        }
     }
 
     private static java.util.Map<BlockPos, BlockState> shipStates(FlyingShipEntity s) {
@@ -119,11 +137,13 @@ public class DisplayRenderer implements BlockEntityRenderer<DisplayBlockEntity, 
         float rx = r.getStepX() * state.w, rz = r.getStepZ() * state.w, h = state.h;
         float nx = n.getStepX(), nz = n.getStepZ();
         int light = 0xF000F0;
+        float u0 = state.u0, u1 = state.u1;
+        float vb = state.flipV ? state.v0 : state.v1, vt = state.flipV ? state.v1 : state.v0; // unten / oben
         collector.submitCustomGeometry(pose, RenderTypes.entitySolid(state.tex), (p, buf) -> {
-            buf.addVertex(p, cx, cy, cz).setColor(255, 255, 255, 255).setUv(0, 1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(p, nx, 0, nz);
-            buf.addVertex(p, cx + rx, cy, cz + rz).setColor(255, 255, 255, 255).setUv(1, 1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(p, nx, 0, nz);
-            buf.addVertex(p, cx + rx, cy + h, cz + rz).setColor(255, 255, 255, 255).setUv(1, 0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(p, nx, 0, nz);
-            buf.addVertex(p, cx, cy + h, cz).setColor(255, 255, 255, 255).setUv(0, 0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(p, nx, 0, nz);
+            buf.addVertex(p, cx, cy, cz).setColor(255, 255, 255, 255).setUv(u0, vb).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(p, nx, 0, nz);
+            buf.addVertex(p, cx + rx, cy, cz + rz).setColor(255, 255, 255, 255).setUv(u1, vb).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(p, nx, 0, nz);
+            buf.addVertex(p, cx + rx, cy + h, cz + rz).setColor(255, 255, 255, 255).setUv(u1, vt).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(p, nx, 0, nz);
+            buf.addVertex(p, cx, cy + h, cz).setColor(255, 255, 255, 255).setUv(u0, vt).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(p, nx, 0, nz);
         });
     }
 }

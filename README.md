@@ -760,11 +760,16 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
 * **Am Steuer**: **Rechtsklick** schaltet den Hauptbildschirm zur nächsten Kamera; **V** wechselt zwischen
   **Ich-Sicht** und **Rückansicht** des Schiffs (5 Blöcke schräg hinter und über dem Schiff, Blick über das
   Schiff nach vorn).
-* **Live-Bild**: der Client tastet die Welt von der Kamera aus mit Strahlen ab und malt Blockfarben mit Licht,
-  Schattierung und Entfernungsnebel, dazu Spieler und Kreaturen als Farbflächen sowie Himmel bzw. Sterne
-  (Reichweite 96 Blöcke, Blickwinkel 70°). Es ist also ein vereinfachtes, eher grobes Bild (bis 128 Bildpunkte
-  auf der langen Seite, 8–32 je Block) – kein zweites vollständiges Minecraft-Bild. Es wird mehrmals pro
-  Sekunde erneuert und funktioniert auch im fliegenden Schiff (andere fliegende Schiffe sieht die Kamera nicht).
+* **Live-Bild (echtes Bild)**: der Client zeichnet die Welt zusätzlich aus Sicht der Kamera – mit
+  Texturen, Licht, Kreaturen, Spielern, Wolken und fliegenden Schiffen, also dasselbe Bild wie im Spiel
+  (Blickwinkel wie eingestellt, ohne HUD und Hand), zugeschnitten auf das Seitenverhältnis der Bildfläche.
+  Damit eignet sich ein großer Hauptbildschirm als **Flugbildschirm**. Pro Frame wird genau **eine** Kamera
+  gezeichnet; zeigen mehrere Bildschirme verschiedene Kameras, wechseln sie sich ab (jede bekommt dann
+  entsprechend weniger Bilder pro Sekunde). Das kostet ungefähr so viel wie ein zweites Spielbild, also
+  sinkt die Bildrate, solange ein Bildschirm mit Kamera sichtbar ist.
+* **Ersatzbild**: klappt das echte Bild auf einem Rechner nicht (Fehler beim Zeichnen), schalten alle
+  Bildschirme auf ein vereinfachtes Bild um: der Client tastet die Welt mit Strahlen ab und malt
+  Blockfarben mit Licht, Schattierung und Nebel (bis 128 Bildpunkte auf der langen Seite, Reichweite 96).
 
 ### Warpantrieb
 

@@ -22,6 +22,7 @@ public abstract class CameraMixin {
     @Shadow private @org.jspecify.annotations.Nullable Entity entity;
     @Shadow private float eyeHeight;
     @Shadow private float eyeHeightOld;
+    @Shadow private boolean detached;
     @Shadow @org.spongepowered.asm.mixin.Final private Quaternionf rotation;
 
     @Shadow public abstract void setRotation(float yRot, float xRot, float roll);
@@ -32,6 +33,17 @@ public abstract class CameraMixin {
     private void simonspacemod$tilt(float partial, CallbackInfo ci) {
         ShipView.roll = 0;
         ShipView.tilted = false;
+        var feed = de.simon.spacemod.client.RealFeeds.override;
+        if (feed != null) {
+            // Zusatz-Durchgang für einen Bildschirm: die Kamera sitzt vor der Linse der Bildschirm-Kamera
+            Vec3 f = feed.forward().normalize();
+            Vec3 pos = feed.pos().add(f.scale(0.55));
+            float yaw = (float) Math.toDegrees(Math.atan2(-f.x, f.z)), pitch = (float) Math.toDegrees(-Math.asin(Math.max(-1, Math.min(1, f.y))));
+            setRotation(yaw, pitch, 0);
+            setPosition(pos);
+            detached = true; // der eigene Spieler ist im Bild zu sehen
+            return;
+        }
         Entity e = entity;
         if (e == null || e.getVehicle() == null) return;
         if (ShipView.rearView && e.getVehicle() instanceof FlyingShipEntity rs && rs.isPilotEntity(e)) {

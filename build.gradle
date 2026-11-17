@@ -28,7 +28,10 @@ minecraft {
             args '--mixin.config', 'simonspacemod.mixins.json'
         }
 
-        register('client')
+        register('client') {
+            // zum Testen: -PquickPlay=<Weltordner> startet direkt in einer Einzelspieler-Welt
+            if (project.hasProperty('quickPlay')) args '--quickPlaySingleplayer', project.property('quickPlay')
+        }
 
         register('server') {
             args '--nogui'
