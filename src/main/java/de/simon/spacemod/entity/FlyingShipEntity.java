@@ -60,7 +60,8 @@ public class FlyingShipEntity extends Entity {
     // letzte Steuerbefehle des Piloten
     private float targetYaw, targetPitch;
     private int throttle; // -1, 0, 1
-    private int vertical; // -1, 0, 1 (senkrecht schieben)
+    private int strafe;   // -1, 0, 1 (links/rechts schieben, relativ zum Schiff)
+    private int vertical; // -1, 0, 1 (hoch/runter schieben, relativ zum Schiff)
     /** Trägheitsdämpfer: eingestellte und tatsächlich laufende Stufe (0..10), Lage der Steuerungen im Schiff. */
     private int damperLevel = de.simon.spacemod.flight.ShipPhysics.DEFAULT_DAMPER;
     private java.util.List<BlockPos> damperBlocks;
@@ -425,11 +426,12 @@ public class FlyingShipEntity extends Entity {
     }
 
     /** Steuerbefehle des Piloten (Fadenkreuz-Richtung, Schub vor/zurück). */
-    public void control(Player player, float yaw, float pitch, int throttle, int vertical) {
+    public void control(Player player, float yaw, float pitch, int throttle, int strafe, int vertical) {
         if (!isPilot(player)) return;
         targetYaw = yaw;
         targetPitch = Math.max(-80, Math.min(80, pitch));
         this.throttle = Integer.signum(throttle);
+        this.strafe = Integer.signum(strafe);
         this.vertical = Integer.signum(vertical);
         controlAge = 0;
     }
@@ -709,11 +711,11 @@ public class FlyingShipEntity extends Entity {
         }
         ServerLevel level = (ServerLevel) level();
         if (structure == null) { discard(); return; }
-        if (++controlAge > 10 || pilot == null) { throttle = 0; vertical = 0; }
+        if (++controlAge > 10 || pilot == null) { throttle = 0; strafe = 0; vertical = 0; }
 
         // Strom: Antriebe brauchen Energie, wenn sie schieben oder drehen
         double turnDemand = pilot == null ? 0 : Math.min(1, (Math.abs(ShipPhysics.wrap(targetYaw - yaw())) + Math.abs(targetPitch - pitch())) / 30);
-        double demand = structure.engines * ShipPhysics.RF_PER_ENGINE * Math.max(Math.max(Math.abs(throttle), Math.abs(vertical)), turnDemand);
+        double demand = structure.engines * ShipPhysics.RF_PER_ENGINE * Math.max(Math.max(Math.abs(throttle), Math.max(Math.abs(strafe), Math.abs(vertical))), turnDemand);
         ServerLevel sy = shipyard();
         if (plot < 0 && sy != null) moveToShipyard(); // Schiff aus einer älteren Version
         if (plot >= 0 && sy != null) {
@@ -760,9 +762,9 @@ public class FlyingShipEntity extends Entity {
         double[] rp = ShipPhysics.turn(pitch(), pitchRate, tp, alpha);
         float newYaw = (float) ry[0], newPitch = (float) Math.max(-80, Math.min(80, rp[0]));
 
-        // Schub entlang des Bugs und senkrecht, in allen übrigen Richtungen bremsen die Trägheitsdämpfer
+        // Schub nach vorn, zur Seite und nach oben/unten (relativ zum Schiff), sonst bremsen die Trägheitsdämpfer
         double accel = ShipPhysics.acceleration(structure.engines, structure.mass(), lastPower);
-        Vec3 v = ShipPhysics.velocity(velocity, ShipPhysics.forward(newYaw, newPitch), throttle, vertical, accel,
+        Vec3 v = ShipPhysics.velocity(velocity, ShipPhysics.forward(newYaw, newPitch), throttle, strafe, vertical, accel,
             ShipPhysics.damperDecay(damperLevel));
         if (v.length() > ShipPhysics.MAX_SPEED) v = v.normalize().scale(ShipPhysics.MAX_SPEED);
         if (v.lengthSqr() < 1e-6) v = Vec3.ZERO;
@@ -813,7 +815,7 @@ public class FlyingShipEntity extends Entity {
         if (tickCount % 10 == 0 && pilot != null && level.getPlayerByUUID(pilot) instanceof ServerPlayer p)
             p.sendOverlayMessage(Component.translatable("message.simonspacemod.ship.hud",
                 String.format("%.1f", velocity.length() * 20),
-                (throttle > 0 ? ">" : throttle < 0 ? "<" : "–") + (vertical > 0 ? "↑" : vertical < 0 ? "↓" : ""),
+                (throttle > 0 ? ">" : throttle < 0 ? "<" : "–") + (strafe > 0 ? "→" : strafe < 0 ? "←" : "") + (vertical > 0 ? "↑" : vertical < 0 ? "↓" : ""),
                 (int) Math.round(lastPower * 100), structure.engines, structure.blocks.size(), damperLevel * 10));
     }
 

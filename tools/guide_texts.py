@@ -101,9 +101,9 @@ DE = {
     "entry.flying": "Fliegen",
     "flying.1": "H übernimmt das Steuer. Das Schiff dreht sich zum Fadenkreuz, W gibt Schub, S bremst, L landet, Shift gibt das Steuer ab. "
                 "Jeder Impulsantrieb gibt Schub und braucht 2000 FE/t aus dem Bordnetz. Mehr Antriebe beschleunigen schneller, große Schiffe sind träger.",
-    "flying.3": "Leertaste schiebt das Schiff senkrecht nach oben, Strg nach unten. Die Trägheitsdämpfer bremsen jede Richtung, in der gerade kein Schub läuft. "
+    "flying.3": "A und D schieben das Schiff nach links und rechts, Leertaste nach oben und Strg nach unten, jeweils relativ zum Schiff. Die Trägheitsdämpfer bremsen jede Richtung, in der gerade kein Schub läuft. "
                 "Ohne Steuerung arbeiten sie mit 10 % und kosten nichts. Mit der Trägheitsdämpfer-Steuerung stellst du sie auf 0 bis 100 % "
-                "(Rechtsklick +10 %, Schleichen + Rechtsklick −10 %); 100 % bremsen das Schiff in etwa einer Sekunde und kosten 1000 FE/t.",
+                "(Rechtsklick öffnet ein Menü mit Schieberegler und zeigt die Kosten); Bei 10 % steht das Schiff aus voller Fahrt nach 1,5 Sekunden, bei 100 % nach 3 Ticks; 100 % kosten 1000 FE/t.",
     "flying.2": "Das Schiff behält seinen Schwung, wie im echten All. Landen geht nur langsam und fast waagerecht. Dann wird es wieder zu Blöcken, alle Kisten behalten ihren Inhalt.",
     "entry.aboard": "An Bord",
     "aboard.1": "Im fliegenden Schiff läufst du ganz normal herum. Die Schwerkraft zeigt immer zum Schiffsboden, und die Sicht dreht sich mit dem Schiff. "
@@ -285,9 +285,9 @@ EN = {
     "entry.flying": "Flying",
     "flying.1": "H takes the helm. The ship turns towards the crosshair, W gives thrust, S brakes, L lands, Shift leaves the helm. "
                 "Each impulse engine gives thrust and needs 2000 FE/t from the grid. More engines accelerate faster, big ships are more sluggish.",
-    "flying.3": "Space pushes the ship straight up, Ctrl straight down. The inertial dampers brake every direction without thrust. "
+    "flying.3": "A and D push the ship left and right, Space up and Ctrl down, always relative to the ship. The inertial dampers brake every direction without thrust. "
                 "Without a control they run at 10% for free. The inertial damper control sets them from 0 to 100% "
-                "(right-click +10%, sneak + right-click −10%); 100% stops the ship in about a second and costs 1000 FE/t.",
+                "(right-click opens a menu with a slider that shows the cost); At 10% the ship stops from full speed in 1.5 seconds, at 100% in 3 ticks; 100% costs 1000 FE/t.",
     "flying.2": "The ship keeps its momentum, like in real space. Landing only works slowly and nearly level. Then it turns back into blocks and all chests keep their contents.",
     "entry.aboard": "On Board",
     "aboard.1": "You walk around a flying ship as usual. Gravity always points to the ship's floor, and your view turns with the ship. "

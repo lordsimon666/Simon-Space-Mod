@@ -659,6 +659,9 @@ public final class ModBlocks {
     /** Trägheitsdämpfer-Steuerung: Stärke der Bremsung fliegender Schiffe (0–100 %). */
     public static final RegistryObject<Block> INERTIAL_DAMPER = block("inertial_damper",
         de.simon.spacemod.flight.InertialDamperBlock::new, metal(MapColor.COLOR_BLUE).lightLevel(_ -> 5));
+    public static final RegistryObject<MenuType<de.simon.spacemod.defense.ConsoleMenu>> INERTIAL_DAMPER_MENU = MENUS.register("inertial_damper",
+        () -> IForgeMenuType.create((id, inv, buf) -> new de.simon.spacemod.defense.ConsoleMenu(ModBlocks.INERTIAL_DAMPER_MENU.get(), id,
+            new net.minecraft.world.inventory.SimpleContainerData(1), b -> {}, p -> true)));
     public static final RegistryObject<MenuType<de.simon.spacemod.mining.MiningLaserMenu>> MINING_LASER_MENU = MENUS.register("mining_laser",
         () -> IForgeMenuType.create(de.simon.spacemod.mining.MiningLaserMenu::new));
 

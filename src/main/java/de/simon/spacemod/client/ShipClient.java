@@ -74,9 +74,10 @@ public final class ShipClient {
                 return;
             }
             int throttle = (in.forward() ? 1 : 0) - (in.backward() ? 1 : 0);
-            // senkrecht schieben: Leertaste hoch, Strg (Sprinten) runter
+            // seitlich schieben (A/D) und hoch/runter (Leertaste/Strg), relativ zum Schiff
+            int strafe = (in.right() ? 1 : 0) - (in.left() ? 1 : 0);
             int vertical = (in.jump() ? 1 : 0) - (in.sprint() || mc.options.keySprint.isDown() ? 1 : 0);
-            TurboliftNetwork.sendToServer(new ShipControlMessage(0, mc.player.getYRot(), mc.player.getXRot(), throttle, vertical));
+            TurboliftNetwork.sendToServer(new ShipControlMessage(0, mc.player.getYRot(), mc.player.getXRot(), throttle, strafe, vertical));
             while (LAND.consumeClick()) TurboliftNetwork.sendToServer(new ShipControlMessage(1, 0, 0, 0));
             return;
         }

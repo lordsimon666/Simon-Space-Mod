@@ -24,12 +24,20 @@ public final class ShipPhysics {
     /** Strom der Trägheitsdämpfer bei 100 % (FE / Tick). */
     public static final int DAMPER_FE_MAX = 1000;
 
+    /** Bremsweg in Ticks aus Höchstgeschwindigkeit bei 100 % (bei Stufe l das 10/l-Fache: 10 % = 30 Ticks). */
+    public static final int STOP_TICKS_FULL = 3;
+    /** Ab dieser Geschwindigkeit (Blöcke / Tick) gilt das Schiff als stehend. */
+    public static final double STOP_SPEED = 0.05;
+
     /**
-     * Anteil der Geschwindigkeit, den die Trägheitsdämpfer je Tick wegnehmen (in jeder Richtung ohne Schub):
-     * 0 % gar nichts, 10 % (Standard) 3,4 % je Tick, 100 % ein Viertel je Tick (das Schiff steht in etwa 1 s).
+     * Anteil der Geschwindigkeit, den die Trägheitsdämpfer je Tick wegnehmen (in jeder Richtung ohne Schub).
+     * Die Zeit bis zum Stillstand aus voller Fahrt ist umgekehrt proportional zur Stufe: 100 % = 3 Ticks,
+     * 10 % (Standard) = 30 Ticks, also zehnmal so stark; 0 % bremst gar nicht.
      */
     public static double damperDecay(int level) {
-        return level <= 0 ? 0 : 0.01 + 0.024 * level;
+        if (level <= 0) return 0;
+        double ticks = STOP_TICKS_FULL * 10.0 / level;
+        return 1 - Math.pow(STOP_SPEED / MAX_SPEED, 1 / ticks);
     }
 
     /** Strom der Trägheitsdämpfer (FE / Tick): bis 10 % kostenlos, dann linear bis 1000 FE/t bei 100 %. */
@@ -38,20 +46,24 @@ public final class ShipPhysics {
     }
 
     /**
-     * Ein Tick Geschwindigkeit: Schub entlang des Bugs (throttle) und senkrecht nach oben/unten (vertical),
-     * dazu bremsen die Trägheitsdämpfer jede Richtung, in der gerade kein Schub gegeben wird – ohne Schub ganz,
-     * mit Schub nach vorn auch das seitliche Rutschen.
+     * Ein Tick Geschwindigkeit, alles relativ zum Schiff: Schub entlang des Bugs (throttle), nach rechts/links
+     * (strafe, A/D) und nach oben/unten (vertical, Leertaste/Strg). Die Trägheitsdämpfer bremsen jede dieser
+     * Achsen, auf der gerade kein Schub gegeben wird – ohne Schub ganz, mit Schub nach vorn auch das Rutschen.
      */
-    public static Vec3 velocity(Vec3 v, Vec3 forward, int throttle, int vertical, double accel, double decay) {
+    public static Vec3 velocity(Vec3 v, Vec3 forward, int throttle, int strafe, int vertical, double accel, double decay) {
+        Vec3 right = right(forward), up = right.cross(forward).normalize();
         double k = 1 - decay;
-        double along = v.dot(forward);
-        Vec3 rest = v.subtract(forward.scale(along));
-        if (throttle == 0) along *= k;
-        rest = new Vec3(rest.x * k, vertical != 0 ? rest.y : rest.y * k, rest.z * k);
-        Vec3 out = forward.scale(along).add(rest);
-        if (throttle != 0) out = out.add(forward.scale(throttle * accel));
-        if (vertical != 0) out = out.add(0, vertical * accel, 0);
-        return out;
+        double f = v.dot(forward), r = v.dot(right), u = v.dot(up);
+        f = throttle != 0 ? f + throttle * accel : f * k;
+        r = strafe != 0 ? r + strafe * accel : r * k;
+        u = vertical != 0 ? u + vertical * accel : u * k;
+        return forward.scale(f).add(right.scale(r)).add(up.scale(u));
+    }
+
+    /** Rechte Seite des Schiffs (waagerecht, das Schiff rollt nicht). */
+    public static Vec3 right(Vec3 forward) {
+        Vec3 r = forward.cross(new Vec3(0, 1, 0));
+        return r.lengthSqr() < 1e-9 ? new Vec3(1, 0, 0) : r.normalize();
     }
 
     private ShipPhysics() {}
