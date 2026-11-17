@@ -94,13 +94,22 @@ class ExampleShipsTest {
 
     @ParameterizedTest
     @EnumSource(ExampleShips.Type.class)
-    void flightScreenSeesCamera(ExampleShips.Type type) {
+    void screensShowCameras(ExampleShips.Type type) {
         var plan = ExampleShips.plan(type);
-        if (plan.camera() == null) return;
-        assertEquals(Part.CAMERA, plan.cells().get(plan.camera()).part());
-        assertTrue(count(plan.cells(), Part.DISPLAY) >= 3, "Flugbildschirm fehlt");
-        for (var e : plan.cells().entrySet()) // Bildschirm frei: davor (Richtung Heck) Luft
-            if (e.getValue().part() == Part.DISPLAY) assertEquals(Part.AIR, plan.cells().get(e.getKey().west()).part());
+        for (BlockPos c : plan.cameras()) assertEquals(Part.CAMERA, plan.cells().get(c).part());
+        int displays = 0;
+        for (var e : plan.cells().entrySet()) {
+            if (e.getValue().part() != Part.DISPLAY) continue;
+            displays++;
+            assertTrue(e.getValue().value() < plan.cameras().size(), "Bildschirm ohne Kamera");
+            // Bildschirm frei: davor Luft
+            assertEquals(Part.AIR, plan.cells().get(e.getKey().relative(e.getValue().facing())).part(), "Bildschirm verdeckt bei " + e.getKey());
+        }
+        if (!plan.cameras().isEmpty()) assertTrue(displays >= 6, "Flugbildschirm fehlt");
+        if (type == ExampleShips.Type.MINER) { // Bugkamera für den Flug und eine Kamera nach unten
+            assertEquals(Direction.EAST, plan.cells().get(plan.cameras().get(0)).facing());
+            assertTrue(plan.cameras().stream().anyMatch(c -> plan.cells().get(c).facing() == Direction.DOWN));
+        }
     }
 
     @org.junit.jupiter.api.Test

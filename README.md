@@ -36,7 +36,7 @@ Energiespeicher; Batterien sind voll geladen.
 
 | Befehl | Schiff | Strom | Warp |
 |---|---|---|---|
-| `miner` | Bergbauschiff, 15 × 9 × 7: vier Bergbaulaser unter der Decke, die durch den Raum in je einen Laserfokus im Boden schießen, eine Kiste neben jedem Laser, Laser-Steuerkonsole am Steuer, Kamera im Boden mit Blick nach unten auf dem Flugbildschirm | 2 Warpkerne (20 000 FE/t) | – |
+| `miner` | Bergbauschiff, 15 × 9 × 7: vier Bergbaulaser unter der Decke, die durch den Raum in je einen Laserfokus im Boden schießen, eine Kiste neben jedem Laser, Laser-Steuerkonsole am Steuer; Flugbildschirm mit Bugkamera, dazu eine Kamera im Boden zwischen den Lasern mit Blick nach unten auf einem zweiten Bildschirm an Backbord (am Steuer schaltet Rechtsklick den Flugbildschirm auch auf sie) | 2 Warpkerne (20 000 FE/t) | – |
 | `reactor_small` | Reaktorshuttle, 11 × 7 × 6, mit **3×3×3-Kernreaktor** und einer Batterie | ≈ 530 FE/t + Speicher | – |
 | `reactor_large` | Reaktorfrachter, 23 × 19 × 11, mit **8×8×8-Kernreaktor**, zwei Gondeln, Flugbildschirm | 10 000 FE/t | **Warp 2** (gerade so) |
 | `warp5` | Warp-5-Schiff, 19 × 9 × 10, eine Gondel oben auf dem Rumpf | 2 Warpkerne der F (80 000 FE/t) | **Warp 5** (mehr erlaubt eine Gondel nicht) |
@@ -425,7 +425,9 @@ klicke sie mit der rechten Maustaste an:
   Gondelgitter, Positionslichter oder **Luftschleusen** (andere Türen zählen nicht). Sonst nennt die Meldung die Anzahl und einen Beispiel-
   block mit Position (z. B. ein Loch oder Glas statt Hüllenfenster).
 * **Abheben**: die Struktur wird zum fliegenden Schiff; alle Lebewesen darin fliegen mit, du stehst
-  am Steuer. Der Bug zeigt in deine Blickrichtung hinter der Konsole.
+  am Steuer. Der Bug zeigt in deine Blickrichtung hinter der Konsole. Beim Abheben und beim Übernehmen des
+  Steuers im Flug wirst du auf das Feld direkt hinter der Konsole gestellt, Blick waagerecht zum Bug – egal,
+  von wo du geklickt hast (ist das Feld zugestellt, bleibst du stehen).
 * **Herumlaufen**: im fliegenden Schiff läuft man wie in Valkyrien Skies – WASD, Springen, Sprinten,
   Stufen bis eine halbe Blockhöhe, Kollision mit Wänden, Böden und Möbeln des Schiffs. Die Schwerkraft
   zeigt immer zum Schiffsboden (auch wenn das Schiff nickt). Wer weit vom Schiff wegfällt, steigt ab.

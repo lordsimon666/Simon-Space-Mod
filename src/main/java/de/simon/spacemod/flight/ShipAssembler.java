@@ -161,6 +161,7 @@ public final class ShipAssembler {
         for (Entity e : riders) e.startRiding(ship, true, false);
         if (!player.isPassenger()) player.startRiding(ship, true, false);
         ship.setPilot(player);
+        ship.seatPilot(player); // direkt hinter die Konsole, Blick zum Bug
         player.sendOverlayMessage(Component.translatable("message.simonspacemod.ship.launched", found.size(), structure.engines));
     }
 }

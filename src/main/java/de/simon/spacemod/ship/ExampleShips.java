@@ -1,10 +1,11 @@
 package de.simon.spacemod.ship;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import org.jspecify.annotations.Nullable;
 
 /**
  * Baupläne der Beispielschiffe (nur per Befehl {@code /simonship spawn}). Reine Daten: welcher Schiffsteil an
@@ -44,7 +45,8 @@ public final class ExampleShips {
      */
     public record Cell(Part part, Direction facing, int value) {}
 
-    public record Plan(Type type, Map<BlockPos, Cell> cells, @Nullable BlockPos camera) {}
+    /** Kameras des Schiffs; Bildschirme zeigen die Kamera mit der Nummer in ihrem {@code value}, Nummer 0 ist der Hauptbildschirm. */
+    public record Plan(Type type, Map<BlockPos, Cell> cells, List<BlockPos> cameras) {}
 
     private ExampleShips() {}
 
@@ -57,7 +59,7 @@ public final class ExampleShips {
             case WARP5 -> warp5(b);
             case WARP9 -> warp9(b);
         }
-        return new Plan(type, b.cells, b.camera);
+        return new Plan(type, b.cells, List.copyOf(b.cameras));
     }
 
     // ---- die Schiffe ----
@@ -78,8 +80,11 @@ public final class ExampleShips {
         b.set(12, 1, -2, Part.LASER_CONTROL, Direction.WEST);
         b.damper(12, 1, 2, 3);
         b.windows(14, 2, 4, 2, 3);
-        b.camera(7, 0, 0, Direction.DOWN);   // Blick nach unten auf den Abbau
-        b.screen(13, 2, 3, 2);
+        int bow = b.camera(14, 3, 0, Direction.EAST);  // Flugbildschirm: Blick nach vorn
+        b.screen(13, 2, 3, 2, bow);
+        // Kamera im Boden zwischen den Lasern mit Blick nach unten auf den Abbau, eigener Bildschirm an Backbord
+        int down = b.camera(7, 0, 0, Direction.DOWN);
+        b.sideScreen(11, 2, -3, 2, 2, down);
         b.airlock(7, 1, -4);
         b.navLights(12, 6, 4);
     }
@@ -103,8 +108,7 @@ public final class ExampleShips {
         b.engines(0, new int[] {2, 3}, new int[] {-5, 5});
         b.set(19, 1, 0, Part.HELM, Direction.WEST);
         b.damper(19, 1, 3, 5);
-        b.camera(22, 3, 0, Direction.EAST);
-        b.screen(21, 2, 5, 3);
+        b.screen(21, 2, 5, 3, b.camera(22, 3, 0, Direction.EAST));
         b.windows(22, 3, 6, 3, 5);
         b.nacelle(1, 13, 7, -9, Part.HULL);
         b.nacelle(1, 13, 7, 9, Part.HULL);
@@ -122,8 +126,7 @@ public final class ExampleShips {
         b.engines(0, new int[] {2, 3}, new int[] {-2, 2});
         b.set(16, 1, 0, Part.HELM, Direction.WEST);
         b.damper(16, 1, 2, 5);
-        b.camera(18, 3, 0, Direction.EAST);
-        b.screen(17, 2, 3, 2);
+        b.screen(17, 2, 3, 2, b.camera(18, 3, 0, Direction.EAST));
         b.windows(18, 2, 4, 2, 3);
         // eine Gondel oben auf dem Rumpf
         for (int x = 6; x <= 8; x++) b.set(x, 7, 0, Part.HULL);
@@ -139,8 +142,7 @@ public final class ExampleShips {
         b.engines(0, new int[] {2, 3, 4}, new int[] {-3, 3});
         b.set(24, 1, 0, Part.HELM, Direction.WEST);
         b.damper(24, 1, 3, 10);
-        b.camera(26, 3, 0, Direction.EAST);
-        b.screen(25, 2, 5, 3);
+        b.screen(25, 2, 5, 3, b.camera(26, 3, 0, Direction.EAST));
         b.windows(26, 2, 5, 3, 4);
         for (int z : new int[] {-1, 1}) {
             for (int x = 4; x <= 7; x++)
@@ -155,7 +157,7 @@ public final class ExampleShips {
 
     private static final class Builder {
         final Map<BlockPos, Cell> cells = new LinkedHashMap<>();
-        @Nullable BlockPos camera;
+        final List<BlockPos> cameras = new ArrayList<>();
 
         void set(int x, int y, int z, Part p) {
             set(x, y, z, p, Direction.EAST);
@@ -211,15 +213,23 @@ public final class ExampleShips {
                 }
         }
 
-        void camera(int x, int y, int z, Direction f) {
+        /** Kamera setzen; liefert ihre Nummer. */
+        int camera(int x, int y, int z, Direction f) {
             set(x, y, z, Part.CAMERA, f);
-            camera = new BlockPos(x, y, z);
+            cameras.add(new BlockPos(x, y, z));
+            return cameras.size() - 1;
         }
 
         /** Flugbildschirm an der Innenseite der Bugwand: w breit (ungerade, mittig), h hoch, ab Höhe y. */
-        void screen(int x, int y, int w, int h) {
+        void screen(int x, int y, int w, int h, int camera) {
             for (int dy = 0; dy < h; dy++)
-                for (int z = -w / 2; z <= w / 2; z++) set(x, y + dy, z, Part.DISPLAY, Direction.WEST);
+                for (int z = -w / 2; z <= w / 2; z++) cells.put(new BlockPos(x, y + dy, z), new Cell(Part.DISPLAY, Direction.WEST, camera));
+        }
+
+        /** Bildschirm an der Innenseite der Backbordwand (Blick nach Steuerbord): ab x, w lang, h hoch. */
+        void sideScreen(int x, int y, int z, int w, int h, int camera) {
+            for (int dy = 0; dy < h; dy++)
+                for (int dx = 0; dx < w; dx++) cells.put(new BlockPos(x + dx, y + dy, z), new Cell(Part.DISPLAY, Direction.SOUTH, camera));
         }
 
         /** Kleine Luftschleuse (1 breit, 2 hoch, 2 tief) in der Backbordwand bei z, nach außen (Norden) gerichtet. */

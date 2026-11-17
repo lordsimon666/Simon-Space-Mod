@@ -392,6 +392,7 @@ public class FlyingShipEntity extends Entity {
             return;
         }
         setPilot(player);
+        seatPilot(player);
         player.sendOverlayMessage(Component.translatable("message.simonspacemod.ship.helm_on"));
     }
 
@@ -446,6 +447,25 @@ public class FlyingShipEntity extends Entity {
             player.startRiding(this, true, false);
         }
         return net.minecraft.world.InteractionResult.SUCCESS;
+    }
+
+    /**
+     * Pilot an seinen Platz stellen: auf das Feld direkt hinter der Steuerkonsole (auf das die Konsole zeigt),
+     * Blick nach vorn zum Bug. Ist das Feld zugestellt, bleibt er, wo er ist.
+     */
+    public void seatPilot(ServerPlayer player) {
+        BlockPos helm = helmLocal();
+        if (structure == null || helm == null || !hasPassenger(player)) return;
+        int i = structure.indexOf(helm);
+        BlockState st = i >= 0 ? structure.blocks.get(i).state() : null;
+        if (st == null || !st.hasProperty(net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING)) return;
+        BlockPos spot = helm.relative(st.getValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING));
+        var col = structure.collision();
+        if (col.containsKey(spot) || col.containsKey(spot.above())) return;
+        Vec3 seat = new Vec3(spot.getX(), spot.getY() - 0.5, spot.getZ());
+        seats.put(player.getUUID(), seat);
+        restoreSeats(Map.of(player.getUUID(), seat));
+        player.forceSetRotation(yaw(), false, 0F, false);
     }
 
     public boolean isPilot(Player player) {

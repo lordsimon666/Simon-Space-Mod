@@ -97,7 +97,8 @@ public final class ExampleShipCommand {
         }
         for (var e : later) level.setBlock(origin.offset(e.getKey().rotate(rot)), state(e.getValue()).rotate(rot), flags);
         // Inhalte: Reaktoren voll, Batterien voll, Bildschirme auf die Bugkamera
-        BlockPos cam = plan.camera() == null ? null : origin.offset(plan.camera().rotate(rot));
+        List<BlockPos> cams = new ArrayList<>();
+        for (BlockPos c : plan.cameras()) cams.add(origin.offset(c.rotate(rot)));
         for (var e : plan.cells().entrySet()) {
             BlockPos w = origin.offset(e.getKey().rotate(rot));
             switch (e.getValue().part()) {
@@ -106,7 +107,10 @@ public final class ExampleShipCommand {
                     if (level.getBlockEntity(w) instanceof BatteryBlockEntity b) b.set(BatteryBlockEntity.CAPACITY);
                     level.setBlock(w, level.getBlockState(w).setValue(BatteryBlock.CHARGE, BatteryBlock.charge(BatteryBlockEntity.CAPACITY)), flags);
                 }
-                case DISPLAY -> { if (cam != null && level.getBlockEntity(w) instanceof DisplayBlockEntity d) d.set(cam, true); }
+                case DISPLAY -> {
+                    int c = e.getValue().value();
+                    if (c < cams.size() && level.getBlockEntity(w) instanceof DisplayBlockEntity d) d.set(cams.get(c), c == 0);
+                }
                 default -> {}
             }
         }
