@@ -54,7 +54,7 @@ public final class ShipAssembler {
         return n.startsWith("hull") || n.startsWith("deflector") || n.startsWith("bussard") || n.startsWith("nav_light")
             || n.startsWith("phase") || n.startsWith("phaser_bank") || n.startsWith("phaser_emitter") || n.startsWith("phaser_strip")
             || n.equals("impulse_engine") || n.startsWith("torpedo_launcher") || n.startsWith("quantum_launcher") || n.equals("nacelle_grille")
-            || n.equals("viewport") || n.equals("mining_laser") || n.equals("laser_focus");
+            || n.equals("viewport") || n.equals("camera") || n.equals("mining_laser") || n.equals("laser_focus");
     }
 
     public static void assemble(ServerLevel level, BlockPos helm, Direction forward, ServerPlayer player) {

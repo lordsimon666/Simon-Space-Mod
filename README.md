@@ -749,7 +749,8 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
 ### Kameras und Bildschirme
 
 * **Kamera** (Schiffsteil-Fertigung): schaut von der Seite weg, an die man sie setzt (an der Wand nach vorn,
-  unter der Decke nach unten). **Bildschirm**: zeigt das Live-Bild einer Kamera derselben Struktur (über
+  unter der Decke nach unten). Kameras sind **Hüllenblöcke**: sie dürfen außen in der Schiffshülle sitzen,
+  ohne dass das Abheben wegen offener Hülle scheitert. **Bildschirm**: zeigt das Live-Bild einer Kamera derselben Struktur (über
   Blöcke der Mod verbunden – im Schiff also alle Kameras an Bord).
 * **Große Bildflächen**: Bildschirme, die nebeneinander/übereinander in einer Ebene sitzen und in dieselbe
   Richtung zeigen, werden zu **einer** Bildfläche, wenn sie ein volles Rechteck von **1×1 bis 16×16** bilden
