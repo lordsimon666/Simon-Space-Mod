@@ -722,9 +722,11 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
   Größe – die Schiffe sind also 1000 Blöcke voneinander entfernt. Je neuer, desto seltener:
   NX-01 14/57, NCC-1701 12/57, -A 10/57, -B 8/57, -C 6/57, -D 4/57, -E 2/57, -F 1/57. Sie entstehen, sobald ein
   Spieler näher als 700 Blöcke kommt (eins nach dem anderen).
-* **Asteroiden** (3 bis 12 Blöcke Radius) liegen in einem lockeren Raster aus 110-Block-Zellen
-  (etwa 70 % belegt, leicht versetzt): zwischen zwei Asteroiden sind immer mindestens rund 50 bis 100
-  Blöcke freier Raum, sodass man gut hindurchfliegen kann; rund um die Enterprises bleiben 50 Blöcke frei. Sie bestehen aus Stein, Andesit, Tuff, Tiefenschiefer oder Basalt mit
+* **Asteroiden** (3 bis 12 Blöcke Radius) liegen in einem lockeren Raster aus 136-Block-Zellen
+  (etwa 70 % belegt, leicht versetzt): zwischen zwei Asteroiden sind immer mindestens 74 Blöcke, meist
+  um 100 Blöcke freier Raum, sodass man gut hindurchfliegen kann. Rund um die Enterprises bleiben
+  50 Blöcke frei – auch um Schiffe, die mit `/enterprise spawn` im Weltraum gebaut werden: Asteroiden in
+  diesem Umkreis werden beim Bauen weggeräumt (nur Asteroidengestein und -erze, nie andere Blöcke). Sie bestehen aus Stein, Andesit, Tuff, Tiefenschiefer oder Basalt mit
   Kohle, Eisen, Kupfer, Gold, Redstone, Lapis, Diamant, Smaragd, **Uran** und **Dilithium**; im Kern
   manchmal **Antimaterie-Einschlüsse**. Etwa jeder sechste Asteroid ist ein Eisbrocken mit
   **Deuterium-Eis**.
@@ -863,6 +865,14 @@ statt durch offene Flächen des Modells zugebaut zu werden. Die Ergebnisse liege
 Unterrumpf) und erzeugt daraus Decks, Räume, Brücke, Maschinenraum, Farben und Beschriftung. Die Brücke
 kommt auf die Brückenkuppel des Modells (die höchste Stelle der Untertasse auf der Mittellinie). Bei runden
 Untertassen und der D ist das die Mitte, bei der E etwas weiter vorne und bei der F weit vorne.
+
+**Brücke im Rumpf**: Die Außenform des Modells hat Vorrang. Die Brücke liegt im obersten Deck ganz im
+Rumpf. Ist die Brückenkuppel des Modells dafür zu flach, wird sie um höchstens 7 Blöcke erhöht: über der
+Brücke flach, nach außen je Block eine Stufe tiefer, bis sie wieder auf das Modell trifft. Liegt die
+Vorderkante frei, rückt die Brücke ein Stück nach hinten in die Kuppel. Nur wenn das nicht reicht, sinkt
+sie um ganze Decks (in Originalgröße nur bei der F, ein Deck). Hohlstellen im Brückenbereich (z. B. die
+eingelassenen Fenster der F) werden aufgefüllt. Der Hauptbildschirm sitzt in einer geraden Vorderwand und
+ist von der Brücke aus ganz zu sehen; dahinter ist immer Wand.
 
 **Brückenmaße** nach Set- und Deckplänen (1 Block = 1 m): Alle Brücken haben 4 Blöcke lichte Höhe
 (die Sets waren 3,5–4 m hoch; auf erhöhten Ebenen bleiben 3 Blöcke Kopffreiheit). Durchmesser innen:

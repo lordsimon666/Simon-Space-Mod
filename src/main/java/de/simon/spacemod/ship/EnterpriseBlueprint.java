@@ -105,6 +105,15 @@ public final class EnterpriseBlueprint {
     private double eY, eR, eXf, eXr; // Sekundärhülle: Achshöhe, Radius, Front, Heck
     private double nZ, nY, nR, nX0, nX1; // Warpgondeln
     private int bridgeFloor;
+    /**
+     * Oberstes Deck (wo die Brücke früher auf dem Rumpf saß): Decknummern zählen von hier. Die Brücke selbst
+     * liegt so viele Decks tiefer, dass sie ganz im Rumpf des Modells steckt ({@link #bridgeInside}).
+     */
+    private int deckTop;
+    /** Liegt die Brücke ganz im Rumpf (dann ragt nichts von ihr aus dem Modell heraus)? */
+    private boolean bridgeInside;
+    /** Erhöhte Oberseite der Kuppel je Säule (relativ zu bCx/0), -1 = unverändert; Kantenlänge 2 * (bR + MAX_LIFT + 2) + 1. */
+    private int[] liftTop;
     private int floorBase;
 
     /** Außenform aus einem 3D-Modell (oder null = eingebaute, berechnete Form). */
@@ -165,6 +174,8 @@ public final class EnterpriseBlueprint {
             bridgeFloor = (int) Math.floor(saucerTop(0));
         }
         floorBase = Math.floorMod(bridgeFloor, DECK_HEIGHT);
+        deckTop = bridgeFloor;
+        if (model != null) placeBridgeInHull();
 
         sizeX = model != null ? model.sx + 2 : (int) Math.ceil(Math.max(nX1, eXr) + 3);
         sizeY = model != null ? Math.max(model.sy + 2, bridgeFloor + 12) : Math.max(bridgeFloor + 12, (int) Math.ceil(nY + nR + 3));
@@ -200,6 +211,7 @@ public final class EnterpriseBlueprint {
             layoutSecondaryDecks();
         }
         buildBridge();
+        fillAroundBridge();
         bridgeDeckRoom();
         BlockPos eng = buildEngineering();
         BlockPos transporter = buildTransporterRoom(fullDecks);
@@ -1680,6 +1692,93 @@ public final class EnterpriseBlueprint {
     }
 
     /** Oberkante des Modells im Abstand r rings um die Brückenmitte (Median aus vier Richtungen). */
+    /** Um so viele Blöcke darf die Kuppel über der Brücke höchstens wachsen, damit die Gesamtform stimmig bleibt. */
+    private static final int MAX_LIFT = 7;
+
+    /**
+     * Brücke in den Rumpf: Sie bleibt im obersten Deck; ist die Kuppel des Modells dafür zu flach, wird sie um
+     * bis zu {@link #MAX_LIFT} Blöcke erhöht (über der Brücke flach, außen schräg in den Rumpf auslaufend).
+     * Reicht das nicht, sinkt die Brücke um ganze Decks. Passt sie nirgends, bleibt sie wie bisher oben.
+     */
+    private void placeBridgeInHull() {
+        int top = bridgeFloor;
+        double cx0 = bCx;
+        for (int k = 0; k <= 8; k++) {
+            int f = top - k * DECK_HEIGHT;
+            if (f < 4) break;
+            // liegt die Vorderkante frei, rückt die Brücke bis zu 12 Blöcke nach hinten in die Kuppel
+            for (int shift = 0; shift <= 12; shift++) {
+                bCx = cx0 + shift;
+                for (int lift = 0; lift <= MAX_LIFT; lift++) {
+                    if (!bridgeFits(f, lift)) continue;
+                    bridgeFloor = f;
+                    bridgeInside = true;
+                    computeLift();
+                    return;
+                }
+            }
+        }
+        bCx = cx0;
+    }
+
+    /**
+     * Neue Oberseite der Kuppel je Säule: über der Brücke eine Lage über der Decke, nach außen je Block eine
+     * Stufe tiefer, bis sie das Modell trifft. Es wird nur aufgefüllt, nie etwas vom Modell weggenommen.
+     */
+    private void computeLift() {
+        int n = bR + MAX_LIFT + 2, cx = (int) Math.round(bCx), need = bridgeFloor + BRIDGE_H + 2;
+        liftTop = new int[(2 * n + 1) * (2 * n + 1)];
+        java.util.Arrays.fill(liftTop, -1);
+        for (int dx = -n; dx <= n; dx++)
+            for (int dz = -n; dz <= n; dz++) {
+                double r = Math.hypot(dx, dz);
+                int target = r <= bR - 1 ? need : need - (int) Math.ceil(r - (bR - 1));
+                int mt = modelTop(cx + dx, dz, need + 12);
+                // nur auffüllen, wo darunter Rumpf ist (nicht frei in die Luft hinaus)
+                if (mt >= 0 && mt < target && target - mt <= MAX_LIFT + 1) liftTop[(dx + n) * (2 * n + 1) + dz + n] = target;
+            }
+    }
+
+    /** Oberste Modellzelle unter der erhöhten Kuppel (für die Säulen mit {@link #liftTopAt}). */
+    private int modelTopCached(int x, int z) {
+        int lt = liftTopAt(x, z);
+        return lt < 0 ? Integer.MAX_VALUE : modelTop(x, z, lt + 12);
+    }
+
+    /** Angehobene Oberseite der Säule (x, z) oder -1. */
+    private int liftTopAt(int x, int z) {
+        if (liftTop == null) return -1;
+        int n = bR + MAX_LIFT + 2, dx = x - (int) Math.round(bCx);
+        if (Math.abs(dx) > n || Math.abs(z) > n) return -1;
+        return liftTop[(dx + n) * (2 * n + 1) + z + n];
+    }
+
+    /** Oberste massive Zelle des Modells in der Säule (x, z) unterhalb von {@code below}, sonst -1. */
+    private int modelTop(int x, int z, int below) {
+        for (int y = Math.min(below, model.sy - 1); y >= 0; y--) if (ms(x, y, z)) return y;
+        return -1;
+    }
+
+    /**
+     * Passt der Brückenraum bei Boden {@code f}, wenn die Oberseite des Modells über der Brücke um höchstens
+     * {@code lift} Blöcke angehoben werden darf? Jede Säule bis knapp an die Außenwand darf oben höchstens
+     * {@code lift} Blöcke unter der Lage über der Decke enden. Hohlstellen darunter (z. B. die eingelassenen
+     * Brückenfenster der F) werden aufgefüllt.
+     */
+    private boolean bridgeFits(int f, int lift) {
+        int r = bR + 1, cx = (int) Math.round(bCx), need = f + BRIDGE_H + 2;
+        for (int dx = -r; dx <= r; dx++)
+            for (int dz = -r; dz <= r; dz++) {
+                double d = Math.hypot(dx, dz);
+                if (d > r) continue;
+                int top = modelTop(cx + dx, dz, need + 12);
+                // über der Brücke höchstens lift Blöcke erhöhen; der Wandring darf tiefer liegen, aber nicht
+                // so tief, dass Wand und Hauptbildschirm frei lägen (die Schräge füllt ihn bis über den Bildschirm auf)
+                if (d <= bR - 1 ? top < need - lift : top < need - 1 - (MAX_LIFT + 1)) return false;
+            }
+        return true;
+    }
+
     private int ringTop(int r) {
         java.util.List<Double> v = new java.util.ArrayList<>();
         int[][] pts = {{(int) Math.round(bCx) + r, 0}, {(int) Math.round(bCx) - r, 0}, {(int) Math.round(bCx), r}, {(int) Math.round(bCx), -r}};
@@ -2215,7 +2314,15 @@ public final class EnterpriseBlueprint {
         double rb = Math.hypot(x - bCx, z); // echter Abstand zur Brücke (Brückenmodul)
         double r = rad(x, z);
         double az = Math.abs(z);
-        if (rb <= bR) {
+        if (bridgeInside) {
+            // Brücke im Rumpf: nur Zellen des Modells, dazu die erhöhte Kuppel (höchstens MAX_LIFT Blöcke)
+            int lt = liftTopAt(x, z);
+            if (lt >= 0 && y <= lt && !ms(x, y, z) && y > modelTopCached(x, z)) return BRIDGE;
+            int rel = y - bridgeFloor;
+            // im Brückenzylinder auch Hohlstellen unter der Oberseite auffüllen
+            if (rb <= bR && rel >= -1 && rel <= BRIDGE_H + 3 && (ms(x, y, z) || y <= Math.max(modelTop(x, z, bridgeFloor + BRIDGE_H + 14), liftTopAt(x, z))))
+                return BRIDGE;
+        } else if (rb <= bR) {
             int rel = y - bridgeFloor;
             if (rel >= -1 && rel <= BRIDGE_H + 1) return BRIDGE;
             if (rel == BRIDGE_H + 2 && rb <= bR - 1.5) return BRIDGE;
@@ -3371,6 +3478,7 @@ public final class EnterpriseBlueprint {
         int yb = bridgeFloor, top = yb + BRIDGE_H;
         double rr = bIn;
         int vs = (int) Math.floor(rr) + 1;
+        int hw = rr >= 6.5 ? 4 : 3; // halbe Breite des Hauptbildschirms
         ShipPart wallPart = design == ShipDesign.NCC_1701_C ? ShipPart.BRIDGE_WALL_DARK : ShipPart.TNG_WALL;
         ShipPart carpet = ShipPart.TNG_CARPET;
         BlockPos lift = bridgeTurbolift();
@@ -3379,7 +3487,9 @@ public final class EnterpriseBlueprint {
                 double r = Math.sqrt(dx * dx + dz * dz);
                 int x = cx + dx;
                 boolean nearLift = dx >= lift.getX() - cx - 2 && Math.abs(Math.abs(dz) - Math.abs(lift.getZ())) <= 1.5;
-                if (r <= rr) {
+                // vorne eine gerade Wand: der ganze Hauptbildschirm liegt frei (nicht nur die Mitte hinter der runden Wand)
+                boolean front = dx >= -(vs - 1) && dx <= -(vs - 3) && Math.abs(dz) <= hw;
+                if (r <= rr || front) {
                     boolean raised = dx >= 0 && r > 3.0;        // erhöhte hintere Ebene hinter dem Hufeisen
                     set(x, yb, dz, carpet);
                     for (int y = yb + 1; y <= top; y++) set(x, y, dz, ShipPart.AIR);
@@ -3403,8 +3513,16 @@ public final class EnterpriseBlueprint {
                         set(x, yb + 3, dz, ShipPart.LCARS_PANEL, inwardFacing(dx, dz));
                 }
             }
-        // Hauptbildschirm vorne (7 x 3, bei der Galaxy und der Odyssey 9 x 3)
-        int hw = rr >= 6.5 ? 4 : 3;
+        // Hauptbildschirm vorne (7 x 3, bei der Galaxy und der Odyssey 9 x 3); dahinter und daneben immer Wand,
+        // damit man ihn aus einem Nachbarraum nicht von hinten sieht
+        for (int dz = -hw - 1; dz <= hw + 1; dz++)
+            for (int y = yb; y <= top; y++) {
+                for (int bx : new int[] {cx - vs - 1, cx - vs}) {
+                    if (bx == cx - vs && Math.abs(dz) <= hw) continue;
+                    ShipPart b = get(bx, y, dz);
+                    if (b == ShipPart.AIR || b != null && b.name().contains("CARPET") || b == ShipPart.CEILING_LIGHT) set(bx, y, dz, wallPart);
+                }
+            }
         for (int dz = -hw; dz <= hw; dz++)
             for (int y = yb + 1; y <= yb + 3; y++) set(cx - vs, y, dz, ShipPart.VIEWSCREEN, Direction.SOUTH);
         // Taktikstation in der Mitte des Hufeisens (hinter dem Captain)
@@ -3633,7 +3751,7 @@ public final class EnterpriseBlueprint {
     private BlockPos buildTransporterRoom(boolean fullDecks) {
         if (fullDecks) {
             // Fester Platz auf Deck 3 im hinteren Innenraum (Steuerbord), Tür zum hinteren Gang
-            int f = bridgeFloor - 2 * DECK_HEIGHT;
+            int f = deckTop - 2 * DECK_HEIGHT;
             int xt = (int) Math.round(sCx + 15), zc = 8;
             if (boxInterior(xt - 4, xt + 4, f + 1, f + 3, zc - 4, zc + 4)) {
                 transporterRoomAt(xt, zc, f, false);
@@ -3646,16 +3764,48 @@ public final class EnterpriseBlueprint {
             int xt = (int) Math.round(sCx + off);
             for (int f = sizeY - 7; f > 0; f--) {
                 // Nur der begehbare Innenraum muss im Schiff liegen, Boden/Decke/Wände dürfen Hülle sein
-                if (!boxInterior(xt - 4, xt + 4, f + 1, f + 3, -4, 4)) continue;
+                if (!boxInterior(xt - 4, xt + 4, f + 1, f + 3, -4, 4) || touchesBridge(xt - 5, xt + 5, f, f + 4, -5, 5)) continue;
                 return transporterRoomAt(xt, 0, f, true);
             }
         }
         // Ausweichlösung (z.B. dünne Untertasse bei kleinen Größen): irgendwo entlang der Mittellinie
         for (int xt = 6; xt < sizeX - 6; xt++)
             for (int f = sizeY - 7; f > 0; f--)
-                if (boxInterior(xt - 4, xt + 4, f + 1, f + 3, -4, 4) && !boxTouches(xt - 5, xt + 5, f, f + 4, -5, 5))
+                if (boxInterior(xt - 4, xt + 4, f + 1, f + 3, -4, 4) && !boxTouches(xt - 5, xt + 5, f, f + 4, -5, 5)
+                    && !touchesBridge(xt - 5, xt + 5, f, f + 4, -5, 5))
                     return transporterRoomAt(xt, 0, f, true);
         return null;
+    }
+
+    /** Überschneidet der Quader den Brückenzylinder (Raum zwischen Boden und Decke, mit Wand)? */
+    private boolean touchesBridge(int x0, int x1, int y0, int y1, int z0, int z1) {
+        // gemeinsame Boden- bzw. Deckenplatte ist erlaubt, nur echte Überschneidung nicht
+        if (y1 <= bridgeFloor || y0 >= bridgeFloor + BRIDGE_H + 1) return false;
+        double nx = Math.max(x0, Math.min(bCx, x1)), nz = Math.max(z0, Math.min(0, z1));
+        return Math.hypot(nx - bCx, nz) <= bR;
+    }
+
+    /**
+     * Unter der erhöhten Kuppel und über der Brückendecke bleibt kein Hohlraum: dort wird massiv aufgefüllt
+     * (unsichtbar hinter der Hülle), damit keine leeren, unerreichbaren Kammern entstehen.
+     */
+    private void fillAroundBridge() {
+        if (!bridgeInside) return;
+        int n = bR + MAX_LIFT + 2, cx = (int) Math.round(bCx), ceiling = bridgeFloor + BRIDGE_H + 1;
+        for (int dx = -n; dx <= n; dx++)
+            for (int dz = -n; dz <= n; dz++) {
+                int x = cx + dx;
+                double r = Math.hypot(dx, dz);
+                int lt = liftTopAt(x, dz), mt = modelTop(x, dz, ceiling + 16);
+                int top = Math.max(lt, r <= bR ? mt : -1);
+                int from = r <= bR ? ceiling + 1 : mt;
+                if (top < 0 || from < 0) continue;
+                for (int y = from; y <= top; y++) {
+                    if (!inBounds(x, y, dz) || compAt(x, y, dz) == NONE || hull[idx(x, y, dz)]) continue;
+                    ShipPart p = get(x, y, dz);
+                    if (p == null || p == ShipPart.AIR || p == ShipPart.CEILING_LIGHT) set(x, y, dz, ShipPart.HULL_PLATING);
+                }
+            }
     }
 
     public static boolean isWarpCore(ShipPart p) {
@@ -4004,14 +4154,14 @@ public final class EnterpriseBlueprint {
     }
 
     private int deckNumber(int floorY) {
-        return Math.round((bridgeFloor - floorY) / (float) DECK_HEIGHT) + 1;
+        return Math.round((deckTop - floorY) / (float) DECK_HEIGHT) + 1;
     }
 
     /** Turbolift-Halte für Brücke, Maschinenraum und Transporterraum (die Decks tragen sich selbst ein). */
     private void linkTurbolifts(BlockPos engineering, BlockPos transporter) {
         BlockPos bridge = bridgeTurbolift();
         set(bridge.getX(), bridge.getY(), bridge.getZ(), ShipPart.TURBOLIFT, Direction.NORTH);
-        liftStops.add(new LiftStop(bridge, deckLabel(1) + " – Brücke"));
+        liftStops.add(new LiftStop(bridge, deckLabel(deckNumber(bridgeFloor)) + " – Brücke"));
         liftStops.add(new LiftStop(engineering, deckLabel(deckNumber(engineering.getY() - 1)) + " – Maschinenraum"));
         if (transporter != null) {
             liftStops.add(new LiftStop(transporter, deckLabel(deckNumber(transporter.getY() - 1)) + " – Transporterraum"));
@@ -4063,6 +4213,8 @@ public final class EnterpriseBlueprint {
     }
 
     private boolean deckCell(int x, int y, int z) {
+        // liegt die Brücke im Rumpf, bleiben die Decks daneben und darüber aus ihrem Zylinder heraus
+        if (bridgeFloor < deckTop && y >= bridgeFloor && Math.hypot(x - bCx, z) <= bR + 0.5) return false;
         byte c = compAt(x, y, z);
         return (c == SAUCER || c == SENSOR || c == BRIDGE) && isInterior(x, y, z);
     }
@@ -4090,7 +4242,7 @@ public final class EnterpriseBlueprint {
         int rx = (int) Math.ceil(sR / kx), rz = (int) Math.ceil(sR / kz);
         int skipped = 0;      // oberste Decks ohne Platz in der Mitte (flache Untertasse, Brücke nicht mittig)
         boolean first = true;
-        for (int f = bridgeFloor - DECK_HEIGHT; f > 0; f -= DECK_HEIGHT) {
+        for (int f = deckTop - DECK_HEIGHT; f > 0; f -= DECK_HEIGHT) {
             // Lift in der Mitte; ist dort auf dieser Höhe kein Platz (flache Untertasse), die nächste freie
             // Stelle auf der Mittellinie
             int lx = Integer.MIN_VALUE;
@@ -4766,7 +4918,7 @@ public final class EnterpriseBlueprint {
         int xs = (int) Math.round(eXf + 0.13 * (eXr - eXf));
         int xe = (int) Math.round(eXr - 22 * s) - 1;
         String[] names = {"Frachtraum", "Quartiere", "Labore", "Lager"};
-        for (int f = bridgeFloor - DECK_HEIGHT; f > 0; f -= DECK_HEIGHT) {
+        for (int f = deckTop - DECK_HEIGHT; f > 0; f -= DECK_HEIGHT) {
             if (compAt(xs, f + 1, 0) != SECONDARY) continue;
             boolean ok = true;
             for (int y = f + 1; y <= f + 3; y++) ok &= isInterior(xs, y, 0) && isInterior(xs + 1, y, 0);
@@ -4909,6 +5061,9 @@ public final class EnterpriseBlueprint {
                     return facesAft(x, y, z) ? ShipPart.IMPULSE_ENGINE : st;
                 }
                 case ShipColors.BLUEPAINT -> { return nacelle ? ShipPart.NACELLE_GRILLE : ShipPart.HULL_AZTEC; }
+                // blaues Leuchten vorne unter der Untertasse (Sensoren der F, mitten in der Kennung) ist kein
+                // Deflektor: der sitzt bei E und F hinten am Sekundärrumpf
+                case ShipColors.BLUE_GLOW -> { if (!nacelle && x < sCx) return st; }
                 case ShipColors.COPPER -> { if (c == SECONDARY || c == NECK) return ShipPart.DEFLECTOR_DISH; }
                 case ShipColors.BLACK -> { return ShipPart.HULL_DARK; }
                 default -> { }

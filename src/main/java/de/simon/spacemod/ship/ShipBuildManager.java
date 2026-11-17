@@ -109,6 +109,12 @@ public final class ShipBuildManager {
             BlockPos ca = placement.toWorld(bp, 0, 0, -bp.zOffset), cb = placement.toWorld(bp, bp.sizeX - 1, bp.sizeY - 1, bp.zOffset);
             java.util.List<BlockPos> shipCores = new java.util.ArrayList<>();
             for (BlockPos p : bp.warpCores) shipCores.add(placement.toWorld(bp, p.getX(), p.getY(), p.getZ()));
+            BlockPos lo = new BlockPos(Math.min(ca.getX(), cb.getX()), Math.min(ca.getY(), cb.getY()), Math.min(ca.getZ(), cb.getZ()));
+            BlockPos hi = new BlockPos(Math.max(ca.getX(), cb.getX()), Math.max(ca.getY(), cb.getY()), Math.max(ca.getZ(), cb.getZ()));
+            // Im Weltraum: Asteroiden im Umkreis von 50 Blöcken um das Schiff wegräumen
+            if (placement.level().dimension() == de.simon.spacemod.space.SpaceTravel.SPACE)
+                com.mojang.logging.LogUtils.getLogger().info("Asteroiden um das Schiff weggeräumt: {} Blöcke",
+                    de.simon.spacemod.space.AsteroidFeature.clearAround(placement.level(), lo, hi, 50));
             de.simon.spacemod.power.PowerData.get(placement.level()).addShip(
                 new BlockPos(Math.min(ca.getX(), cb.getX()), Math.min(ca.getY(), cb.getY()), Math.min(ca.getZ(), cb.getZ())),
                 new BlockPos(Math.max(ca.getX(), cb.getX()), Math.max(ca.getY(), cb.getY()), Math.max(ca.getZ(), cb.getZ())), shipCores);

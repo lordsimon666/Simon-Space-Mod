@@ -84,6 +84,59 @@ public class AsteroidFeature extends Feature<NoneFeatureConfiguration> {
         return placed;
     }
 
+    /** Woraus Asteroiden bestehen (nur das wird beim Freiräumen entfernt, nie Blöcke von Spielern oder Schiffen). */
+    private static java.util.Set<Block> materials() {
+        return java.util.Set.of(Blocks.STONE, Blocks.ANDESITE, Blocks.TUFF, Blocks.DEEPSLATE, Blocks.BASALT, Blocks.PACKED_ICE, Blocks.BLUE_ICE,
+            Blocks.COAL_ORE, Blocks.DEEPSLATE_COAL_ORE, Blocks.IRON_ORE, Blocks.DEEPSLATE_IRON_ORE, Blocks.COPPER_ORE, Blocks.DEEPSLATE_COPPER_ORE,
+            Blocks.REDSTONE_ORE, Blocks.DEEPSLATE_REDSTONE_ORE, Blocks.GOLD_ORE, Blocks.DEEPSLATE_GOLD_ORE, Blocks.LAPIS_ORE,
+            Blocks.DEEPSLATE_LAPIS_ORE, Blocks.DIAMOND_ORE, Blocks.DEEPSLATE_DIAMOND_ORE, Blocks.EMERALD_ORE, Blocks.DEEPSLATE_EMERALD_ORE,
+            ModBlocks.URANIUM_ORE.get(), ModBlocks.DEEPSLATE_URANIUM_ORE.get(), ModBlocks.DILITHIUM_ORE.get(),
+            ModBlocks.ANTIMATTER_CLUSTER.get(), ModBlocks.DEUTERIUM_ICE.get());
+    }
+
+    /**
+     * Räumt alle Asteroiden weg, die einem Schiff zwischen {@code min} und {@code max} näher als {@code margin}
+     * Blöcke kommen (z. B. für ein mit /enterprise gebautes Schiff im Weltraum). Gesucht wird über das Raster,
+     * entfernt werden nur Asteroiden-Blöcke in der Kugel um jeden betroffenen Mittelpunkt.
+     */
+    public static int clearAround(net.minecraft.server.level.ServerLevel level, BlockPos min, BlockPos max, int margin) {
+        long seed = level.getSeed();
+        int reach = margin + AsteroidGrid.MAX_RADIUS;
+        java.util.Set<Block> mats = materials();
+        int removed = 0;
+        int i0 = Math.floorDiv(min.getX() - reach - AsteroidGrid.JITTER, AsteroidGrid.CELL) - 1, i1 = Math.floorDiv(max.getX() + reach + AsteroidGrid.JITTER, AsteroidGrid.CELL) + 1;
+        int j0 = Math.max(0, Math.floorDiv(min.getY() - reach - AsteroidGrid.BOTTOM, AsteroidGrid.CELL) - 1), j1 = Math.floorDiv(max.getY() + reach - AsteroidGrid.BOTTOM, AsteroidGrid.CELL) + 1;
+        int k0 = Math.floorDiv(min.getZ() - reach - AsteroidGrid.JITTER, AsteroidGrid.CELL) - 1, k1 = Math.floorDiv(max.getZ() + reach + AsteroidGrid.JITTER, AsteroidGrid.CELL) + 1;
+        BlockPos.MutableBlockPos p = new BlockPos.MutableBlockPos();
+        for (int i = i0; i <= i1; i++)
+            for (int j = j0; j <= j1; j++)
+                for (int k = k0; k <= k1; k++) {
+                    BlockPos c = AsteroidGrid.center(seed, i, j, k);
+                    if (c == null) continue;
+                    // Abstand vom Mittelpunkt zum Quader des Schiffs
+                    int dx = Math.max(0, Math.max(min.getX() - c.getX(), c.getX() - max.getX()));
+                    int dy = Math.max(0, Math.max(min.getY() - c.getY(), c.getY() - max.getY()));
+                    int dz = Math.max(0, Math.max(min.getZ() - c.getZ(), c.getZ() - max.getZ()));
+                    if (dx * dx + dy * dy + dz * dz > reach * reach) continue;
+                    if (level.isOutsideBuildHeight(c)) continue;
+                    // Chunk des Mittelpunkts zuerst erzeugen: erst dann steht der Asteroid (auch in den Nachbar-Chunks)
+                    level.getChunk(c.getX() >> 4, c.getZ() >> 4);
+                    int R = AsteroidGrid.MAX_RADIUS + 2;
+                    for (int x = -R; x <= R; x++)
+                        for (int y = -R; y <= R; y++)
+                            for (int z = -R; z <= R; z++) {
+                                if (x * x + y * y + z * z > R * R) continue;
+                                p.set(c.getX() + x, c.getY() + y, c.getZ() + z);
+                                if (level.isOutsideBuildHeight(p)) continue;
+                                if (mats.contains(level.getBlockState(p).getBlock())) {
+                                    level.setBlock(p, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
+                                    removed++;
+                                }
+                            }
+                }
+        return removed;
+    }
+
     private static final org.slf4j.Logger LOGGER = com.mojang.logging.LogUtils.getLogger();
 
     private static BlockState pick(RandomSource rnd, Block base, boolean ice, boolean deep, double core) {

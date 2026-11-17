@@ -3,11 +3,12 @@ package de.simon.spacemod.space;
 import net.minecraft.core.BlockPos;
 
 /**
- * Raster der Asteroiden: höchstens einer je 110er-Würfel, um bis zu 15 Blöcke versetzt. Mittelpunkte
- * liegen so mindestens 80 Blöcke auseinander – zwischen den Asteroiden bleiben 50-100 Blöcke frei.
+ * Raster der Asteroiden: höchstens einer je 136er-Würfel, um bis zu 15 Blöcke versetzt. Mittelpunkte
+ * liegen so mindestens 106 Blöcke auseinander; da ein Asteroid höchstens 16 Blöcke Radius hat, bleiben
+ * zwischen zwei Asteroiden immer mindestens 74 Blöcke frei (meist um 100).
  */
 public final class AsteroidGrid {
-    public static final int CELL = 110, JITTER = 15, BOTTOM = 60;
+    public static final int CELL = 136, JITTER = 15, MAX_RADIUS = 16, BOTTOM = 60;
 
     private AsteroidGrid() {}
 
