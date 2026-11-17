@@ -76,7 +76,7 @@ public class DisplayRenderer implements BlockEntityRenderer<DisplayBlockEntity, 
         CameraFeeds.Pose pose = null;
         if (cam != null) {
             if (s != null) {
-                BlockPos local = cam.subtract(s.plotOrigin());
+                BlockPos local = cam; // Bildschirm-Blockentität im Schiff steht an ihrer Schiffsposition
                 BlockState cs = states.apply(local);
                 if (cs.getBlock() instanceof CameraBlock) {
                     var q = s.rotation(partial);

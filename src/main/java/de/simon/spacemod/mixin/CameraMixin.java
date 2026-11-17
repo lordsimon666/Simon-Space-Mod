@@ -47,15 +47,19 @@ public abstract class CameraMixin {
         Entity e = entity;
         if (e == null || e.getVehicle() == null) return;
         if (ShipView.rearView && e.getVehicle() instanceof FlyingShipEntity rs && rs.isPilotEntity(e)) {
-            // Rückansicht am Steuer: 5 Blöcke schräg hinter und über dem Schiff, Blick über das Schiff nach vorn
-            Quaternionf q = rs.rotation(partial);
+            // Rückansicht am Steuer: 5 Blöcke schräg hinter und über dem Schiff, Blick über das Schiff nach vorn.
+            // Fest mit dem Schiff verbunden: Gieren und Nicken des Schiffs drehen die Kamera mit.
+            Quaternionf frame = rs.frame(partial);
             Vec3 c = rs.getPosition(partial);
             double r = rs.structure() != null ? rs.structure().radius : 4;
-            Vec3 fw = ShipPhysics.forward(rs.renderYaw(), 0), upv = ShipPhysics.rotate(q, 0, 1, 0);
-            Vec3 cam = c.subtract(fw.scale(r + 5 * 0.7071)).add(upv.scale(r * 0.5 + 5 * 0.7071));
-            Vec3 look = c.add(fw.scale(r)).subtract(cam).normalize();
-            float yaw = (float) Math.toDegrees(Math.atan2(-look.x, look.z)), pitch = (float) Math.toDegrees(-Math.asin(look.y));
-            setRotation(yaw, pitch, 0);
+            double back = r + 5 * 0.7071, high = r * 0.5 + 5 * 0.7071;
+            Vec3 cam = c.add(ShipPhysics.rotate(frame, 0, high, -back));
+            // Blick im Schiffssystem: geradeaus (Bug), leicht nach unten auf den Bug
+            float localPitch = (float) Math.toDegrees(Math.atan2(high, back + r));
+            setRotation(0, localPitch, 0);
+            Quaternionf q = new Quaternionf(frame).mul(rotation);
+            Vector3f eul = q.getEulerAnglesYXZ(new Vector3f());
+            setRotation(180F - (float) Math.toDegrees(eul.y), -(float) Math.toDegrees(eul.x), (float) Math.toDegrees(eul.z));
             setPosition(cam);
             return;
         }

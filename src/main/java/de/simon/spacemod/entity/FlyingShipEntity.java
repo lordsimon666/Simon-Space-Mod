@@ -141,6 +141,14 @@ public class FlyingShipEntity extends Entity {
         return new Quaternionf().rotateY((float) Math.toRadians(-y)).rotateX((float) Math.toRadians(p)).rotateY((float) Math.toRadians(y));
     }
 
+    /** Lage des Schiffs aus Gieren und Nicken (Bug = +z im Schiffssystem), wie gerade gezeichnet. */
+    public Quaternionf frame(float partial) {
+        float cy = level().isClientSide() ? curYaw : yaw(), cp = level().isClientSide() ? curPitch : pitch();
+        float y = prevYaw + (float) ShipPhysics.wrap(cy - prevYaw) * partial;
+        float p = prevPitch + (cp - prevPitch) * partial;
+        return new Quaternionf().rotateY((float) Math.toRadians(-y)).rotateX((float) Math.toRadians(p));
+    }
+
     /** Gierwinkel, wie er gerade gezeichnet wird (Client: vorhergesagt). */
     public float renderYaw() {
         return level().isClientSide() ? curYaw : yaw();

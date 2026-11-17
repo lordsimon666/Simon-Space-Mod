@@ -39,8 +39,10 @@ public final class ShipStructure {
         List<BlockPos> positions = new ArrayList<>();
         int eng = 0, power = 0;
         double r = 1;
+        java.util.Map<BlockPos, BlockState> solid = new java.util.HashMap<>();
         for (Entry e : blocks) {
             all.add(e.pos());
+            solid.put(e.pos(), e.state());
             positions.add(e.pos());
             Block b = e.state().getBlock();
             if (b == de.simon.spacemod.ModBlocks.IMPULSE_ENGINE.get()) eng++;
@@ -49,12 +51,25 @@ public final class ShipStructure {
         }
         for (Entry e : blocks) {
             for (Direction d : Direction.values())
-                if (!all.contains(e.pos().relative(d))) { surface.add(e); break; }
+                if (!opaque(solid.get(e.pos().relative(d)))) { surface.add(e); break; }
         }
         this.engines = eng;
         this.powerPerTick = power;
         this.inertia = ShipPhysics.inertia(positions);
         this.radius = r;
+    }
+
+    /**
+     * Verdeckt der Nachbar die Seite ganz? Nur volle, undurchsichtige Blöcke – hinter Konsolen, Stühlen,
+     * Fenstern usw. bleibt ein Block sichtbar (sonst fehlt z. B. ein Bildschirm hinter der Steuerkonsole).
+     */
+    private static boolean opaque(@org.jspecify.annotations.Nullable BlockState st) {
+        if (st == null || st.isAir()) return false;
+        try {
+            return st.isSolidRender();
+        } catch (RuntimeException e) {
+            return true; // ohne Spielwelt (Tests): wie bisher als verdeckend werten
+        }
     }
 
     private java.util.Map<BlockPos, net.minecraft.world.phys.shapes.VoxelShape> collision;
