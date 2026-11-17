@@ -459,7 +459,7 @@
   "guide.simonspacemod.mining_laser.2": "Der Laserfokus in der Außenhülle lenkt den Strahl, so kann der Laser innen im Schiff sitzen. Die Laser-Steuerkonsole schaltet alle Laser im Schiff an und aus.",
   "guide.simonspacemod.entry.enterprises": "Die Schiffe",
   "guide.simonspacemod.enterprises.1": "Im Weltraum steht in jedem 1000 × 1000-Feld eine Enterprise in voller Größe. Je neuer, desto seltener: NX-01, NCC-1701, -A, -B, -C, -D, -E und die riesige -F der Odyssey-Klasse.",
-  "guide.simonspacemod.enterprises.2": "Mit Rechten kannst du sie auch mit /enterprise spawn bauen, in voller Größe oder verkleinert. Jede hat Brücke, Decks, Maschinenraum mit Warpkern, Krankenstation, Transporterraum, Waffenkammer und vieles mehr.",
+  "guide.simonspacemod.enterprises.2": "Mit Rechten kannst du sie auch mit /enterprise spawn bauen, in voller Größe oder verkleinert. Jede hat Brücke, Decks, Maschinenraum mit Warpkern, Krankenstation, Transporterraum, Waffenkammer und vieles mehr. Kleine, sofort flugfähige Beispielschiffe gibt es mit /simonship spawn (miner, reactor_small, reactor_large, warp5, warp9); ihre Reaktoren sind voll.",
   "guide.simonspacemod.entry.turbolift": "Turbolift",
   "guide.simonspacemod.turbolift.1": "Rechtsklick auf einen Turbolift zeigt alle Halte des Schiffs, nach Decks benannt. Ein Klick bringt dich hin. Eigene Lifte lassen sich benennen und zu Netzen verbinden.",
   "guide.simonspacemod.entry.transporter": "Transporter",
@@ -598,5 +598,12 @@
   "tooltip.simonspacemod.weapon.mode": "Modus: %s",
   "tooltip.simonspacemod.weapon.keys": "Linksklick halten: feuern, V: Modus wechseln",
   "tooltip.simonspacemod.rifle.keys": "Linksklick halten: feuern, Rechtsklick halten: zielen, V: Modus wechseln",
-  "message.simonspacemod.charger.status": "Ladestation: %s / %s RF, Bordnetz: %s RF/t"
+  "message.simonspacemod.charger.status": "Ladestation: %s / %s RF, Bordnetz: %s RF/t",
+  "command.simonspacemod.simonship.too_high": "Das Beispielschiff passt hier nicht in die Welthöhe.",
+  "command.simonspacemod.simonship.done": "%s bei %s gebaut. Einsteigen durch die Luftschleuse an Backbord (links), Rechtsklick auf die Steuerkonsole zum Abheben.",
+  "command.simonspacemod.simonship.miner": "Bergbauschiff",
+  "command.simonspacemod.simonship.reactor_small": "Reaktorshuttle (3×3×3-Reaktor)",
+  "command.simonspacemod.simonship.reactor_large": "Reaktorfrachter (8×8×8-Reaktor, Warp 2)",
+  "command.simonspacemod.simonship.warp5": "Warp-5-Schiff",
+  "command.simonspacemod.simonship.warp9": "Warp-9.9-Schiff"
 }

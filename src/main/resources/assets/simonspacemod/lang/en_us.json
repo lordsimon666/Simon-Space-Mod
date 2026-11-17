@@ -459,7 +459,7 @@
   "guide.simonspacemod.mining_laser.2": "The laser focus in the outer hull guides the beam, so the laser can sit inside the ship. The laser control console switches all lasers in the ship on and off.",
   "guide.simonspacemod.entry.enterprises": "The Ships",
   "guide.simonspacemod.enterprises.1": "In space, every 1000 × 1000 area has a full-size Enterprise. The newer, the rarer: NX-01, NCC-1701, -A, -B, -C, -D, -E and the huge Odyssey class -F.",
-  "guide.simonspacemod.enterprises.2": "With permission you can also build them with /enterprise spawn, full size or scaled down. Each has a bridge, decks, engineering with its warp core, sickbay, transporter room, armory and much more.",
+  "guide.simonspacemod.enterprises.2": "With permission you can also build them with /enterprise spawn, full size or scaled down. Each has a bridge, decks, engineering with its warp core, sickbay, transporter room, armory and much more. Small example ships that fly right away are available with /simonship spawn (miner, reactor_small, reactor_large, warp5, warp9); their reactors spawn full.",
   "guide.simonspacemod.entry.turbolift": "Turbolift",
   "guide.simonspacemod.turbolift.1": "Right-click a turbolift to see all stops of the ship, named by deck. One click takes you there. Your own lifts can be named and linked into networks.",
   "guide.simonspacemod.entry.transporter": "Transporter",
@@ -598,5 +598,12 @@
   "tooltip.simonspacemod.weapon.mode": "Mode: %s",
   "tooltip.simonspacemod.weapon.keys": "Hold left click: fire, V: switch mode",
   "tooltip.simonspacemod.rifle.keys": "Hold left click: fire, hold right click: aim, V: switch mode",
-  "message.simonspacemod.charger.status": "Charging station: %s / %s RF, ship grid: %s RF/t"
+  "message.simonspacemod.charger.status": "Charging station: %s / %s RF, ship grid: %s RF/t",
+  "command.simonspacemod.simonship.too_high": "The example ship does not fit into the world height here.",
+  "command.simonspacemod.simonship.done": "%s built at %s. Enter through the airlock on the port (left) side, right-click the helm to take off.",
+  "command.simonspacemod.simonship.miner": "Mining ship",
+  "command.simonspacemod.simonship.reactor_small": "Reactor shuttle (3×3×3 reactor)",
+  "command.simonspacemod.simonship.reactor_large": "Reactor freighter (8×8×8 reactor, warp 2)",
+  "command.simonspacemod.simonship.warp5": "Warp 5 ship",
+  "command.simonspacemod.simonship.warp9": "Warp 9.9 ship"
 }

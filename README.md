@@ -21,6 +21,30 @@ Befehl in die Welt setzt – wahlweise die **NX-01** („Star Trek: Enterprise�
 * `/enterprise spawn ncc-1701-e full` – **NCC-1701-E**, 687 x 241 x 82 Blöcke
 * `/enterprise spawn ncc-1701-f full` – **NCC-1701-F** (Odyssey-Klasse), rund 1063 x 377 x 151 Blöcke
 
+### Beispielschiffe
+
+```
+/simonship spawn <miner|reactor_small|reactor_large|warp5|warp9> [x y z] [north|east|south|west]
+```
+
+Kleine, sofort flugfähige Schiffe, die es **nur per Befehl** gibt (nicht im Kreativ-Inventar, nicht in der
+Welt). Ohne Position entstehen sie 4 Blöcke vor dem Spieler, ohne Richtung zeigt der Bug in Blickrichtung.
+Rund um das Schiff (auch eine Schicht darunter) wird ein Block Platz freigeräumt, damit nichts Fremdes daran
+hängt. Einstieg über die kleine **Luftschleuse an Backbord** (links), abheben mit Rechtsklick auf die
+Steuerkonsole. **Reaktoren spawnen komplett voll**: alle Eingabeplätze mit je 64 Uranbarren und voller
+Energiespeicher; Batterien sind voll geladen.
+
+| Befehl | Schiff | Strom | Warp |
+|---|---|---|---|
+| `miner` | Bergbauschiff, 15 × 9 × 7: vier Bergbaulaser unter der Decke, die durch den Raum in je einen Laserfokus im Boden schießen, eine Kiste neben jedem Laser, Laser-Steuerkonsole am Steuer, Kamera im Boden mit Blick nach unten auf dem Flugbildschirm | 2 Warpkerne (20 000 FE/t) | – |
+| `reactor_small` | Reaktorshuttle, 11 × 7 × 6, mit **3×3×3-Kernreaktor** und einer Batterie | ≈ 530 FE/t + Speicher | – |
+| `reactor_large` | Reaktorfrachter, 23 × 19 × 11, mit **8×8×8-Kernreaktor**, zwei Gondeln, Flugbildschirm | 10 000 FE/t | **Warp 2** (gerade so) |
+| `warp5` | Warp-5-Schiff, 19 × 9 × 10, eine Gondel oben auf dem Rumpf | 2 Warpkerne der F (80 000 FE/t) | **Warp 5** (mehr erlaubt eine Gondel nicht) |
+| `warp9` | Warp-9.9-Schiff, 27 × 21 × 8, zwei Gondeln 20 Blöcke auseinander | 6 Warpkerne der F (240 000 FE/t) | **Warp 9.9** |
+
+Schiffe mit Flugbildschirm haben eine Kamera im Bug, deren Bild schon auf dem Bildschirm vor dem Steuer
+liegt; der Trägheitsdämpfer ist je nach Schiff auf 30–100 % eingestellt.
+
 ### NX-01 (Star Trek: Enterprise)
 
 225 m lang, Rumpf aus dem 3D-Modell: Untertasse mit den beiden hinteren Auslegern, Gondeln auf

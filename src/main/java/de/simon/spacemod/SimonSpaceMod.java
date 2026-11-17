@@ -19,6 +19,7 @@ public final class SimonSpaceMod {
         ModBlocks.register(modBus);
         TurboliftNetwork.init();
         RegisterCommandsEvent.BUS.addListener(EnterpriseCommand::onRegisterCommands);
+        RegisterCommandsEvent.BUS.addListener(de.simon.spacemod.command.ExampleShipCommand::onRegisterCommands);
         ShipBuildManager.init();
         de.simon.spacemod.power.PowerNetwork.init();
         de.simon.spacemod.space.SpaceTravel.init();

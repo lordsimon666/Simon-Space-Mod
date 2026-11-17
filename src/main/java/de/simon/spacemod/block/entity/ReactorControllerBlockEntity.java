@@ -107,6 +107,16 @@ public class ReactorControllerBlockEntity extends BlockEntity {
         return fuel ? ReactorMath.output(size) : 0;
     }
 
+    /** Für Beispielschiffe: Größe gleich bestimmen, alle Eingabeplätze mit Uran füllen, Speicher voll. */
+    public void fillCompletely() {
+        if (level == null) return;
+        size = ReactorStructure.find(level, worldPosition, getBlockState().getValue(ReactorControllerBlock.FACING));
+        for (int i = 0; i < slots(); i++) inventory.setItem(i, new ItemStack(ModBlocks.URANIUM_INGOT.get(), 64));
+        burnLeft = burnMax = ReactorMath.burnTicks(size);
+        energy = CAPACITY;
+        setChanged();
+    }
+
     /** Strom entnehmen (Bordnetz, Antriebe, andere Mods). */
     public int extract(int max, boolean simulate) {
         int got = Math.min(max, energy);
