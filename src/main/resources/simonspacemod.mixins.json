@@ -5,7 +5,9 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "PlayerMixin",
-    "EntityMixin"
+    "EntityMixin",
+    "VillagerMixin",
+    "StructureTemplatePoolAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

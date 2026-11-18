@@ -17,6 +17,8 @@ public final class SimonSpaceMod {
     public SimonSpaceMod(FMLJavaModLoadingContext context) {
         var modBus = context.getModBusGroup();
         ModBlocks.register(modBus);
+        de.simon.spacemod.village.StarfleetVillagers.register(modBus);
+        de.simon.spacemod.village.ShuttleHouses.register(modBus);
         TurboliftNetwork.init();
         RegisterCommandsEvent.BUS.addListener(EnterpriseCommand::onRegisterCommands);
         RegisterCommandsEvent.BUS.addListener(de.simon.spacemod.command.ExampleShipCommand::onRegisterCommands);

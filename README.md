@@ -798,6 +798,30 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
   Bildschirme auf ein vereinfachtes Bild um: der Client tastet die Welt mit Strahlen ab und malt
   Blockfarben mit Licht, Schattierung und Nebel (bis 128 Bildpunkte auf der langen Seite, Reichweite 96).
 
+### Sternenflotten-Dorfbewohner
+
+* **Beruf**: Ein Dorfbewohner mit dem **Shuttle-Pilotensitz** als Arbeitsplatz wird zum **Sternenflotten-Offizier**.
+  Auf dem Sitz kann man auch selbst sitzen.
+* **Name**: immer der einer Star-Trek-Figur (Picard, Riker, Data, Worf, La Forge, Crusher, Troi, Kirk, Spock, McCoy,
+  Scott, Uhura, Sulu, Chekov, Janeway, Sisko, Seven of Nine, Tuvok, Archer, T'Pol, Hoshi Sato, Burnham, Pike,
+  O'Brien, Bashir). Den Namen bekommt er, sobald er den Beruf annimmt oder aus einer Bauvorlage geladen wird.
+  Per Namensschild umbenennen geht weiterhin.
+* **Aussehen**: Er hat die Gestalt eines Spielers mit einer Haut, die der Figur ähnelt (Frisur, Haar- und Hautfarbe,
+  Bart, Visier, Stirnwülste, Borg-Implantat usw. als kleine Pixel-Figur). Die **Uniform** ist zufällig (eine der 15
+  Uniformen aus 5 Epochen × 3 Abteilungen), bleibt aber für jeden Dorfbewohner fest. Die **Hose passt zum Oberteil**:
+  blau nur zur NX-Uniform, sonst schwarz, dazu Sternenflotten-Stiefel. Alle anderen Dorfbewohner sehen aus wie immer.
+* **Handel** (Smaragde): vor allem **Uniformen** (Stufe 1 NX und Originalserie, 2 Kinofilme mit Hosen und Stiefeln,
+  3 TNG, 4 Der erste Kontakt). Ab Stufe 2 gibt es auch Teppiche, ab Stufe 3 Stühle (darunter den
+  Shuttle-Pilotensitz), ab Stufe 4 Tische, Geländer und Frachtcontainer, auf Stufe 5 Kommandantensessel,
+  Lagetisch, Tischbildschirm und Wimpel. Nie dabei sind Maschinen, Betten, Lichter oder andere funktionale Blöcke.
+* **Shuttle-Haus**: Etwa jedes **fünfzigste Dorf** (Ebene, Wüste, Savanne, Schnee, Taiga) hat ein umgebautes
+  Shuttle-Wrack als Wohnhaus. Es hat ausgebesserte Hülle, Cockpitfenster, ausgebaute Impulsantriebe und eine Holztür,
+  innen Raumschiff-Bett, Shuttle-Pilotensitz am alten Steuerpult, Truhe, Werkbank und Blumentöpfe. Ein
+  Sternenflotten-Offizier wohnt schon darin. Die 2 % sind ein Mittelwert, angenommen sind rund neun Häuser je Dorf.
+* **Raumschiff-Bett**: zwei Blöcke lang, schlanker Metallrahmen mit Leuchtstreifen und Leselicht. Es funktioniert
+  wie ein normales Bett: schlafen, Nacht überspringen, Wiedereinstiegspunkt. Dorfbewohner nehmen es allerdings
+  nicht als Bett ihres Hauses an, weil Minecraft dafür nur seine eigenen Betten kennt.
+
 ### Warpantrieb
 
 * **Warp-Menü**: am Steuer eines eigenen fliegenden Schiffs **J** drücken. Dort gibt man **Zielkoordinaten**

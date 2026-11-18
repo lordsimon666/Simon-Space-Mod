@@ -1,0 +1,13 @@
+{
+  "amount": 2.0,
+  "random_sequence": "simonspacemod:trade_set/starfleet/level_5",
+  "trades": [
+    "simonspacemod:starfleet/5/captains_chair",
+    "simonspacemod:starfleet/5/captains_chair_tng",
+    "simonspacemod:starfleet/5/captains_chair_nx",
+    "simonspacemod:starfleet/5/captains_chair_teal",
+    "simonspacemod:starfleet/5/situation_table",
+    "simonspacemod:starfleet/5/table_viewer",
+    "simonspacemod:starfleet/5/hull_pennant"
+  ]
+}

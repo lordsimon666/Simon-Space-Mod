@@ -1,0 +1,15 @@
+{
+  "amount": 3.0,
+  "random_sequence": "simonspacemod:trade_set/starfleet/level_4",
+  "trades": [
+    "simonspacemod:starfleet/4/uniform_fc_command",
+    "simonspacemod:starfleet/4/uniform_fc_science",
+    "simonspacemod:starfleet/4/uniform_fc_operations",
+    "simonspacemod:starfleet/4/conference_table",
+    "simonspacemod:starfleet/4/crew_desk",
+    "simonspacemod:starfleet/4/mess_table",
+    "simonspacemod:starfleet/4/bridge_railing",
+    "simonspacemod:starfleet/4/bridge_railing_wood",
+    "simonspacemod:starfleet/4/cargo_container"
+  ]
+}

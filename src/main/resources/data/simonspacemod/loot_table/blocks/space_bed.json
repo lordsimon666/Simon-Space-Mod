@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "simonspacemod:space_bed"
+        }
+      ],
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        },
+        {
+          "condition": "minecraft:block_state_property",
+          "block": "simonspacemod:space_bed",
+          "properties": {
+            "part": "head"
+          }
+        }
+      ]
+    }
+  ],
+  "random_sequence": "simonspacemod:blocks/space_bed"
+}

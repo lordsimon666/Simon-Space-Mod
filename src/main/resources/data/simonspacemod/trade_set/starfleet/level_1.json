@@ -1,0 +1,13 @@
+{
+  "amount": 3.0,
+  "random_sequence": "simonspacemod:trade_set/starfleet/level_1",
+  "trades": [
+    "simonspacemod:starfleet/1/uniform_nx_command",
+    "simonspacemod:starfleet/1/uniform_nx_science",
+    "simonspacemod:starfleet/1/uniform_nx_operations",
+    "simonspacemod:starfleet/1/uniform_tos_command",
+    "simonspacemod:starfleet/1/uniform_tos_science",
+    "simonspacemod:starfleet/1/uniform_tos_operations",
+    "simonspacemod:starfleet/1/trousers_black"
+  ]
+}

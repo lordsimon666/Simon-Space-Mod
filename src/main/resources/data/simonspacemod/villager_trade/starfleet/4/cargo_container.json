@@ -1,0 +1,13 @@
+{
+  "gives": {
+    "id": "simonspacemod:cargo_container",
+    "count": 2
+  },
+  "max_uses": 8.0,
+  "reputation_discount": 0.05,
+  "wants": {
+    "id": "minecraft:emerald",
+    "count": 3.0
+  },
+  "xp": 30.0
+}

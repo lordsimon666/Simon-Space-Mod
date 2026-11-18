@@ -144,6 +144,8 @@
     "simonspacemod:inertial_damper",
     "simonspacemod:camera",
     "simonspacemod:display",
+    "simonspacemod:shuttle_chair",
+    "simonspacemod:space_bed",
     "simonspacemod:base_shield_tos",
     "simonspacemod:base_shield_refit",
     "simonspacemod:base_shield_excelsior",

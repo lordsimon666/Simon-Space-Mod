@@ -1,0 +1,13 @@
+{
+  "amount": 3.0,
+  "random_sequence": "simonspacemod:trade_set/starfleet/level_2",
+  "trades": [
+    "simonspacemod:starfleet/2/uniform_movie_command",
+    "simonspacemod:starfleet/2/uniform_movie_science",
+    "simonspacemod:starfleet/2/uniform_movie_operations",
+    "simonspacemod:starfleet/2/trousers_nx",
+    "simonspacemod:starfleet/2/boots_starfleet",
+    "simonspacemod:starfleet/2/tng_carpet",
+    "simonspacemod:starfleet/2/bridge_carpet_teal"
+  ]
+}

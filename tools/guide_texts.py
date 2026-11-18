@@ -125,11 +125,17 @@ DE = {
     "warp.3": "Warp kostet viel Energie: 2375 × Warp² FE/t, Warp 2 schafft ein 8×8×8-Reaktor gerade so. Der Warp hat Vorrang: "
               "Andere Verbraucher werden abgeschaltet, die Trägheitsdämpfer zuletzt gedrosselt. Reicht die Erzeugung nicht, "
               "geht es gar nicht erst los oder das Schiff fällt sofort aus dem Warp. Im Warp lassen sich keine Waffen benutzen.",
+    "entry.starfleet_villager": "Sternenflotten-Dorfbewohner",
+    "starfleet_villager.1": "Ein Dorfbewohner mit einem Shuttle-Pilotensitz als Arbeitsplatz wird zum Sternenflotten-Offizier. Er heißt immer wie eine "
+                            "Figur aus Star Trek und sieht auch so ähnlich aus: Er hat die Gestalt eines Spielers, mit Frisur und Gesicht der Figur und einer zufälligen Uniform.",
+    "starfleet_villager.2": "Er verkauft vor allem Uniformen, auf höheren Stufen auch Stühle und Deko – nie Maschinen oder andere funktionale Blöcke. "
+                            "In etwa jedem fünfzigsten Dorf steht ein umgebautes Shuttle, in dem einer wohnt. Das Raumschiff-Bett ist zwei Blöcke lang und ein ganz normales Bett.",
     "entry.cameras": "Kameras & Bildschirme",
     "cameras.1": "Kameras zeigen ihr Live-Bild auf Bildschirmen derselben Struktur (über Blöcke der Mod verbunden). Eine Kamera schaut von der Seite weg, an die du sie setzt. "
                  "Nebeneinander gesetzte Bildschirme mit gleicher Blickrichtung werden zu einer großen Bildfläche, als Rechteck von 1×1 bis 16×16.",
     "cameras.2": "Rechtsklick auf einen Bildschirm zeigt alle Kameras der Struktur; ein Klick wählt eine aus. Dort machst du einen Bildschirm auch zum Hauptbildschirm: "
-                 "Am Steuer eines fliegenden Schiffs schaltet Rechtsklick ihn zur nächsten Kamera. V wechselt am Steuer zwischen Ich-Sicht und Rückansicht des Schiffs.",
+                 "Am Steuer eines fliegenden Schiffs schaltet Rechtsklick ihn zur nächsten Kamera. V wechselt am Steuer zwischen Ich-Sicht und Rückansicht des Schiffs. "
+                 "Das Bild ist echt (wie im Spiel gezeichnet), ein großer Hauptbildschirm taugt also als Flugbildschirm; jede sichtbare Kamera kostet etwas Bildrate.",
     "entry.space_suit": "Raumanzug",
     "space_suit.1": "Mit dem Raumanzug fliegst du wie im Kreativmodus: doppelt springen schaltet den Flug ein. Fliegen kostet 20 FE pro Tick, "
                     "eine volle Ladung reicht für 10 Minuten. Geladen wird er in der Ladestation.",
@@ -181,7 +187,8 @@ DE = {
     "enterprises.1": "Im Weltraum steht in jedem 1000 × 1000-Feld eine Enterprise in voller Größe. Je neuer, desto seltener: "
                      "NX-01, NCC-1701, -A, -B, -C, -D, -E und die riesige -F der Odyssey-Klasse.",
     "enterprises.2": "Mit Rechten kannst du sie auch mit /enterprise spawn bauen, in voller Größe oder verkleinert. "
-                     "Jede hat Brücke, Decks, Maschinenraum mit Warpkern, Krankenstation, Transporterraum, Waffenkammer und vieles mehr.",
+                     "Jede hat Brücke, Decks, Maschinenraum mit Warpkern, Krankenstation, Transporterraum, Waffenkammer und vieles mehr. "
+                     "Kleine, sofort flugfähige Beispielschiffe gibt es mit /simonship spawn (miner, reactor_small, reactor_large, warp5, warp9); ihre Reaktoren sind voll.",
     "entry.turbolift": "Turbolift",
     "turbolift.1": "Rechtsklick auf einen Turbolift zeigt alle Halte des Schiffs, nach Decks benannt. Ein Klick bringt dich hin. Eigene Lifte lassen sich benennen und zu Netzen verbinden.",
     "entry.transporter": "Transporter",
@@ -323,11 +330,17 @@ EN = {
     "warp.3": "Warp costs a lot of power: 2375 × warp² FE/t, an 8×8×8 reactor just manages warp 2. Warp comes first: "
               "other consumers are switched off, the inertial dampers are throttled last. If production is not enough, "
               "the jump fails right away or the ship drops out of warp at once. Weapons cannot be used at warp.",
+    "entry.starfleet_villager": "Starfleet Villagers",
+    "starfleet_villager.1": "A villager with a shuttle pilot seat as job site becomes a Starfleet officer. He is always named after a Star Trek character "
+                            "and looks a bit like them: he has the shape of a player, with the character's hair and face and a random uniform.",
+    "starfleet_villager.2": "He mostly sells uniforms, at higher levels also chairs and decoration – never machines or other functional blocks. "
+                            "About one village in fifty has a converted shuttle where one lives. The starship bed is two blocks long and works like any bed.",
     "entry.cameras": "Cameras & Displays",
     "cameras.1": "Cameras show their live picture on displays of the same structure (connected through blocks of the mod). A camera looks away from the side you place it on. "
                  "Displays placed next to each other facing the same way become one big screen, as a rectangle from 1×1 to 16×16.",
     "cameras.2": "Right-click a display to see all cameras of the structure; one click picks one. There you can also make a display the main display: "
-                 "at the helm of a flying ship, right-click switches it to the next camera. V at the helm switches between first person and the rear view of the ship.",
+                 "at the helm of a flying ship, right-click switches it to the next camera. V at the helm switches between first person and the rear view of the ship. "
+                 "The picture is real (rendered like the game), so a large main display works as a flight screen; every visible camera costs some frame rate.",
     "entry.space_suit": "Space Suit",
     "space_suit.1": "The space suit lets you fly like in creative mode: double-jump switches flight on. Flying costs 20 FE per tick, "
                     "a full charge lasts 10 minutes. Charge it in the charging station.",
@@ -379,7 +392,8 @@ EN = {
     "enterprises.1": "In space, every 1000 × 1000 area has a full-size Enterprise. The newer, the rarer: "
                      "NX-01, NCC-1701, -A, -B, -C, -D, -E and the huge Odyssey class -F.",
     "enterprises.2": "With permission you can also build them with /enterprise spawn, full size or scaled down. "
-                     "Each has a bridge, decks, engineering with its warp core, sickbay, transporter room, armory and much more.",
+                     "Each has a bridge, decks, engineering with its warp core, sickbay, transporter room, armory and much more. "
+                     "Small example ships that fly right away are available with /simonship spawn (miner, reactor_small, reactor_large, warp5, warp9); their reactors spawn full.",
     "entry.turbolift": "Turbolift",
     "turbolift.1": "Right-click a turbolift to see all stops of the ship, named by deck. One click takes you there. Your own lifts can be named and linked into networks.",
     "entry.transporter": "Transporter",

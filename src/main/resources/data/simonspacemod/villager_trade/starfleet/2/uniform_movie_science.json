@@ -1,0 +1,13 @@
+{
+  "gives": {
+    "id": "simonspacemod:uniform_movie_science",
+    "count": 1
+  },
+  "max_uses": 8.0,
+  "reputation_discount": 0.05,
+  "wants": {
+    "id": "minecraft:emerald",
+    "count": 7.0
+  },
+  "xp": 10.0
+}

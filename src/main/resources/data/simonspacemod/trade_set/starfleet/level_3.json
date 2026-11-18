@@ -1,0 +1,14 @@
+{
+  "amount": 3.0,
+  "random_sequence": "simonspacemod:trade_set/starfleet/level_3",
+  "trades": [
+    "simonspacemod:starfleet/3/uniform_tng_command",
+    "simonspacemod:starfleet/3/uniform_tng_science",
+    "simonspacemod:starfleet/3/uniform_tng_operations",
+    "simonspacemod:starfleet/3/station_chair",
+    "simonspacemod:starfleet/3/tng_chair",
+    "simonspacemod:starfleet/3/ent_chair",
+    "simonspacemod:starfleet/3/station_chair_teal",
+    "simonspacemod:starfleet/3/shuttle_chair"
+  ]
+}

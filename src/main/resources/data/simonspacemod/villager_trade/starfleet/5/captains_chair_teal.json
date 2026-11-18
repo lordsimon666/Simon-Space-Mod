@@ -1,0 +1,13 @@
+{
+  "gives": {
+    "id": "simonspacemod:captains_chair_teal",
+    "count": 1
+  },
+  "max_uses": 3.0,
+  "reputation_discount": 0.05,
+  "wants": {
+    "id": "minecraft:emerald",
+    "count": 20.0
+  },
+  "xp": 30.0
+}

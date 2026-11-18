@@ -665,6 +665,13 @@ public final class ModBlocks {
         BLOCK_ENTITIES.register("display", () -> new BlockEntityType<>(de.simon.spacemod.display.DisplayBlockEntity::new,
             java.util.Set.of(DISPLAY.get())));
     /** Trägheitsdämpfer-Steuerung: Stärke der Bremsung fliegender Schiffe (0–100 %). */
+    /** Shuttle-Pilotensitz: Sitz und Arbeitsplatz des Sternenflotten-Dorfbewohners. */
+    public static final RegistryObject<Block> SHUTTLE_CHAIR = block("shuttle_chair", de.simon.spacemod.village.ShuttleChairBlock::new,
+        metal(MapColor.COLOR_GRAY).noOcclusion());
+    /** Raumschiff-Bett: zwei Blöcke lang, funktioniert wie ein normales Bett. */
+    public static final RegistryObject<Block> SPACE_BED = block("space_bed", de.simon.spacemod.village.SpaceBedBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLUE).strength(0.6F).sound(SoundType.METAL).noOcclusion()
+            .pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY).lightLevel(_ -> 4));
     public static final RegistryObject<Block> INERTIAL_DAMPER = block("inertial_damper",
         de.simon.spacemod.flight.InertialDamperBlock::new, metal(MapColor.COLOR_BLUE).lightLevel(_ -> 5));
     public static final RegistryObject<MenuType<de.simon.spacemod.defense.ConsoleMenu>> INERTIAL_DAMPER_MENU = MENUS.register("inertial_damper",

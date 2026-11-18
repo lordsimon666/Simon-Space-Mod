@@ -16,6 +16,8 @@ public final class ClientSetup {
         event.registerEntityRenderer(ModBlocks.PHASER_BEAM.get(), PhaserBeamRenderer::new);
         event.registerEntityRenderer(ModBlocks.SHIELD_FLASH.get(), ShieldFlashRenderer::new);
         event.registerEntityRenderer(ModBlocks.FLYING_SHIP.get(), FlyingShipRenderer::new);
+        // Sternenflotten-Dorfbewohner als Spielermodell (alle anderen Dorfbewohner wie gewohnt)
+        event.registerEntityRenderer(net.minecraft.world.entity.EntityTypes.VILLAGER, StarfleetVillagerRenderer::new);
         // Waffen in Ständern, Wandhaltern und auf Ladestationen
         event.registerBlockEntityRenderer(ModBlocks.RIFLE_RACK_BE.get(), WeaponHolderRenderer::new);
         event.registerBlockEntityRenderer(ModBlocks.PHASER_HOLDER_BE.get(), WeaponHolderRenderer::new);

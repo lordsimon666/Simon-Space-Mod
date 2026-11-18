@@ -424,6 +424,9 @@
   "guide.simonspacemod.warp.1": "Am Steuer öffnet J das Warp-Menü: Zielkoordinaten, Warpstufe (Schieberegler) und Ziel (Planet oder Weltraum). Mit dem Autopiloten fliegt das Schiff durch die Warp-Dimension zu den Koordinaten und verlässt dort den Warp. Manuell fliegst du im Warp selbst; Pfeil hoch und runter schalten die Stufe, unter Warp 1 verlässt du den Warp.",
   "guide.simonspacemod.warp.2": "Für Warp braucht das Schiff Warpgondeln: je mindestens einen Bussard-Kollektor und zwei Gondelgitter nah beieinander. Eine Gondel erlaubt höchstens Warp 5, zwei Gondeln mit mindestens 10 Blöcken Abstand bis Warp 9.9.",
   "guide.simonspacemod.warp.3": "Warp kostet viel Energie: 2375 × Warp² FE/t, Warp 2 schafft ein 8×8×8-Reaktor gerade so. Der Warp hat Vorrang: Andere Verbraucher werden abgeschaltet, die Trägheitsdämpfer zuletzt gedrosselt. Reicht die Erzeugung nicht, geht es gar nicht erst los oder das Schiff fällt sofort aus dem Warp. Im Warp lassen sich keine Waffen benutzen.",
+  "guide.simonspacemod.entry.starfleet_villager": "Sternenflotten-Dorfbewohner",
+  "guide.simonspacemod.starfleet_villager.1": "Ein Dorfbewohner mit einem Shuttle-Pilotensitz als Arbeitsplatz wird zum Sternenflotten-Offizier. Er heißt immer wie eine Figur aus Star Trek und sieht auch so ähnlich aus: Er hat die Gestalt eines Spielers, mit Frisur und Gesicht der Figur und einer zufälligen Uniform.",
+  "guide.simonspacemod.starfleet_villager.2": "Er verkauft vor allem Uniformen, auf höheren Stufen auch Stühle und Deko – nie Maschinen oder andere funktionale Blöcke. In etwa jedem fünfzigsten Dorf steht ein umgebautes Shuttle, in dem einer wohnt. Das Raumschiff-Bett ist zwei Blöcke lang und ein ganz normales Bett.",
   "guide.simonspacemod.entry.cameras": "Kameras & Bildschirme",
   "guide.simonspacemod.cameras.1": "Kameras zeigen ihr Live-Bild auf Bildschirmen derselben Struktur (über Blöcke der Mod verbunden). Eine Kamera schaut von der Seite weg, an die du sie setzt. Nebeneinander gesetzte Bildschirme mit gleicher Blickrichtung werden zu einer großen Bildfläche, als Rechteck von 1×1 bis 16×16.",
   "guide.simonspacemod.cameras.2": "Rechtsklick auf einen Bildschirm zeigt alle Kameras der Struktur; ein Klick wählt eine aus. Dort machst du einen Bildschirm auch zum Hauptbildschirm: Am Steuer eines fliegenden Schiffs schaltet Rechtsklick ihn zur nächsten Kamera. V wechselt am Steuer zwischen Ich-Sicht und Rückansicht des Schiffs. Das Bild ist echt (wie im Spiel gezeichnet), ein großer Hauptbildschirm taugt also als Flugbildschirm; jede sichtbare Kamera kostet etwas Bildrate.",
@@ -605,5 +608,8 @@
   "command.simonspacemod.simonship.reactor_small": "Reaktorshuttle (3×3×3-Reaktor)",
   "command.simonspacemod.simonship.reactor_large": "Reaktorfrachter (8×8×8-Reaktor, Warp 2)",
   "command.simonspacemod.simonship.warp5": "Warp-5-Schiff",
-  "command.simonspacemod.simonship.warp9": "Warp-9.9-Schiff"
+  "command.simonspacemod.simonship.warp9": "Warp-9.9-Schiff",
+  "block.simonspacemod.shuttle_chair": "Shuttle-Pilotensitz",
+  "block.simonspacemod.space_bed": "Raumschiff-Bett",
+  "entity.simonspacemod.villager.starfleet": "Sternenflotten-Offizier"
 }

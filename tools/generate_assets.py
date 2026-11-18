@@ -4591,7 +4591,7 @@ def main():
     models_extra += ["ceiling_light", "dual_wall", "dual_floor", "uranium_ore", "deepslate_uranium_ore", "reactor_casing",
                      "reactor_glass", "reactor_controller", "ship_helm", "airlock", "airlock_small", "dilithium_ore",
                      "antimatter_cluster", "deuterium_ice", "ship_part_assembly",
-                     "power_console", "shield_console", "alarm_light", "battery", "hull_glass", "mining_laser", "laser_focus", "mining_laser_control", "inertial_damper", "camera", "display"] + [f"base_shield_{k}" for k in ("tos", "refit", "excelsior", "c", "d", "e", "f")] + [f"crate_{t[0]}" for t in CRATE_TIERS if t[0] != "wood"] + [f"shield_emitter_{k}" for k in ("tos", "refit", "excelsior", "c", "d", "e", "f")]
+                     "power_console", "shield_console", "alarm_light", "battery", "hull_glass", "mining_laser", "laser_focus", "mining_laser_control", "inertial_damper", "camera", "display", "shuttle_chair", "space_bed"] + [f"base_shield_{k}" for k in ("tos", "refit", "excelsior", "c", "d", "e", "f")] + [f"crate_{t[0]}" for t in CRATE_TIERS if t[0] != "wood"] + [f"shield_emitter_{k}" for k in ("tos", "refit", "excelsior", "c", "d", "e", "f")]
     models_extra += [f"door_{e}_{k}" for e in DOOR_ERAS for k in DOOR_KINDS]
     # Mit der Spitzhacke abbaubar
     write_json(os.path.join(ROOT, "data", "minecraft", "tags", "block", "mineable", "pickaxe.json"),
@@ -4733,7 +4733,7 @@ def main():
         f"key.{MODID}.ship_helm": "Schiff: Steuer übernehmen/abgeben",
         f"gamerule.{MODID}.max_ship_blocks": "Größte Schiffsgröße (Blöcke) für die Steuerkonsole",
         f"message.{MODID}.ship.too_big_huge": "Zu groß: mehr als %s Blöcke hängen zusammen (erlaubt: %s).",
-        f"message.{MODID}.ship.hull_open": "Hülle nicht geschlossen: %s Blöcke außen sind keine Hüllenblöcke (z. B. %s bei %s %s %s). Außen erlaubt: Hüllenplatten, Hüllenfenster, Impulsantriebe, Torpedowerfer, Phaser, Deflektor, Bussard, Gondelgitter, Positionslichter, Türen.",
+        f"message.{MODID}.ship.hull_open": "Hülle nicht geschlossen: %s Blöcke außen sind keine Hüllenblöcke (z. B. %s bei %s %s %s). Außen erlaubt: Hüllenplatten, Hüllenfenster, Impulsantriebe, Torpedowerfer, Phaser, Deflektor, Bussard, Gondelgitter, Positionslichter, Kameras, Türen.",
         f"message.{MODID}.ship.helm_on": "Steuer übernommen: W/S Schub, Fadenkreuz lenkt, Linksklick Phaser (Mausrad Stärke), P/O Torpedos, L landen, H abgeben.",
         f"message.{MODID}.ship.helm_off": "Steuer abgegeben – du kannst im Schiff herumlaufen.",
         f"message.{MODID}.ship.helm_taken": "Jemand anderes steuert gerade.",
@@ -4780,7 +4780,7 @@ def main():
         f"key.{MODID}.ship_helm": "Ship: take/leave helm",
         f"gamerule.{MODID}.max_ship_blocks": "Largest ship size (blocks) for the helm console",
         f"message.{MODID}.ship.too_big_huge": "Too large: more than %s connected blocks (allowed: %s).",
-        f"message.{MODID}.ship.hull_open": "Hull not closed: %s outer blocks are not hull blocks (e.g. %s at %s %s %s). Allowed outside: hull plates, hull windows, impulse engines, torpedo launchers, phasers, deflector, bussard, nacelle grille, navigation lights, doors.",
+        f"message.{MODID}.ship.hull_open": "Hull not closed: %s outer blocks are not hull blocks (e.g. %s at %s %s %s). Allowed outside: hull plates, hull windows, impulse engines, torpedo launchers, phasers, deflector, bussard, nacelle grille, navigation lights, cameras, doors.",
         f"message.{MODID}.ship.helm_on": "You took the helm: W/S thrust, crosshair steers, left click phasers (wheel: power), P/O torpedoes, L land, H leave.",
         f"message.{MODID}.ship.helm_off": "Helm released – you can walk around the ship.",
         f"message.{MODID}.ship.helm_taken": "Someone else is at the helm.",
@@ -4836,9 +4836,38 @@ def main():
         f"tooltip.{MODID}.rifle.keys": "Hold left click: fire, hold right click: aim, V: switch mode",
         f"message.{MODID}.charger.status": "Charging station: %s / %s RF, ship grid: %s RF/t",
     })
+    example_ship_assets(de, en)
+    starfleet_villager_assets(de, en)
     write_json(os.path.join(ASSETS, "lang", "de_de.json"), de)
     write_json(os.path.join(ASSETS, "lang", "en_us.json"), en)
     only_assembly_recipes()
+
+
+def example_ship_assets(de, en):
+    """Texte zu /simonship spawn (Beispielschiffe)."""
+    de.update({
+        f"command.{MODID}.simonship.too_high": "Das Beispielschiff passt hier nicht in die Welthöhe.",
+        f"command.{MODID}.simonship.done": "%s bei %s gebaut. Einsteigen durch die Luftschleuse an Backbord (links), Rechtsklick auf die Steuerkonsole zum Abheben.",
+        f"command.{MODID}.simonship.miner": "Bergbauschiff",
+        f"command.{MODID}.simonship.reactor_small": "Reaktorshuttle (3×3×3-Reaktor)",
+        f"command.{MODID}.simonship.reactor_large": "Reaktorfrachter (8×8×8-Reaktor, Warp 2)",
+        f"command.{MODID}.simonship.warp5": "Warp-5-Schiff",
+        f"command.{MODID}.simonship.warp9": "Warp-9.9-Schiff",
+    })
+    en.update({
+        f"command.{MODID}.simonship.too_high": "The example ship does not fit into the world height here.",
+        f"command.{MODID}.simonship.done": "%s built at %s. Enter through the airlock on the port (left) side, right-click the helm to take off.",
+        f"command.{MODID}.simonship.miner": "Mining ship",
+        f"command.{MODID}.simonship.reactor_small": "Reactor shuttle (3×3×3 reactor)",
+        f"command.{MODID}.simonship.reactor_large": "Reactor freighter (8×8×8 reactor, warp 2)",
+        f"command.{MODID}.simonship.warp5": "Warp 5 ship",
+        f"command.{MODID}.simonship.warp9": "Warp 9.9 ship",
+    })
+
+
+def starfleet_villager_assets(de, en):
+    import generate_starfleet
+    generate_starfleet.run(de, en)
 
 
 # Blöcke der Mod gibt es nur aus der Schiffsteil-Fertigung; an der Werkbank nur die Fertigung selbst
