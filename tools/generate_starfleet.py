@@ -171,7 +171,7 @@ CREW = {
     "picard":  dict(skin=LIGHT, hair=GREY_H, style="fringe", eyes=(70, 90, 110)),
     "riker":   dict(skin=LIGHT, hair=DBROWN_H, style="short", beard="full", eyes=(60, 90, 130)),
     "data":    dict(skin=(232, 222, 176), hair=BLACK_H, style="slick", eyes=(214, 178, 40)),
-    "worf":    dict(skin=DARK, hair=BLACK_H, style="long", beard="goatee", ridges=True, eyes=(40, 30, 24)),
+    "worf":    dict(skin=DARK, hair=(46, 34, 28), style="long", ridges=True, eyes=(40, 30, 24)),  # Bart ist 3D
     "laforge": dict(skin=DARK, hair=BLACK_H, style="buzz", visor=True),
     "crusher": dict(skin=LIGHT, hair=RED_H, style="bob", eyes=(70, 110, 140)),
     "troi":    dict(skin=TAN, hair=BLACK_H, style="curly_long", eyes=(40, 30, 24)),
@@ -453,8 +453,14 @@ def features_image(name, spec, seed):
     px = img.load()
     for band, c in enumerate(bands):
         for x in range(64):
+            col = rnd.randint(-8, 8)                                   # Strähnen: jede Spalte etwas anders
             for y in range(16 * band, 16 * band + 16):
-                v = rnd.randint(-6, 6) if band != 2 else rnd.randint(-10, 10)
+                if band == 1:
+                    v = col + (-16 if x % 3 == 0 else 0) + rnd.randint(-3, 3)
+                elif band == 3 and name == "worf":
+                    v = (-14 if (x + y) % 4 == 0 else 6) + rnd.randint(-3, 3)  # Wülste: Rillen
+                else:
+                    v = rnd.randint(-6, 6) if band != 2 else rnd.randint(-10, 10)
                 px[x, y] = shade(rgba(c), v)
     return img
 
