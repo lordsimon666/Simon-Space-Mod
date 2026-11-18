@@ -447,6 +447,10 @@ public final class ModBlocks {
         armor("trousers_nx", ArmorType.LEGGINGS);
         armor("trousers_black", ArmorType.LEGGINGS);
         armor("boots_starfleet", ArmorType.BOOTS);
+        // eigene Kleidung der Sternenflotten-Dorfbewohner: Sevens Anzug, Kirks grüne Tunika
+        armor("outfit_seven", ArmorType.CHESTPLATE);
+        armor("outfit_seven_legs", ArmorType.LEGGINGS);
+        armor("outfit_kirk_green", ArmorType.CHESTPLATE);
     }
 
     /** Raumanzug: Kreativflug, solange geladen. */

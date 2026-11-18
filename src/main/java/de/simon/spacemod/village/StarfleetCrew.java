@@ -17,11 +17,22 @@ import net.minecraft.util.RandomSource;
  * Kleidung der Dorfbewohner (Sevens Anzug, Kirks grüne Tunika).
  */
 public final class StarfleetCrew {
-    public record Member(String name, String skin, List<String> outfits) {}
+    /** Bekannte Figur: Name, Haut, Uniformen und die Schlüsselkarte, die sie verkauft ("captain", "command", "security"). */
+    public record Member(String name, String skin, String card, List<String> outfits) {}
+
+    /** Schlüsselkarten nach Rang: Captains die Captain-Karte, Erste Offiziere und Führungsoffiziere Kommando, sonst Sicherheit. */
+    private static final java.util.Map<String, String> CARDS = java.util.Map.ofEntries(
+        java.util.Map.entry("picard", "captain"), java.util.Map.entry("kirk", "captain"), java.util.Map.entry("janeway", "captain"),
+        java.util.Map.entry("sisko", "captain"), java.util.Map.entry("archer", "captain"), java.util.Map.entry("pike", "captain"),
+        java.util.Map.entry("riker", "command"), java.util.Map.entry("spock", "command"), java.util.Map.entry("data", "command"),
+        java.util.Map.entry("tpol", "command"), java.util.Map.entry("burnham", "command"), java.util.Map.entry("crusher", "command"),
+        java.util.Map.entry("troi", "command"), java.util.Map.entry("laforge", "command"), java.util.Map.entry("mccoy", "command"),
+        java.util.Map.entry("scott", "command"), java.util.Map.entry("sulu", "command"));
 
     private static Member m(String name, String skin, String... outfits) {
-        return new Member(name, skin, List.of(outfits));
+        return new Member(name, skin, CARDS.getOrDefault(skin, "security"), List.of(outfits));
     }
+
 
     public static final List<Member> CREW = List.of(
         m("Jean-Luc Picard", "picard", "uniform_tng_command", "uniform_fc_command"),
@@ -97,6 +108,30 @@ public final class StarfleetCrew {
         Member m = canon(name);
         if (m != null) return m.outfits().get(Math.floorMod(mix(uuid, 31), m.outfits().size()));
         return uniform(uuid);
+    }
+
+    /** Risse in der Uniform: bei der Hälfte der Dorfbewohner, dann eines von vier Mustern; sonst -1 (heil). */
+    public static int tear(UUID uuid) {
+        int h = mix(uuid, 53);
+        return (h & 1) == 0 ? -1 : (h >>> 1) & 3;
+    }
+
+    /** Stufe, ab der eine Figur ihre Schlüsselkarte anbietet: Sicherheit 1, Kommando 2, Captain 3. */
+    public static int cardLevel(String card) {
+        return switch (card) {
+            case "captain" -> 3;
+            case "command" -> 2;
+            default -> 1;
+        };
+    }
+
+    /** Preis der Schlüsselkarte in Smaragden. */
+    public static int cardPrice(String card) {
+        return switch (card) {
+            case "captain" -> 40;
+            case "command" -> 24;
+            default -> 12;
+        };
     }
 
     /** Zufällige Uniform (eine der 15), fest aus der UUID. */

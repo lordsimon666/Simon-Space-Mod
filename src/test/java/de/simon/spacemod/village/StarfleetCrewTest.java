@@ -26,8 +26,7 @@ class StarfleetCrewTest {
     }
 
     private static Path outfitTexture(String o) {
-        return o.startsWith("outfit_") ? RES.resolve("assets/simonspacemod/textures/entity/starfleet/" + o + ".png")
-            : RES.resolve("assets/simonspacemod/textures/entity/equipment/humanoid/" + o + ".png");
+        return RES.resolve("assets/simonspacemod/textures/entity/equipment/humanoid/" + o + ".png");
     }
 
     @Test
@@ -65,6 +64,35 @@ class StarfleetCrewTest {
     }
 
     @Test
+    void keycardsByRank() {
+        assertEquals("captain", StarfleetCrew.canon("Jean-Luc Picard").card());
+        assertEquals("security", StarfleetCrew.canon("Worf").card());
+        assertEquals("command", StarfleetCrew.canon("William Riker").card());
+        assertEquals(null, StarfleetCrew.canon("Mara Lindqvist"), "erfundene Namen haben keine Karte");
+        for (StarfleetCrew.Member m : StarfleetCrew.CREW) assertTrue(Set.of("captain", "command", "security").contains(m.card()));
+    }
+
+    @Test
+    void halfTheUniformsAreTorn() {
+        java.util.Random r = new java.util.Random(11);
+        int torn = 0, n = 10000;
+        Set<Integer> patterns = new HashSet<>();
+        for (int i = 0; i < n; i++) {
+            int t = StarfleetCrew.tear(new UUID(r.nextLong(), r.nextLong()));
+            if (t >= 0) { torn++; patterns.add(t); }
+        }
+        assertEquals(0.5, torn / (double) n, 0.02);
+        assertEquals(Set.of(0, 1, 2, 3), patterns);
+    }
+
+    @Test
+    void outfitsAreWearable() {
+        for (String o : new String[] {"outfit_seven", "outfit_kirk_green"})
+            assertTrue(Files.exists(RES.resolve("assets/simonspacemod/equipment/" + o + ".json")), o);
+        assertTrue(Files.exists(RES.resolve("assets/simonspacemod/textures/entity/equipment/humanoid_leggings/outfit_seven_legs.png")));
+    }
+
+    @Test
     void uniformsAreRandomButFixedAndExist() {
         Set<String> seen = new HashSet<>();
         java.util.Random r = new java.util.Random(1);
@@ -93,7 +121,7 @@ class StarfleetCrewTest {
         try (var files = Files.walk(RES.resolve("data/simonspacemod/villager_trade/starfleet"))) {
             for (Path f : files.filter(Files::isRegularFile).toList()) {
                 String item = f.getFileName().toString().replace(".json", "");
-                assertTrue(item.startsWith("uniform_") || item.startsWith("trousers") || item.startsWith("boots") || item.contains("chair")
+                assertTrue(item.startsWith("uniform_") || item.startsWith("outfit_") || item.startsWith("trousers") || item.startsWith("boots") || item.contains("chair")
                     || item.contains("table") || item.contains("desk") || item.contains("carpet") || item.contains("railing")
                     || item.equals("cargo_container") || item.equals("table_viewer") || item.equals("hull_pennant"), "kein Deko: " + item);
                 assertTrue(!item.contains("bed") && !item.contains("console") && !item.contains("light"), item);

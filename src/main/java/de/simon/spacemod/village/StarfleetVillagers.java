@@ -57,6 +57,22 @@ public final class StarfleetVillagers {
         });
     }
 
+    /** Neue Handelsstufe: Hat die Figur auf dieser Stufe ihre Schlüsselkarte, kommt sie ins Angebot. */
+    public static void addKeycardOffer(net.minecraft.world.entity.npc.villager.Villager v) {
+        var data = v.getVillagerData();
+        if (!data.profession().is(STARFLEET_KEY) || !v.hasCustomName()) return;
+        StarfleetCrew.Member m = StarfleetCrew.canon(v.getCustomName().getString());
+        if (m == null || data.level() != StarfleetCrew.cardLevel(m.card())) return;
+        net.minecraft.world.item.Item card = switch (m.card()) {
+            case "captain" -> ModBlocks.KEYCARD_CAPTAIN.get();
+            case "command" -> ModBlocks.KEYCARD_COMMAND.get();
+            default -> ModBlocks.KEYCARD_SECURITY.get();
+        };
+        v.getOffers().add(new net.minecraft.world.item.trading.MerchantOffer(
+            new net.minecraft.world.item.trading.ItemCost(net.minecraft.world.item.Items.EMERALD, StarfleetCrew.cardPrice(m.card())),
+            new net.minecraft.world.item.ItemStack(card), 2, 15, 0.05F));
+    }
+
     /** Sternenflotten-Dorfbewohner ohne Namen bekommen einen: zu 25 % den einer Star-Trek-Figur, sonst einen erfundenen. */
     public static void name(net.minecraft.world.entity.npc.villager.Villager v) {
         if (v.hasCustomName() || !v.getVillagerData().profession().is(STARFLEET_KEY)) return;

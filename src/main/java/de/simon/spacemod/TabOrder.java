@@ -45,7 +45,7 @@ public final class TabOrder {
         if (p.startsWith("bridge_") || p.equals("step_slab")) return 10;                                       // Brückenausbau
         if (p.startsWith("hull") || p.contains("deflector") || p.contains("bussard") || p.contains("nacelle")
             || p.contains("impulse")) return 12;                                                               // Außenhülle & Antrieb
-        if (p.startsWith("uniform") || p.startsWith("trousers") || p.startsWith("boots")) return 13;           // Kleidung
+        if (p.startsWith("uniform") || p.startsWith("trousers") || p.startsWith("boots") || p.startsWith("outfit_")) return 13;           // Kleidung
         return 11;                                                                                             // Innenausbau
     }
 

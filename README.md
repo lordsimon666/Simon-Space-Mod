@@ -817,7 +817,17 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
     Implantat) und eine **zufällige Uniform** (eine der 15 aus 5 Epochen × 3 Abteilungen).
   * Die **Hose passt zum Oberteil**: blau nur zur NX-Uniform, sonst schwarz, dazu Sternenflotten-Stiefel. Sevens
     Anzug geht bis zu den Füßen.
+  * Bei der **Hälfte** der Offiziere ist die **Uniform zerrissen**: ein paar schräge Risse mit angesengten Rändern,
+    durch die die Haut zu sehen ist (vier verschiedene Muster, fest je Dorfbewohner).
   * Alle anderen Dorfbewohner sehen aus wie immer.
+* **Schlüsselkarten**: Bekannte Figuren verkaufen ihre Karte. Captains (Picard, Kirk, Janeway, Sisko, Archer, Pike)
+  verkaufen die **Captain-Karte** ab Stufe 3 für 40 Smaragde. Erste Offiziere und Führungsoffiziere (Riker, Spock,
+  Data, T'Pol, Burnham, Crusher, Troi, La Forge, McCoy, Scott, Sulu) verkaufen die **Kommando-Karte** ab Stufe 2 für
+  24 Smaragde. Alle übrigen, etwa Worf, Tuvok oder O'Brien, verkaufen die **Sicherheitskarte** ab Stufe 1 für 12
+  Smaragde. Offiziere mit erfundenem Namen haben keine Karte. Herstellen lassen sich Schlüsselkarten nicht, es gibt
+  sie nur so, im Shuttle-Wrack und im Kreativmodus.
+* **Eigene Kleidung als Rüstung**: Sevens Anzug (Oberteil und Hose) und Kirks grüne Tunika kann man auch selbst
+  tragen. Es gibt sie beim Sternenflotten-Offizier, die Tunika ab Stufe 2 und den Anzug ab Stufe 4.
 * **Handel** (Smaragde): vor allem **Uniformen** (Stufe 1 NX und Originalserie, 2 Kinofilme mit Hosen und Stiefeln,
   3 TNG, 4 Der erste Kontakt). Ab Stufe 2 gibt es auch Teppiche, ab Stufe 3 Stühle (darunter den
   Shuttle-Pilotensitz), ab Stufe 4 Tische, Geländer und Frachtcontainer, auf Stufe 5 Kommandantensessel,
@@ -965,7 +975,7 @@ G = Goldbarren, E = Eisenbarren, P = Enderperle, R = Redstone
 * **Allgemein**: Deckboden, Korridorwand, Deckenverkleidung, Deckenleuchte, Maschinenraum-Konsole,
   Warpkern, Plasmaleitung
 
-Dazu der Raumanzug, das Item Kommunikator, Rohuran, Uranbarren, Dilithiumkristall, Antimaterie, Antimaterie-Kapsel, Deuterium-Kanister, 3 Schlüsselkarten (Sicherheit, Kommando, Captain), 5 Handphaser, 4 Phasergewehre, 15 Uniformen, 2 Uniformhosen und
+Dazu der Raumanzug, das Item Kommunikator, Rohuran, Uranbarren, Dilithiumkristall, Antimaterie, Antimaterie-Kapsel, Deuterium-Kanister, 3 Schlüsselkarten (Sicherheit, Kommando, Captain), 5 Handphaser, 4 Phasergewehre, 15 Uniformen, Sevens Anzug (Oberteil und Hose), Kirks grüne Tunika, 2 Uniformhosen und
 Sternenflotten-Stiefel. Alles ist im Kreativ-Tab „Simon Space Mod“ zu finden.
 
 **Kreativ-Tab**: mit Suchfeld und nach Gruppen sortiert – Grundausstattung (Fertigung, Kommunikator,

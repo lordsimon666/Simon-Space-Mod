@@ -17,4 +17,10 @@ public abstract class VillagerMixin {
         if (self.level() == null || self.level().isClientSide()) return;
         StarfleetVillagers.name(self);
     }
+
+    /** Bekannte Figuren verkaufen zusätzlich ihre Schlüsselkarte (erfundene Namen nicht). */
+    @Inject(method = "updateTrades", at = @At("TAIL"))
+    private void simonspacemod$keycard(net.minecraft.server.level.ServerLevel level, CallbackInfo ci) {
+        StarfleetVillagers.addKeycardOffer((Villager) (Object) this);
+    }
 }

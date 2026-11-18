@@ -49,7 +49,8 @@ public class StarfleetVillagerRenderer extends VillagerRenderer {
         if (!s.starfleet) return;
         human.extractRenderState(entity, s.crewState, partialTicks);
         String name = entity.hasCustomName() ? entity.getCustomName().getString() : "";
-        s.crewState.texture = CrewSkins.texture(StarfleetCrew.skin(name, entity.getUUID()), StarfleetCrew.outfit(name, entity.getUUID()));
+        s.crewState.texture = CrewSkins.texture(StarfleetCrew.skin(name, entity.getUUID()), StarfleetCrew.outfit(name, entity.getUUID()),
+            StarfleetCrew.tear(entity.getUUID()));
     }
 
     @Override

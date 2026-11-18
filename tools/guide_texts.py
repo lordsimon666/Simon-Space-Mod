@@ -128,9 +128,10 @@ DE = {
     "entry.starfleet_villager": "Sternenflotten-Dorfbewohner",
     "starfleet_villager.1": "Ein Dorfbewohner mit einem Shuttle-Pilotensitz als Arbeitsplatz wird zum Sternenflotten-Offizier. Etwa jeder vierte heißt wie eine "
                             "Figur aus Star Trek und sieht auch so ähnlich aus: Gestalt eines Spielers, Frisur und Gesicht der Figur und eine Uniform, die sie in Serie oder Film trug. "
-                            "Die anderen haben erfundene Namen, ein unauffälliges Gesicht und eine zufällige Uniform.",
+                            "Die anderen haben erfundene Namen, ein unauffälliges Gesicht und eine zufällige Uniform. Bei jedem zweiten ist die Uniform zerrissen.",
     "starfleet_villager.2": "Er verkauft vor allem Uniformen, auf höheren Stufen auch Stühle und Deko – nie Maschinen oder andere funktionale Blöcke. "
-                            "In etwa jedem fünfzigsten Dorf steht ein umgebautes Shuttle, in dem einer wohnt. Das Raumschiff-Bett ist zwei Blöcke lang und ein ganz normales Bett.",
+                            "In etwa jedem fünfzigsten Dorf steht ein umgebautes Shuttle, in dem einer wohnt. Das Raumschiff-Bett ist zwei Blöcke lang und ein ganz normales Bett. "
+                            "Bekannte Figuren verkaufen ihre Schlüsselkarte (Captains die Captain-Karte, Worf die Sicherheitskarte) – herstellen lassen sich Karten nicht.",
     "entry.cameras": "Kameras & Bildschirme",
     "cameras.1": "Kameras zeigen ihr Live-Bild auf Bildschirmen derselben Struktur (über Blöcke der Mod verbunden). Eine Kamera schaut von der Seite weg, an die du sie setzt. "
                  "Nebeneinander gesetzte Bildschirme mit gleicher Blickrichtung werden zu einer großen Bildfläche, als Rechteck von 1×1 bis 16×16.",
@@ -334,9 +335,10 @@ EN = {
     "entry.starfleet_villager": "Starfleet Villagers",
     "starfleet_villager.1": "A villager with a shuttle pilot seat as job site becomes a Starfleet officer. About one in four is named after a Star Trek character "
                             "and looks a bit like them: the shape of a player, the character's hair and face and a uniform they wore in a series or film. "
-                            "The others get made-up names, a plain face and a random uniform.",
+                            "The others get made-up names, a plain face and a random uniform. Every second one has a torn uniform.",
     "starfleet_villager.2": "He mostly sells uniforms, at higher levels also chairs and decoration – never machines or other functional blocks. "
-                            "About one village in fifty has a converted shuttle where one lives. The starship bed is two blocks long and works like any bed.",
+                            "About one village in fifty has a converted shuttle where one lives. The starship bed is two blocks long and works like any bed. "
+                            "Known characters sell their keycard (captains the captain's card, Worf the security card) – keycards cannot be crafted.",
     "entry.cameras": "Cameras & Displays",
     "cameras.1": "Cameras show their live picture on displays of the same structure (connected through blocks of the mod). A camera looks away from the side you place it on. "
                  "Displays placed next to each other facing the same way become one big screen, as a rectangle from 1×1 to 16×16.",

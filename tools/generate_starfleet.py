@@ -350,16 +350,15 @@ def skin_image(spec, seed):
     return img
 
 
-def outfits():
-    """Eigene Kleidung der Dorfbewohner im Schnittmuster einer Rüstung (64×32): Sevens Anzug, Kirks grüne Tunika."""
-    folder = os.path.join(ASSETS, "textures", "entity", "starfleet")
-    os.makedirs(folder, exist_ok=True)
+def outfits(de, en):
+    """Eigene Kleidung (Sevens Anzug als Oberteil und Hose, Kirks grüne Tunika) – tragbar wie die Uniformen und als
+    Kleidung der Dorfbewohner. Schnittmuster einer Rüstung (64×32)."""
+    eq = os.path.join(ASSETS, "textures", "entity", "equipment")
 
-    def base(color, seed, legs):
+    def base(color, seed, regions):
         rnd = random.Random(seed)
         img = Image.new("RGBA", (64, 32), (0, 0, 0, 0))
         px = img.load()
-        regions = [(16, 16, 24, 16), (40, 16, 16, 16)] + ([(0, 16, 16, 16)] if legs else [])
         for x0, y0, w, h in regions:
             for x in range(x0, x0 + w):
                 for y in range(y0, y0 + h):
@@ -367,31 +366,72 @@ def outfits():
                         px[x, y] = shade(rgba(color), rnd.randint(-5, 5))
         return img, px
 
-    # Seven of Nine: silbrig-blauer Anzug, hoher Kragen, dunklere Nähte, Schuhe in Anzugfarbe
+    TOP_REGIONS = [(16, 16, 24, 16), (40, 16, 16, 16)]
+    # Seven of Nine: silbrig-blauer Anzug, hoher Kragen, dunklere Nähte
     suit = (150, 162, 184)
-    img, px = base(suit, 9501, True)
-    for y in range(20, 32):                                              # Nähte vorn und an den Seiten
+    top, px = base(suit, 9501, TOP_REGIONS)
+    for y in range(20, 32):
         px[23, y] = px[24, y] = shade(rgba(suit), -22)
         px[16, y] = px[27, y] = px[28, y] = px[31, y] = shade(rgba(suit), -16)
-    for x in range(20, 28):                                              # hoher Kragen
+    for x in range(20, 28):
         px[x, 20] = shade(rgba(suit), 16)
-    for x in list(range(0, 16)):
-        px[x, 31] = shade(rgba(suit), -40)                               # Schuhe
-    img.save(os.path.join(folder, "outfit_seven.png"))
-
-    # Kirk: grüne Wickeltunika (Originalserie), schwarzer V-Kragen, goldene Ärmelborten, Abzeichen
+    legs, lp = base(suit, 9503, [(0, 16, 16, 16), (16, 16, 24, 16)])  # Beine und Hüfte (Leggings-Schnitt)
+    for y in range(20, 32):
+        lp[4, y] = lp[12, y] = shade(rgba(suit), -16)                   # Seitennähte
+    for x in range(0, 16):
+        lp[x, 31] = shade(rgba(suit), -40)                               # Schuhe im Anzug
+    # Kirk: grüne Wickeltunika, schwarzer V-Kragen, goldene Ärmelborten, Abzeichen
     green = (98, 120, 62)
-    img, px = base(green, 9502, False)
-    for i in range(7):                                                   # Wickelnaht diagonal über die Brust
-        px[21 + i, 21 + i] = shade(rgba(green), -28)
+    kirk, kp = base(green, 9502, TOP_REGIONS)
+    for i in range(7):
+        kp[21 + i, 21 + i] = shade(rgba(green), -28)
     for (x, y) in ((23, 20), (24, 20), (23, 21), (24, 21), (22, 20), (25, 20)):
-        px[x, y] = (24, 24, 26, 255)                                     # V-Kragen
-    for x in range(40, 56):                                              # Borten an den Ärmeln
-        px[x, 28] = (206, 170, 64, 255)
-        px[x, 27] = (206, 170, 64, 255)
-    px[26, 22] = px[26, 23] = (214, 180, 70, 255)                        # Abzeichen
-    px[25, 23] = (214, 180, 70, 255)
-    img.save(os.path.join(folder, "outfit_kirk_green.png"))
+        kp[x, y] = (24, 24, 26, 255)
+    for x in range(40, 56):
+        kp[x, 28] = kp[x, 27] = (206, 170, 64, 255)
+    kp[26, 22] = kp[26, 23] = kp[25, 23] = (214, 180, 70, 255)
+
+    def icon(color, kind, accent=None):
+        img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+        ip = img.load()
+        for x in range(16):
+            for y in range(16):
+                if kind == "top":
+                    on = 4 <= x <= 11 and 2 <= y <= 14 or (1 <= x <= 3 or 12 <= x <= 14) and 3 <= y <= 9
+                else:
+                    on = 4 <= x <= 11 and 2 <= y <= 4 or (4 <= x <= 6 or 9 <= x <= 11) and 5 <= y <= 14
+                if on:
+                    ip[x, y] = shade(rgba(color), -14 if x in (1, 4, 11, 14) else 0)
+        if kind == "top":
+            for x in range(6, 10):
+                ip[x, 2] = (0, 0, 0, 0)
+        if accent == "kirk":
+            for x in (1, 2, 3, 12, 13, 14):
+                ip[x, 8] = (206, 170, 64, 255)
+            for i in range(5):
+                ip[5 + i, 4 + i] = shade(rgba(color), -28)
+            ip[6, 3] = ip[7, 3] = ip[8, 3] = ip[9, 3] = (24, 24, 26, 255)
+        if accent == "seven":
+            for y in range(3, 15):
+                for x in (7, 8):
+                    if ip[x, y][3]:
+                        ip[x, y] = shade(rgba(color), -20)
+        return img
+
+    items = [("outfit_seven", "humanoid", top, icon(suit, "top", "seven"), "Sevens Anzug (Oberteil)", "Seven's Suit (Top)"),
+             ("outfit_seven_legs", "humanoid_leggings", legs, icon(suit, "legs", "seven"), "Sevens Anzug (Hose)", "Seven's Suit (Legs)"),
+             ("outfit_kirk_green", "humanoid", kirk, icon(green, "top", "kirk"), "Kirks grüne Tunika", "Kirk's Green Tunic")]
+    for name, layer, img, ico, dn, enn in items:
+        path = os.path.join(eq, layer, name + ".png")
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        img.save(path)
+        write_json(os.path.join(ASSETS, "equipment", name + ".json"), {"layers": {layer: [{"texture": f"{MODID}:{name}"}]}})
+        save(ico, "item/" + name)
+        write_json(os.path.join(ASSETS, "models", "item", name + ".json"),
+                   {"parent": "minecraft:item/generated", "textures": {"layer0": f"{MODID}:item/{name}"}})
+        write_json(os.path.join(ASSETS, "items", name + ".json"), item_def(f"{MODID}:item/{name}"))
+        de[f"item.{MODID}.{name}"] = dn
+        en[f"item.{MODID}.{name}"] = enn
 
 
 def skins():
@@ -409,11 +449,11 @@ DIVISIONS = ("command", "science", "operations")
 # Stufe -> [(Gegenstand, Preis in Smaragden, Anzahl)]
 TRADES = {
     1: [(f"uniform_nx_{d}", 4, 1) for d in DIVISIONS] + [(f"uniform_tos_{d}", 5, 1) for d in DIVISIONS] + [("trousers_black", 3, 1)],
-    2: [(f"uniform_movie_{d}", 7, 1) for d in DIVISIONS] + [("trousers_nx", 3, 1), ("boots_starfleet", 4, 1),
+    2: [(f"uniform_movie_{d}", 7, 1) for d in DIVISIONS] + [("trousers_nx", 3, 1), ("boots_starfleet", 4, 1), ("outfit_kirk_green", 8, 1),
                                                            ("tng_carpet", 1, 4), ("bridge_carpet_teal", 1, 4)],
     3: [(f"uniform_tng_{d}", 9, 1) for d in DIVISIONS] + [("station_chair", 6, 1), ("tng_chair", 6, 1), ("ent_chair", 6, 1),
                                                          ("station_chair_teal", 6, 1), ("shuttle_chair", 8, 1)],
-    4: [(f"uniform_fc_{d}", 12, 1) for d in DIVISIONS] + [("conference_table", 8, 1), ("crew_desk", 8, 1), ("mess_table", 7, 1),
+    4: [(f"uniform_fc_{d}", 12, 1) for d in DIVISIONS] + [("outfit_seven", 12, 1), ("outfit_seven_legs", 8, 1), ("conference_table", 8, 1), ("crew_desk", 8, 1), ("mess_table", 7, 1),
                                                          ("bridge_railing", 2, 4), ("bridge_railing_wood", 2, 4), ("cargo_container", 3, 2)],
     5: [("captains_chair", 20, 1), ("captains_chair_tng", 20, 1), ("captains_chair_nx", 20, 1), ("captains_chair_teal", 20, 1),
         ("situation_table", 16, 1), ("table_viewer", 14, 1), ("hull_pennant", 6, 4)],
@@ -461,7 +501,7 @@ def run(de, en):
     textures()
     block_assets()
     skins()
-    outfits()
+    outfits(de, en)
     trade_data()
     lang(de, en)
     import starfleet_house
