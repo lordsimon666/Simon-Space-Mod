@@ -39,7 +39,7 @@ class StarfleetCrewTest {
             seven.add(StarfleetCrew.outfit("Seven of Nine", id));
             assertEquals("uniform_nx_command", StarfleetCrew.outfit("Jonathan Archer", id));
         }
-        assertEquals(Set.of("uniform_tng_command", "uniform_fc_command"), picard);
+        assertEquals(Set.of("uniform_tng_command", "uniform_ds9_command", "uniform_fc_command"), picard);
         assertTrue(seven.contains("outfit_seven"));
         assertTrue(StarfleetCrew.CREW.stream().anyMatch(m -> m.outfits().contains("outfit_kirk_green")));
     }
@@ -60,7 +60,7 @@ class StarfleetCrewTest {
             uniforms.add(StarfleetCrew.outfit(name, id));
         }
         assertEquals(0.25, canon / (double) n, 0.015, "Anteil bekannter Figuren");
-        assertEquals(15, uniforms.size());
+        assertEquals(18, uniforms.size());
     }
 
     @Test
@@ -102,7 +102,7 @@ class StarfleetCrewTest {
             assertEquals(u, StarfleetCrew.uniform(id));
             seen.add(u);
         }
-        assertEquals(15, seen.size(), "nicht alle Uniformen kommen vor");
+        assertEquals(18, seen.size(), "nicht alle Uniformen kommen vor");
         for (String u : seen)
             assertTrue(Files.exists(RES.resolve("assets/simonspacemod/textures/entity/equipment/humanoid/" + u + ".png")), u);
     }

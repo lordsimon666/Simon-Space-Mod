@@ -451,7 +451,7 @@ TRADES = {
     1: [(f"uniform_nx_{d}", 4, 1) for d in DIVISIONS] + [(f"uniform_tos_{d}", 5, 1) for d in DIVISIONS] + [("trousers_black", 3, 1)],
     2: [(f"uniform_movie_{d}", 7, 1) for d in DIVISIONS] + [("trousers_nx", 3, 1), ("boots_starfleet", 4, 1), ("outfit_kirk_green", 8, 1),
                                                            ("tng_carpet", 1, 4), ("bridge_carpet_teal", 1, 4)],
-    3: [(f"uniform_tng_{d}", 9, 1) for d in DIVISIONS] + [("station_chair", 6, 1), ("tng_chair", 6, 1), ("ent_chair", 6, 1),
+    3: [(f"uniform_tng_{d}", 9, 1) for d in DIVISIONS] + [(f"uniform_ds9_{d}", 10, 1) for d in DIVISIONS] + [("station_chair", 6, 1), ("tng_chair", 6, 1), ("ent_chair", 6, 1),
                                                          ("station_chair_teal", 6, 1), ("shuttle_chair", 8, 1)],
     4: [(f"uniform_fc_{d}", 12, 1) for d in DIVISIONS] + [("outfit_seven", 12, 1), ("outfit_seven_legs", 8, 1), ("conference_table", 8, 1), ("crew_desk", 8, 1), ("mess_table", 7, 1),
                                                          ("bridge_railing", 2, 4), ("bridge_railing_wood", 2, 4), ("cargo_container", 3, 2)],

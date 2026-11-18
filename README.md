@@ -407,7 +407,8 @@ starker Verkleinerung etwas dicker und das Brückenmodul im Verhältnis größer
 * **Uniformen**: Für jede Epoche gibt es Uniformen in den drei Abteilungsfarben, dazu Hosen und Stiefel:
   NX-01 (dunkelblauer Overall mit farbiger Paspel, dunkelblaue Hose), Originalserie (gold / blau / rot),
   Kinofilme der 2280er und 90er (rote Jacke, Kragen weiß / grau / gelb, für A und B),
-  Next Generation (rot / blau / gold mit schwarzer Schulterpasse, für C und D) und Enterprise-E
+  Next Generation (rot / blau / gold mit schwarzer Schulterpasse, für C und D), Deep Space Nine & Voyager
+  (schwarzer Overall, Schultern und Brust rot / blau / gold, graues Unterhemd) und Enterprise-E
   (schwarz mit grauen Schultern und farbigem Kragen). Die Uniformen ziehst du wie eine Rüstung an.
 
 ### Eigene Schiffe fliegen (Steuerkonsole)
@@ -810,11 +811,11 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
 * **Aussehen**: Er hat die Gestalt eines Spielers.
   * **Bekannte Figuren**: eine Haut, die der Figur ähnelt (Frisur, Haar- und Hautfarbe, Bart, Visier, Stirnwülste,
     Borg-Implantat usw. als kleine Pixel-Figur), und **ihre eigene Uniform**. Trug die Figur in Serie und Filmen
-    verschiedene, ist es zufällig eine davon, für jeden Dorfbewohner aber fest. Zum Beispiel trägt Picard TNG oder
-    „Der erste Kontakt“, Kirk Originalserie, Kinofilm oder seine **grüne Wickeltunika**, Archer die NX-Uniform.
+    verschiedene, ist es zufällig eine davon, für jeden Dorfbewohner aber fest. Zum Beispiel trägt Picard TNG, die
+    Deep-Space-Nine-/Voyager-Uniform oder „Der erste Kontakt“, Janeway und Tuvok die Voyager-Uniform, Kirk Originalserie, Kinofilm oder seine **grüne Wickeltunika**, Archer die NX-Uniform.
     **Seven of Nine** trägt meist ihren eigenen silbrig-blauen Anzug, selten eine Uniform.
   * **Erfundene Namen**: eine unauffällige Haut (ohne Visier, Stirnwülste, Vulkanier-Brauen, Bart, Glatze oder
-    Implantat) und eine **zufällige Uniform** (eine der 15 aus 5 Epochen × 3 Abteilungen).
+    Implantat) und eine **zufällige Uniform** (eine der 18 aus 6 Epochen × 3 Abteilungen).
   * Die **Hose passt zum Oberteil**: blau nur zur NX-Uniform, sonst schwarz, dazu Sternenflotten-Stiefel. Sevens
     Anzug geht bis zu den Füßen.
   * Bei der **Hälfte** der Offiziere ist die **Uniform zerrissen**: ein paar schräge Risse mit angesengten Rändern,
@@ -829,7 +830,7 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
 * **Eigene Kleidung als Rüstung**: Sevens Anzug (Oberteil und Hose) und Kirks grüne Tunika kann man auch selbst
   tragen. Es gibt sie beim Sternenflotten-Offizier, die Tunika ab Stufe 2 und den Anzug ab Stufe 4.
 * **Handel** (Smaragde): vor allem **Uniformen** (Stufe 1 NX und Originalserie, 2 Kinofilme mit Hosen und Stiefeln,
-  3 TNG, 4 Der erste Kontakt). Ab Stufe 2 gibt es auch Teppiche, ab Stufe 3 Stühle (darunter den
+  3 TNG und Deep Space Nine/Voyager, 4 Der erste Kontakt). Ab Stufe 2 gibt es auch Teppiche, ab Stufe 3 Stühle (darunter den
   Shuttle-Pilotensitz), ab Stufe 4 Tische, Geländer und Frachtcontainer, auf Stufe 5 Kommandantensessel,
   Lagetisch, Tischbildschirm und Wimpel. Nie dabei sind Maschinen, Betten, Lichter oder andere funktionale Blöcke.
 * **Shuttle-Haus**: Etwa jedes **fünfzigste Dorf** (Ebene, Wüste, Savanne, Schnee, Taiga) hat ein umgebautes
@@ -975,7 +976,7 @@ G = Goldbarren, E = Eisenbarren, P = Enderperle, R = Redstone
 * **Allgemein**: Deckboden, Korridorwand, Deckenverkleidung, Deckenleuchte, Maschinenraum-Konsole,
   Warpkern, Plasmaleitung
 
-Dazu der Raumanzug, das Item Kommunikator, Rohuran, Uranbarren, Dilithiumkristall, Antimaterie, Antimaterie-Kapsel, Deuterium-Kanister, 3 Schlüsselkarten (Sicherheit, Kommando, Captain), 5 Handphaser, 4 Phasergewehre, 15 Uniformen, Sevens Anzug (Oberteil und Hose), Kirks grüne Tunika, 2 Uniformhosen und
+Dazu der Raumanzug, das Item Kommunikator, Rohuran, Uranbarren, Dilithiumkristall, Antimaterie, Antimaterie-Kapsel, Deuterium-Kanister, 3 Schlüsselkarten (Sicherheit, Kommando, Captain), 5 Handphaser, 4 Phasergewehre, 18 Uniformen, Sevens Anzug (Oberteil und Hose), Kirks grüne Tunika, 2 Uniformhosen und
 Sternenflotten-Stiefel. Alles ist im Kreativ-Tab „Simon Space Mod“ zu finden.
 
 **Kreativ-Tab**: mit Suchfeld und nach Gruppen sortiert – Grundausstattung (Fertigung, Kommunikator,

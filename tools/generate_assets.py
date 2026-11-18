@@ -1465,13 +1465,14 @@ def weapons_console_model(v):
 #  Uniformen (Rüstungs-Texturen 64x32 im Spielerlayout)
 # ---------------------------------------------------------------------------------------------
 
-ERAS = ["nx", "tos", "movie", "tng", "fc"]
+ERAS = ["nx", "tos", "movie", "tng", "ds9", "fc"]
 DIVS = ["command", "science", "operations"]
 DIV_COLOR = {
     "nx": {"command": (214, 178, 60), "science": (90, 150, 215), "operations": (190, 40, 40)},
     "tos": {"command": (216, 178, 60), "science": (120, 160, 214), "operations": (178, 36, 36)},
     "movie": {"command": (236, 236, 230), "science": (160, 176, 150), "operations": (206, 168, 70)},
     "tng": {"command": (156, 26, 26), "science": (44, 108, 140), "operations": (200, 160, 48)},
+    "ds9": {"command": (150, 26, 26), "science": (42, 106, 138), "operations": (198, 158, 46)},
     "fc": {"command": (150, 24, 24), "science": (40, 104, 136), "operations": (196, 156, 44)},
 }
 GOLD = (224, 192, 80)
@@ -1513,7 +1514,7 @@ def uniform_texture(era, div):
     img = Image.new("RGBA", (64, 32), (0, 0, 0, 0))
     px = img.load()
     dc = DIV_COLOR[era][div]
-    base = {"nx": (44, 61, 94), "tos": dc, "movie": (122, 22, 22), "tng": dc, "fc": (30, 30, 34)}[era]
+    base = {"nx": (44, 61, 94), "tos": dc, "movie": (122, 22, 22), "tng": dc, "ds9": BLACK, "fc": (30, 30, 34)}[era]
     for f, r in BODY.items():
         fill(px, r, base, seed_of(era, div, f), 4)
     for f, r in ARM.items():
@@ -1545,6 +1546,17 @@ def uniform_texture(era, div):
         fill(px, ARM["top"], BLACK, 8, 2)
         px[25, fy + 3] = px[26, fy + 3] = px[25, fy + 4] = GOLD + (255,)  # Kommunikator
         px[21, fy + 1] = px[22, fy + 1] = GOLD + (255,)      # Rangpins
+    elif era == "ds9":
+        # Deep Space Nine & Voyager: schwarzer Overall, Schultern und Brust in Abteilungsfarbe, graues Unterhemd
+        rows(px, BODY, 0, 3, dc)
+        fill(px, BODY["top"], dc, 11, 3)
+        rows(px, ARM, 0, 2, dc)
+        fill(px, ARM["top"], dc, 12, 3)
+        for x in range(22, 26):
+            px[x, fy] = (128, 130, 136, 255)                 # graues Unterhemd am Kragen
+        px[23, fy + 1] = px[24, fy + 1] = (128, 130, 136, 255)
+        px[25, fy + 5] = px[26, fy + 5] = px[25, fy + 6] = GOLD + (255,)  # Kommunikator
+        px[21, fy + 2] = px[22, fy + 2] = GOLD + (255,)      # Rangpins
     elif era == "fc":
         grey = (92, 94, 100)
         rows(px, BODY, 0, 2, grey)                           # gesteppte graue Schultern
@@ -1597,7 +1609,7 @@ def boots_texture():
 
 def icon_tunic(era, div):
     dc = DIV_COLOR[era][div]
-    base = {"nx": (44, 61, 94), "tos": dc, "movie": (122, 22, 22), "tng": dc, "fc": (30, 30, 34)}[era]
+    base = {"nx": (44, 61, 94), "tos": dc, "movie": (122, 22, 22), "tng": dc, "ds9": BLACK, "fc": (30, 30, 34)}[era]
     img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
     px = img.load()
     for x in range(16):
@@ -1619,6 +1631,14 @@ def icon_tunic(era, div):
             for y in range(2, 6):
                 if px[x, y][3]:
                     px[x, y] = BLACK + (255,)
+        px[9, 7] = GOLD + (255,)
+    elif era == "ds9":
+        for x in range(1, 15):
+            for y in range(2, 6):
+                if px[x, y][3]:
+                    px[x, y] = dc + (255,)
+        px[7, 2] = px[8, 2] = (0, 0, 0, 0)
+        px[7, 3] = px[8, 3] = (128, 130, 136, 255)
         px[9, 7] = GOLD + (255,)
     elif era == "fc":
         for x in range(1, 15):
@@ -1672,6 +1692,7 @@ ERA_NAMES = {
     "tos": ("Originalserie, 2260er", "Original Series, 2260s"),
     "movie": ("Kinofilme, 2280er/90er", "Movie Era, 2280s/90s"),
     "tng": ("Next Generation, 2360er", "Next Generation, 2360s"),
+    "ds9": ("Deep Space Nine & Voyager, 2370er", "Deep Space Nine & Voyager, 2370s"),
     "fc": ("Enterprise-E, 2370er", "Enterprise-E, 2370s"),
 }
 DIV_NAMES = {
@@ -1684,6 +1705,8 @@ DIV_NAMES = {
               "science": ("Wissenschaft & Medizin, grauer Kragen", "Sciences & Medical, grey collar"),
               "operations": ("Technik, gelber Kragen", "Engineering, yellow collar")},
     "tng": {"command": ("Kommando, rot", "Command, red"), "science": ("Wissenschaft, blau", "Sciences, blue"),
+            "operations": ("Technik & Sicherheit, gold", "Engineering & Security, gold")},
+    "ds9": {"command": ("Kommando, rot", "Command, red"), "science": ("Wissenschaft, blau", "Sciences, blue"),
             "operations": ("Technik & Sicherheit, gold", "Engineering & Security, gold")},
     "fc": {"command": ("Kommando, rot", "Command, red"), "science": ("Wissenschaft, blau", "Sciences, blue"),
            "operations": ("Technik & Sicherheit, gold", "Engineering & Security, gold")},

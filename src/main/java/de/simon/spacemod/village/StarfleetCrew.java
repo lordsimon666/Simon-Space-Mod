@@ -35,13 +35,13 @@ public final class StarfleetCrew {
 
 
     public static final List<Member> CREW = List.of(
-        m("Jean-Luc Picard", "picard", "uniform_tng_command", "uniform_fc_command"),
-        m("William Riker", "riker", "uniform_tng_command", "uniform_fc_command"),
-        m("Data", "data", "uniform_tng_operations", "uniform_fc_operations"),
-        m("Worf", "worf", "uniform_tng_operations", "uniform_fc_command"),
-        m("Geordi La Forge", "laforge", "uniform_tng_operations", "uniform_fc_operations"),
-        m("Beverly Crusher", "crusher", "uniform_tng_science", "uniform_fc_science"),
-        m("Deanna Troi", "troi", "uniform_tng_science", "uniform_fc_science"),
+        m("Jean-Luc Picard", "picard", "uniform_tng_command", "uniform_ds9_command", "uniform_fc_command"),
+        m("William Riker", "riker", "uniform_tng_command", "uniform_ds9_command", "uniform_fc_command"),
+        m("Data", "data", "uniform_tng_operations", "uniform_ds9_operations", "uniform_fc_operations"),
+        m("Worf", "worf", "uniform_tng_operations", "uniform_ds9_operations", "uniform_fc_command"),
+        m("Geordi La Forge", "laforge", "uniform_tng_operations", "uniform_ds9_operations", "uniform_fc_operations"),
+        m("Beverly Crusher", "crusher", "uniform_tng_science", "uniform_ds9_science", "uniform_fc_science"),
+        m("Deanna Troi", "troi", "uniform_tng_science", "uniform_ds9_science", "uniform_fc_science"),
         m("James T. Kirk", "kirk", "uniform_tos_command", "outfit_kirk_green", "uniform_movie_command"),
         m("Spock", "spock", "uniform_tos_science", "uniform_movie_science"),
         m("Leonard McCoy", "mccoy", "uniform_tos_science", "uniform_movie_science"),
@@ -49,18 +49,18 @@ public final class StarfleetCrew {
         m("Nyota Uhura", "uhura", "uniform_tos_operations", "uniform_movie_operations"),
         m("Hikaru Sulu", "sulu", "uniform_tos_science", "uniform_tos_command", "uniform_movie_command"),
         m("Pavel Chekov", "chekov", "uniform_tos_command", "uniform_movie_operations"),
-        m("Kathryn Janeway", "janeway", "uniform_fc_command"),
-        m("Benjamin Sisko", "sisko", "uniform_tng_operations", "uniform_fc_command"),
+        m("Kathryn Janeway", "janeway", "uniform_ds9_command"),
+        m("Benjamin Sisko", "sisko", "uniform_ds9_command", "uniform_fc_command"),
         // Seven trägt meist keine offizielle Uniform
-        m("Seven of Nine", "seven", "outfit_seven", "outfit_seven", "outfit_seven", "uniform_fc_science"),
-        m("Tuvok", "tuvok", "uniform_fc_operations"),
+        m("Seven of Nine", "seven", "outfit_seven", "outfit_seven", "outfit_seven", "uniform_ds9_science"),
+        m("Tuvok", "tuvok", "uniform_ds9_operations"),
         m("Jonathan Archer", "archer", "uniform_nx_command"),
         m("T'Pol", "tpol", "uniform_nx_science"),
         m("Hoshi Sato", "sato", "uniform_nx_operations"),
         m("Michael Burnham", "burnham", "uniform_nx_science", "uniform_tos_science"),
         m("Christopher Pike", "pike", "uniform_tos_command"),
-        m("Miles O'Brien", "obrien", "uniform_tng_operations", "uniform_fc_operations"),
-        m("Julian Bashir", "bashir", "uniform_tng_science", "uniform_fc_science"));
+        m("Miles O'Brien", "obrien", "uniform_tng_operations", "uniform_ds9_operations", "uniform_fc_operations"),
+        m("Julian Bashir", "bashir", "uniform_ds9_science", "uniform_fc_science"));
 
     /** Häute ohne markante Merkmale (kein Visier, keine Stirnwülste, keine Vulkanier-Brauen, kein Bart, keine Glatze). */
     public static final List<String> PLAIN_SKINS = List.of(
@@ -80,7 +80,7 @@ public final class StarfleetCrew {
     public static final double CANON_SHARE = 0.25;
 
     /** Uniformen in der Reihenfolge Epoche × Abteilung, wie die Uniform-Gegenstände. */
-    public static final String[] ERAS = {"nx", "tos", "movie", "tng", "fc"};
+    public static final String[] ERAS = {"nx", "tos", "movie", "tng", "ds9", "fc"};
     public static final String[] DIVISIONS = {"command", "science", "operations"};
 
     private StarfleetCrew() {}
@@ -134,7 +134,7 @@ public final class StarfleetCrew {
         };
     }
 
-    /** Zufällige Uniform (eine der 15), fest aus der UUID. */
+    /** Zufällige Uniform (eine der 18), fest aus der UUID. */
     public static String uniform(UUID uuid) {
         int i = Math.floorMod(mix(uuid, 31), ERAS.length * DIVISIONS.length);
         return "uniform_" + ERAS[i / DIVISIONS.length] + "_" + DIVISIONS[i % DIVISIONS.length];

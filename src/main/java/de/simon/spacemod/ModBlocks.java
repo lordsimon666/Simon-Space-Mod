@@ -439,7 +439,7 @@ public final class ModBlocks {
     }
 
     // --- Uniformen: je Epoche Kommando, Wissenschaft und Betrieb, dazu Hosen und Stiefel ---
-    public static final String[] UNIFORM_ERAS = {"nx", "tos", "movie", "tng", "fc"};
+    public static final String[] UNIFORM_ERAS = {"nx", "tos", "movie", "tng", "ds9", "fc"};
     public static final String[] UNIFORM_DIVISIONS = {"command", "science", "operations"};
     static {
         for (String era : UNIFORM_ERAS)
