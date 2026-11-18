@@ -19,8 +19,49 @@ class StarfleetCrewTest {
         for (StarfleetCrew.Member m : StarfleetCrew.CREW) {
             assertTrue(names.add(m.name()), "doppelter Name " + m.name());
             assertTrue(Files.exists(RES.resolve("assets/simonspacemod/textures/entity/starfleet/skin_" + m.skin() + ".png")), "Haut fehlt: " + m.skin());
-            assertEquals(m, StarfleetCrew.byName(m.name(), UUID.randomUUID()));
+            assertEquals(m.skin(), StarfleetCrew.skin(m.name(), UUID.randomUUID()));
+            assertTrue(!m.outfits().isEmpty());
+            for (String o : m.outfits()) assertTrue(Files.exists(outfitTexture(o)), "Kleidung fehlt: " + o);
         }
+    }
+
+    private static Path outfitTexture(String o) {
+        return o.startsWith("outfit_") ? RES.resolve("assets/simonspacemod/textures/entity/starfleet/" + o + ".png")
+            : RES.resolve("assets/simonspacemod/textures/entity/equipment/humanoid/" + o + ".png");
+    }
+
+    @Test
+    void canonCharactersWearTheirOwnUniforms() {
+        java.util.Random r = new java.util.Random(3);
+        Set<String> picard = new HashSet<>(), seven = new HashSet<>();
+        for (int i = 0; i < 500; i++) {
+            UUID id = new UUID(r.nextLong(), r.nextLong());
+            picard.add(StarfleetCrew.outfit("Jean-Luc Picard", id));
+            seven.add(StarfleetCrew.outfit("Seven of Nine", id));
+            assertEquals("uniform_nx_command", StarfleetCrew.outfit("Jonathan Archer", id));
+        }
+        assertEquals(Set.of("uniform_tng_command", "uniform_fc_command"), picard);
+        assertTrue(seven.contains("outfit_seven"));
+        assertTrue(StarfleetCrew.CREW.stream().anyMatch(m -> m.outfits().contains("outfit_kirk_green")));
+    }
+
+    @Test
+    void madeUpNamesAreCommonPlainAndRandom() {
+        net.minecraft.util.RandomSource rnd = net.minecraft.util.RandomSource.create(5);
+        int canon = 0, n = 20000;
+        java.util.Random r = new java.util.Random(9);
+        Set<String> uniforms = new HashSet<>();
+        for (int i = 0; i < n; i++) {
+            String name = StarfleetCrew.randomName(rnd);
+            if (StarfleetCrew.canon(name) != null) { canon++; continue; }
+            UUID id = new UUID(r.nextLong(), r.nextLong());
+            String skin = StarfleetCrew.skin(name, id);
+            assertTrue(StarfleetCrew.PLAIN_SKINS.contains(skin));
+            assertTrue(!Set.of("data", "seven", "worf", "laforge", "spock", "tuvok", "tpol", "picard", "sisko", "riker", "scott").contains(skin));
+            uniforms.add(StarfleetCrew.outfit(name, id));
+        }
+        assertEquals(0.25, canon / (double) n, 0.015, "Anteil bekannter Figuren");
+        assertEquals(15, uniforms.size());
     }
 
     @Test

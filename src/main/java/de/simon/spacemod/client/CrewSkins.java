@@ -28,11 +28,17 @@ public final class CrewSkins {
         try {
             NativeImage img = load("textures/entity/starfleet/skin_" + skin + ".png");
             if (img == null) throw new IllegalStateException("Haut fehlt: " + skin);
-            // Hose passend zum Oberteil: nur die NX-Uniform hat die blaue Hose
-            String trousers = uniform.startsWith("uniform_nx_") ? "trousers_nx" : "trousers_black";
-            overlay(img, load("textures/entity/equipment/humanoid_leggings/" + trousers + ".png"), true);
-            overlay(img, load("textures/entity/equipment/humanoid/boots_starfleet.png"), true);
-            overlay(img, load("textures/entity/equipment/humanoid/" + uniform + ".png"), false);
+            if (uniform.startsWith("outfit_seven")) {
+                // Sevens Anzug: ein Stück vom Hals bis zu den Füßen, ohne Hose und Stiefel
+                overlay(img, load("textures/entity/starfleet/" + uniform + ".png"), Part.ALL);
+            } else {
+                // Hose passend zum Oberteil: nur die NX-Uniform hat die blaue Hose
+                String trousers = uniform.startsWith("uniform_nx_") ? "trousers_nx" : "trousers_black";
+                overlay(img, load("textures/entity/equipment/humanoid_leggings/" + trousers + ".png"), Part.LEGS);
+                overlay(img, load("textures/entity/equipment/humanoid/boots_starfleet.png"), Part.LEGS);
+                String top = uniform.startsWith("outfit_") ? "textures/entity/starfleet/" : "textures/entity/equipment/humanoid/";
+                overlay(img, load(top + uniform + ".png"), Part.TOP);
+            }
             Minecraft.getInstance().getTextureManager().register(id, new DynamicTexture(() -> "simonspacemod crew " + key, img));
         } catch (Exception e) {
             com.mojang.logging.LogUtils.getLogger().warn("Sternenflotten-Haut {} nicht möglich: {}", key, e.toString());
@@ -53,16 +59,19 @@ public final class CrewSkins {
     /**
      * Rüstungstextur (64×32, Schnittmuster wie die obere Hälfte einer Haut) über die Haut legen: Rumpf und rechte
      * Gliedmaßen an ihre Stelle, die linken Gliedmaßen zusätzlich an ihre eigenen Plätze der 64×64-Haut.
-     * {@code legs}: nur Beine (Hose, Stiefel), sonst Rumpf und Arme (Uniform).
+     * {@code part}: nur Rumpf und Arme (Oberteil), nur Beine (Hose, Stiefel) oder alles (Anzug).
      */
-    private static void overlay(NativeImage skin, @Nullable NativeImage armor, boolean legs) {
+    private enum Part { TOP, LEGS, ALL }
+
+    private static void overlay(NativeImage skin, @Nullable NativeImage armor, Part part) {
         if (armor == null) return;
         try (armor) {
             int sx = armor.getWidth() / 64; // höher aufgelöste Texturen
             for (int y = 16; y < 32; y++)
                 for (int x = 0; x < 56; x++) {
                     boolean leg = x < 16, body = x >= 16 && x < 40, arm = x >= 40;
-                    if (legs ? !leg : leg) continue;
+                    if (part == Part.TOP && leg || part == Part.LEGS && !leg) continue;
+                    boolean legs = part == Part.LEGS;
                     if (arm && (y >= 30 || y < 20 && x >= 48 && x < 52)) continue; // Hände bleiben frei
                     int c = armor.getPixel(x * sx, y * sx);
                     if ((c >>> 24) < 128) continue;

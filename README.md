@@ -802,14 +802,22 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
 
 * **Beruf**: Ein Dorfbewohner mit dem **Shuttle-Pilotensitz** als Arbeitsplatz wird zum **Sternenflotten-Offizier**.
   Auf dem Sitz kann man auch selbst sitzen.
-* **Name**: immer der einer Star-Trek-Figur (Picard, Riker, Data, Worf, La Forge, Crusher, Troi, Kirk, Spock, McCoy,
-  Scott, Uhura, Sulu, Chekov, Janeway, Sisko, Seven of Nine, Tuvok, Archer, T'Pol, Hoshi Sato, Burnham, Pike,
-  O'Brien, Bashir). Den Namen bekommt er, sobald er den Beruf annimmt oder aus einer Bauvorlage geladen wird.
-  Per Namensschild umbenennen geht weiterhin.
-* **Aussehen**: Er hat die Gestalt eines Spielers mit einer Haut, die der Figur ähnelt (Frisur, Haar- und Hautfarbe,
-  Bart, Visier, Stirnwülste, Borg-Implantat usw. als kleine Pixel-Figur). Die **Uniform** ist zufällig (eine der 15
-  Uniformen aus 5 Epochen × 3 Abteilungen), bleibt aber für jeden Dorfbewohner fest. Die **Hose passt zum Oberteil**:
-  blau nur zur NX-Uniform, sonst schwarz, dazu Sternenflotten-Stiefel. Alle anderen Dorfbewohner sehen aus wie immer.
+* **Name**: zu **25 %** der einer Star-Trek-Figur (Picard, Riker, Data, Worf, La Forge, Crusher, Troi, Kirk, Spock,
+  McCoy, Scott, Uhura, Sulu, Chekov, Janeway, Sisko, Seven of Nine, Tuvok, Archer, T'Pol, Hoshi Sato, Burnham, Pike,
+  O'Brien, Bashir), zu **75 %** ein erfundener Name aus Vor- und Nachnamen, der keiner bekannten Figur gehört. Den
+  Namen bekommt er, sobald er den Beruf annimmt oder aus einer Bauvorlage geladen wird. Per Namensschild umbenennen
+  geht weiterhin.
+* **Aussehen**: Er hat die Gestalt eines Spielers.
+  * **Bekannte Figuren**: eine Haut, die der Figur ähnelt (Frisur, Haar- und Hautfarbe, Bart, Visier, Stirnwülste,
+    Borg-Implantat usw. als kleine Pixel-Figur), und **ihre eigene Uniform**. Trug die Figur in Serie und Filmen
+    verschiedene, ist es zufällig eine davon, für jeden Dorfbewohner aber fest. Zum Beispiel trägt Picard TNG oder
+    „Der erste Kontakt“, Kirk Originalserie, Kinofilm oder seine **grüne Wickeltunika**, Archer die NX-Uniform.
+    **Seven of Nine** trägt meist ihren eigenen silbrig-blauen Anzug, selten eine Uniform.
+  * **Erfundene Namen**: eine unauffällige Haut (ohne Visier, Stirnwülste, Vulkanier-Brauen, Bart, Glatze oder
+    Implantat) und eine **zufällige Uniform** (eine der 15 aus 5 Epochen × 3 Abteilungen).
+  * Die **Hose passt zum Oberteil**: blau nur zur NX-Uniform, sonst schwarz, dazu Sternenflotten-Stiefel. Sevens
+    Anzug geht bis zu den Füßen.
+  * Alle anderen Dorfbewohner sehen aus wie immer.
 * **Handel** (Smaragde): vor allem **Uniformen** (Stufe 1 NX und Originalserie, 2 Kinofilme mit Hosen und Stiefeln,
   3 TNG, 4 Der erste Kontakt). Ab Stufe 2 gibt es auch Teppiche, ab Stufe 3 Stühle (darunter den
   Shuttle-Pilotensitz), ab Stufe 4 Tische, Geländer und Frachtcontainer, auf Stufe 5 Kommandantensessel,

@@ -57,9 +57,9 @@ public final class StarfleetVillagers {
         });
     }
 
-    /** Sternenflotten-Dorfbewohner ohne Namen bekommen den einer Star-Trek-Figur. */
+    /** Sternenflotten-Dorfbewohner ohne Namen bekommen einen: zu 25 % den einer Star-Trek-Figur, sonst einen erfundenen. */
     public static void name(net.minecraft.world.entity.npc.villager.Villager v) {
         if (v.hasCustomName() || !v.getVillagerData().profession().is(STARFLEET_KEY)) return;
-        v.setCustomName(Component.literal(StarfleetCrew.random(v.getRandom()).name()));
+        v.setCustomName(Component.literal(StarfleetCrew.randomName(v.getRandom())));
     }
 }

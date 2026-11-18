@@ -350,6 +350,50 @@ def skin_image(spec, seed):
     return img
 
 
+def outfits():
+    """Eigene Kleidung der Dorfbewohner im Schnittmuster einer Rüstung (64×32): Sevens Anzug, Kirks grüne Tunika."""
+    folder = os.path.join(ASSETS, "textures", "entity", "starfleet")
+    os.makedirs(folder, exist_ok=True)
+
+    def base(color, seed, legs):
+        rnd = random.Random(seed)
+        img = Image.new("RGBA", (64, 32), (0, 0, 0, 0))
+        px = img.load()
+        regions = [(16, 16, 24, 16), (40, 16, 16, 16)] + ([(0, 16, 16, 16)] if legs else [])
+        for x0, y0, w, h in regions:
+            for x in range(x0, x0 + w):
+                for y in range(y0, y0 + h):
+                    if (x0, y0) != (16, 16) or not (y < 20 and (x < 20 or x >= 36)):   # leere Ecken des Rumpf-Schnitts
+                        px[x, y] = shade(rgba(color), rnd.randint(-5, 5))
+        return img, px
+
+    # Seven of Nine: silbrig-blauer Anzug, hoher Kragen, dunklere Nähte, Schuhe in Anzugfarbe
+    suit = (150, 162, 184)
+    img, px = base(suit, 9501, True)
+    for y in range(20, 32):                                              # Nähte vorn und an den Seiten
+        px[23, y] = px[24, y] = shade(rgba(suit), -22)
+        px[16, y] = px[27, y] = px[28, y] = px[31, y] = shade(rgba(suit), -16)
+    for x in range(20, 28):                                              # hoher Kragen
+        px[x, 20] = shade(rgba(suit), 16)
+    for x in list(range(0, 16)):
+        px[x, 31] = shade(rgba(suit), -40)                               # Schuhe
+    img.save(os.path.join(folder, "outfit_seven.png"))
+
+    # Kirk: grüne Wickeltunika (Originalserie), schwarzer V-Kragen, goldene Ärmelborten, Abzeichen
+    green = (98, 120, 62)
+    img, px = base(green, 9502, False)
+    for i in range(7):                                                   # Wickelnaht diagonal über die Brust
+        px[21 + i, 21 + i] = shade(rgba(green), -28)
+    for (x, y) in ((23, 20), (24, 20), (23, 21), (24, 21), (22, 20), (25, 20)):
+        px[x, y] = (24, 24, 26, 255)                                     # V-Kragen
+    for x in range(40, 56):                                              # Borten an den Ärmeln
+        px[x, 28] = (206, 170, 64, 255)
+        px[x, 27] = (206, 170, 64, 255)
+    px[26, 22] = px[26, 23] = (214, 180, 70, 255)                        # Abzeichen
+    px[25, 23] = (214, 180, 70, 255)
+    img.save(os.path.join(folder, "outfit_kirk_green.png"))
+
+
 def skins():
     folder = os.path.join(ASSETS, "textures", "entity", "starfleet")
     os.makedirs(folder, exist_ok=True)
@@ -417,6 +461,7 @@ def run(de, en):
     textures()
     block_assets()
     skins()
+    outfits()
     trade_data()
     lang(de, en)
     import starfleet_house

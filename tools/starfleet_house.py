@@ -132,4 +132,9 @@ def run(g):
     })
     path = os.path.join(g.DATA, "structure", "village", "shuttle_house.nbt")
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    nbtlib.File(root).save(path, gzipped=True)
+    import gzip
+    import io
+    buf = io.BytesIO()
+    nbtlib.File(root).write(buf)
+    with open(path, "wb") as f:                                           # ohne Zeitstempel: gleiche Datei bei jedem Lauf
+        f.write(gzip.compress(buf.getvalue(), mtime=0))

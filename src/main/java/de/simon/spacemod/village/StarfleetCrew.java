@@ -5,44 +5,111 @@ import java.util.UUID;
 import net.minecraft.util.RandomSource;
 
 /**
- * Namen der Sternenflotten-Dorfbewohner (bekannte Figuren aus Star Trek) und ihr Aussehen: Zu jedem Namen gibt es
- * eine Haut (textures/entity/starfleet/skin_&lt;id&gt;.png) mit passender Frisur, Hautfarbe und Merkmalen. Die Uniform
- * wählt der Zufall – fest je Dorfbewohner (aus seiner UUID).
+ * Namen und Aussehen der Sternenflotten-Dorfbewohner.
+ *
+ * <ul>
+ * <li>Mit 25 % heißen sie wie eine bekannte Figur aus Star Trek. Dann tragen sie deren Haut
+ * (textures/entity/starfleet/skin_&lt;id&gt;.png) und eine der Uniformen, die die Figur in Serie oder Filmen trug –
+ * bei mehreren zufällig, aber fest je Dorfbewohner (aus seiner UUID).</li>
+ * <li>Mit 75 % bekommen sie einen erfundenen Namen, eine Haut ohne markante Merkmale und eine zufällige Uniform.</li>
+ * </ul>
+ * Kleidung: "uniform_&lt;epoche&gt;_&lt;abteilung&gt;" sind die Uniform-Gegenstände, "outfit_&lt;name&gt;" eigene
+ * Kleidung der Dorfbewohner (Sevens Anzug, Kirks grüne Tunika).
  */
 public final class StarfleetCrew {
-    public record Member(String name, String skin) {}
+    public record Member(String name, String skin, List<String> outfits) {}
+
+    private static Member m(String name, String skin, String... outfits) {
+        return new Member(name, skin, List.of(outfits));
+    }
 
     public static final List<Member> CREW = List.of(
-        new Member("Jean-Luc Picard", "picard"), new Member("William Riker", "riker"), new Member("Data", "data"),
-        new Member("Worf", "worf"), new Member("Geordi La Forge", "laforge"), new Member("Beverly Crusher", "crusher"),
-        new Member("Deanna Troi", "troi"), new Member("James T. Kirk", "kirk"), new Member("Spock", "spock"),
-        new Member("Leonard McCoy", "mccoy"), new Member("Montgomery Scott", "scott"), new Member("Nyota Uhura", "uhura"),
-        new Member("Hikaru Sulu", "sulu"), new Member("Pavel Chekov", "chekov"), new Member("Kathryn Janeway", "janeway"),
-        new Member("Benjamin Sisko", "sisko"), new Member("Seven of Nine", "seven"), new Member("Tuvok", "tuvok"),
-        new Member("Jonathan Archer", "archer"), new Member("T'Pol", "tpol"), new Member("Hoshi Sato", "sato"),
-        new Member("Michael Burnham", "burnham"), new Member("Christopher Pike", "pike"), new Member("Miles O'Brien", "obrien"),
-        new Member("Julian Bashir", "bashir"));
+        m("Jean-Luc Picard", "picard", "uniform_tng_command", "uniform_fc_command"),
+        m("William Riker", "riker", "uniform_tng_command", "uniform_fc_command"),
+        m("Data", "data", "uniform_tng_operations", "uniform_fc_operations"),
+        m("Worf", "worf", "uniform_tng_operations", "uniform_fc_command"),
+        m("Geordi La Forge", "laforge", "uniform_tng_operations", "uniform_fc_operations"),
+        m("Beverly Crusher", "crusher", "uniform_tng_science", "uniform_fc_science"),
+        m("Deanna Troi", "troi", "uniform_tng_science", "uniform_fc_science"),
+        m("James T. Kirk", "kirk", "uniform_tos_command", "outfit_kirk_green", "uniform_movie_command"),
+        m("Spock", "spock", "uniform_tos_science", "uniform_movie_science"),
+        m("Leonard McCoy", "mccoy", "uniform_tos_science", "uniform_movie_science"),
+        m("Montgomery Scott", "scott", "uniform_tos_operations", "uniform_movie_operations"),
+        m("Nyota Uhura", "uhura", "uniform_tos_operations", "uniform_movie_operations"),
+        m("Hikaru Sulu", "sulu", "uniform_tos_science", "uniform_tos_command", "uniform_movie_command"),
+        m("Pavel Chekov", "chekov", "uniform_tos_command", "uniform_movie_operations"),
+        m("Kathryn Janeway", "janeway", "uniform_fc_command"),
+        m("Benjamin Sisko", "sisko", "uniform_tng_operations", "uniform_fc_command"),
+        // Seven trägt meist keine offizielle Uniform
+        m("Seven of Nine", "seven", "outfit_seven", "outfit_seven", "outfit_seven", "uniform_fc_science"),
+        m("Tuvok", "tuvok", "uniform_fc_operations"),
+        m("Jonathan Archer", "archer", "uniform_nx_command"),
+        m("T'Pol", "tpol", "uniform_nx_science"),
+        m("Hoshi Sato", "sato", "uniform_nx_operations"),
+        m("Michael Burnham", "burnham", "uniform_nx_science", "uniform_tos_science"),
+        m("Christopher Pike", "pike", "uniform_tos_command"),
+        m("Miles O'Brien", "obrien", "uniform_tng_operations", "uniform_fc_operations"),
+        m("Julian Bashir", "bashir", "uniform_tng_science", "uniform_fc_science"));
 
-    /** Uniformen (Brustteil) in der Reihenfolge Epoche × Abteilung, wie die Uniform-Gegenstände. */
+    /** Häute ohne markante Merkmale (kein Visier, keine Stirnwülste, keine Vulkanier-Brauen, kein Bart, keine Glatze). */
+    public static final List<String> PLAIN_SKINS = List.of(
+        "archer", "bashir", "burnham", "chekov", "crusher", "janeway", "kirk", "mccoy", "obrien", "sato", "sulu", "troi", "uhura");
+
+    /** Bausteine für erfundene Namen (keine bekannte Figur). */
+    public static final List<String> FIRST_NAMES = List.of(
+        "Alex", "Mara", "Tomas", "Yuki", "Kofi", "Lena", "Ravi", "Ingrid", "Mateo", "Aiko", "Nils", "Priya", "Jonas", "Zara",
+        "Elena", "Omar", "Freya", "Kai", "Talia", "Viktor", "Selin", "Diego", "Amara", "Hugo", "Noemi", "Bastian", "Leila",
+        "Emil", "Sora", "Ida", "Malik", "Greta", "Tariq", "Juna", "Felix", "Anouk");
+    public static final List<String> LAST_NAMES = List.of(
+        "Vance", "Okafor", "Lindqvist", "Moreau", "Tanaka", "Kowalski", "Reyes", "Haddad", "Brandt", "Nakamura", "Petrov",
+        "Mensah", "Larsen", "Castillo", "Weber", "Singh", "Dubois", "Novak", "Ferreira", "Holm", "Abara", "Kaplan", "Rossi",
+        "Varga", "Quinn", "Achebe", "Falk", "Ibarra", "Strand", "Oyelaran", "Bergmann", "Celik", "Marlow", "Thorne");
+
+    /** Anteil der Dorfbewohner mit dem Namen einer bekannten Figur. */
+    public static final double CANON_SHARE = 0.25;
+
+    /** Uniformen in der Reihenfolge Epoche × Abteilung, wie die Uniform-Gegenstände. */
     public static final String[] ERAS = {"nx", "tos", "movie", "tng", "fc"};
     public static final String[] DIVISIONS = {"command", "science", "operations"};
 
     private StarfleetCrew() {}
 
-    public static Member random(RandomSource rnd) {
-        return CREW.get(rnd.nextInt(CREW.size()));
+    /** Neuer Name: mit 25 % eine bekannte Figur, sonst ein erfundener Name. */
+    public static String randomName(RandomSource rnd) {
+        if (rnd.nextDouble() < CANON_SHARE) return CREW.get(rnd.nextInt(CREW.size())).name();
+        return FIRST_NAMES.get(rnd.nextInt(FIRST_NAMES.size())) + " " + LAST_NAMES.get(rnd.nextInt(LAST_NAMES.size()));
     }
 
-    /** Figur zu einem Namen; unbekannte Namen (z. B. per Namensschild umbenannt) bekommen eine feste Haut aus der UUID. */
-    public static Member byName(String name, UUID uuid) {
+    /** Bekannte Figur zu einem Namen oder null. */
+    public static Member canon(String name) {
         for (Member m : CREW) if (m.name().equals(name)) return m;
-        return CREW.get(Math.floorMod(uuid.hashCode(), CREW.size()));
+        return null;
     }
 
-    /** Uniform eines Dorfbewohners: "uniform_&lt;epoche&gt;_&lt;abteilung&gt;", fest aus der UUID. */
+    /** Haut zu Name und UUID: die der Figur, sonst eine unauffällige, fest aus der UUID. */
+    public static String skin(String name, UUID uuid) {
+        Member m = canon(name);
+        return m != null ? m.skin() : PLAIN_SKINS.get(Math.floorMod(mix(uuid, 17), PLAIN_SKINS.size()));
+    }
+
+    /** Kleidung zu Name und UUID: eine der Uniformen der Figur, sonst eine zufällige Uniform – fest aus der UUID. */
+    public static String outfit(String name, UUID uuid) {
+        Member m = canon(name);
+        if (m != null) return m.outfits().get(Math.floorMod(mix(uuid, 31), m.outfits().size()));
+        return uniform(uuid);
+    }
+
+    /** Zufällige Uniform (eine der 15), fest aus der UUID. */
     public static String uniform(UUID uuid) {
-        long h = uuid.getLeastSignificantBits() ^ (uuid.getMostSignificantBits() * 31);
-        int i = (int) Math.floorMod(h, (long) ERAS.length * DIVISIONS.length);
+        int i = Math.floorMod(mix(uuid, 31), ERAS.length * DIVISIONS.length);
         return "uniform_" + ERAS[i / DIVISIONS.length] + "_" + DIVISIONS[i % DIVISIONS.length];
+    }
+
+    private static int mix(UUID uuid, int salt) {
+        long h = uuid.getLeastSignificantBits() ^ (uuid.getMostSignificantBits() * salt);
+        h ^= h >>> 29;
+        h *= 0xBF58476D1CE4E5B9L;
+        h ^= h >>> 32;
+        return (int) h;
     }
 }

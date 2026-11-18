@@ -16,8 +16,8 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.npc.villager.Villager;
 
 /**
- * Dorfbewohner wie gewohnt – außer Sternenflotten-Dorfbewohnern: die sehen aus wie Spieler, mit der Haut der
- * Figur, deren Namen sie tragen, und ihrer (zufälligen) Uniform.
+ * Dorfbewohner wie gewohnt – außer Sternenflotten-Dorfbewohnern: die sehen aus wie Spieler, mit der Haut und einer der Uniformen
+ * der Figur, deren Namen sie tragen (erfundene Namen: unauffällige Haut, zufällige Uniform).
  */
 public class StarfleetVillagerRenderer extends VillagerRenderer {
     public static class State extends VillagerRenderState {
@@ -49,7 +49,7 @@ public class StarfleetVillagerRenderer extends VillagerRenderer {
         if (!s.starfleet) return;
         human.extractRenderState(entity, s.crewState, partialTicks);
         String name = entity.hasCustomName() ? entity.getCustomName().getString() : "";
-        s.crewState.texture = CrewSkins.texture(StarfleetCrew.byName(name, entity.getUUID()).skin(), StarfleetCrew.uniform(entity.getUUID()));
+        s.crewState.texture = CrewSkins.texture(StarfleetCrew.skin(name, entity.getUUID()), StarfleetCrew.outfit(name, entity.getUUID()));
     }
 
     @Override

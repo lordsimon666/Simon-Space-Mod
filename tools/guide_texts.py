@@ -126,8 +126,9 @@ DE = {
               "Andere Verbraucher werden abgeschaltet, die Trägheitsdämpfer zuletzt gedrosselt. Reicht die Erzeugung nicht, "
               "geht es gar nicht erst los oder das Schiff fällt sofort aus dem Warp. Im Warp lassen sich keine Waffen benutzen.",
     "entry.starfleet_villager": "Sternenflotten-Dorfbewohner",
-    "starfleet_villager.1": "Ein Dorfbewohner mit einem Shuttle-Pilotensitz als Arbeitsplatz wird zum Sternenflotten-Offizier. Er heißt immer wie eine "
-                            "Figur aus Star Trek und sieht auch so ähnlich aus: Er hat die Gestalt eines Spielers, mit Frisur und Gesicht der Figur und einer zufälligen Uniform.",
+    "starfleet_villager.1": "Ein Dorfbewohner mit einem Shuttle-Pilotensitz als Arbeitsplatz wird zum Sternenflotten-Offizier. Etwa jeder vierte heißt wie eine "
+                            "Figur aus Star Trek und sieht auch so ähnlich aus: Gestalt eines Spielers, Frisur und Gesicht der Figur und eine Uniform, die sie in Serie oder Film trug. "
+                            "Die anderen haben erfundene Namen, ein unauffälliges Gesicht und eine zufällige Uniform.",
     "starfleet_villager.2": "Er verkauft vor allem Uniformen, auf höheren Stufen auch Stühle und Deko – nie Maschinen oder andere funktionale Blöcke. "
                             "In etwa jedem fünfzigsten Dorf steht ein umgebautes Shuttle, in dem einer wohnt. Das Raumschiff-Bett ist zwei Blöcke lang und ein ganz normales Bett.",
     "entry.cameras": "Kameras & Bildschirme",
@@ -331,8 +332,9 @@ EN = {
               "other consumers are switched off, the inertial dampers are throttled last. If production is not enough, "
               "the jump fails right away or the ship drops out of warp at once. Weapons cannot be used at warp.",
     "entry.starfleet_villager": "Starfleet Villagers",
-    "starfleet_villager.1": "A villager with a shuttle pilot seat as job site becomes a Starfleet officer. He is always named after a Star Trek character "
-                            "and looks a bit like them: he has the shape of a player, with the character's hair and face and a random uniform.",
+    "starfleet_villager.1": "A villager with a shuttle pilot seat as job site becomes a Starfleet officer. About one in four is named after a Star Trek character "
+                            "and looks a bit like them: the shape of a player, the character's hair and face and a uniform they wore in a series or film. "
+                            "The others get made-up names, a plain face and a random uniform.",
     "starfleet_villager.2": "He mostly sells uniforms, at higher levels also chairs and decoration – never machines or other functional blocks. "
                             "About one village in fifty has a converted shuttle where one lives. The starship bed is two blocks long and works like any bed.",
     "entry.cameras": "Cameras & Displays",
