@@ -27,6 +27,7 @@ public class StarfleetVillagerRenderer extends VillagerRenderer {
 
     static class Crew extends HumanoidRenderState {
         Identifier texture;
+        String skin;
     }
 
     private final Human human;
@@ -49,6 +50,7 @@ public class StarfleetVillagerRenderer extends VillagerRenderer {
         if (!s.starfleet) return;
         human.extractRenderState(entity, s.crewState, partialTicks);
         String name = entity.hasCustomName() ? entity.getCustomName().getString() : "";
+        s.crewState.skin = StarfleetCrew.skin(name, entity.getUUID());
         s.crewState.texture = CrewSkins.texture(StarfleetCrew.skin(name, entity.getUUID()), StarfleetCrew.outfit(name, entity.getUUID()),
             StarfleetCrew.tear(entity.getUUID()));
     }
@@ -63,6 +65,7 @@ public class StarfleetVillagerRenderer extends VillagerRenderer {
     static class Human extends HumanoidMobRenderer<Villager, Crew, HumanoidModel<Crew>> {
         Human(EntityRendererProvider.Context context) {
             super(context, new HumanoidModel<>(context.bakeLayer(ModelLayers.PLAYER)), 0.5F);
+            addLayer(new CrewFeatureLayer(this)); // Ohren, Implantat, Frisur …
         }
 
         @Override

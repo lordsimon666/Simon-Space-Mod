@@ -439,6 +439,24 @@ def skins():
     os.makedirs(folder, exist_ok=True)
     for i, (name, spec) in enumerate(CREW.items()):
         skin_image(spec, 9000 + i).save(os.path.join(folder, f"skin_{name}.png"))
+        features_image(name, spec, 9100 + i).save(os.path.join(folder, f"features_{name}.png"))
+
+
+def features_image(name, spec, seed):
+    """Farben der 3D-Merkmale am Kopf (siehe CrewFeatures.java): je 16 Pixel hoch Haut, Haare, Metall, dunkel."""
+    rnd = random.Random(seed)
+    sk = spec["skin"]
+    hair = spec.get("hair") or BLACK_H
+    dark = {"laforge": (40, 44, 52), "seven": (190, 40, 40)}.get(name, shade(rgba(sk), -38)[:3])
+    bands = [sk, hair, (184, 188, 196), dark]
+    img = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
+    px = img.load()
+    for band, c in enumerate(bands):
+        for x in range(64):
+            for y in range(16 * band, 16 * band + 16):
+                v = rnd.randint(-6, 6) if band != 2 else rnd.randint(-10, 10)
+                px[x, y] = shade(rgba(c), v)
+    return img
 
 
 # ---------------------------------------------------------------------------------------------

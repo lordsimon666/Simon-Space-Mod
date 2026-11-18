@@ -814,6 +814,11 @@ Im **Maschinenraum** jeder Enterprise steht die **Energieverteilung** (auch baub
     verschiedene, ist es zufällig eine davon, für jeden Dorfbewohner aber fest. Zum Beispiel trägt Picard TNG, die
     Deep-Space-Nine-/Voyager-Uniform oder „Der erste Kontakt“, Janeway und Tuvok die Voyager-Uniform, Kirk Originalserie, Kinofilm oder seine **grüne Wickeltunika**, Archer die NX-Uniform.
     **Seven of Nine** trägt meist ihren eigenen silbrig-blauen Anzug, selten eine Uniform.
+  * **3D-Merkmale am Kopf**: spitze Vulkanier-Ohren (Spock, Tuvok, T'Pol), Sevens Implantat über dem linken
+    Auge und an der Schläfe, La Forges Visier, Worfs Stirnwülste, Rikers Bart, Scotts Schnurrbart, Siskos und Worfs
+    Spitzbart, Picards Haarkranz. Dazu kommen Frisuren mit Volumen: Dutt (Janeway, Seven), Hochsteckfrisur (Uhura),
+    lange Haare (Troi, Worf, Sato, T'Pol), Bob (Crusher), Topfschnitt der Vulkanier und Ponys. Erfundene Offiziere
+    mit derselben Haut tragen dieselbe Frisur.
   * **Erfundene Namen**: eine unauffällige Haut (ohne Visier, Stirnwülste, Vulkanier-Brauen, Bart, Glatze oder
     Implantat) und eine **zufällige Uniform** (eine der 18 aus 6 Epochen × 3 Abteilungen).
   * Die **Hose passt zum Oberteil**: blau nur zur NX-Uniform, sonst schwarz, dazu Sternenflotten-Stiefel. Sevens

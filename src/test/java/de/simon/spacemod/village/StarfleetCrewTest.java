@@ -64,6 +64,21 @@ class StarfleetCrewTest {
     }
 
     @Test
+    void headFeaturesFitTheirTexture() {
+        for (var e : CrewFeatures.BY_SKIN.entrySet()) {
+            assertTrue(Files.exists(RES.resolve("assets/simonspacemod/textures/entity/starfleet/features_" + e.getKey() + ".png")), e.getKey());
+            for (CrewFeatures.Box b : e.getValue()) {
+                // Abwicklung des Quaders passt in seinen Farbstreifen (64 × 16)
+                assertTrue(2 * Math.ceil(b.w() + b.d()) <= 64 && Math.ceil(b.h() + b.d()) <= 16, e.getKey() + ": " + b);
+                // nah am Kopf (x -4..4, y -8..0, z -4..4), höchstens etwas darüber hinaus
+                assertTrue(b.x() >= -6 && b.x() + b.w() <= 6 && b.y() >= -11 && b.y() + b.h() <= 5 && b.z() >= -6 && b.z() + b.d() <= 6, e.getKey() + ": " + b);
+            }
+        }
+        assertTrue(CrewFeatures.of("spock").size() >= 4, "Vulkanier-Ohren fehlen");
+        assertTrue(CrewFeatures.of("seven").stream().anyMatch(b -> b.band() == CrewFeatures.METAL), "Implantat fehlt");
+    }
+
+    @Test
     void keycardsByRank() {
         assertEquals("captain", StarfleetCrew.canon("Jean-Luc Picard").card());
         assertEquals("security", StarfleetCrew.canon("Worf").card());

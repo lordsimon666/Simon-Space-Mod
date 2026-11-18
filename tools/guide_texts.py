@@ -127,7 +127,7 @@ DE = {
               "geht es gar nicht erst los oder das Schiff fällt sofort aus dem Warp. Im Warp lassen sich keine Waffen benutzen.",
     "entry.starfleet_villager": "Sternenflotten-Dorfbewohner",
     "starfleet_villager.1": "Ein Dorfbewohner mit einem Shuttle-Pilotensitz als Arbeitsplatz wird zum Sternenflotten-Offizier. Etwa jeder vierte heißt wie eine "
-                            "Figur aus Star Trek und sieht auch so ähnlich aus: Gestalt eines Spielers, Frisur und Gesicht der Figur und eine Uniform, die sie in Serie oder Film trug. "
+                            "Figur aus Star Trek und sieht auch so ähnlich aus: Gestalt eines Spielers, Frisur und Gesicht der Figur (mit 3D-Ohren, Implantat, Visier, Dutt usw.) und eine Uniform, die sie in Serie oder Film trug. "
                             "Die anderen haben erfundene Namen, ein unauffälliges Gesicht und eine zufällige Uniform. Bei jedem zweiten ist die Uniform zerrissen.",
     "starfleet_villager.2": "Er verkauft vor allem Uniformen, auf höheren Stufen auch Stühle und Deko – nie Maschinen oder andere funktionale Blöcke. "
                             "In etwa jedem fünfzigsten Dorf steht ein umgebautes Shuttle, in dem einer wohnt. Das Raumschiff-Bett ist zwei Blöcke lang und ein ganz normales Bett. "
@@ -334,7 +334,7 @@ EN = {
               "the jump fails right away or the ship drops out of warp at once. Weapons cannot be used at warp.",
     "entry.starfleet_villager": "Starfleet Villagers",
     "starfleet_villager.1": "A villager with a shuttle pilot seat as job site becomes a Starfleet officer. About one in four is named after a Star Trek character "
-                            "and looks a bit like them: the shape of a player, the character's hair and face and a uniform they wore in a series or film. "
+                            "and looks a bit like them: the shape of a player, the character's hair and face (with 3D ears, implant, visor, bun and so on) and a uniform they wore in a series or film. "
                             "The others get made-up names, a plain face and a random uniform. Every second one has a torn uniform.",
     "starfleet_villager.2": "He mostly sells uniforms, at higher levels also chairs and decoration – never machines or other functional blocks. "
                             "About one village in fifty has a converted shuttle where one lives. The starship bed is two blocks long and works like any bed. "
